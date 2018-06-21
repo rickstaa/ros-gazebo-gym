@@ -58,6 +58,11 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
     # GoalEnv methods
     # ----------------------------
     def _check_all_sensors_ready(self):
+        self._check_joint_states_ready()
+        self._check_odom_ready()
+        rospy.loginfo("ALL SENSORS READY")
+
+    def _check_joint_states_ready(self):
         self.disk_joints_data = None
         while self.disk_joints_data is None and not rospy.is_shutdown():
             try:
@@ -66,7 +71,9 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
             except:
                 rospy.logerr("Current moving_cube/joint_states not ready yet, retrying for getting joint_states")
+        return self.disk_joints_data
 
+    def _check_odom_ready(self):
         self.cube_odom_data = None
         while self.disk_joints_data is None and not rospy.is_shutdown():
             try:
@@ -75,7 +82,8 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
             except:
                 rospy.logerr("Current /moving_cube/odom not ready yet, retrying for getting odom")
-        rospy.loginfo("ALL SENSORS READY")
+
+        return self.cube_odom_data
 
     def _joints_callback(self, data):
         self.joints = data
@@ -112,35 +120,31 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         joint_speed_value.data = roll_speed
         rospy.loginfo("Single Disk Roll Velocity>>" + str(joint_speed_value))
         self._roll_vel_pub.publish(joint_speed_value)
+        self.wait_until_roll_is_in_vel(joint_speed_value)
 
-    def get_cube_state(self):
+    def wait_until_roll_is_in_vel(self, velocity):
 
-        # We convert from quaternions to euler
-        orientation_list = [self.odom.pose.pose.orientation.x,
-                            self.odom.pose.pose.orientation.y,
-                            self.odom.pose.pose.orientation.z,
-                            self.odom.pose.pose.orientation.w]
+        rate = rospy.Rate(10)
+        start_wait_time = rospy.get_rostime().to_sec()
+        end_wait_time = 0.0
+        epsilon = 0.1
+        v_plus = velocity + epsilon
+        v_minus = velocity - epsilon
+        while not rospy.is_shutdown():
+            joint_data = self._check_joint_states_ready()
+            roll_vel = joint_data.velocity[0]
+            rospy.logwarn("VEL=" + str(roll_vel) + ", ?RANGE=[" + str(v_minus) + ","+str(v_plus)+"]")
+            are_close = (roll_vel <= v_plus) and (roll_vel > v_minus)
+            if are_close:
+                rospy.logerr("Reached Velocity!")
+                end_wait_time = rospy.get_rostime().to_sec()
+                break
+            rospy.logwarn("Not there yet, keep waiting...")
+            rate.sleep()
+        delta_time = end_wait_time- start_wait_time
+        rospy.logwarn("[Wait Time=" + str(delta_time)+"]")
+        return delta_time
 
-        roll, pitch, yaw = euler_from_quaternion(orientation_list)
-
-        # We get the distance from the origin
-        start_position = Point()
-        start_position.x = 0.0
-        start_position.y = 0.0
-        start_position.z = 0.0
-
-        distance = self.get_distance_from_point(start_position,
-                                                self.odom.pose.pose.position)
-
-        cube_state = [
-            round(self.joints.velocity[0], 1),
-            round(distance, 1),
-            round(roll, 1),
-            round(pitch, 1),
-            round(yaw, 1)
-        ]
-
-        return cube_state
 
     def _compute_reward(self, observations, done):
 
@@ -159,6 +163,18 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
         return reward
 
+    def get_distance_from_start_point(self, start_point):
+        """
+        Calculates the distance from the given point and the current position
+        given by odometry
+        :param start_point:
+        :return:
+        """
+        distance = self.get_distance_from_point(start_point,
+                                                self.odom.pose.pose.position)
+
+        return distance
+
     def get_distance_from_point(self, pstart, p_end):
         """
         Given a Vector3 Object, get distance from current position
@@ -176,18 +192,14 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
     # ----------------------------
 
     def _set_action(self, action):
-        # TODO: This has to be adapted to the way the cube moves
-
-        assert (action < self.n_actions), "Action Asked its oustise the action dimensions"
-
-        # We have to assign a real movement to each action
-
-
-        # Apply action to simulation.
-        utils.ctrl_set_action(self.sim, action)
-        utils.mocap_set_action(self.sim, action)
+        """Applies the given action to the simulation.
+        """
+        raise NotImplementedError()
 
     def _get_obs(self):
+        raise NotImplementedError()
+
+    def get_orientation_euler(self):
         # We convert from quaternions to euler
         orientation_list = [self.odom.pose.pose.orientation.x,
                             self.odom.pose.pose.orientation.y,
@@ -195,26 +207,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
                             self.odom.pose.pose.orientation.w]
 
         roll, pitch, yaw = euler_from_quaternion(orientation_list)
-
-        # We get the distance from the origin
-        start_position = Point()
-        start_position.x = 0.0
-        start_position.y = 0.0
-        start_position.z = 0.0
-
-        distance = self.get_distance_from_point(start_position,
-                                                self.odom.pose.pose.position)
-
-        cube_state = [
-            round(self.joints.velocity[0], 1),
-            round(distance, 1),
-            round(roll, 1),
-            round(pitch, 1),
-            round(yaw, 1)
-        ]
-
-        return cube_state
-
+        return roll, pitch, yaw
 
     def _viewer_setup(self):
         body_id = self.sim.model.body_name2id('robot0:gripper_link')
@@ -248,33 +241,10 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         self.sim.forward()
         return True
 
-    def _sample_goal(self):
-        if self.has_object:
-            goal = self.initial_gripper_xpos[:3] + self.numpy_random.uniform(-self.target_range, self.target_range, size=3)
-            goal += self.target_offset
-            goal[2] = self.height_offset
-            if self.target_in_the_air and self.numpy_random.uniform() < 0.5:
-                goal[2] += self.numpy_random.uniform(0, 0.45)
-        else:
-            goal = self.initial_gripper_xpos[:3] + self.numpy_random.uniform(-0.15, 0.15, size=3)
-        return goal.copy()
-
-    def _is_success(self, achieved_goal, desired_goal):
-        d = goal_distance(achieved_goal, desired_goal)
-        return (d < self.distance_threshold).astype(numpy.float32)
-
     def _is_done(self, observations):
-        # Maximum distance to travel permited in meters from origin
-        max_distance = 2.0
-
-        if (observations[1] > max_distance):
-            rospy.logerr("Cube Too Far==>" + str(observations[1]))
-            done = True
-        else:
-            rospy.loginfo("Cube NOT Too Far==>" + str(observations[1]))
-            done = False
-
-        return done
+        """Checks if episode done based on observations given.
+        """
+        raise NotImplementedError()
 
     def _env_setup(self, initial_qpos):
         for name, value in initial_qpos.items():
