@@ -11,9 +11,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
     """Superclass for all CubeSingleDisk environments.
     """
 
-    def __init__(
-        self, n_actions, init_roll_vel
-    ):
+    def __init__(self, n_actions, init_roll_vel):
         """Initializes a new CubeSingleDisk environment.
 
         Args:
@@ -21,7 +19,6 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
             n_actions: Number of actions to perform
         """
         # Variables that we give through the constructor.
-        self.n_actions = n_actions
         self.init_roll_vel = init_roll_vel
 
         # We Start all the ROS related Subscribers and publishers
@@ -41,7 +38,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         self.robot_name_space = "moving_cube"
 
         # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
-        super(CubeSingleDiskEnv, self).__init__(n_actions=self.n_actions,
+        super(CubeSingleDiskEnv, self).__init__(n_actions=n_actions,
                                                 controlers_list=self.controlers_list,
                                                 robot_name_space=self.robot_name_space)
 

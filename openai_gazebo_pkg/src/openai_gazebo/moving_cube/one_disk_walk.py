@@ -12,7 +12,7 @@ register(
 
 class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
     def __init__(self):
-        self.n_actions = rospy.get_param('/moving_cube/n_actions')
+        number_actions = rospy.get_param('/moving_cube/n_actions')
         # Variables that we retrieve through the param server, loded when launch training launch.
         self.roll_speed_fixed_value = rospy.get_param('/moving_cube/roll_speed_fixed_value')
         self.max_distance = rospy.get_param('/moving_cube/max_distance')
@@ -27,12 +27,9 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         self.init_roll_vel = rospy.get_param("/moving_cube/init_roll_vel")
 
         # Here we will add any init functions prior to starting the CubeSingleDiskEnv
-        super(MovingCubeOneDiskWalkEnv, self).__init__( self,
-                                                        n_actions=self.n_actions,
-                                                        init_roll_vel=self.init_roll_vel)
+        super(MovingCubeOneDiskWalkEnv, self).__init__(number_actions, self.init_roll_vel)
 
     def _set_action(self, action):
-        assert (action < self.n_actions), "Action Asked is outside the action dimensions"
 
         # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
         roll_turn_speed = None
