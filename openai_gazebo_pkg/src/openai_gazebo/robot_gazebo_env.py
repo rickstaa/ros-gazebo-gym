@@ -43,12 +43,10 @@ class RobotGazeboEnv(gym.Env):
         Here we should convert the action num to movement action, execute the action in the
         simulation and get the observations result of perfroming that action.
         """
+        self.gazebo_sim.unpauseSim()
         self._set_action(action)
-        # Here we implement the Unpause, get data and pause again that we now to explicitly
-        self.gazebo_sim.step()
-        self._step_callback()
+        self.gazebo_sim.pauseSim()
         obs = self._get_obs()
-
         done = self._is_done(obs)
         info = {}
         reward = self._compute_reward(obs, done)
@@ -170,11 +168,5 @@ class RobotGazeboEnv(gym.Env):
     def _render_callback(self):
         """A custom callback that is called before rendering. Can be used
         to implement custom visualizations.
-        """
-        pass
-
-    def _step_callback(self):
-        """A custom callback that is called after stepping the simulation. Can be used
-        to enforce additional constraints on the simulation state.
         """
         pass

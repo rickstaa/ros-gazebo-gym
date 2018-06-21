@@ -5,24 +5,18 @@ from gym.envs.registration import register
 # Algorithmic
 # ----------------------------------------
 
+# The path is __init__.py of openai_gazebo, where we import the MovingCubeOneDiskWalkEnv directly
 register(
         id='MovingCubeOneDiskWalk-v0',
-        entry_point='openai_gazebo:FetchSlideEnv',
-        max_episode_steps=1000,
-        reward_threshold=360.0,
+        entry_point='openai_gazebo:MovingCubeOneDiskWalkEnv',
+        timestep_limit=1000,
     )
 
-class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv, utils.EzPickle):
-    def __init__(self, reward_type='sparse'):
-        initial_qpos = {
-            'robot0:slide0': 0.405,
-            'robot0:slide1': 0.48,
-            'robot0:slide2': 0.0,
-            'object0:joint': [1.25, 0.53, 0.4, 1., 0., 0., 0.],
-        }
-        cube_single_disk_env.CubeSingleDiskEnv.__init__(
-            self, 'fetch/push.xml', has_object=True, block_gripper=True, n_substeps=20,
-            gripper_extra_height=0.0, target_in_the_air=False, target_offset=0.0,
-            obj_range=0.15, target_range=0.15, distance_threshold=0.05,
-            initial_qpos=initial_qpos, reward_type=reward_type)
-        utils.EzPickle.__init__(self)
+class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
+    def __init__(self):
+        # TODO: Get this number of actions from elsewhere
+        n_actions = 3
+
+        # Here we will add any init functions prior to starting the CubeSingleDiskEnv
+        super(MovingCubeOneDiskWalkEnv, self).__init__(
+            self, test_cubesinglediskenc_arg="TestValue", n_actions=n_actions)
