@@ -1,2 +1,2 @@
-from openai_gazebo.moving_cube_env import MovingCubeEnv
+from openai_gazebo.cube_single_disk_env import CubeSingleDiskEnv
 from openai_gazebo.moving_cube.one_disk_walk import MovingCubeOneDiskWalkEnv
