@@ -3,9 +3,6 @@ from openai_gazebo import cube_single_disk_env
 from gym.envs.registration import register
 from geometry_msgs.msg import Point
 
-# Algorithmic
-# ----------------------------------------
-
 # The path is __init__.py of openai_gazebo, where we import the MovingCubeOneDiskWalkEnv directly
 register(
         id='MovingCubeOneDiskWalk-v0',
@@ -15,7 +12,6 @@ register(
 
 class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
     def __init__(self):
-        # TODO: Get this number of actions from elsewhere
         self.n_actions = rospy.get_param('/moving_cube/n_actions')
         # Variables that we retrieve through the param server, loded when launch training launch.
         self.roll_speed_fixed_value = rospy.get_param('/moving_cube/roll_speed_fixed_value')
@@ -28,9 +24,12 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
 
         self.end_episode_points = rospy.get_param("/moving_cube/end_episode_points")
 
+        self.init_roll_vel = rospy.get_param("/moving_cube/init_roll_vel")
+
         # Here we will add any init functions prior to starting the CubeSingleDiskEnv
-        super(MovingCubeOneDiskWalkEnv, self).__init__(
-            self, test_cubesinglediskenc_arg="TestValue", n_actions=self.n_actions)
+        super(MovingCubeOneDiskWalkEnv, self).__init__( self,
+                                                        n_actions=self.n_actions,
+                                                        init_roll_vel=self.init_roll_vel)
 
     def _set_action(self, action):
         assert (action < self.n_actions), "Action Asked is outside the action dimensions"

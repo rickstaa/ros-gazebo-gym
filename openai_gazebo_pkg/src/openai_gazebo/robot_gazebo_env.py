@@ -17,7 +17,6 @@ class RobotGazeboEnv(gym.Env):
         self.controllers_object = ControllersConnection(namespace=robot_name_space,
                                                         controlers_list=controlers_list)
         self.seed()
-        #self.action_space = spaces.Box(-1., 1., shape=(n_actions,), dtype='float32')
         self.action_space = spaces.Discrete(n_actions)
         # Visualization system
         self.viewer = None
@@ -55,9 +54,7 @@ class RobotGazeboEnv(gym.Env):
         return obs, reward, done, info
 
     def reset(self):
-        did_reset_sim = False
-        while not did_reset_sim:
-            did_reset_sim = self._reset_sim()
+        self._reset_sim()
         obs = self._get_obs()
         return obs
 
@@ -67,47 +64,56 @@ class RobotGazeboEnv(gym.Env):
         Use it for closing GUIS and other systems that need closing.
         :return:
         """
-        if self.viewer is not None:
-            # self.viewer.finish()
-            self.viewer = None
+        # TODO: Here add any function needed to be closed
+        pass
 
     def render(self, mode='no_view'):
-        self._render_callback()
-        if mode == 'rgb_array':
-            self._get_viewer().render()
-            # window size used for old mujoco-py:
-            width, height = 500, 500
-            data = self._get_viewer().read_pixels(width, height, depth=False)
-            # original image is upside-down, so flip it
-            return data[::-1, :, :]
-        elif mode == 'human':
-            self._get_viewer().render()
-        elif mode == 'no_view':
-            pass
+        # TODO: Implement the ScreenShot recording system, possibly through screenshots of a camera
+        # TODO: Or maybe we could also record a 3D video data, OpenGL maybe?
+        pass
 
-    def _get_viewer(self):
-        if self.viewer is None:
-            # TODO: Implement the ScreenShot recording system, possibly through screenshots of a camera
-            # TODO: Or maybe we could also record a 3D video data, OpenGL maybe?
-            # http://wiki.ros.org/RecordingOpenGLAppsWithGLC
-            # http://answers.gazebosim.org/question/7116/forcing-gazebo-to-render-at-fixed-intervals-or-how-to-record-a-video-of-a-simulation/
-            self.viewer = self.gazebo_sim.GazeboViewer()
-            self._viewer_setup()
-        return self.viewer
+    def _publish_reward_topic(self, reward, episode_number=1):
+        """
+        This function publishes the given reward in the reward topic for
+        easy access from ROS infrastructure.
+        :param reward:
+        :param episode_number:
+        :return:
+        """
+        reward_msg = RLExperimentInfo()
+        reward_msg.episode_number = episode_number
+        reward_msg.episode_reward = reward
+        self.reward_pub.publish(reward_msg)
 
     # Extension methods
     # ----------------------------
 
     def _reset_sim(self):
-        """Resets a simulation and indicates whether or not it was successful.
-        If a reset was unsuccessful (e.g. if a randomized state caused an error in the
-        simulation), this method should indicate such a failure by returning False.
-        In such a case, this method will be called again to attempt a the reset again.
+        """Resets a simulation
         """
-        # TODO: Implement the reset algorithm
-        self.gazebo_sim.set_state(self.initial_state)
+        self.gazebo_sim.unpauseSim()
+        self._set_init_pose()
+        self._check_all_systems_ready()
+        self.gazebo_sim.pauseSim()
         self.gazebo_sim.resetSim()
+        self.gazebo_sim.unpauseSim()
+        self.controllers_object.reset_cartpole_joint_controllers()
+        self._check_all_systems_ready()
+        self.gazebo_sim.pauseSim()
+
         return True
+
+    def _set_init_pose(self):
+        """Sets the Robot in its init pose
+        """
+        raise NotImplementedError()
+
+    def _check_all_systems_ready(self):
+        """
+        Checks that all the sensors, publishers and other simulation systems are
+        operational.
+        """
+        raise NotImplementedError()
 
     def _get_obs(self):
         """Returns the observation.
@@ -133,40 +139,3 @@ class RobotGazeboEnv(gym.Env):
         """Calculates the reward to give based on the observations given.
         """
         raise NotImplementedError()
-
-    def _publish_reward_topic(self, reward, episode_number=1):
-        """
-        This function publishes the given reward in the reward topic for
-        easy access from ROS infrastructure.
-        :param reward:
-        :param episode_number:
-        :return:
-        """
-        reward_msg = RLExperimentInfo()
-        reward_msg.episode_number = episode_number
-        reward_msg.episode_reward = reward
-        self.reward_pub.publish(reward_msg)
-
-
-    def _sample_goal(self):
-        """Samples a new goal and returns it.
-        """
-        raise NotImplementedError()
-
-    def _env_setup(self, initial_qpos):
-        """Initial configuration of the environment. Can be used to configure initial state
-        and extract information from the simulation.
-        """
-        pass
-
-    def _viewer_setup(self):
-        """Initial configuration of the viewer. Can be used to set the camera position,
-        for example.
-        """
-        pass
-
-    def _render_callback(self):
-        """A custom callback that is called before rendering. Can be used
-        to implement custom visualizations.
-        """
-        pass
