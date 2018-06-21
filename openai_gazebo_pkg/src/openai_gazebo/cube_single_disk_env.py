@@ -1,4 +1,4 @@
-import numpy as np
+import numpy
 import rospy
 #from gym.envs.robotics import rotations, robot_env, utils
 from gym.envs.robotics import rotations, utils
@@ -11,7 +11,7 @@ from tf.transformations import euler_from_quaternion
 
 def goal_distance(goal_a, goal_b):
     assert goal_a.shape == goal_b.shape
-    return np.linalg.norm(goal_a - goal_b, axis=-1)
+    return numpy.linalg.norm(goal_a - goal_b, axis=-1)
 
 
 class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -175,11 +175,11 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
         pos_ctrl *= 0.05  # limit maximum change in position
         rot_ctrl = [1., 0., 1., 0.]  # fixed rotation of the end effector, expressed as a quaternion
-        gripper_ctrl = np.array([gripper_ctrl, gripper_ctrl])
+        gripper_ctrl = numpy.array([gripper_ctrl, gripper_ctrl])
         assert gripper_ctrl.shape == (2,)
         if self.block_gripper:
-            gripper_ctrl = np.zeros_like(gripper_ctrl)
-        action = np.concatenate([pos_ctrl, rot_ctrl, gripper_ctrl])
+            gripper_ctrl = numpy.zeros_like(gripper_ctrl)
+        action = numpy.concatenate([pos_ctrl, rot_ctrl, gripper_ctrl])
 
         # Apply action to simulation.
         utils.ctrl_set_action(self.sim, action)
@@ -236,8 +236,8 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         # Randomize start position of object.
         if self.has_object:
             object_xpos = self.initial_gripper_xpos[:2]
-            while np.linalg.norm(object_xpos - self.initial_gripper_xpos[:2]) < 0.1:
-                object_xpos = self.initial_gripper_xpos[:2] + self.np_random.uniform(-self.obj_range, self.obj_range, size=2)
+            while numpy.linalg.norm(object_xpos - self.initial_gripper_xpos[:2]) < 0.1:
+                object_xpos = self.initial_gripper_xpos[:2] + self.numpy_random.uniform(-self.obj_range, self.obj_range, size=2)
             object_qpos = self.sim.data.get_joint_qpos('object0:joint')
             assert object_qpos.shape == (7,)
             object_qpos[:2] = object_xpos
@@ -248,18 +248,18 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _sample_goal(self):
         if self.has_object:
-            goal = self.initial_gripper_xpos[:3] + self.np_random.uniform(-self.target_range, self.target_range, size=3)
+            goal = self.initial_gripper_xpos[:3] + self.numpy_random.uniform(-self.target_range, self.target_range, size=3)
             goal += self.target_offset
             goal[2] = self.height_offset
-            if self.target_in_the_air and self.np_random.uniform() < 0.5:
-                goal[2] += self.np_random.uniform(0, 0.45)
+            if self.target_in_the_air and self.numpy_random.uniform() < 0.5:
+                goal[2] += self.numpy_random.uniform(0, 0.45)
         else:
-            goal = self.initial_gripper_xpos[:3] + self.np_random.uniform(-0.15, 0.15, size=3)
+            goal = self.initial_gripper_xpos[:3] + self.numpy_random.uniform(-0.15, 0.15, size=3)
         return goal.copy()
 
     def _is_success(self, achieved_goal, desired_goal):
         d = goal_distance(achieved_goal, desired_goal)
-        return (d < self.distance_threshold).astype(np.float32)
+        return (d < self.distance_threshold).astype(numpy.float32)
 
     def _is_done(self, observations):
         # Maximum distance to travel permited in meters from origin
@@ -281,8 +281,8 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         self.sim.forward()
 
         # Move end effector into position.
-        gripper_target = np.array([-0.498, 0.005, -0.431 + self.gripper_extra_height]) + self.sim.data.get_site_xpos('robot0:grip')
-        gripper_rotation = np.array([1., 0., 1., 0.])
+        gripper_target = numpy.array([-0.498, 0.005, -0.431 + self.gripper_extra_height]) + self.sim.data.get_site_xpos('robot0:grip')
+        gripper_rotation = numpy.array([1., 0., 1., 0.])
         self.sim.data.set_mocap_pos('robot0:mocap', gripper_target)
         self.sim.data.set_mocap_quat('robot0:mocap', gripper_rotation)
         for _ in range(10):
