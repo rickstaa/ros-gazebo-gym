@@ -10,11 +10,12 @@ from theconstruct_msgs.msgs import RLExperimentInfo
 # https://github.com/openai/gym/blob/master/gym/core.py
 class RobotGazeboEnv(gym.Env):
     #def __init__(self, model_path, initial_qpos, n_actions, n_substeps):
-    def __init__(self, n_actions):
+    def __init__(self, n_actions, controlers_list, robot_name_space):
 
         # To reset Simulations
         self.gazebo_sim = GazeboConnection()
-        self.controllers_object = ControllersConnection(namespace="cartpole_v0")
+        self.controllers_object = ControllersConnection(namespace=robot_name_space,
+                                                        controlers_list=controlers_list)
         self.seed()
         #self.action_space = spaces.Box(-1., 1., shape=(n_actions,), dtype='float32')
         self.action_space = spaces.Discrete(n_actions)
@@ -38,10 +39,9 @@ class RobotGazeboEnv(gym.Env):
         :return: obs, reward, done, info
         """
 
-
         """
         Here we should convert the action num to movement action, execute the action in the
-        simulation and get the observations result of perfroming that action.
+        simulation and get the observations result of performing that action.
         """
         self.gazebo_sim.unpauseSim()
         self._set_action(action)

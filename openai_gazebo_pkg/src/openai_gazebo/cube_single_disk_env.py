@@ -44,8 +44,16 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self._check_publishers_connection()
 
+        self.controlers_list = ['joint_state_controller',
+                                'inertia_wheel_roll_joint_velocity_controller'
+                                ]
+
+        self.robot_name_space = "moving_cube"
+
         # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
-        super(CubeSingleDiskEnv, self).__init__(n_actions=self.n_actions)
+        super(CubeSingleDiskEnv, self).__init__(n_actions=self.n_actions,
+                                                controlers_list=self.controlers_list,
+                                                robot_name_space=self.robot_name_space)
 
     # GoalEnv methods
     # ----------------------------
@@ -169,17 +177,11 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _set_action(self, action):
         # TODO: This has to be adapted to the way the cube moves
-        assert action.shape == (4,)
-        action = action.copy()  # ensure that we don't change the action outside of this scope
-        pos_ctrl, gripper_ctrl = action[:3], action[3]
 
-        pos_ctrl *= 0.05  # limit maximum change in position
-        rot_ctrl = [1., 0., 1., 0.]  # fixed rotation of the end effector, expressed as a quaternion
-        gripper_ctrl = numpy.array([gripper_ctrl, gripper_ctrl])
-        assert gripper_ctrl.shape == (2,)
-        if self.block_gripper:
-            gripper_ctrl = numpy.zeros_like(gripper_ctrl)
-        action = numpy.concatenate([pos_ctrl, rot_ctrl, gripper_ctrl])
+        assert (action < self.n_actions), "Action Asked its oustise the action dimensions"
+
+        # We have to assign a real movement to each action
+
 
         # Apply action to simulation.
         utils.ctrl_set_action(self.sim, action)

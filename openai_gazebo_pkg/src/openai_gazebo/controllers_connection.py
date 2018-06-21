@@ -6,8 +6,9 @@ from controller_manager_msgs.srv import SwitchController, SwitchControllerReques
 
 class ControllersConnection():
     
-    def __init__(self, namespace):
+    def __init__(self, namespace, controlers_list):
 
+        self.controlers_list = controlers_list
         self.switch_service_name = '/'+namespace+'/controller_manager/switch_controller'
         self.switch_service = rospy.ServiceProxy(self.switch_service_name, SwitchController)
 
@@ -74,8 +75,9 @@ class ControllersConnection():
         return reset_result
 
     def reset_cartpole_joint_controllers(self):
-        controllers_reset = ['joint_state_controller',
-                             'pole_joint_position_controller',
-                             'foot_joint_position_controller',
-                             ]
-        self.reset_controllers(controllers_reset)
+
+        self.reset_controllers(self.controlers_list)
+
+    def update_controlers_list(self, new_controllers_list):
+
+        self.controlers_list = new_controllers_list
