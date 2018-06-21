@@ -21,16 +21,6 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         # Variables that we give through the constructor.
         self.init_roll_vel = init_roll_vel
 
-        # We Start all the ROS related Subscribers and publishers
-        self._check_all_sensors_ready()
-        rospy.Subscriber("/moving_cube/joint_states", JointState, self._joints_callback)
-        rospy.Subscriber("/moving_cube/odom", Odometry, self._odom_callback)
-
-        self._roll_vel_pub = rospy.Publisher('/moving_cube/inertia_wheel_roll_joint_velocity_controller/command',
-                                             Float64, queue_size=1)
-
-        self._check_publishers_connection()
-
         self.controlers_list = ['joint_state_controller',
                                 'inertia_wheel_roll_joint_velocity_controller'
                                 ]
@@ -41,6 +31,33 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         super(CubeSingleDiskEnv, self).__init__(n_actions=n_actions,
                                                 controlers_list=self.controlers_list,
                                                 robot_name_space=self.robot_name_space)
+
+
+
+        """
+        To check any topic we need to have the simulations running, we need to do two things:
+        1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
+        that are pause for whatever the reason
+        2) If the simulation was running already for some reason, we need to reset the controlers.
+        This has to do with the fact that some plugins with tf, dont understand the reset of the simulation
+        and need to be reseted to work properly.
+        """
+        self.gazebo_sim.unpauseSim()
+        self.controllers_object.reset_controllers()
+        self._check_all_sensors_ready()
+
+        # We Start all the ROS related Subscribers and publishers
+        rospy.Subscriber("/moving_cube/joint_states", JointState, self._joints_callback)
+        rospy.Subscriber("/moving_cube/odom", Odometry, self._odom_callback)
+
+        self._roll_vel_pub = rospy.Publisher('/moving_cube/inertia_wheel_roll_joint_velocity_controller/command',
+                                             Float64, queue_size=1)
+
+        self._check_publishers_connection()
+
+        self.gazebo_sim.pauseSim()
+
+
 
     # GoalEnv methods
     # ----------------------------
@@ -113,7 +130,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
             except rospy.ROSInterruptException:
                 # This is to avoid error when world is rested, time when backwards.
                 pass
-        rospy.loginfo("_base_pub Publisher Connected")
+        rospy.loginfo("_roll_vel_pub Publisher Connected")
 
         rospy.loginfo("All Publishers READY")
 

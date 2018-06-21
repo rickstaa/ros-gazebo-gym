@@ -47,7 +47,7 @@ class ControllersConnection():
 
             return None
 
-    def reset_controllers(self, controllers_reset):
+    def reset_controllers(self):
         """
         We turn on and off the given controllers
         :param controllers_reset: ["name_controler_1", "name_controller2",...,"name_controller_n"]
@@ -56,16 +56,16 @@ class ControllersConnection():
         reset_result = False
 
         result_off_ok = self.switch_controllers(controllers_on = [],
-                                controllers_off = controllers_reset)
+                                controllers_off = self.controlers_list)
 
         rospy.logdebug("Deactivated Controlers")
 
         if result_off_ok:
             rospy.logdebug("Activating Controlers")
-            result_on_ok = self.switch_controllers(controllers_on=controllers_reset,
+            result_on_ok = self.switch_controllers(controllers_on=self.controlers_list,
                                                     controllers_off=[])
             if result_on_ok:
-                rospy.logdebug("Controllers Reseted==>"+str(controllers_reset))
+                rospy.logdebug("Controllers Reseted==>"+str(self.controlers_list))
                 reset_result = True
             else:
                 rospy.logdebug("result_on_ok==>" + str(result_on_ok))
@@ -73,10 +73,6 @@ class ControllersConnection():
             rospy.logdebug("result_off_ok==>" + str(result_off_ok))
 
         return reset_result
-
-    def reset_cartpole_joint_controllers(self):
-
-        self.reset_controllers(self.controlers_list)
 
     def update_controlers_list(self, new_controllers_list):
 

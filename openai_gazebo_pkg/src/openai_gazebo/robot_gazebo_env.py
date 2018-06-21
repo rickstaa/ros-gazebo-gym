@@ -42,6 +42,7 @@ class RobotGazeboEnv(gym.Env):
         Here we should convert the action num to movement action, execute the action in the
         simulation and get the observations result of performing that action.
         """
+        rospy.loginfo("Performing STEP of RobotGazeboEnvironment")
         self.gazebo_sim.unpauseSim()
         self._set_action(action)
         self.gazebo_sim.pauseSim()
@@ -54,6 +55,7 @@ class RobotGazeboEnv(gym.Env):
         return obs, reward, done, info
 
     def reset(self):
+        rospy.loginfo("Reseting RobotGazeboEnvironment")
         self._reset_sim()
         obs = self._get_obs()
         return obs
@@ -65,7 +67,7 @@ class RobotGazeboEnv(gym.Env):
         :return:
         """
         # TODO: Here add any function needed to be closed
-        pass
+        rospy.loginfo("Closing RobotGazeboEnvironment")
 
     def render(self, mode='no_view'):
         # TODO: Implement the ScreenShot recording system, possibly through screenshots of a camera
@@ -92,12 +94,13 @@ class RobotGazeboEnv(gym.Env):
         """Resets a simulation
         """
         self.gazebo_sim.unpauseSim()
-        self._set_init_pose()
+        self.controllers_object.reset_controllers()
         self._check_all_systems_ready()
+        self._set_init_pose()
         self.gazebo_sim.pauseSim()
         self.gazebo_sim.resetSim()
         self.gazebo_sim.unpauseSim()
-        self.controllers_object.reset_cartpole_joint_controllers()
+        self.controllers_object.reset_controllers()
         self._check_all_systems_ready()
         self.gazebo_sim.pauseSim()
 
