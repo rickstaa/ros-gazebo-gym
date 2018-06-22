@@ -33,11 +33,11 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
 
         # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
         roll_turn_speed = None
-        if action == 1:# Move Speed Wheel Forwards
+        if action == 0:# Move Speed Wheel Forwards
             roll_turn_speed = self.roll_speed_fixed_value
-        elif action == 2:# Move Speed Wheel Backwards
+        elif action == 1:# Move Speed Wheel Backwards
             roll_turn_speed = self.roll_speed_fixed_value
-        elif action == 3:# Stop Speed Wheel
+        elif action == 2:# Stop Speed Wheel
             roll_turn_speed = 0.0
 
         # We tell the OneDiskCube to spin the RollDisk at the selected speed
@@ -86,18 +86,18 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
     def _compute_reward(self, observations, done):
 
         if not done:
-            speed = observations[0]
+            #speed = observations[0]
             distance = observations[1]
 
             # Positive Reinforcement
             reward_distance = distance * 10.0
             # Negative Reinforcement for magnitude of speed
-            reward_for_efective_movement = -1 * abs(speed)
+            #reward_for_efective_movement = -1 * abs(speed)
 
-            reward = reward_distance + reward_for_efective_movement
+            reward = reward_distance # + reward_for_efective_movement
 
             rospy.loginfo("Reward_distance=" + str(reward_distance))
-            rospy.loginfo("Reward_for_efective_movement= " + str(reward_for_efective_movement))
+            #rospy.loginfo("Reward_for_efective_movement= " + str(reward_for_efective_movement))
         else:
             reward = self.end_episode_points
 

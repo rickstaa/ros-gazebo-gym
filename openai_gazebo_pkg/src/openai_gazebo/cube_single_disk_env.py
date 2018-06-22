@@ -83,27 +83,27 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.loginfo("ALL SENSORS READY")
 
     def _check_joint_states_ready(self):
-        self.disk_joints_data = None
-        while self.disk_joints_data is None and not rospy.is_shutdown():
+        self.joints = None
+        while self.joints is None and not rospy.is_shutdown():
             try:
-                self.disk_joints_data = rospy.wait_for_message("/moving_cube/joint_states", JointState, timeout=1.0)
-                rospy.loginfo("Current moving_cube/joint_states READY=>" + str(self.disk_joints_data))
+                self.joints = rospy.wait_for_message("/moving_cube/joint_states", JointState, timeout=1.0)
+                rospy.loginfo("Current moving_cube/joint_states READY=>" + str(self.joints))
 
             except:
                 rospy.logerr("Current moving_cube/joint_states not ready yet, retrying for getting joint_states")
-        return self.disk_joints_data
+        return self.joints
 
     def _check_odom_ready(self):
-        self.cube_odom_data = None
-        while self.disk_joints_data is None and not rospy.is_shutdown():
+        self.odom = None
+        while self.odom is None and not rospy.is_shutdown():
             try:
-                self.cube_odom_data = rospy.wait_for_message("/moving_cube/odom", Odometry, timeout=1.0)
-                rospy.loginfo("Current /moving_cube/odom READY=>" + str(self.cube_odom_data))
+                self.odom = rospy.wait_for_message("/moving_cube/odom", Odometry, timeout=1.0)
+                rospy.loginfo("Current /moving_cube/odom READY=>" + str(self.odom))
 
             except:
                 rospy.logerr("Current /moving_cube/odom not ready yet, retrying for getting odom")
 
-        return self.cube_odom_data
+        return self.odom
 
     def _joints_callback(self, data):
         self.joints = data
@@ -140,7 +140,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         joint_speed_value.data = roll_speed
         rospy.loginfo("Single Disk Roll Velocity>>" + str(joint_speed_value))
         self._roll_vel_pub.publish(joint_speed_value)
-        self.wait_until_roll_is_in_vel(joint_speed_value)
+        self.wait_until_roll_is_in_vel(joint_speed_value.data)
 
     def wait_until_roll_is_in_vel(self, velocity):
 
@@ -217,6 +217,11 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
         roll, pitch, yaw = euler_from_quaternion(orientation_list)
         return roll, pitch, yaw
+
+    def get_roll_velocity(self):
+        # We get the current joint roll velocity
+        roll_vel = self.joints.velocity[0]
+        return roll_vel
 
     # RobotEnv methods
     # ----------------------------
