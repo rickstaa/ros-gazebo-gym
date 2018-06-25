@@ -52,7 +52,7 @@ class RobotGazeboEnv(gym.Env):
         return obs, reward, done, info
 
     def reset(self):
-        rospy.loginfo("Reseting RobotGazeboEnvironment")
+        rospy.logdebug("Reseting RobotGazeboEnvironment")
         self._reset_sim()
         self._init_env_variables()
         obs = self._get_obs()
@@ -64,7 +64,7 @@ class RobotGazeboEnv(gym.Env):
         Use it for closing GUIS and other systems that need closing.
         :return:
         """
-        rospy.loginfo("Closing RobotGazeboEnvironment")
+        rospy.logdebug("Closing RobotGazeboEnvironment")
         
 
     def _publish_reward_topic(self, reward, episode_number=1):

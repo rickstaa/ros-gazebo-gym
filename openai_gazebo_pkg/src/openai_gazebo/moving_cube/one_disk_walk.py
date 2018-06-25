@@ -30,6 +30,8 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
 
         self.init_roll_vel = rospy.get_param("/moving_cube/init_roll_vel")
 
+        self.move_distance_reward_weight = rospy.get_param("/moving_cube/move_distance_reward_weight")
+
 
 
         # Here we will add any init functions prior to starting the CubeSingleDiskEnv
@@ -49,11 +51,11 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
 
         # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
         if action == 0:# Move Speed Wheel Forwards
-            self.roll_turn_speed += self.roll_speed_increment_value
+            self.roll_turn_speed = self.roll_speed_fixed_value
         elif action == 1:# Move Speed Wheel Backwards
-            self.roll_turn_speed -= self.roll_speed_increment_value
+            self.roll_turn_speed = self.roll_speed_fixed_value
         elif action == 2:# Stop Speed Wheel
-            self.roll_turn_speed += 0.0
+            self.roll_turn_speed = 0.0
 
         # We tell the OneDiskCube to spin the RollDisk at the selected speed
         self.move_joints(self.roll_turn_speed)
@@ -93,7 +95,7 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
             rospy.logerr("WRONG Cube Pitch Orientation==>" + str(pitch_angle))
             done = True
         else:
-            rospy.loginfo("Cube Pitch Orientation Ok==>" + str(pitch_angle))
+            rospy.logdebug("Cube Pitch Orientation Ok==>" + str(pitch_angle))
             done = False
 
         return done
@@ -103,10 +105,12 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         if not done:
             distance_now = observations[1]
             delta_distance = distance_now - self.total_distance_moved
-            # Reinforcement, pos if increase froma last time, negative if decrease
-            reward_distance = delta_distance * 10.0
+            # Reinforcement, pos if increase from the last time, negative if decrease
+            reward_distance = delta_distance * self.move_distance_reward_weight
+            self.total_distance_moved += delta_distance
+            rospy.logdebug("Tot_dist=" + str(self.total_distance_moved))
             reward = reward_distance
-            rospy.loginfo("Reward_distance=" + str(reward_distance))
+            rospy.logdebug("Reward_distance=" + str(reward_distance))
         else:
             reward = -self.end_episode_points
 

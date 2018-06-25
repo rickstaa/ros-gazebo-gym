@@ -81,14 +81,14 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
     def _check_all_sensors_ready(self):
         self._check_joint_states_ready()
         self._check_odom_ready()
-        rospy.loginfo("ALL SENSORS READY")
+        rospy.logdebug("ALL SENSORS READY")
 
     def _check_joint_states_ready(self):
         self.joints = None
         while self.joints is None and not rospy.is_shutdown():
             try:
                 self.joints = rospy.wait_for_message("/moving_cube/joint_states", JointState, timeout=1.0)
-                rospy.loginfo("Current moving_cube/joint_states READY=>" + str(self.joints))
+                rospy.logdebug("Current moving_cube/joint_states READY=>" + str(self.joints))
 
             except:
                 rospy.logerr("Current moving_cube/joint_states not ready yet, retrying for getting joint_states")
@@ -99,7 +99,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         while self.odom is None and not rospy.is_shutdown():
             try:
                 self.odom = rospy.wait_for_message("/moving_cube/odom", Odometry, timeout=1.0)
-                rospy.loginfo("Current /moving_cube/odom READY=>" + str(self.odom))
+                rospy.logdebug("Current /moving_cube/odom READY=>" + str(self.odom))
 
             except:
                 rospy.logerr("Current /moving_cube/odom not ready yet, retrying for getting odom")
@@ -125,21 +125,21 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         rate = rospy.Rate(10)  # 10hz
         while self._roll_vel_pub.get_num_connections() == 0 and not rospy.is_shutdown():
-            rospy.loginfo("No susbribers to _roll_vel_pub yet so we wait and try again")
+            rospy.logdebug("No susbribers to _roll_vel_pub yet so we wait and try again")
             try:
                 rate.sleep()
             except rospy.ROSInterruptException:
                 # This is to avoid error when world is rested, time when backwards.
                 pass
-        rospy.loginfo("_roll_vel_pub Publisher Connected")
+        rospy.logdebug("_roll_vel_pub Publisher Connected")
 
-        rospy.loginfo("All Publishers READY")
+        rospy.logdebug("All Publishers READY")
 
     def move_joints(self, roll_speed):
 
         joint_speed_value = Float64()
         joint_speed_value.data = roll_speed
-        rospy.loginfo("Single Disk Roll Velocity>>" + str(joint_speed_value))
+        rospy.logdebug("Single Disk Roll Velocity>>" + str(joint_speed_value))
         self._roll_vel_pub.publish(joint_speed_value)
         self.wait_until_roll_is_in_vel(joint_speed_value.data)
 
@@ -154,16 +154,16 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         while not rospy.is_shutdown():
             joint_data = self._check_joint_states_ready()
             roll_vel = joint_data.velocity[0]
-            rospy.logwarn("VEL=" + str(roll_vel) + ", ?RANGE=[" + str(v_minus) + ","+str(v_plus)+"]")
+            rospy.logdebug("VEL=" + str(roll_vel) + ", ?RANGE=[" + str(v_minus) + ","+str(v_plus)+"]")
             are_close = (roll_vel <= v_plus) and (roll_vel > v_minus)
             if are_close:
-                rospy.logerr("Reached Velocity!")
+                rospy.logdebug("Reached Velocity!")
                 end_wait_time = rospy.get_rostime().to_sec()
                 break
-            rospy.logwarn("Not there yet, keep waiting...")
+            rospy.logdebug("Not there yet, keep waiting...")
             rate.sleep()
         delta_time = end_wait_time- start_wait_time
-        rospy.logwarn("[Wait Time=" + str(delta_time)+"]")
+        rospy.logdebug("[Wait Time=" + str(delta_time)+"]")
         return delta_time
 
 
@@ -179,8 +179,8 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
         reward = reward_distance + reward_for_efective_movement
 
-        rospy.loginfo("Reward_distance=" + str(reward_distance))
-        rospy.loginfo("Reward_for_efective_movement= " + str(reward_for_efective_movement))
+        rospy.logdebug("Reward_distance=" + str(reward_distance))
+        rospy.logdebug("Reward_for_efective_movement= " + str(reward_for_efective_movement))
 
         return reward
 
