@@ -6,8 +6,9 @@ from controller_manager_msgs.srv import SwitchController, SwitchControllerReques
 
 class ControllersConnection():
     
-    def __init__(self, namespace):
+    def __init__(self, namespace, controllers_list):
 
+        self.controllers_list = controllers_list
         self.switch_service_name = '/'+namespace+'/controller_manager/switch_controller'
         self.switch_service = rospy.ServiceProxy(self.switch_service_name, SwitchController)
 
@@ -46,7 +47,7 @@ class ControllersConnection():
 
             return None
 
-    def reset_controllers(self, controllers_reset):
+    def reset_controllers(self):
         """
         We turn on and off the given controllers
         :param controllers_reset: ["name_controler_1", "name_controller2",...,"name_controller_n"]
@@ -55,16 +56,16 @@ class ControllersConnection():
         reset_result = False
 
         result_off_ok = self.switch_controllers(controllers_on = [],
-                                controllers_off = controllers_reset)
+                                controllers_off = self.controllers_list)
 
         rospy.logdebug("Deactivated Controlers")
 
         if result_off_ok:
             rospy.logdebug("Activating Controlers")
-            result_on_ok = self.switch_controllers(controllers_on=controllers_reset,
+            result_on_ok = self.switch_controllers(controllers_on=self.controllers_list,
                                                     controllers_off=[])
             if result_on_ok:
-                rospy.logdebug("Controllers Reseted==>"+str(controllers_reset))
+                rospy.logdebug("Controllers Reseted==>"+str(self.controllers_list))
                 reset_result = True
             else:
                 rospy.logdebug("result_on_ok==>" + str(result_on_ok))
@@ -73,9 +74,6 @@ class ControllersConnection():
 
         return reset_result
 
-    def reset_cartpole_joint_controllers(self):
-        controllers_reset = ['joint_state_controller',
-                             'pole_joint_position_controller',
-                             'foot_joint_position_controller',
-                             ]
-        self.reset_controllers(controllers_reset)
+    def update_controllers_list(self, new_controllers_list):
+
+        self.controllers_list = new_controllers_list

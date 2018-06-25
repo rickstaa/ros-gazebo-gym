@@ -9,10 +9,8 @@ from theconstruct_msgs.msg import RLExperimentInfo
 
 # https://github.com/openai/gym/blob/master/gym/core.py
 class RobotGazeboEnv(gym.Env):
-    
-    def __init__(
-        self, n_actions, robot_name_space, controllers_list, reset_controls
-        ):
+
+    def __init__(self, n_actions, robot_name_space, controllers_list, reset_controls):
 
         # To reset Simulations
         self.gazebo = GazeboConnection()
@@ -38,10 +36,9 @@ class RobotGazeboEnv(gym.Env):
         :return: obs, reward, done, info
         """
 
-
         """
         Here we should convert the action num to movement action, execute the action in the
-        simulation and get the observations result of perfroming that action.
+        simulation and get the observations result of performing that action.
         """
         self.gazebo.unpauseSim()
         self._set_action(action)
@@ -55,9 +52,8 @@ class RobotGazeboEnv(gym.Env):
         return obs, reward, done, info
 
     def reset(self):
-        did_reset_sim = False
-        while not did_reset_sim:
-            did_reset_sim = self._reset_sim()
+        rospy.loginfo("Reseting RobotGazeboEnvironment")
+        self._reset_sim()
         obs = self._get_obs()
         return obs
 
@@ -69,6 +65,7 @@ class RobotGazeboEnv(gym.Env):
         """
         rospy.loginfo("Closing RobotGazeboEnvironment")
         
+
     def _publish_reward_topic(self, reward, episode_number=1):
         """
         This function publishes the given reward in the reward topic for
@@ -86,13 +83,9 @@ class RobotGazeboEnv(gym.Env):
     # ----------------------------
 
     def _reset_sim(self):
-        """Resets a simulation and indicates whether or not it was successful.
-        If a reset was unsuccessful (e.g. if a randomized state caused an error in the
-        simulation), this method should indicate such a failure by returning False.
-        In such a case, this method will be called again to attempt a the reset again.
+        """Resets a simulation
         """
-        
-        if self.reset_controls == True:
+        if self.reset_controls :
             self.gazebo.unpauseSim()
             self.controllers_object.reset_controllers()
             self._check_all_systems_ready()
@@ -116,7 +109,20 @@ class RobotGazeboEnv(gym.Env):
             self._check_all_systems_ready()
             self.gazebo.pauseSim()
         
+
         return True
+
+    def _set_init_pose(self):
+        """Sets the Robot in its init pose
+        """
+        raise NotImplementedError()
+
+    def _check_all_systems_ready(self):
+        """
+        Checks that all the sensors, publishers and other simulation systems are
+        operational.
+        """
+        raise NotImplementedError()
 
     def _get_obs(self):
         """Returns the observation.
@@ -142,4 +148,5 @@ class RobotGazeboEnv(gym.Env):
         """Initial configuration of the environment. Can be used to configure initial state
         and extract information from the simulation.
         """
-        pass
+        raise NotImplementedError()
+
