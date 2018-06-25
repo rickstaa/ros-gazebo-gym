@@ -16,6 +16,8 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         # Variables that we retrieve through the param server, loded when launch training launch.
         self.roll_speed_fixed_value = rospy.get_param('/moving_cube/roll_speed_fixed_value')
         self.max_distance = rospy.get_param('/moving_cube/max_distance')
+        self.max_pitch_angle = rospy.get_param('/moving_cube/max_pitch_angle')
+
 
         self.start_point = Point()
         self.start_point.x = rospy.get_param("/moving_cube/init_cube_pose/x")
@@ -25,6 +27,8 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         self.end_episode_points = rospy.get_param("/moving_cube/end_episode_points")
 
         self.init_roll_vel = rospy.get_param("/moving_cube/init_roll_vel")
+
+        self.total_distance_moved = 0.0
 
         # Here we will add any init functions prior to starting the CubeSingleDiskEnv
         super(MovingCubeOneDiskWalkEnv, self).__init__(number_actions, self.init_roll_vel)
@@ -36,7 +40,7 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         if action == 0:# Move Speed Wheel Forwards
             roll_turn_speed = self.roll_speed_fixed_value
         elif action == 1:# Move Speed Wheel Backwards
-            roll_turn_speed = self.roll_speed_fixed_value
+            roll_turn_speed = -self.roll_speed_fixed_value
         elif action == 2:# Stop Speed Wheel
             roll_turn_speed = 0.0
 
@@ -71,14 +75,14 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         return cube_observations
 
     def _is_done(self, observations):
-        # Maximum distance to travel permited in meters from origin
-        max_distance = 2.0
 
-        if observations[1] > self.max_distance:
-            rospy.logerr("Cube Too Far==>" + str(observations[1]))
+        pitch_angle = observations[3]
+
+        if abs(pitch_angle) > self.max_pitch_angle:
+            rospy.logerr("WRONG Cube Pitch Orientation==>" + str(pitch_angle))
             done = True
         else:
-            rospy.loginfo("Cube NOT Too Far==>" + str(observations[1]))
+            rospy.loginfo("Cube Pitch Orientation Ok==>" + str(pitch_angle))
             done = False
 
         return done
@@ -86,20 +90,14 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
     def _compute_reward(self, observations, done):
 
         if not done:
-            #speed = observations[0]
-            distance = observations[1]
-
-            # Positive Reinforcement
-            reward_distance = distance * 10.0
-            # Negative Reinforcement for magnitude of speed
-            #reward_for_efective_movement = -1 * abs(speed)
-
-            reward = reward_distance # + reward_for_efective_movement
-
+            distance_now = observations[1]
+            delta_distance = distance_now - self.total_distance_moved
+            # Reinforcement, pos if increase froma last time, negative if decrease
+            reward_distance = delta_distance * 10.0
+            reward = reward_distance
             rospy.loginfo("Reward_distance=" + str(reward_distance))
-            #rospy.loginfo("Reward_for_efective_movement= " + str(reward_for_efective_movement))
         else:
-            reward = self.end_episode_points
+            reward = -self.end_episode_points
 
         return reward
 
