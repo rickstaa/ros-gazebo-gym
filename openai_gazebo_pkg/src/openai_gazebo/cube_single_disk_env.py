@@ -21,16 +21,17 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         # Variables that we give through the constructor.
         self.init_roll_vel = init_roll_vel
 
-        self.controlers_list = ['joint_state_controller',
-                                'inertia_wheel_roll_joint_velocity_controller'
-                                ]
+        self.controllers_list = ['joint_state_controller',
+                                 'inertia_wheel_roll_joint_velocity_controller'
+                                 ]
 
         self.robot_name_space = "moving_cube"
 
         # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
         super(CubeSingleDiskEnv, self).__init__(n_actions=n_actions,
-                                                controlers_list=self.controlers_list,
-                                                robot_name_space=self.robot_name_space)
+                                                controllers_list=self.controllers_list,
+                                                robot_name_space=self.robot_name_space,
+                                                reset_controls=True)
 
 
 
@@ -42,7 +43,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         This has to do with the fact that some plugins with tf, dont understand the reset of the simulation
         and need to be reseted to work properly.
         """
-        self.gazebo_sim.unpauseSim()
+        self.gazebo.unpauseSim()
         self.controllers_object.reset_controllers()
         self._check_all_sensors_ready()
 
@@ -55,7 +56,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self._check_publishers_connection()
 
-        self.gazebo_sim.pauseSim()
+        self.gazebo.pauseSim()
 
 
 
@@ -225,6 +226,12 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
     # RobotEnv methods
     # ----------------------------
+
+    def _init_env_variables(self):
+        """Inits variables needed to be initialised each time we reset at the start
+        of an episode.
+        """
+        raise NotImplementedError()
 
     def _set_action(self, action):
         """Applies the given action to the simulation.

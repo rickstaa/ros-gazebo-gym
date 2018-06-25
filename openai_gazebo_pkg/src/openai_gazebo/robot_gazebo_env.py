@@ -54,6 +54,7 @@ class RobotGazeboEnv(gym.Env):
     def reset(self):
         rospy.loginfo("Reseting RobotGazeboEnvironment")
         self._reset_sim()
+        self._init_env_variables()
         obs = self._get_obs()
         return obs
 
@@ -126,6 +127,12 @@ class RobotGazeboEnv(gym.Env):
 
     def _get_obs(self):
         """Returns the observation.
+        """
+        raise NotImplementedError()
+
+    def _init_env_variables(self):
+        """Inits variables needed to be initialised each time we reset at the start
+        of an episode.
         """
         raise NotImplementedError()
 

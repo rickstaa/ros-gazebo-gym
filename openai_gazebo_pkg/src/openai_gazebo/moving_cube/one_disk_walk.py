@@ -15,6 +15,8 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         number_actions = rospy.get_param('/moving_cube/n_actions')
         # Variables that we retrieve through the param server, loded when launch training launch.
         self.roll_speed_fixed_value = rospy.get_param('/moving_cube/roll_speed_fixed_value')
+        self.roll_speed_increment_value = rospy.get_param('/moving_cube/roll_speed_increment_value')
+
         self.max_distance = rospy.get_param('/moving_cube/max_distance')
         self.max_pitch_angle = rospy.get_param('/moving_cube/max_pitch_angle')
 
@@ -28,24 +30,33 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
 
         self.init_roll_vel = rospy.get_param("/moving_cube/init_roll_vel")
 
-        self.total_distance_moved = 0.0
+
 
         # Here we will add any init functions prior to starting the CubeSingleDiskEnv
         super(MovingCubeOneDiskWalkEnv, self).__init__(number_actions, self.init_roll_vel)
 
+    def _init_env_variables(self):
+        """
+        Inits variables needed to be initialised each time we reset at the start
+        of an episode.
+        :return:
+        """
+        self.total_distance_moved = 0.0
+        self.roll_turn_speed = rospy.get_param('/moving_cube/init_roll_vel')
+
+
     def _set_action(self, action):
 
         # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
-        roll_turn_speed = None
         if action == 0:# Move Speed Wheel Forwards
-            roll_turn_speed = self.roll_speed_fixed_value
+            self.roll_turn_speed += self.roll_speed_increment_value
         elif action == 1:# Move Speed Wheel Backwards
-            roll_turn_speed = -self.roll_speed_fixed_value
+            self.roll_turn_speed -= self.roll_speed_increment_value
         elif action == 2:# Stop Speed Wheel
-            roll_turn_speed = 0.0
+            self.roll_turn_speed += 0.0
 
         # We tell the OneDiskCube to spin the RollDisk at the selected speed
-        self.move_joints(roll_turn_speed)
+        self.move_joints(self.roll_turn_speed)
 
     def _get_obs(self):
         """
