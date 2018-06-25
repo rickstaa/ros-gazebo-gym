@@ -69,11 +69,6 @@ class RobotGazeboEnv(gym.Env):
         # TODO: Here add any function needed to be closed
         rospy.loginfo("Closing RobotGazeboEnvironment")
 
-    def render(self, mode='no_view'):
-        # TODO: Implement the ScreenShot recording system, possibly through screenshots of a camera
-        # TODO: Or maybe we could also record a 3D video data, OpenGL maybe?
-        pass
-
     def _publish_reward_topic(self, reward, episode_number=1):
         """
         This function publishes the given reward in the reward topic for
@@ -125,11 +120,6 @@ class RobotGazeboEnv(gym.Env):
 
     def _set_action(self, action):
         """Applies the given action to the simulation.
-        """
-        raise NotImplementedError()
-
-    def _is_success(self, achieved_goal, desired_goal):
-        """Indicates whether or not the achieved goal successfully achieved the desired goal.
         """
         raise NotImplementedError()
 
