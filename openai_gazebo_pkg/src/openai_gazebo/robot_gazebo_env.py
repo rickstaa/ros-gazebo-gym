@@ -9,17 +9,15 @@ from theconstruct_msgs.msg import RLExperimentInfo
 
 # https://github.com/openai/gym/blob/master/gym/core.py
 class RobotGazeboEnv(gym.Env):
-    #def __init__(self, model_path, initial_qpos, n_actions, n_substeps):
-    def __init__(self, n_actions, controlers_list, robot_name_space):
+
+    def __init__(self, n_actions, robot_name_space, controllers_list, reset_controls):
 
         # To reset Simulations
-        self.gazebo_sim = GazeboConnection()
-        self.controllers_object = ControllersConnection(namespace=robot_name_space,
-                                                        controlers_list=controlers_list)
+        self.gazebo = GazeboConnection()
+        self.controllers_object = ControllersConnection(namespace=robot_name_space, controllers_list=controllers_list)
+        self.reset_controls = reset_controls
         self.seed()
         self.action_space = spaces.Discrete(n_actions)
-        # Visualization system
-        self.viewer = None
 
         # Set up ROS related variables
         self.reward_pub = rospy.Publisher('/openai/reward', RLExperimentInfo, queue_size=1)
@@ -42,10 +40,9 @@ class RobotGazeboEnv(gym.Env):
         Here we should convert the action num to movement action, execute the action in the
         simulation and get the observations result of performing that action.
         """
-        rospy.loginfo("Performing STEP of RobotGazeboEnvironment")
-        self.gazebo_sim.unpauseSim()
+        self.gazebo.unpauseSim()
         self._set_action(action)
-        self.gazebo_sim.pauseSim()
+        self.gazebo.pauseSim()
         obs = self._get_obs()
         done = self._is_done(obs)
         info = {}
@@ -66,8 +63,8 @@ class RobotGazeboEnv(gym.Env):
         Use it for closing GUIS and other systems that need closing.
         :return:
         """
-        # TODO: Here add any function needed to be closed
         rospy.loginfo("Closing RobotGazeboEnvironment")
+        
 
     def _publish_reward_topic(self, reward, episode_number=1):
         """
@@ -88,16 +85,30 @@ class RobotGazeboEnv(gym.Env):
     def _reset_sim(self):
         """Resets a simulation
         """
-        self.gazebo_sim.unpauseSim()
-        self.controllers_object.reset_controllers()
-        self._check_all_systems_ready()
-        self._set_init_pose()
-        self.gazebo_sim.pauseSim()
-        self.gazebo_sim.resetSim()
-        self.gazebo_sim.unpauseSim()
-        self.controllers_object.reset_controllers()
-        self._check_all_systems_ready()
-        self.gazebo_sim.pauseSim()
+        if self.reset_controls :
+            self.gazebo.unpauseSim()
+            self.controllers_object.reset_controllers()
+            self._check_all_systems_ready()
+            self._set_init_pose()
+            self.gazebo.pauseSim()
+            self.gazebo.resetSim()
+            self.gazebo.unpauseSim()
+            self.controllers_object.reset_controllers()
+            self._check_all_systems_ready()
+            self.gazebo.pauseSim()
+            
+        else:
+            self.gazebo.unpauseSim()
+            
+            self._check_all_systems_ready()
+            self._set_init_pose()
+            self.gazebo.pauseSim()
+            self.gazebo.resetSim()
+            self.gazebo.unpauseSim()
+            
+            self._check_all_systems_ready()
+            self.gazebo.pauseSim()
+        
 
         return True
 
@@ -132,3 +143,10 @@ class RobotGazeboEnv(gym.Env):
         """Calculates the reward to give based on the observations given.
         """
         raise NotImplementedError()
+
+    def _env_setup(self, initial_qpos):
+        """Initial configuration of the environment. Can be used to configure initial state
+        and extract information from the simulation.
+        """
+        raise NotImplementedError()
+

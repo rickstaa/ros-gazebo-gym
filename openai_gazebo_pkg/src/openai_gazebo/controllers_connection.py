@@ -6,9 +6,9 @@ from controller_manager_msgs.srv import SwitchController, SwitchControllerReques
 
 class ControllersConnection():
     
-    def __init__(self, namespace, controlers_list):
+    def __init__(self, namespace, controllers_list):
 
-        self.controlers_list = controlers_list
+        self.controllers_list = controllers_list
         self.switch_service_name = '/'+namespace+'/controller_manager/switch_controller'
         self.switch_service = rospy.ServiceProxy(self.switch_service_name, SwitchController)
 
@@ -56,16 +56,16 @@ class ControllersConnection():
         reset_result = False
 
         result_off_ok = self.switch_controllers(controllers_on = [],
-                                controllers_off = self.controlers_list)
+                                controllers_off = self.controllers_list)
 
         rospy.logdebug("Deactivated Controlers")
 
         if result_off_ok:
             rospy.logdebug("Activating Controlers")
-            result_on_ok = self.switch_controllers(controllers_on=self.controlers_list,
+            result_on_ok = self.switch_controllers(controllers_on=self.controllers_list,
                                                     controllers_off=[])
             if result_on_ok:
-                rospy.logdebug("Controllers Reseted==>"+str(self.controlers_list))
+                rospy.logdebug("Controllers Reseted==>"+str(self.controllers_list))
                 reset_result = True
             else:
                 rospy.logdebug("result_on_ok==>" + str(result_on_ok))
@@ -74,6 +74,6 @@ class ControllersConnection():
 
         return reset_result
 
-    def update_controlers_list(self, new_controllers_list):
+    def update_controllers_list(self, new_controllers_list):
 
-        self.controlers_list = new_controllers_list
+        self.controllers_list = new_controllers_list
