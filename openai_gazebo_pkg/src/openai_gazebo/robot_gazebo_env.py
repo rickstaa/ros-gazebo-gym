@@ -5,21 +5,21 @@ from gym.utils import seeding
 from gazebo_connection import GazeboConnection
 from controllers_connection import ControllersConnection
 #https://bitbucket.org/theconstructcore/theconstruct_msgs/src/master/msg/RLExperimentInfo.msg
-from theconstruct_msgs.msgs import RLExperimentInfo
+from theconstruct_msgs.msg import RLExperimentInfo
 
 # https://github.com/openai/gym/blob/master/gym/core.py
 class RobotGazeboEnv(gym.Env):
-    #def __init__(self, model_path, initial_qpos, n_actions, n_substeps):
-    def __init__(self, n_actions):
+    
+    def __init__(
+        self, n_actions, robot_name_space, controllers_list, reset_controls
+        ):
 
         # To reset Simulations
-        self.gazebo_sim = GazeboConnection()
-        self.controllers_object = ControllersConnection(namespace="cartpole_v0")
+        self.gazebo = GazeboConnection()
+        self.controllers_object = ControllersConnection(namespace=robot_name_space, controllers_list=controllers_list)
+        self.reset_controls = reset_controls
         self.seed()
-        #self.action_space = spaces.Box(-1., 1., shape=(n_actions,), dtype='float32')
         self.action_space = spaces.Discrete(n_actions)
-        # Visualization system
-        self.viewer = None
 
         # Set up ROS related variables
         self.reward_pub = rospy.Publisher('/openai/reward', RLExperimentInfo, queue_size=1)
@@ -43,9 +43,9 @@ class RobotGazeboEnv(gym.Env):
         Here we should convert the action num to movement action, execute the action in the
         simulation and get the observations result of perfroming that action.
         """
-        self.gazebo_sim.unpauseSim()
+        self.gazebo.unpauseSim()
         self._set_action(action)
-        self.gazebo_sim.pauseSim()
+        self.gazebo.pauseSim()
         obs = self._get_obs()
         done = self._is_done(obs)
         info = {}
@@ -67,73 +67,8 @@ class RobotGazeboEnv(gym.Env):
         Use it for closing GUIS and other systems that need closing.
         :return:
         """
-        if self.viewer is not None:
-            # self.viewer.finish()
-            self.viewer = None
-
-    def render(self, mode='no_view'):
-        self._render_callback()
-        if mode == 'rgb_array':
-            self._get_viewer().render()
-            # window size used for old mujoco-py:
-            width, height = 500, 500
-            data = self._get_viewer().read_pixels(width, height, depth=False)
-            # original image is upside-down, so flip it
-            return data[::-1, :, :]
-        elif mode == 'human':
-            self._get_viewer().render()
-        elif mode == 'no_view':
-            pass
-
-    def _get_viewer(self):
-        if self.viewer is None:
-            # TODO: Implement the ScreenShot recording system, possibly through screenshots of a camera
-            # TODO: Or maybe we could also record a 3D video data, OpenGL maybe?
-            # http://wiki.ros.org/RecordingOpenGLAppsWithGLC
-            # http://answers.gazebosim.org/question/7116/forcing-gazebo-to-render-at-fixed-intervals-or-how-to-record-a-video-of-a-simulation/
-            self.viewer = self.gazebo_sim.GazeboViewer()
-            self._viewer_setup()
-        return self.viewer
-
-    # Extension methods
-    # ----------------------------
-
-    def _reset_sim(self):
-        """Resets a simulation and indicates whether or not it was successful.
-        If a reset was unsuccessful (e.g. if a randomized state caused an error in the
-        simulation), this method should indicate such a failure by returning False.
-        In such a case, this method will be called again to attempt a the reset again.
-        """
-        # TODO: Implement the reset algorithm
-        self.gazebo_sim.set_state(self.initial_state)
-        self.gazebo_sim.resetSim()
-        return True
-
-    def _get_obs(self):
-        """Returns the observation.
-        """
-        raise NotImplementedError()
-
-    def _set_action(self, action):
-        """Applies the given action to the simulation.
-        """
-        raise NotImplementedError()
-
-    def _is_success(self, achieved_goal, desired_goal):
-        """Indicates whether or not the achieved goal successfully achieved the desired goal.
-        """
-        raise NotImplementedError()
-
-    def _is_done(self, observations):
-        """Indicates whether or not the episode is done ( the robot has fallen for example).
-        """
-        raise NotImplementedError()
-
-    def _compute_reward(self, observations, done):
-        """Calculates the reward to give based on the observations given.
-        """
-        raise NotImplementedError()
-
+        rospy.loginfo("Closing RobotGazeboEnvironment")
+        
     def _publish_reward_topic(self, reward, episode_number=1):
         """
         This function publishes the given reward in the reward topic for
@@ -147,26 +82,64 @@ class RobotGazeboEnv(gym.Env):
         reward_msg.episode_reward = reward
         self.reward_pub.publish(reward_msg)
 
+    # Extension methods
+    # ----------------------------
 
-    def _sample_goal(self):
-        """Samples a new goal and returns it.
+    def _reset_sim(self):
+        """Resets a simulation and indicates whether or not it was successful.
+        If a reset was unsuccessful (e.g. if a randomized state caused an error in the
+        simulation), this method should indicate such a failure by returning False.
+        In such a case, this method will be called again to attempt a the reset again.
+        """
+        
+        if self.reset_controls == True:
+            self.gazebo.unpauseSim()
+            self.controllers_object.reset_controllers()
+            self._check_all_systems_ready()
+            self._set_init_pose()
+            self.gazebo.pauseSim()
+            self.gazebo.resetSim()
+            self.gazebo.unpauseSim()
+            self.controllers_object.reset_controllers()
+            self._check_all_systems_ready()
+            self.gazebo.pauseSim()
+            
+        else:
+            self.gazebo.unpauseSim()
+            
+            self._check_all_systems_ready()
+            self._set_init_pose()
+            self.gazebo.pauseSim()
+            self.gazebo.resetSim()
+            self.gazebo.unpauseSim()
+            
+            self._check_all_systems_ready()
+            self.gazebo.pauseSim()
+        
+        return True
+
+    def _get_obs(self):
+        """Returns the observation.
+        """
+        raise NotImplementedError()
+
+    def _set_action(self, action):
+        """Applies the given action to the simulation.
+        """
+        raise NotImplementedError()
+
+    def _is_done(self, observations):
+        """Indicates whether or not the episode is done ( the robot has fallen for example).
+        """
+        raise NotImplementedError()
+
+    def _compute_reward(self, observations, done):
+        """Calculates the reward to give based on the observations given.
         """
         raise NotImplementedError()
 
     def _env_setup(self, initial_qpos):
         """Initial configuration of the environment. Can be used to configure initial state
         and extract information from the simulation.
-        """
-        pass
-
-    def _viewer_setup(self):
-        """Initial configuration of the viewer. Can be used to set the camera position,
-        for example.
-        """
-        pass
-
-    def _render_callback(self):
-        """A custom callback that is called before rendering. Can be used
-        to implement custom visualizations.
         """
         pass
