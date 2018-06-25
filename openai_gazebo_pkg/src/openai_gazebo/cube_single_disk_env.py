@@ -167,23 +167,6 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         return delta_time
 
 
-    def _compute_reward(self, observations, done):
-
-        speed = observations[0]
-        distance = observations[1]
-
-        # Positive Reinforcement
-        reward_distance = distance * 10.0
-        # Negative Reinforcement for magnitude of speed
-        reward_for_efective_movement = -1 * abs(speed)
-
-        reward = reward_distance + reward_for_efective_movement
-
-        rospy.logdebug("Reward_distance=" + str(reward_distance))
-        rospy.logdebug("Reward_for_efective_movement= " + str(reward_for_efective_movement))
-
-        return reward
-
     def get_distance_from_start_point(self, start_point):
         """
         Calculates the distance from the given point and the current position
@@ -230,6 +213,16 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
     def _init_env_variables(self):
         """Inits variables needed to be initialised each time we reset at the start
         of an episode.
+        """
+        raise NotImplementedError()
+
+    def _compute_reward(self, observations, done):
+        """Calculates the reward to give based on the observations given.
+        """
+        raise NotImplementedError()
+
+    def _convert_obs_to_state(self, observations):
+        """Converts the observations used for reward and so on to the essentials for the robot state
         """
         raise NotImplementedError()
 

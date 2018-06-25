@@ -48,8 +48,8 @@ class RobotGazeboEnv(gym.Env):
         info = {}
         reward = self._compute_reward(obs, done)
         self._publish_reward_topic(reward)
-
-        return obs, reward, done, info
+        state = self._convert_obs_to_state(obs)
+        return state, reward, done, info
 
     def reset(self):
         rospy.logdebug("Reseting RobotGazeboEnvironment")
@@ -150,6 +150,12 @@ class RobotGazeboEnv(gym.Env):
         """Calculates the reward to give based on the observations given.
         """
         raise NotImplementedError()
+
+    def _convert_obs_to_state(self, observations):
+        """Converts the observations used for reward and so on to the essentials for the robot state
+        """
+        raise NotImplementedError()
+
 
     def _env_setup(self, initial_qpos):
         """Initial configuration of the environment. Can be used to configure initial state

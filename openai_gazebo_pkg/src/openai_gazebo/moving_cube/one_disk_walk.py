@@ -78,11 +78,10 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         current_roll_vel = self.get_roll_velocity()
 
         cube_observations = [
-            round(current_roll_vel, 1),
+            round(current_roll_vel, 0),
             round(distance, 1),
             round(roll, 1),
-            round(pitch, 1),
-            round(yaw, 1)
+            round(pitch, 1)
         ]
 
         return cube_observations
@@ -115,4 +114,17 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
             reward = -self.end_episode_points
 
         return reward
+
+    def _convert_obs_to_state(self, observations):
+        """
+        Converts the observations used for reward and so on to the essentials for the robot state
+        In this case we only need the orientation of the cube and the speed of the disc.
+        The distance doesnt condition at all the actions
+        """
+        disk_roll_vel = observations[0]
+        roll_angle = observations[2]
+
+        state = [disk_roll_vel,roll_angle]
+
+        return state
 
