@@ -1,4 +1,6 @@
 import rospy
+import numpy
+import math
 from openai_gazebo import cube_single_disk_env
 from gym.envs.registration import register
 from geometry_msgs.msg import Point
@@ -19,6 +21,7 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
 
         self.max_distance = rospy.get_param('/moving_cube/max_distance')
         self.max_pitch_angle = rospy.get_param('/moving_cube/max_pitch_angle')
+        self.max_yaw_angle = rospy.get_param('/moving_cube/max_yaw_angle')
 
 
         self.start_point = Point()
@@ -31,7 +34,8 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         self.init_roll_vel = rospy.get_param("/moving_cube/init_roll_vel")
 
         self.move_distance_reward_weight = rospy.get_param("/moving_cube/move_distance_reward_weight")
-
+        self.y_linear_speed_reward_weight = rospy.get_param("/moving_cube/y_linear_speed_reward_weight")
+        self.y_axis_angle_reward_weight = rospy.get_param("/moving_cube/y_axis_angle_reward_weight")
 
 
         # Here we will add any init functions prior to starting the CubeSingleDiskEnv
@@ -44,6 +48,7 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         :return:
         """
         self.total_distance_moved = 0.0
+        self.current_y_distance = self.get_y_dir_distance_from_start_point(self.start_point)
         self.roll_turn_speed = rospy.get_param('/moving_cube/init_roll_vel')
 
 
@@ -56,6 +61,17 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
             self.roll_turn_speed = self.roll_speed_fixed_value
         elif action == 2:# Stop Speed Wheel
             self.roll_turn_speed = 0.0
+        elif action == 3:# Increment Speed
+            self.roll_turn_speed += self.roll_speed_increment_value
+        elif action == 4:# Decrement Speed
+            self.roll_turn_speed -= self.roll_speed_increment_value
+
+        # We clamp Values to maximum
+        rospy.loginfo("roll_turn_speed before clamp=="+str(self.roll_turn_speed))
+        self.roll_turn_speed = numpy.clip(self.roll_turn_speed,
+                                          -self.roll_speed_fixed_value,
+                                          self.roll_speed_fixed_value)
+        rospy.loginfo("roll_turn_speed after clamp==" + str(self.roll_turn_speed))
 
         # We tell the OneDiskCube to spin the RollDisk at the selected speed
         self.move_joints(self.roll_turn_speed)
@@ -72,16 +88,23 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         roll, pitch, yaw = self.get_orientation_euler()
 
         # We get the distance from the origin
-        distance = self.get_distance_from_start_point(self.start_point)
+        #distance = self.get_distance_from_start_point(self.start_point)
+        y_distance = self.get_y_dir_distance_from_start_point(self.start_point)
 
         # We get the current speed of the Roll Disk
-        current_roll_vel = self.get_roll_velocity()
+        current_disk_roll_vel = self.get_roll_velocity()
+
+        # We get the linear speed in the y axis
+        y_linear_speed = self.get_y_linear_speed()
 
         cube_observations = [
-            round(current_roll_vel, 0),
-            round(distance, 1),
+            round(current_disk_roll_vel, 0),
+            #round(distance, 1),
+            round(y_distance, 1),
             round(roll, 1),
-            round(pitch, 1)
+            round(pitch, 1),
+            round(y_linear_speed,1),
+            round(yaw, 1),
         ]
 
         return cube_observations
@@ -102,14 +125,38 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
     def _compute_reward(self, observations, done):
 
         if not done:
+            """
             distance_now = observations[1]
             delta_distance = distance_now - self.total_distance_moved
             # Reinforcement, pos if increase from the last time, negative if decrease
             reward_distance = delta_distance * self.move_distance_reward_weight
             self.total_distance_moved += delta_distance
             rospy.logdebug("Tot_dist=" + str(self.total_distance_moved))
-            reward = reward_distance
-            rospy.logdebug("Reward_distance=" + str(reward_distance))
+            """
+            y_distance_now = observations[1]
+            delta_distance = y_distance_now - self.current_y_distance
+            rospy.loginfo("y_distance_now=" + str(y_distance_now)+", current_y_distance=" + str(self.current_y_distance))
+            rospy.loginfo("delta_distance=" + str(delta_distance))
+            reward_distance = delta_distance * self.move_distance_reward_weight
+            self.current_y_distance = y_distance_now
+
+            y_linear_speed = observations[4]
+            rospy.loginfo("y_linear_speed=" + str(y_linear_speed))
+            reward_y_axis_speed = y_linear_speed * self.y_linear_speed_reward_weight
+
+            # Negative Reward for yaw different from zero.
+            yaw_angle = observations[5]
+            rospy.loginfo("yaw_angle=" + str(yaw_angle))
+            # Worst yaw is 90 and 270 degrees, best 0 and 180. We use sin function for giving reward.
+            reward_y_axis_angle = -1 * abs(math.sin(yaw_angle)) * self.y_axis_angle_reward_weight
+
+
+            # We are not intereseted in decimals of the reward, doesnt give any advatage.
+            reward = round(reward_distance, 0) + round(reward_y_axis_speed, 0) + round(reward_y_axis_angle, 0)
+            rospy.loginfo("reward_distance=" + str(reward_distance))
+            rospy.loginfo("reward_y_axis_speed=" + str(reward_y_axis_speed))
+            rospy.loginfo("reward_y_axis_angle=" + str(reward_y_axis_angle))
+            rospy.loginfo("reward=" + str(reward))
         else:
             reward = -self.end_episode_points
 
@@ -122,9 +169,11 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         The distance doesnt condition at all the actions
         """
         disk_roll_vel = observations[0]
-        roll_angle = observations[2]
+        #roll_angle = observations[2]
+        y_linear_speed = observations[4]
+        yaw_angle = observations[5]
 
-        state = [disk_roll_vel,roll_angle]
+        state = [disk_roll_vel,y_linear_speed,yaw_angle]
 
         return state
 
