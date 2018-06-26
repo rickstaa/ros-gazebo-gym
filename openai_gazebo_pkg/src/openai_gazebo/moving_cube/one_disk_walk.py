@@ -148,7 +148,9 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
             yaw_angle = observations[5]
             rospy.loginfo("yaw_angle=" + str(yaw_angle))
             # Worst yaw is 90 and 270 degrees, best 0 and 180. We use sin function for giving reward.
-            reward_y_axis_angle = -1 * abs(math.sin(yaw_angle)) * self.y_axis_angle_reward_weight
+            sin_yaw_angle = math.sin(yaw_angle)
+            rospy.loginfo("sin_yaw_angle=" + str(sin_yaw_angle))
+            reward_y_axis_angle = -1 * abs(sin_yaw_angle) * self.y_axis_angle_reward_weight
 
 
             # We are not intereseted in decimals of the reward, doesnt give any advatage.
