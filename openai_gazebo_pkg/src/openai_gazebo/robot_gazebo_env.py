@@ -20,6 +20,7 @@ class RobotGazeboEnv(gym.Env):
         self.action_space = spaces.Discrete(n_actions)
 
         # Set up ROS related variables
+        self.episode_num = 0
         self.reward_pub = rospy.Publisher('/openai/reward', RLExperimentInfo, queue_size=1)
 
     # Env methods
@@ -47,7 +48,7 @@ class RobotGazeboEnv(gym.Env):
         done = self._is_done(obs)
         info = {}
         reward = self._compute_reward(obs, done)
-        self._publish_reward_topic(reward)
+        self._publish_reward_topic(reward, self.episode_num)
         state = self._convert_obs_to_state(obs)
         return state, reward, done, info
 
@@ -55,6 +56,7 @@ class RobotGazeboEnv(gym.Env):
         rospy.logdebug("Reseting RobotGazeboEnvironment")
         self._reset_sim()
         self._init_env_variables()
+        self._update_episode()
         obs = self._get_obs()
         return obs
 
@@ -65,7 +67,13 @@ class RobotGazeboEnv(gym.Env):
         :return:
         """
         rospy.logdebug("Closing RobotGazeboEnvironment")
-        
+
+    def _update_episode(self):
+        """
+        Increases the episode number by one
+        :return:
+        """
+        self.episode_num += 1
 
     def _publish_reward_topic(self, reward, episode_number=1):
         """
