@@ -1,6 +1,7 @@
 import rospy
 import numpy
 import math
+from gym import spaces
 from openai_gazebo import cube_single_disk_env
 from gym.envs.registration import register
 from geometry_msgs.msg import Point
@@ -15,6 +16,7 @@ register(
 class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
     def __init__(self):
         number_actions = rospy.get_param('/moving_cube/n_actions')
+        self.action_space = spaces.Discrete(number_actions)
         # Variables that we retrieve through the param server, loded when launch training launch.
         self.roll_speed_fixed_value = rospy.get_param('/moving_cube/roll_speed_fixed_value')
         self.roll_speed_increment_value = rospy.get_param('/moving_cube/roll_speed_increment_value')
