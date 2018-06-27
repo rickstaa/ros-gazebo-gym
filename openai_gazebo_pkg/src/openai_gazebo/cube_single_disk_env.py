@@ -139,7 +139,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
         joint_speed_value = Float64()
         joint_speed_value.data = roll_speed
-        rospy.loginfo("Single Disk Roll Velocity>>" + str(joint_speed_value))
+        rospy.logdebug("Single Disk Roll Velocity>>" + str(joint_speed_value))
         self._roll_vel_pub.publish(joint_speed_value)
         self.wait_until_roll_is_in_vel(joint_speed_value.data)
 
@@ -154,16 +154,16 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         while not rospy.is_shutdown():
             joint_data = self._check_joint_states_ready()
             roll_vel = joint_data.velocity[0]
-            rospy.loginfo("VEL=" + str(roll_vel) + ", ?RANGE=[" + str(v_minus) + ","+str(v_plus)+"]")
+            rospy.logdebug("VEL=" + str(roll_vel) + ", ?RANGE=[" + str(v_minus) + ","+str(v_plus)+"]")
             are_close = (roll_vel <= v_plus) and (roll_vel > v_minus)
             if are_close:
-                rospy.loginfo("Reached Velocity!")
+                rospy.logdebug("Reached Velocity!")
                 end_wait_time = rospy.get_rostime().to_sec()
                 break
-            rospy.loginfo("Not there yet, keep waiting...")
+            rospy.logdebug("Not there yet, keep waiting...")
             rate.sleep()
         delta_time = end_wait_time- start_wait_time
-        rospy.loginfo("[Wait Time=" + str(delta_time)+"]")
+        rospy.logdebug("[Wait Time=" + str(delta_time)+"]")
         return delta_time
 
 

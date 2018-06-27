@@ -67,11 +67,11 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
             self.roll_turn_speed -= self.roll_speed_increment_value
 
         # We clamp Values to maximum
-        rospy.loginfo("roll_turn_speed before clamp=="+str(self.roll_turn_speed))
+        rospy.logdebug("roll_turn_speed before clamp=="+str(self.roll_turn_speed))
         self.roll_turn_speed = numpy.clip(self.roll_turn_speed,
                                           -self.roll_speed_fixed_value,
                                           self.roll_speed_fixed_value)
-        rospy.loginfo("roll_turn_speed after clamp==" + str(self.roll_turn_speed))
+        rospy.logdebug("roll_turn_speed after clamp==" + str(self.roll_turn_speed))
 
         # We tell the OneDiskCube to spin the RollDisk at the selected speed
         self.move_joints(self.roll_turn_speed)
@@ -135,30 +135,30 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
             """
             y_distance_now = observations[1]
             delta_distance = y_distance_now - self.current_y_distance
-            rospy.loginfo("y_distance_now=" + str(y_distance_now)+", current_y_distance=" + str(self.current_y_distance))
-            rospy.loginfo("delta_distance=" + str(delta_distance))
+            rospy.logdebug("y_distance_now=" + str(y_distance_now)+", current_y_distance=" + str(self.current_y_distance))
+            rospy.logdebug("delta_distance=" + str(delta_distance))
             reward_distance = delta_distance * self.move_distance_reward_weight
             self.current_y_distance = y_distance_now
 
             y_linear_speed = observations[4]
-            rospy.loginfo("y_linear_speed=" + str(y_linear_speed))
+            rospy.logdebug("y_linear_speed=" + str(y_linear_speed))
             reward_y_axis_speed = y_linear_speed * self.y_linear_speed_reward_weight
 
             # Negative Reward for yaw different from zero.
             yaw_angle = observations[5]
-            rospy.loginfo("yaw_angle=" + str(yaw_angle))
+            rospy.logdebug("yaw_angle=" + str(yaw_angle))
             # Worst yaw is 90 and 270 degrees, best 0 and 180. We use sin function for giving reward.
             sin_yaw_angle = math.sin(yaw_angle)
-            rospy.loginfo("sin_yaw_angle=" + str(sin_yaw_angle))
+            rospy.logdebug("sin_yaw_angle=" + str(sin_yaw_angle))
             reward_y_axis_angle = -1 * abs(sin_yaw_angle) * self.y_axis_angle_reward_weight
 
 
             # We are not intereseted in decimals of the reward, doesnt give any advatage.
             reward = round(reward_distance, 0) + round(reward_y_axis_speed, 0) + round(reward_y_axis_angle, 0)
-            rospy.loginfo("reward_distance=" + str(reward_distance))
-            rospy.loginfo("reward_y_axis_speed=" + str(reward_y_axis_speed))
-            rospy.loginfo("reward_y_axis_angle=" + str(reward_y_axis_angle))
-            rospy.loginfo("reward=" + str(reward))
+            rospy.logdebug("reward_distance=" + str(reward_distance))
+            rospy.logdebug("reward_y_axis_speed=" + str(reward_y_axis_speed))
+            rospy.logdebug("reward_y_axis_angle=" + str(reward_y_axis_angle))
+            rospy.logdebug("reward=" + str(reward))
         else:
             reward = -self.end_episode_points
 
