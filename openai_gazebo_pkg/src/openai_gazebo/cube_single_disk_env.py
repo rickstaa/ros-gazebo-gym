@@ -60,7 +60,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
 
 
-    # GoalEnv methods
+    # RobotGazeboEnv virtual methods
     # ----------------------------
     def _set_init_pose(self):
         """Sets the Robot in its init pose
@@ -77,6 +77,9 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         self._check_all_sensors_ready()
         return True
 
+
+    # CubeSingleDiskEnv virtual methods
+    # ----------------------------
 
     def _check_all_sensors_ready(self):
         self._check_joint_states_ready()
@@ -224,7 +227,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         y_linear_speed = self.odom.twist.twist.linear.y
         return y_linear_speed
 
-    # RobotEnv methods
+    # ParticularEnv methods
     # ----------------------------
 
     def _init_env_variables(self):
