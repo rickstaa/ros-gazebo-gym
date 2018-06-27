@@ -41,7 +41,7 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
 
 
         # Here we will add any init functions prior to starting the CubeSingleDiskEnv
-        super(MovingCubeOneDiskWalkEnv, self).__init__(number_actions, self.init_roll_vel)
+        super(MovingCubeOneDiskWalkEnv, self).__init__(self.init_roll_vel)
 
     def _init_env_variables(self):
         """

@@ -11,7 +11,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
     """Superclass for all CubeSingleDisk environments.
     """
 
-    def __init__(self, n_actions, init_roll_vel):
+    def __init__(self, init_roll_vel):
         """Initializes a new CubeSingleDisk environment.
 
         Args:
@@ -28,8 +28,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         self.robot_name_space = "moving_cube"
 
         # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
-        super(CubeSingleDiskEnv, self).__init__(n_actions=n_actions,
-                                                controllers_list=self.controllers_list,
+        super(CubeSingleDiskEnv, self).__init__(controllers_list=self.controllers_list,
                                                 robot_name_space=self.robot_name_space,
                                                 reset_controls=True)
 
