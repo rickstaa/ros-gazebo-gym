@@ -8,7 +8,9 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
     def __init__(self):
         """Initializes a new Robot environment.
         """
+        # Variables that we give through the constructor.
 
+        # Internal Vars
         self.controllers_list = ['my_robot_controller1','my_robot_controller2', ..., 'my_robot_controllerX']
 
         self.robot_name_space = "my_robot_namespace"
@@ -24,11 +26,7 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
     # Methods needed by the RobotGazeboEnv
     # ----------------------------
     
-    def _set_init_pose(self):
-        """Sets the Robot in its init pose
-        """
-        # TODO
-        return True
+    
 
     def _check_all_systems_ready(self):
         """
@@ -42,6 +40,11 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
     # because they will be used in RobotGazeboEnv GrandParentClass and defined in the
     # TrainingEnvironment.
     # ----------------------------
+    def _set_init_pose(self):
+        """Sets the Robot in its init pose
+        """
+        raise NotImplementedError()
+    
     
     def _init_env_variables(self):
         """Inits variables needed to be initialised each time we reset at the start

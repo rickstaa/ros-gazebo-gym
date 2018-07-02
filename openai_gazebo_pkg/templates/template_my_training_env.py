@@ -24,7 +24,13 @@ class MyTrainingEnv(cube_single_disk_env.MyRobotEnv):
 
 
         # Here we will add any init functions prior to starting the MyRobotEnv
-        super(MyTrainingEnv, self).__init__(self.init_roll_vel)
+        super(MyTrainingEnv, self).__init__()
+
+
+    def _set_init_pose(self):
+        """Sets the Robot in its init pose
+        """
+        # TODO
 
     def _init_env_variables(self):
         """
@@ -64,4 +70,6 @@ class MyTrainingEnv(cube_single_disk_env.MyRobotEnv):
         """
         # TODO
         return reward
+        
+    # Internal TaskEnv Methods
 
