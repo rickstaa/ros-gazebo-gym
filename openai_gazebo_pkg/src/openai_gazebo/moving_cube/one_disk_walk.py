@@ -166,18 +166,3 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
 
         return reward
 
-    def _convert_obs_to_state(self, observations):
-        """
-        Converts the observations used for reward and so on to the essentials for the robot state
-        In this case we only need the orientation of the cube and the speed of the disc.
-        The distance doesnt condition at all the actions
-        """
-        disk_roll_vel = observations[0]
-        #roll_angle = observations[2]
-        y_linear_speed = observations[4]
-        yaw_angle = observations[5]
-
-        state = [disk_roll_vel,y_linear_speed,yaw_angle]
-
-        return state
-

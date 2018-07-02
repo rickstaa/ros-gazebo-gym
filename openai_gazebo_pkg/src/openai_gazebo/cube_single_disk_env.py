@@ -15,8 +15,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         """Initializes a new CubeSingleDisk environment.
 
         Args:
-            test_cubesinglediskenc_arg: Just to test that we can pass args to this env init.
-            n_actions: Number of actions to perform
+            init_roll_vel: Init Velocity for the Roll Disk
         """
         # Variables that we give through the constructor.
         self.init_roll_vel = init_roll_vel
@@ -172,7 +171,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
     def get_y_dir_distance_from_start_point(self, start_point):
         """
         Calculates the distance from the given point and the current position
-        given by odometry. In this case the increase or decrease in x.
+        given by odometry. In this case the increase or decrease in y.
         :param start_point:
         :return:
         """
@@ -237,11 +236,6 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _compute_reward(self, observations, done):
         """Calculates the reward to give based on the observations given.
-        """
-        raise NotImplementedError()
-
-    def _convert_obs_to_state(self, observations):
-        """Converts the observations used for reward and so on to the essentials for the robot state
         """
         raise NotImplementedError()
 
