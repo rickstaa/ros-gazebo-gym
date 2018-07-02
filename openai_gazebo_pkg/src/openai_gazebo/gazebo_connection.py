@@ -30,28 +30,28 @@ class GazeboConnection():
         rospy.wait_for_service('/gazebo/pause_physics')
         try:
             self.pause()
-        except rospy.ServiceException, e:
+        except rospy.ServiceException as e:
             print ("/gazebo/pause_physics service call failed")
         
     def unpauseSim(self):
         rospy.wait_for_service('/gazebo/unpause_physics')
         try:
             self.unpause()
-        except rospy.ServiceException, e:
+        except rospy.ServiceException as e:
             print ("/gazebo/unpause_physics service call failed")
         
     def resetSim(self):
         rospy.wait_for_service('/gazebo/reset_simulation')
         try:
             self.reset_proxy()
-        except rospy.ServiceException, e:
+        except rospy.ServiceException as e:
             print ("/gazebo/reset_simulation service call failed")
 
     def resetWorld(self):
         rospy.wait_for_service('/gazebo/reset_world')
         try:
             self.reset_proxy()
-        except rospy.ServiceException, e:
+        except rospy.ServiceException as e:
             print ("/gazebo/reset_world service call failed")
 
     def init_values(self):
@@ -60,7 +60,7 @@ class GazeboConnection():
         try:
             # reset_proxy.call()
             self.reset_proxy()
-        except rospy.ServiceException, e:
+        except rospy.ServiceException as e:
             print ("/gazebo/reset_simulation service call failed")
 
         self._time_step = Float64(0.001)
