@@ -65,6 +65,7 @@ class RobotGazeboEnv(gym.Env):
         :return:
         """
         rospy.logdebug("Closing RobotGazeboEnvironment")
+        rospy.signal_shutdown("Closing RobotGazeboEnvironment")
 
     def _update_episode(self):
         """
