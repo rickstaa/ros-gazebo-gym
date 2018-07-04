@@ -19,6 +19,16 @@ class MyTrainingEnv(cube_single_disk_env.MyRobotEnv):
         number_actions = rospy.get_param('/my_robot_namespace/n_actions')
         self.action_space = spaces.Discrete(number_actions)
         
+        # This is the most common case of Box observation type
+        high = numpy.array([
+            obs1_max_value,
+            obs12_max_value,
+            ...
+            obsN_max_value
+            ])
+            
+        self.observation_space = spaces.Box(-high, high)
+        
         # Variables that we retrieve through the param server, loded when launch training launch.
         
 
