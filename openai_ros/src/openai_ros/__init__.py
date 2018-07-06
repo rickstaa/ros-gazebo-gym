@@ -1,2 +1,4 @@
 from openai_ros.cube_single_disk_env import CubeSingleDiskEnv
 from openai_ros.moving_cube.one_disk_walk import MovingCubeOneDiskWalkEnv
+from openai_ros.cartpole_env import CartPoleEnv
+from openai_ros.cartpole_stay_up.stay_up import CartPoleStayUpEnv
