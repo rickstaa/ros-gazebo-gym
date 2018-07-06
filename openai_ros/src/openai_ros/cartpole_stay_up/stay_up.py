@@ -19,12 +19,6 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
         self.get_params()
         
         self.action_space = spaces.Discrete(self.n_actions)
-        high = np.array([
-            2.5 * 2,
-            np.finfo(np.float32).max,
-            0.7 * 2,
-            np.finfo(np.float32).max])
-        self.observation_space = spaces.Box(-high, high)
         
         cartpole_env.CartPoleEnv.__init__(
             self, control_type=self.control_type
@@ -88,9 +82,7 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
     def _is_done(self, observations):
         done = False
         data = self.joints
-        #       base_postion            base_velocity           pole angle              pole velocity
-        #state = [round(data.position[1],1), round(data.velocity[1],1), round(data.position[0],1), round(data.velocity[0],1)]
-        #   pole angle  pole velocity
+        
         rospy.loginfo("BASEPOSITION=="+str(observations[0]))
         rospy.loginfo("POLE ANGLE==" + str(observations[2]))
         if (self.min_base_pose_x >= observations[0] or observations[0] >= self.max_base_pose_x): #check if the base is still within the ranges of (-2, 2)
@@ -110,37 +102,6 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
         Gives more points for staying upright, gets data from given observations to avoid
         having different data than other previous functions
         :return:reward
-        """
-        """
-        pole_angle = observations[2]
-        pole_vel = observations[3]
-
-        rospy.loginfo("pole_angle for reward==>" + str(pole_angle))
-        delta = 0.7 - abs(pole_angle)
-        reward_pole_angle = math.exp(delta*10)
-        #reward_pole_angle = math.exp(delta*2)
-
-        # If we are moving to the left and the pole is falling left is Bad
-        rospy.loginfo("pole_vel==>" + str(pole_vel))
-        pole_vel_sign = np.sign(pole_vel)
-        pole_angle_sign = np.sign(pole_angle)
-        rospy.loginfo("pole_vel sign==>" + str(pole_vel_sign))
-        rospy.loginfo("pole_angle sign==>" + str(pole_angle_sign))
-
-        # We want inverted signs for the speeds. We multiply by -1 to make minus positive.
-        # global_sign + = GOOD, global_sign - = BAD
-        base_reward = 500
-        #base_reward = 100
-        if pole_vel != 0:
-            global_sign = pole_angle_sign * pole_vel_sign * -1
-            reward_for_efective_movement = base_reward * global_sign
-        else:
-            # Is a particular case. If it doesnt move then its good also
-            reward_for_efective_movement = base_reward
-
-        reward = reward_pole_angle + reward_for_efective_movement
-
-        rospy.loginfo("reward==>" + str(reward)+"= r_pole_angle="+str(reward_pole_angle)+",r_movement= "+str(reward_for_efective_movement))
         """
         
         if not done:
