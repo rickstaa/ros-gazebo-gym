@@ -136,18 +136,6 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("Single Base JointsPos>>"+str(joint_value))
         self._base_pub.publish(joint_value)
 
-
-    def _set_init_pose(self):
-        """
-        Sets joints to initial position [0,0,0]
-        :return:
-        """
-        
-        self.check_publishers_connection()
-        
-        # Reset Internal pos variable
-        self.init_internal_vars(self.init_pos)
-        self.move_joints(self.pos)
         
     def get_clock_time(self):
         self.clock_time = None

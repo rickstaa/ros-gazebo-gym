@@ -125,3 +125,15 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
         :return:
         """
         self.steps_beyond_done = None
+        
+    def _set_init_pose(self):
+        """
+        Sets joints to initial position [0,0,0]
+        :return:
+        """
+        
+        self.check_publishers_connection()
+        
+        # Reset Internal pos variable
+        self.init_internal_vars(self.init_pos)
+        self.move_joints(self.pos)
