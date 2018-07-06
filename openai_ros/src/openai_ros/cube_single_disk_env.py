@@ -4,22 +4,21 @@ from openai_ros import robot_gazebo_env
 from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
 from nav_msgs.msg import Odometry
-from tf.transformations import euler_from_quaternion
 
 
 class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
     """Superclass for all CubeSingleDisk environments.
     """
 
-    def __init__(self, init_roll_vel):
+    def __init__(self):
         """Initializes a new CubeSingleDisk environment.
 
         Args:
-            init_roll_vel: Init Velocity for the Roll Disk
         """
         # Variables that we give through the constructor.
-        self.init_roll_vel = init_roll_vel
+        # None in this case
 
+        # Internal Vars
         self.controllers_list = ['joint_state_controller',
                                  'inertia_wheel_roll_joint_velocity_controller'
                                  ]
@@ -56,16 +55,9 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self.gazebo.pauseSim()
 
-
-
-    # RobotGazeboEnv virtual methods
+    # Methods needed by the RobotGazeboEnv
     # ----------------------------
-    def _set_init_pose(self):
-        """Sets the Robot in its init pose
-        """
-        self.move_joints(self.init_roll_vel)
-
-        return True
+    
 
     def _check_all_systems_ready(self):
         """
@@ -106,19 +98,13 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
                 rospy.logerr("Current /moving_cube/odom not ready yet, retrying for getting odom")
 
         return self.odom
-
+        
     def _joints_callback(self, data):
         self.joints = data
-
+    
     def _odom_callback(self, data):
         self.odom = data
-
-    def get_joints(self):
-        return self.joints
-
-    def get_odom(self):
-        return self.odom
-
+        
     def _check_publishers_connection(self):
         """
         Checks that all the publishers are working
@@ -135,99 +121,16 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("_roll_vel_pub Publisher Connected")
 
         rospy.logdebug("All Publishers READY")
-
-    def move_joints(self, roll_speed):
-
-        joint_speed_value = Float64()
-        joint_speed_value.data = roll_speed
-        rospy.logdebug("Single Disk Roll Velocity>>" + str(joint_speed_value))
-        self._roll_vel_pub.publish(joint_speed_value)
-        self.wait_until_roll_is_in_vel(joint_speed_value.data)
-
-    def wait_until_roll_is_in_vel(self, velocity):
-
-        rate = rospy.Rate(10)
-        start_wait_time = rospy.get_rostime().to_sec()
-        end_wait_time = 0.0
-        epsilon = 0.1
-        v_plus = velocity + epsilon
-        v_minus = velocity - epsilon
-        while not rospy.is_shutdown():
-            joint_data = self._check_joint_states_ready()
-            roll_vel = joint_data.velocity[0]
-            rospy.logdebug("VEL=" + str(roll_vel) + ", ?RANGE=[" + str(v_minus) + ","+str(v_plus)+"]")
-            are_close = (roll_vel <= v_plus) and (roll_vel > v_minus)
-            if are_close:
-                rospy.logdebug("Reached Velocity!")
-                end_wait_time = rospy.get_rostime().to_sec()
-                break
-            rospy.logdebug("Not there yet, keep waiting...")
-            rate.sleep()
-        delta_time = end_wait_time- start_wait_time
-        rospy.logdebug("[Wait Time=" + str(delta_time)+"]")
-        return delta_time
-
-
-    def get_y_dir_distance_from_start_point(self, start_point):
-        """
-        Calculates the distance from the given point and the current position
-        given by odometry. In this case the increase or decrease in y.
-        :param start_point:
-        :return:
-        """
-        y_dist_dir = self.odom.pose.pose.position.y - start_point.y
-
-        return y_dist_dir
-
-
-    def get_distance_from_start_point(self, start_point):
-        """
-        Calculates the distance from the given point and the current position
-        given by odometry
-        :param start_point:
-        :return:
-        """
-        distance = self.get_distance_from_point(start_point,
-                                                self.odom.pose.pose.position)
-
-        return distance
-
-    def get_distance_from_point(self, pstart, p_end):
-        """
-        Given a Vector3 Object, get distance from current position
-        :param p_end:
-        :return:
-        """
-        a = numpy.array((pstart.x, pstart.y, pstart.z))
-        b = numpy.array((p_end.x, p_end.y, p_end.z))
-
-        distance = numpy.linalg.norm(a - b)
-
-        return distance
-
-    def get_orientation_euler(self):
-        # We convert from quaternions to euler
-        orientation_list = [self.odom.pose.pose.orientation.x,
-                            self.odom.pose.pose.orientation.y,
-                            self.odom.pose.pose.orientation.z,
-                            self.odom.pose.pose.orientation.w]
-
-        roll, pitch, yaw = euler_from_quaternion(orientation_list)
-        return roll, pitch, yaw
-
-    def get_roll_velocity(self):
-        # We get the current joint roll velocity
-        roll_vel = self.joints.velocity[0]
-        return roll_vel
-
-    def get_y_linear_speed(self):
-        # We get the current joint roll velocity
-        y_linear_speed = self.odom.twist.twist.linear.y
-        return y_linear_speed
-
-    # ParticularEnv methods
+    
+    # Methods that the TrainingEnvironment will need to define here as virtual
+    # because they will be used in RobotGazeboEnv GrandParentClass and defined in the
+    # TrainingEnvironment.
     # ----------------------------
-
+    def _set_init_pose(self):
+        """Sets the Robot in its init pose
+        """
+        raise NotImplementedError()
+    
     def _init_env_variables(self):
         """Inits variables needed to be initialised each time we reset at the start
         of an episode.
@@ -251,3 +154,42 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         """Checks if episode done based on observations given.
         """
         raise NotImplementedError()
+        
+    # Methods that the TrainingEnvironment will need.
+    # ----------------------------
+    def move_joints(self, roll_speed):
+        joint_speed_value = Float64()
+        joint_speed_value.data = roll_speed
+        rospy.logdebug("Single Disk Roll Velocity>>" + str(joint_speed_value))
+        self._roll_vel_pub.publish(joint_speed_value)
+        self.wait_until_roll_is_in_vel(joint_speed_value.data)
+    
+    def wait_until_roll_is_in_vel(self, velocity):
+    
+        rate = rospy.Rate(10)
+        start_wait_time = rospy.get_rostime().to_sec()
+        end_wait_time = 0.0
+        epsilon = 0.1
+        v_plus = velocity + epsilon
+        v_minus = velocity - epsilon
+        while not rospy.is_shutdown():
+            joint_data = self._check_joint_states_ready()
+            roll_vel = joint_data.velocity[0]
+            rospy.logdebug("VEL=" + str(roll_vel) + ", ?RANGE=[" + str(v_minus) + ","+str(v_plus)+"]")
+            are_close = (roll_vel <= v_plus) and (roll_vel > v_minus)
+            if are_close:
+                rospy.logdebug("Reached Velocity!")
+                end_wait_time = rospy.get_rostime().to_sec()
+                break
+            rospy.logdebug("Not there yet, keep waiting...")
+            rate.sleep()
+        delta_time = end_wait_time- start_wait_time
+        rospy.logdebug("[Wait Time=" + str(delta_time)+"]")
+        return delta_time
+        
+
+    def get_joints(self):
+        return self.joints
+    
+    def get_odom(self):
+        return self.odom
