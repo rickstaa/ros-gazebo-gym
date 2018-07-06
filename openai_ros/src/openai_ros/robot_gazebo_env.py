@@ -19,6 +19,7 @@ class RobotGazeboEnv(gym.Env):
 
         # Set up ROS related variables
         self.episode_num = 0
+        self.cumulated_episode_reward = 0
         self.reward_pub = rospy.Publisher('/openai/reward', RLExperimentInfo, queue_size=1)
 
     # Env methods
@@ -46,7 +47,7 @@ class RobotGazeboEnv(gym.Env):
         done = self._is_done(obs)
         info = {}
         reward = self._compute_reward(obs, done)
-        self._publish_reward_topic(reward, self.episode_num)
+        self.cumulated_episode_reward += reward
 
         return obs, reward, done, info
 
@@ -69,10 +70,16 @@ class RobotGazeboEnv(gym.Env):
 
     def _update_episode(self):
         """
-        Increases the episode number by one
+        Publishes the cumulated reward of the episode and 
+        increases the episode number by one.
         :return:
         """
+        self._publish_reward_topic(
+                                    self.cumulated_episode_reward,
+                                    self.episode_num
+                                    )
         self.episode_num += 1
+        self.cumulated_episode_reward = 0
 
     def _publish_reward_topic(self, reward, episode_number=1):
         """
