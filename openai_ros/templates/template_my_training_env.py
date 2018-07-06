@@ -3,7 +3,7 @@ import my_robot_env
 from gym.envs.registration import register
 import rospy
 
-# The path is __init__.py of openai_gazebo, where we import the MovingCubeOneDiskWalkEnv directly
+# The path is __init__.py of openai_ros, where we import the MovingCubeOneDiskWalkEnv directly
 timestep_limit_per_episode = 1000 # Can be any Value
 
 register(

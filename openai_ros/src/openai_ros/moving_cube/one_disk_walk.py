@@ -2,14 +2,14 @@ import rospy
 import numpy
 import math
 from gym import spaces
-from openai_gazebo import cube_single_disk_env
+from openai_ros import cube_single_disk_env
 from gym.envs.registration import register
 from geometry_msgs.msg import Point
 
-# The path is __init__.py of openai_gazebo, where we import the MovingCubeOneDiskWalkEnv directly
+# The path is __init__.py of openai_ros, where we import the MovingCubeOneDiskWalkEnv directly
 register(
         id='MovingCubeOneDiskWalk-v0',
-        entry_point='openai_gazebo:MovingCubeOneDiskWalkEnv',
+        entry_point='openai_ros:MovingCubeOneDiskWalkEnv',
         timestep_limit=1000,
     )
 

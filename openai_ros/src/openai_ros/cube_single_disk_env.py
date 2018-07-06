@@ -1,6 +1,6 @@
 import numpy
 import rospy
-from openai_gazebo import robot_gazebo_env
+from openai_ros import robot_gazebo_env
 from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
 from nav_msgs.msg import Odometry

@@ -1,4 +1,4 @@
-from openai_gazebo import robot_gazebo_env
+from openai_ros import robot_gazebo_env
 
 
 class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
