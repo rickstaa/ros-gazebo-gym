@@ -124,4 +124,4 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
         of an episode.
         :return:
         """
-        pass
+        self.steps_beyond_done = None
