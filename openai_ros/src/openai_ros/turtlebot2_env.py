@@ -3,6 +3,8 @@ import rospy
 from openai_ros import robot_gazebo_env
 from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
+from sensor_msgs.msg import Image
+from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
 
 
@@ -11,42 +13,61 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
     """
 
     def __init__(self):
-        """Initializes a new CubeSingleDisk environment.
-
-        Args:
         """
-        # Variables that we give through the constructor.
-        # None in this case
-
-        # Internal Vars
-        self.controllers_list = ['joint_state_controller',
-                                 'inertia_wheel_roll_joint_velocity_controller'
-                                 ]
-
-        self.robot_name_space = "moving_cube"
-
-        # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
-        super(TurtleBot2Env, self).__init__(controllers_list=self.controllers_list,
-                                            robot_name_space=self.robot_name_space,
-                                            reset_controls=True)
-
-
-
-        """
+        Initializes a new TurtleBot2Env environment.
+        Turtlebot2 doesnt use controller_manager, therefore we wont reset the 
+        controllers in the standard fashion. For the moment we wont reset them.
+        
         To check any topic we need to have the simulations running, we need to do two things:
         1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
         that are pause for whatever the reason
         2) If the simulation was running already for some reason, we need to reset the controlers.
         This has to do with the fact that some plugins with tf, dont understand the reset of the simulation
         and need to be reseted to work properly.
+        
+        The Sensors: The sensors accesible are the ones considered usefull for AI learning.
+        
+        Sensor Topic List:
+        * /odom : Odometry readings of the Base of the Robot
+        * /camera/depth/image_raw: 2d Depth image of the depth sensor.
+        * /camera/depth/points: Pointcloud sensor readings
+        * /camera/rgb/image_raw: RGB camera
+        * /kobuki/laser/scan: Laser Readings
+        
+        Actuators Topic List: /cmd_vel, 
+        
+        Args:
         """
+        # Variables that we give through the constructor.
+        # None in this case
+
+        # Internal Vars
+        # Doesnt have any accesibles
+        self.controllers_list = []
+
+        # It doesnt use namespace
+        self.robot_name_space = ""
+
+        # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
+        super(TurtleBot2Env, self).__init__(controllers_list=self.controllers_list,
+                                            robot_name_space=self.robot_name_space,
+                                            reset_controls=False)
+
+
+
+
         self.gazebo.unpauseSim()
         self.controllers_object.reset_controllers()
         self._check_all_sensors_ready()
 
         # We Start all the ROS related Subscribers and publishers
-        rospy.Subscriber("/moving_cube/joint_states", JointState, self._joints_callback)
         rospy.Subscriber("/moving_cube/odom", Odometry, self._odom_callback)
+        rospy.Subscriber("/camera/depth/image_raw", Image, self._camera_depth_image_raw_callback)
+        rospy.Subscriber("/camera/depth/points", Image, self._camera_depth_points_callback)
+        rospy.Subscriber("/camera/rgb/image_raw", Image, self._camera_rgb_image_raw_callback)
+        rospy.Subscriber("/kobuki/laser/scan", LaserScan, self._laser_scan_callback)
+        
+        
 
         self._roll_vel_pub = rospy.Publisher('/moving_cube/inertia_wheel_roll_joint_velocity_controller/command',
                                              Float64, queue_size=1)
