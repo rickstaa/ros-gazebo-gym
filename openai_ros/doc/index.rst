@@ -11,9 +11,9 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   rapp_manager_api
-   rapp_api
-   changelog
+   robot_environments
+   modules
+   CHANGELOG
 
 Indices and tables
 ==================

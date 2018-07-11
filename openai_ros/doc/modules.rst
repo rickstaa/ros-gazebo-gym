@@ -1,5 +1,5 @@
-src
-===
+OpenAi Code
+===========
 
 .. toctree::
    :maxdepth: 4
