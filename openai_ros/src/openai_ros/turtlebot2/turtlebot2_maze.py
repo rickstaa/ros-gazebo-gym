@@ -60,7 +60,8 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         high = numpy.full((num_laser_readings), self.max_laser_value)
         low = numpy.full((num_laser_readings), self.min_laser_value)
         
-        self.observation_space = spaces.Box(low, high, dtype = numpy.float32)
+        # We only use two integers
+        self.observation_space = spaces.Box(low, high, dtype = numpy.int8)
         
         rospy.logwarn("ACTION SPACES TYPE===>"+str(self.action_space))
         rospy.logwarn("OBSERVATION SPACES TYPE===>"+str(self.observation_space))
