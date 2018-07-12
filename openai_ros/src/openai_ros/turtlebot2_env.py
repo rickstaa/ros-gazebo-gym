@@ -5,8 +5,10 @@ from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import LaserScan
+from sensor_msgs.msg import PointCloud2
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
+
 
 
 class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
@@ -62,9 +64,9 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         self._check_all_sensors_ready()
 
         # We Start all the ROS related Subscribers and publishers
-        rospy.Subscriber("/moving_cube/odom", Odometry, self._odom_callback)
+        rospy.Subscriber("/odom", Odometry, self._odom_callback)
         rospy.Subscriber("/camera/depth/image_raw", Image, self._camera_depth_image_raw_callback)
-        rospy.Subscriber("/camera/depth/points", Image, self._camera_depth_points_callback)
+        rospy.Subscriber("/camera/depth/points", PointCloud2, self._camera_depth_points_callback)
         rospy.Subscriber("/camera/rgb/image_raw", Image, self._camera_rgb_image_raw_callback)
         rospy.Subscriber("/kobuki/laser/scan", LaserScan, self._laser_scan_callback)
 
@@ -100,23 +102,25 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
 
     def _check_odom_ready(self):
         self.odom = None
+        rospy.logwarn("Waiting for /odom to be READY...")
         while self.odom is None and not rospy.is_shutdown():
             try:
-                self.odom = rospy.wait_for_message("/moving_cube/odom", Odometry, timeout=1.0)
-                rospy.logdebug("Current /moving_cube/odom READY=>" + str(self.odom))
+                self.odom = rospy.wait_for_message("/odom", Odometry, timeout=5.0)
+                rospy.logwarn("Current /odom READY=>")
 
             except:
-                rospy.logerr("Current /moving_cube/odom not ready yet, retrying for getting odom")
+                rospy.logerr("Current /odom not ready yet, retrying for getting odom")
 
         return self.odom
         
         
     def _check_camera_depth_image_raw_ready(self):
         self.camera_depth_image_raw = None
+        rospy.logwarn("Waiting for /camera/depth/image_raw to be READY...")
         while self.camera_depth_image_raw is None and not rospy.is_shutdown():
             try:
-                self.camera_depth_image_raw = rospy.wait_for_message("/camera/depth/image_raw", Image, timeout=1.0)
-                rospy.logdebug("Current /camera/depth/image_raw READY=>" + str(self.camera_depth_image_raw))
+                self.camera_depth_image_raw = rospy.wait_for_message("/camera/depth/image_raw", Image, timeout=5.0)
+                rospy.logwarn("Current /camera/depth/image_raw READY=>")
 
             except:
                 rospy.logerr("Current /camera/depth/image_raw not ready yet, retrying for getting camera_depth_image_raw")
@@ -125,10 +129,11 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         
     def _check_camera_depth_points_ready(self):
         self.camera_depth_points = None
+        rospy.logwarn("Waiting for /camera/depth/points to be READY...")
         while self.camera_depth_points is None and not rospy.is_shutdown():
             try:
-                self.camera_depth_points = rospy.wait_for_message("/camera/depth/points", Image, timeout=1.0)
-                rospy.logdebug("Current /camera/depth/points READY=>" + str(self.camera_depth_points))
+                self.camera_depth_points = rospy.wait_for_message("/camera/depth/points", PointCloud2, timeout=10.0)
+                rospy.logwarn("Current /camera/depth/points READY=>")
 
             except:
                 rospy.logerr("Current /camera/depth/points not ready yet, retrying for getting camera_depth_points")
@@ -137,10 +142,11 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         
     def _check_camera_rgb_image_raw_ready(self):
         self.camera_rgb_image_raw = None
+        rospy.logwarn("Waiting for /camera/rgb/image_raw to be READY...")
         while self.camera_rgb_image_raw is None and not rospy.is_shutdown():
             try:
-                self.camera_rgb_image_raw = rospy.wait_for_message("/camera/rgb/image_raw", Image, timeout=1.0)
-                rospy.logdebug("Current /camera/rgb/image_raw READY=>" + str(self.camera_rgb_image_raw))
+                self.camera_rgb_image_raw = rospy.wait_for_message("/camera/rgb/image_raw", Image, timeout=5.0)
+                rospy.logwarn("Current /camera/rgb/image_raw READY=>")
 
             except:
                 rospy.logerr("Current /camera/rgb/image_raw not ready yet, retrying for getting camera_rgb_image_raw")
@@ -149,10 +155,11 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
 
     def _check_laser_scan_ready(self):
         self.laser_scan = None
+        rospy.logwarn("Waiting for /kobuki/laser/scan to be READY...")
         while self.laser_scan is None and not rospy.is_shutdown():
             try:
-                self.laser_scan = rospy.wait_for_message("/kobuki/laser/scan", LaserScan, timeout=1.0)
-                rospy.logdebug("Current /kobuki/laser/scan READY=>" + str(self.laser_scan))
+                self.laser_scan = rospy.wait_for_message("/kobuki/laser/scan", LaserScan, timeout=5.0)
+                rospy.logwarn("Current /kobuki/laser/scan READY=>")
 
             except:
                 rospy.logerr("Current /kobuki/laser/scan not ready yet, retrying for getting laser_scan")
@@ -242,7 +249,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         cmd_vel_value.angular.z = angular_speed
         rospy.logdebug("TurtleBot2 Base Twist Cmd>>" + str(cmd_vel_value))
         self._cmd_vel_pub.publish(cmd_vel_value)
-        self.wait_until_roll_is_in_vel(cmd_vel_value,
+        self.wait_until_twist_achieved(cmd_vel_value,
                                         epsilon,
                                         update_rate)
     
@@ -303,5 +310,5 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
     def get_camera_rgb_image_raw(self):
         return self.camera_rgb_image_raw
         
-     def get_laser_scan(self):
+    def get_laser_scan(self):
         return self.laser_scan

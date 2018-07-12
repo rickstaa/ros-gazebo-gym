@@ -43,8 +43,10 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         
         # Actions and Observations
         self.linear_forward_speed = rospy.get_param('/turtlebot2/linear_forward_speed')
-        self.linear_forward_speed = rospy.get_param('/turtlebot2/linear_turn_speed')
+        self.linear_turn_speed = rospy.get_param('/turtlebot2/linear_turn_speed')
         self.angular_speed = rospy.get_param('/turtlebot2/angular_speed')
+        self.init_linear_forward_speed = rospy.get_param('/turtlebot2/init_linear_forward_speed')
+        self.init_linear_turn_speed = rospy.get_param('/turtlebot2/init_linear_turn_speed')
         
         self.new_ranges = rospy.get_param('/turtlebot2/new_ranges')
         self.min_range = rospy.get_param('/turtlebot2/min_range')
@@ -55,13 +57,13 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         
         # We create two arrays based on the binary values that will be assigned
         # In the discretization method.
-        laser_scan = self.get_laser_scan()
+        laser_scan = self._check_laser_scan_ready()
         num_laser_readings = len(laser_scan.ranges)/self.new_ranges
         high = numpy.full((num_laser_readings), self.max_laser_value)
         low = numpy.full((num_laser_readings), self.min_laser_value)
         
         # We only use two integers
-        self.observation_space = spaces.Box(low, high, dtype = numpy.int8)
+        self.observation_space = spaces.Box(low, high)
         
         rospy.logwarn("ACTION SPACES TYPE===>"+str(self.action_space))
         rospy.logwarn("OBSERVATION SPACES TYPE===>"+str(self.observation_space))
@@ -79,7 +81,10 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
     def _set_init_pose(self):
         """Sets the Robot in its init pose
         """
-        self.move_joints(self.init_roll_vel)
+        self.move_base( self.init_linear_forward_speed,
+                        self.init_linear_turn_speed,
+                        epsilon=0.05,
+                        update_rate=10)
 
         return True
 
@@ -90,12 +95,8 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         of an episode.
         :return:
         """
-        self.total_distance_moved = 0.0
-        self.current_y_distance = self.get_y_dir_distance_from_start_point(self.start_point)
-        self.roll_turn_speed = rospy.get_param('/turtlebot2/init_roll_vel')
         # For Info Purposes
         self.cumulated_reward = 0.0
-        #self.cumulated_steps = 0.0
 
 
     def _set_action(self, action):
