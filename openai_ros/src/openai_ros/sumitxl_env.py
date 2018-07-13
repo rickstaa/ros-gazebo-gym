@@ -7,9 +7,10 @@ from sensor_msgs.msg import Image
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import Imu
+from sensor_msgs.msg import NavSatFix
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
-
+from geometry_msgs-msg import Vector3Stamped
 
 
 class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -19,8 +20,9 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
     def __init__(self):
         """
         Initializes a new SumitXlEnv environment.
-        TurtleBot3 doesnt use controller_manager, therefore we wont reset the 
-        controllers in the standard fashion. For the moment we wont reset them.
+        
+        Execute a call to service /summit_xl/controller_manager/list_controllers
+        To get the list of controllers to be restrarted
         
         To check any topic we need to have the simulations running, we need to do two things:
         1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
@@ -32,9 +34,14 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         The Sensors: The sensors accesible are the ones considered usefull for AI learning.
         
         Sensor Topic List:
-        * /odom : Odometry readings of the Base of the Robot
-        * /imu: Inertial Mesuring Unit that gives relative accelerations and orientations.
-        * /scan: Laser Readings
+        * /gps/fix : GPS position Data
+        * /gps/fix_velocity: GPS Speed data
+        * /hokuyo_base/scan: Laser Readings
+        * /imu/data: Inertial Mesurment Unit data, orientation and acceleration
+        * /orbbec_astra/depth/image_raw
+        * /orbbec_astra/depth/points
+        * /orbbec_astra/rgb/image_raw
+        * /summit_xl/odom: Odometry
         
         Actuators Topic List: /cmd_vel, 
         
@@ -46,28 +53,37 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
 
         # Internal Vars
         # Doesnt have any accesibles
-        self.controllers_list = []
-
+        self.controllers_list = [   "joint_read_state_controller",
+                                    "joint_blw_velocity_controller",
+                                    "joint_brw_velocity_controller",
+                                    "joint_flw_velocity_controller",
+                                    "joint_frw_velocity_controller"
+                                ]
+                                
         # It doesnt use namespace
-        self.robot_name_space = ""
+        self.robot_name_space = "summit_xl"
 
         # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
         super(SumitXlEnv, self).__init__(controllers_list=self.controllers_list,
                                             robot_name_space=self.robot_name_space,
-                                            reset_controls=False,
+                                            reset_controls=True,
                                             start_init_physics_parameters=False)
 
-
-
-
         self.gazebo.unpauseSim()
-        #self.controllers_object.reset_controllers()
+        self.controllers_object.reset_controllers()
         self._check_all_sensors_ready()
 
         # We Start all the ROS related Subscribers and publishers
-        rospy.Subscriber("/odom", Odometry, self._odom_callback)
-        rospy.Subscriber("/imu", Imu, self._imu_callback)
-        rospy.Subscriber("/scan", LaserScan, self._laser_scan_callback)
+        rospy.Subscriber("/gps/fix", NavSatFix, self._gps_fix_callback)
+        rospy.Subscriber("/gps/fix_velocity", Vector3Stamped, self._gps_fix_velocity_callback)
+        
+        rospy.Subscriber("/orbbec_astra/depth/image_raw", Image, self._camera_depth_image_raw_callback)
+        rospy.Subscriber("/orbbec_astra/depth/points", PointCloud2, self._camera_depth_points_callback)
+        rospy.Subscriber("/orbbec_astra/rgb/image_raw", Image, self._camera_rgb_image_raw_callback)
+        
+        rospy.Subscriber("/hokuyo_base/scan", LaserScan, self._laser_scan_callback)
+        rospy.Subscriber("/imu/data", Imu, self._imu_callback)
+        rospy.Subscriber("/summit_xl/odom", Odometry, self._odom_callback)
 
         self._cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
 
@@ -95,51 +111,139 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _check_all_sensors_ready(self):
         rospy.logdebug("START ALL SENSORS READY")
+        self._check_gps_fix_ready()
+        self._check_gps_fix_velocity_ready()
+        self._check_camera_depth_image_raw_ready()
+        self._check_camera_depth_points_ready()
+        self._check_camera_rgb_image_raw_ready()
         self._check_odom_ready()
         self._check_imu_ready()
         self._check_laser_scan_ready()
         rospy.logdebug("ALL SENSORS READY")
 
-    def _check_odom_ready(self):
-        self.odom = None
-        rospy.logdebug("Waiting for /odom to be READY...")
-        while self.odom is None and not rospy.is_shutdown():
+    
+    def _check_gps_fix_ready(self):
+        self.gps_fix = None
+        rospy.logdebug("Waiting for /gps/fix to be READY...")
+        while self.gps_fix is None and not rospy.is_shutdown():
             try:
-                self.odom = rospy.wait_for_message("/odom", Odometry, timeout=5.0)
-                rospy.logdebug("Current /odom READY=>")
+                self.gps_fix = rospy.wait_for_message("/gps/fix", NavSatFix, timeout=5.0)
+                rospy.logdebug("Current /gps/fix READY=>")
 
             except:
-                rospy.logerr("Current /odom not ready yet, retrying for getting odom")
+                rospy.logerr("Current /gps/fix not ready yet, retrying for getting odom")
+
+        return self.gps_fix
+    
+    
+    def _check_gps_fix_velocity_ready(self):
+        self.gps_fix_velocity = None
+        rospy.logdebug("Waiting for /gps/fix_velocity to be READY...")
+        while self.gps_fix_velocity is None and not rospy.is_shutdown():
+            try:
+                self.gps_fix_velocity = rospy.wait_for_message("/gps/fix_velocity", Vector3Stamped, timeout=5.0)
+                rospy.logdebug("Current /gps/fix_velocity READY=>")
+
+            except:
+                rospy.logerr("Current /gps/fix_velocity not ready yet, retrying for getting odom")
+
+        return self.gps_fix_velocity    
+        
+    def _check_camera_depth_image_raw_ready(self):
+        self.camera_depth_image_raw = None
+        rospy.logdebug("Waiting for /orbbec_astra/depth/image_raw to be READY...")
+        while self.camera_depth_image_raw is None and not rospy.is_shutdown():
+            try:
+                self.camera_depth_image_raw = rospy.wait_for_message("/orbbec_astra/depth/image_raw", Image, timeout=5.0)
+                rospy.logdebug("Current /orbbec_astra/depth/image_raw READY=>")
+
+            except:
+                rospy.logerr("Current /orbbec_astra/depth/image_raw not ready yet, retrying for getting camera_depth_image_raw")
+        return self.camera_depth_image_raw
+        
+        
+    def _check_camera_depth_points_ready(self):
+        self.camera_depth_points = None
+        rospy.logdebug("Waiting for /orbbec_astra/depth/points to be READY...")
+        while self.camera_depth_points is None and not rospy.is_shutdown():
+            try:
+                self.camera_depth_points = rospy.wait_for_message("/orbbec_astra/depth/points", PointCloud2, timeout=10.0)
+                rospy.logdebug("Current /orbbec_astra/depth/points READY=>")
+
+            except:
+                rospy.logerr("Current /orbbec_astra/depth/points not ready yet, retrying for getting camera_depth_points")
+        return self.camera_depth_points
+        
+        
+    def _check_camera_rgb_image_raw_ready(self):
+        self.camera_rgb_image_raw = None
+        rospy.logdebug("Waiting for /orbbec_astra/rgb/image_raw to be READY...")
+        while self.camera_rgb_image_raw is None and not rospy.is_shutdown():
+            try:
+                self.camera_rgb_image_raw = rospy.wait_for_message("/orbbec_astra/rgb/image_raw", Image, timeout=5.0)
+                rospy.logdebug("Current /orbbec_astra/rgb/image_raw READY=>")
+
+            except:
+                rospy.logerr("Current /orbbec_astra/rgb/image_raw not ready yet, retrying for getting camera_rgb_image_raw")
+        return self.camera_rgb_image_raw
+
+
+    def _check_odom_ready(self):
+        self.odom = None
+        rospy.logdebug("Waiting for /summit_xl/odom to be READY...")
+        while self.odom is None and not rospy.is_shutdown():
+            try:
+                self.odom = rospy.wait_for_message("/summit_xl/odom", Odometry, timeout=5.0)
+                rospy.logdebug("Current /summit_xl/odom READY=>")
+
+            except:
+                rospy.logerr("Current /summit_xl/odom not ready yet, retrying for getting odom")
 
         return self.odom
         
         
     def _check_imu_ready(self):
         self.imu = None
-        rospy.logdebug("Waiting for /imu to be READY...")
+        rospy.logdebug("Waiting for /imu/data to be READY...")
         while self.imu is None and not rospy.is_shutdown():
             try:
-                self.imu = rospy.wait_for_message("/imu", Imu, timeout=5.0)
-                rospy.logdebug("Current /imu READY=>")
+                self.imu = rospy.wait_for_message("/imu/data", Imu, timeout=5.0)
+                rospy.logdebug("Current /imu/data READY=>")
 
             except:
-                rospy.logerr("Current /imu not ready yet, retrying for getting imu")
+                rospy.logerr("Current /imu/data not ready yet, retrying for getting imu")
 
         return self.imu
 
 
     def _check_laser_scan_ready(self):
         self.laser_scan = None
-        rospy.logdebug("Waiting for /scan to be READY...")
+        rospy.logdebug("Waiting for /hokuyo_base/scan to be READY...")
         while self.laser_scan is None and not rospy.is_shutdown():
             try:
-                self.laser_scan = rospy.wait_for_message("/scan", LaserScan, timeout=1.0)
-                rospy.logdebug("Current /scan READY=>")
+                self.laser_scan = rospy.wait_for_message("/hokuyo_base/scan", LaserScan, timeout=1.0)
+                rospy.logdebug("Current /hokuyo_base/scan READY=>")
 
             except:
-                rospy.logerr("Current /scan not ready yet, retrying for getting laser_scan")
+                rospy.logerr("Current /hokuyo_base/scan not ready yet, retrying for getting laser_scan")
         return self.laser_scan
+    
+    
+    def _gps_fix_callback(self, data):
+        self.gps_fix = data
         
+    def _gps_fix_velocity_callback(self, data):
+        self.gps_fix_velocity = data
+    
+    
+    def _camera_depth_image_raw_callback(self, data):
+        self.camera_depth_image_raw = data
+        
+    def _camera_depth_points_callback(self, data):
+        self.camera_depth_points = data
+        
+    def _camera_rgb_image_raw_callback(self, data):
+        self.camera_rgb_image_raw = data    
 
     def _odom_callback(self, data):
         self.odom = data
