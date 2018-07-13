@@ -1,0 +1,17 @@
+actions: []
+authors: ''
+brief: ''
+bugtracker: ''
+depends:
+- python-catkin-pkg
+- rospy
+- catkin
+- theconstruct_msgs
+description: The openai_ros package
+license: TODO
+maintainers: rdaneel <rdaneel@todo.todo>
+msgs: []
+package_type: package
+repo_url: ''
+srvs: []
+url: ''

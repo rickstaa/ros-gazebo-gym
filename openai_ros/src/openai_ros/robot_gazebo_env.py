@@ -9,10 +9,10 @@ from theconstruct_msgs.msg import RLExperimentInfo
 # https://github.com/openai/gym/blob/master/gym/core.py
 class RobotGazeboEnv(gym.Env):
 
-    def __init__(self, robot_name_space, controllers_list, reset_controls):
+    def __init__(self, robot_name_space, controllers_list, reset_controls, start_init_physics_parameters=True):
 
         # To reset Simulations
-        self.gazebo = GazeboConnection()
+        self.gazebo = GazeboConnection(start_init_physics_parameters)
         self.controllers_object = ControllersConnection(namespace=robot_name_space, controllers_list=controllers_list)
         self.reset_controls = reset_controls
         self.seed()
