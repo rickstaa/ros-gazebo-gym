@@ -163,7 +163,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("Waiting for /kobuki/laser/scan to be READY...")
         while self.laser_scan is None and not rospy.is_shutdown():
             try:
-                self.laser_scan = rospy.wait_for_message("/kobuki/laser/scan", LaserScan, timeout=5.0)
+                self.laser_scan = rospy.wait_for_message("/kobuki/laser/scan", LaserScan, timeout=1.0)
                 rospy.logdebug("Current /kobuki/laser/scan READY=>")
 
             except:
@@ -268,7 +268,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         :param update_rate: Rate at which we check the odometry.
         :return:
         """
-        rospy.logdebug("START wait_until_twist_achieved...")
+        rospy.logwarn("START wait_until_twist_achieved...")
         
         rate = rospy.Rate(update_rate)
         start_wait_time = rospy.get_rostime().to_sec()
@@ -298,15 +298,15 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
             angular_vel_are_close = (odom_angular_vel <= angular_speed_plus) and (odom_angular_vel > angular_speed_minus)
             
             if linear_vel_are_close and angular_vel_are_close:
-                rospy.logdebug("Reached Velocity!")
+                rospy.logwarn("Reached Velocity!")
                 end_wait_time = rospy.get_rostime().to_sec()
                 break
-            rospy.logdebug("Not there yet, keep waiting...")
+            rospy.logwarn("Not there yet, keep waiting...")
             rate.sleep()
         delta_time = end_wait_time- start_wait_time
         rospy.logdebug("[Wait Time=" + str(delta_time)+"]")
         
-        rospy.logdebug("END wait_until_twist_achieved...")
+        rospy.logwarn("END wait_until_twist_achieved...")
         
         return delta_time
         

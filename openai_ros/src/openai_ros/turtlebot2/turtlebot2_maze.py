@@ -190,8 +190,8 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         mod = len(data.ranges)/new_ranges
         
         rospy.logdebug("data=" + str(data))
-        rospy.logdebug("new_ranges=" + str(new_ranges))
-        rospy.logdebug("mod=" + str(mod))
+        rospy.logwarn("new_ranges=" + str(new_ranges))
+        rospy.logwarn("mod=" + str(mod))
         
         for i, item in enumerate(data.ranges):
             if (i%mod==0):
@@ -203,8 +203,11 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
                     discretized_ranges.append(int(item))
                     
                 if (self.min_range > item > 0):
-                    rospy.logdebug("done Validation >>> item=" + str(item)+"< "+str(self.min_range))
+                    rospy.logerr("done Validation >>> item=" + str(item)+"< "+str(self.min_range))
                     self._episode_done = True
+                else:
+                    rospy.logwarn("NOT done Validation >>> item=" + str(item)+"< "+str(self.min_range))
+                    
 
         return discretized_ranges
 
