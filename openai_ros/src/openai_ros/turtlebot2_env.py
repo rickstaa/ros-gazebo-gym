@@ -41,6 +41,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         
         Args:
         """
+        rospy.logdebug("Start TurtleBot2Env INIT...")
         # Variables that we give through the constructor.
         # None in this case
 
@@ -54,7 +55,8 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
         super(TurtleBot2Env, self).__init__(controllers_list=self.controllers_list,
                                             robot_name_space=self.robot_name_space,
-                                            reset_controls=False)
+                                            reset_controls=False,
+                                            start_init_physics_parameters=False)
 
 
 
@@ -75,6 +77,8 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         self._check_publishers_connection()
 
         self.gazebo.pauseSim()
+        
+        rospy.logdebug("Finished TurtleBot2Env INIT...")
 
     # Methods needed by the RobotGazeboEnv
     # ----------------------------
@@ -93,6 +97,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
     # ----------------------------
 
     def _check_all_sensors_ready(self):
+        rospy.logdebug("START ALL SENSORS READY")
         self._check_odom_ready()
         self._check_camera_depth_image_raw_ready()
         self._check_camera_depth_points_ready()
@@ -102,11 +107,11 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
 
     def _check_odom_ready(self):
         self.odom = None
-        rospy.logwarn("Waiting for /odom to be READY...")
+        rospy.logdebug("Waiting for /odom to be READY...")
         while self.odom is None and not rospy.is_shutdown():
             try:
                 self.odom = rospy.wait_for_message("/odom", Odometry, timeout=5.0)
-                rospy.logwarn("Current /odom READY=>")
+                rospy.logdebug("Current /odom READY=>")
 
             except:
                 rospy.logerr("Current /odom not ready yet, retrying for getting odom")
@@ -116,11 +121,11 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         
     def _check_camera_depth_image_raw_ready(self):
         self.camera_depth_image_raw = None
-        rospy.logwarn("Waiting for /camera/depth/image_raw to be READY...")
+        rospy.logdebug("Waiting for /camera/depth/image_raw to be READY...")
         while self.camera_depth_image_raw is None and not rospy.is_shutdown():
             try:
                 self.camera_depth_image_raw = rospy.wait_for_message("/camera/depth/image_raw", Image, timeout=5.0)
-                rospy.logwarn("Current /camera/depth/image_raw READY=>")
+                rospy.logdebug("Current /camera/depth/image_raw READY=>")
 
             except:
                 rospy.logerr("Current /camera/depth/image_raw not ready yet, retrying for getting camera_depth_image_raw")
@@ -129,11 +134,11 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         
     def _check_camera_depth_points_ready(self):
         self.camera_depth_points = None
-        rospy.logwarn("Waiting for /camera/depth/points to be READY...")
+        rospy.logdebug("Waiting for /camera/depth/points to be READY...")
         while self.camera_depth_points is None and not rospy.is_shutdown():
             try:
                 self.camera_depth_points = rospy.wait_for_message("/camera/depth/points", PointCloud2, timeout=10.0)
-                rospy.logwarn("Current /camera/depth/points READY=>")
+                rospy.logdebug("Current /camera/depth/points READY=>")
 
             except:
                 rospy.logerr("Current /camera/depth/points not ready yet, retrying for getting camera_depth_points")
@@ -142,11 +147,11 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         
     def _check_camera_rgb_image_raw_ready(self):
         self.camera_rgb_image_raw = None
-        rospy.logwarn("Waiting for /camera/rgb/image_raw to be READY...")
+        rospy.logdebug("Waiting for /camera/rgb/image_raw to be READY...")
         while self.camera_rgb_image_raw is None and not rospy.is_shutdown():
             try:
                 self.camera_rgb_image_raw = rospy.wait_for_message("/camera/rgb/image_raw", Image, timeout=5.0)
-                rospy.logwarn("Current /camera/rgb/image_raw READY=>")
+                rospy.logdebug("Current /camera/rgb/image_raw READY=>")
 
             except:
                 rospy.logerr("Current /camera/rgb/image_raw not ready yet, retrying for getting camera_rgb_image_raw")
@@ -155,11 +160,11 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
 
     def _check_laser_scan_ready(self):
         self.laser_scan = None
-        rospy.logwarn("Waiting for /kobuki/laser/scan to be READY...")
+        rospy.logdebug("Waiting for /kobuki/laser/scan to be READY...")
         while self.laser_scan is None and not rospy.is_shutdown():
             try:
                 self.laser_scan = rospy.wait_for_message("/kobuki/laser/scan", LaserScan, timeout=5.0)
-                rospy.logwarn("Current /kobuki/laser/scan READY=>")
+                rospy.logdebug("Current /kobuki/laser/scan READY=>")
 
             except:
                 rospy.logerr("Current /kobuki/laser/scan not ready yet, retrying for getting laser_scan")
@@ -248,6 +253,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         cmd_vel_value.linear.x = linear_speed
         cmd_vel_value.angular.z = angular_speed
         rospy.logdebug("TurtleBot2 Base Twist Cmd>>" + str(cmd_vel_value))
+        self._check_publishers_connection()
         self._cmd_vel_pub.publish(cmd_vel_value)
         self.wait_until_twist_achieved(cmd_vel_value,
                                         epsilon,
@@ -262,11 +268,15 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         :param update_rate: Rate at which we check the odometry.
         :return:
         """
-    
+        rospy.logdebug("START wait_until_twist_achieved...")
+        
         rate = rospy.Rate(update_rate)
         start_wait_time = rospy.get_rostime().to_sec()
         end_wait_time = 0.0
         epsilon = 0.05
+        
+        rospy.logdebug("Desired Twist Cmd>>" + str(cmd_vel_value))
+        rospy.logdebug("epsilon>>" + str(epsilon))
         
         linear_speed = cmd_vel_value.linear.x
         angular_speed = cmd_vel_value.angular.z
@@ -295,6 +305,9 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
             rate.sleep()
         delta_time = end_wait_time- start_wait_time
         rospy.logdebug("[Wait Time=" + str(delta_time)+"]")
+        
+        rospy.logdebug("END wait_until_twist_achieved...")
+        
         return delta_time
         
 

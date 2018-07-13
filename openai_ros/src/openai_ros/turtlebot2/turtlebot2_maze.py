@@ -65,8 +65,8 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         # We only use two integers
         self.observation_space = spaces.Box(low, high)
         
-        rospy.logwarn("ACTION SPACES TYPE===>"+str(self.action_space))
-        rospy.logwarn("OBSERVATION SPACES TYPE===>"+str(self.observation_space))
+        rospy.logdebug("ACTION SPACES TYPE===>"+str(self.action_space))
+        rospy.logdebug("OBSERVATION SPACES TYPE===>"+str(self.observation_space))
         
         # Rewards
         self.forwards_reward = rospy.get_param("/turtlebot2/forwards_reward")
@@ -97,6 +97,8 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         """
         # For Info Purposes
         self.cumulated_reward = 0.0
+        # Set to false Done, because its calculated asyncronously
+        self._episode_done = False
 
 
     def _set_action(self, action):
@@ -105,7 +107,8 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         based on the action number given.
         :param action: The action integer that set s what movement to do next.
         """
-
+        
+        rospy.logdebug("Start Set Action ==>"+str(action))
         # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
         if action == 0: #FORWARD
             linear_speed = self.linear_forward_speed
@@ -122,6 +125,8 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         
         # We tell TurtleBot2 the linear and angular speed to set to execute
         self.move_base(linear_speed, angular_speed, epsilon=0.05, update_rate=10)
+        
+        rospy.logdebug("END Set Action ==>"+str(action))
 
     def _get_obs(self):
         """
@@ -130,7 +135,7 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         TurtleBot2Env API DOCS
         :return:
         """
-
+        rospy.logdebug("Start Get Observation ==>")
         # We get the laser scan data
         laser_scan = self.get_laser_scan()
         
@@ -139,21 +144,18 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
                                                                 )
 
         rospy.logdebug("Observations==>"+str(discretized_observations))
-
+        rospy.logdebug("END Get Observation ==>")
         return discretized_observations
         
 
     def _is_done(self, observations):
         
-        done = False
-        
-        for i, item in enumerate(observations):
-            rospy.logerr("Observation_DONE==>" + str(item))
-            if (self.min_range > item > 0):
-                rospy.logerr("TurtleBot2 is Too Close to wall==>" + str(item))
-                done = True
+        if self._episode_done:
+            rospy.logerr("TurtleBot2 is Too Close to wall==>")
+        else:
+            rospy.logerr("TurtleBot2 is Ok ==>")
 
-        return done
+        return self._episode_done
 
     def _compute_reward(self, observations, done):
 
@@ -182,16 +184,27 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         Discards all the laser readings that are not multiple in index of new_ranges
         value.
         """
+        self._episode_done = False
+        
         discretized_ranges = []
         mod = len(data.ranges)/new_ranges
+        
+        rospy.logdebug("data=" + str(data))
+        rospy.logdebug("new_ranges=" + str(new_ranges))
+        rospy.logdebug("mod=" + str(mod))
+        
         for i, item in enumerate(data.ranges):
             if (i%mod==0):
-                if data.ranges[i] == float ('Inf') or numpy.isinf(data.ranges[i]):
+                if item == float ('Inf') or numpy.isinf(item):
                     discretized_ranges.append(self.max_laser_value)
-                elif numpy.isnan(data.ranges[i]):
+                elif numpy.isnan(item):
                     discretized_ranges.append(self.min_laser_value)
                 else:
-                    discretized_ranges.append(int(data.ranges[i]))
+                    discretized_ranges.append(int(item))
+                    
+                if (self.min_range > item > 0):
+                    rospy.logdebug("done Validation >>> item=" + str(item)+"< "+str(self.min_range))
+                    self._episode_done = True
 
         return discretized_ranges
 

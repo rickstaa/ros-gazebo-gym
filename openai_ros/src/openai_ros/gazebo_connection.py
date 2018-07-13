@@ -9,7 +9,7 @@ from geometry_msgs.msg import Vector3
 
 class GazeboConnection():
     
-    def __init__(self):
+    def __init__(self, start_init_physics_parameters):
         
         self.unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
         self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
@@ -22,6 +22,7 @@ class GazeboConnection():
         rospy.logdebug("Service Found " + str(service_name))
 
         self.set_physics = rospy.ServiceProxy(service_name, SetPhysicsProperties)
+        self.start_init_physics_parameters = start_init_physics_parameters
         self.init_values()
         # We always pause the simulation, important for legged robots learning
         self.pauseSim()
@@ -63,6 +64,17 @@ class GazeboConnection():
         except rospy.ServiceException as e:
             print ("/gazebo/reset_simulation service call failed")
 
+        if self.start_init_physics_parameters:
+            rospy.logwarn("Initialising Simulation Physics Parameters")
+            self.init_physics_parameters()
+        else:
+            rospy.logerr("NOT Initialising Simulation Physics Parameters")
+        
+    def init_physics_parameters(self):
+        """
+        We initialise the physics parameters of the simulation, like gravity,
+        friction coeficients and so on.
+        """
         self._time_step = Float64(0.001)
         self._max_update_rate = Float64(1000.0)
 
@@ -84,6 +96,7 @@ class GazeboConnection():
         self._ode_config.max_contacts = 20
 
         self.update_gravity_call()
+        
 
     def update_gravity_call(self):
 
