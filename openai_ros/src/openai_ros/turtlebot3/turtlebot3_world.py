@@ -1,34 +1,36 @@
 import rospy
 import numpy
 from gym import spaces
-from openai_ros import turtlebot2_env
+from openai_ros import turtlebot3_env
 from gym.envs.registration import register
+from geometry_msgs.msg import Vector3
 
 # The path is __init__.py of openai_ros, where we import the TurtleBot2MazeEnv directly
 timestep_limit_per_episode = 10000 # Can be any Value
 
 register(
-        id='TurtleBot2Maze-v0',
-        entry_point='openai_ros:TurtleBot2MazeEnv',
+        id='TurtleBot3World-v0',
+        entry_point='openai_ros:TurtleBot3WorldEnv',
         timestep_limit=timestep_limit_per_episode,
     )
 
-class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
+class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
     def __init__(self):
         """
-        This Task Env is designed for having the TurtleBot2 in some kind of maze.
-        It will learn how to move around the maze without crashing.
+        This Task Env is designed for having the TurtleBot3 in the turtlebot3 world
+        closed room with columns.
+        It will learn how to move around without crashing.
         """
         
         # Only variable needed to be set here
-        number_actions = rospy.get_param('/turtlebot2/n_actions')
+        number_actions = rospy.get_param('/turtlebot3/n_actions')
         self.action_space = spaces.Discrete(number_actions)
         
         # We set the reward range, which is not compulsory but here we do it.
         self.reward_range = (-numpy.inf, numpy.inf)
         
         
-        #number_observations = rospy.get_param('/turtlebot2/n_observations')
+        #number_observations = rospy.get_param('/turtlebot3/n_observations')
         """
         We set the Observation space for the 6 observations
         cube_observations = [
@@ -42,17 +44,17 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         """
         
         # Actions and Observations
-        self.linear_forward_speed = rospy.get_param('/turtlebot2/linear_forward_speed')
-        self.linear_turn_speed = rospy.get_param('/turtlebot2/linear_turn_speed')
-        self.angular_speed = rospy.get_param('/turtlebot2/angular_speed')
-        self.init_linear_forward_speed = rospy.get_param('/turtlebot2/init_linear_forward_speed')
-        self.init_linear_turn_speed = rospy.get_param('/turtlebot2/init_linear_turn_speed')
+        self.linear_forward_speed = rospy.get_param('/turtlebot3/linear_forward_speed')
+        self.linear_turn_speed = rospy.get_param('/turtlebot3/linear_turn_speed')
+        self.angular_speed = rospy.get_param('/turtlebot3/angular_speed')
+        self.init_linear_forward_speed = rospy.get_param('/turtlebot3/init_linear_forward_speed')
+        self.init_linear_turn_speed = rospy.get_param('/turtlebot3/init_linear_turn_speed')
         
-        self.new_ranges = rospy.get_param('/turtlebot2/new_ranges')
-        self.min_range = rospy.get_param('/turtlebot2/min_range')
-        self.max_laser_value = rospy.get_param('/turtlebot2/max_laser_value')
-        self.min_laser_value = rospy.get_param('/turtlebot2/min_laser_value')
-        
+        self.new_ranges = rospy.get_param('/turtlebot3/new_ranges')
+        self.min_range = rospy.get_param('/turtlebot3/min_range')
+        self.max_laser_value = rospy.get_param('/turtlebot3/max_laser_value')
+        self.min_laser_value = rospy.get_param('/turtlebot3/min_laser_value')
+        self.max_linear_aceleration = rospy.get_param('/turtlebot3/max_linear_aceleration')
         
         
         # We create two arrays based on the binary values that will be assigned
@@ -69,14 +71,14 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         rospy.logdebug("OBSERVATION SPACES TYPE===>"+str(self.observation_space))
         
         # Rewards
-        self.forwards_reward = rospy.get_param("/turtlebot2/forwards_reward")
-        self.turn_reward = rospy.get_param("/turtlebot2/turn_reward")
-        self.end_episode_points = rospy.get_param("/turtlebot2/end_episode_points")
+        self.forwards_reward = rospy.get_param("/turtlebot3/forwards_reward")
+        self.turn_reward = rospy.get_param("/turtlebot3/turn_reward")
+        self.end_episode_points = rospy.get_param("/turtlebot3/end_episode_points")
 
         self.cumulated_steps = 0.0
 
         # Here we will add any init functions prior to starting the MyRobotEnv
-        super(TurtleBot2MazeEnv, self).__init__()
+        super(TurtleBot3WorldEnv, self).__init__()
 
     def _set_init_pose(self):
         """Sets the Robot in its init pose
@@ -139,9 +141,9 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         # We get the laser scan data
         laser_scan = self.get_laser_scan()
         
-        discretized_observations = self.discretize_observation( laser_scan,
-                                                                self.new_ranges
-                                                                )
+        discretized_observations = self.discretize_scan_observation(    laser_scan,
+                                                                        self.new_ranges
+                                                                        )
 
         rospy.logdebug("Observations==>"+str(discretized_observations))
         rospy.logdebug("END Get Observation ==>")
@@ -153,7 +155,17 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         if self._episode_done:
             rospy.logerr("TurtleBot2 is Too Close to wall==>")
         else:
-            rospy.logerr("TurtleBot2 is Ok ==>")
+            rospy.logwarn("TurtleBot2 is NOT close to a wall ==>")
+            
+        # Now we check if it has crashed based on the imu
+        imu_data = self.get_imu()
+        linear_acceleration_magnitude = self.get_vector_magnitude(imu_data.linear_acceleration)
+        if linear_acceleration_magnitude > self.max_linear_aceleration:
+            rospy.logerr("TurtleBot2 Crashed==>"+str(linear_acceleration_magnitude)+">"+str(self.max_linear_aceleration))
+            self._episode_done = True
+        else:
+            rospy.logerr("DIDNT crash TurtleBot2 ==>"+str(linear_acceleration_magnitude)+">"+str(self.max_linear_aceleration))
+        
 
         return self._episode_done
 
@@ -179,7 +191,7 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
 
     # Internal TaskEnv Methods
     
-    def discretize_observation(self,data,new_ranges):
+    def discretize_scan_observation(self,data,new_ranges):
         """
         Discards all the laser readings that are not multiple in index of new_ranges
         value.
@@ -190,8 +202,8 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         mod = len(data.ranges)/new_ranges
         
         rospy.logdebug("data=" + str(data))
-        rospy.logwarn("new_ranges=" + str(new_ranges))
-        rospy.logwarn("mod=" + str(mod))
+        rospy.logdebug("new_ranges=" + str(new_ranges))
+        rospy.logdebug("mod=" + str(mod))
         
         for i, item in enumerate(data.ranges):
             if (i%mod==0):
@@ -206,8 +218,21 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
                     rospy.logerr("done Validation >>> item=" + str(item)+"< "+str(self.min_range))
                     self._episode_done = True
                 else:
-                    rospy.logwarn("NOT done Validation >>> item=" + str(item)+"< "+str(self.min_range))
+                    rospy.logdebug("NOT done Validation >>> item=" + str(item)+"< "+str(self.min_range))
                     
 
         return discretized_ranges
+        
+        
+    def get_vector_magnitude(self, vector):
+        """
+        It calculated the magnitude of the Vector3 given.
+        This is usefull for reading imu accelerations and knowing if there has been 
+        a crash
+        :return:
+        """
+        contact_force_np = numpy.array((vector.x, vector.y, vector.z))
+        force_magnitude = numpy.linalg.norm(contact_force_np)
+
+        return force_magnitude
 

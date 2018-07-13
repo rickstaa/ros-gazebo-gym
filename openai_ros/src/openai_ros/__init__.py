@@ -6,3 +6,7 @@ from openai_ros.cartpole_stay_up.stay_up import CartPoleStayUpEnv
 # TurtleBot2
 from openai_ros.turtlebot2_env import TurtleBot2Env
 from openai_ros.turtlebot2.turtlebot2_maze import TurtleBot2MazeEnv
+# Turtlebot3
+from openai_ros.turtlebot3_env import TurtleBot3Env
+from openai_ros.turtlebot3.turtlebot3_world import TurtleBot3WorldEnv
+

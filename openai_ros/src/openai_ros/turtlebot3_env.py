@@ -232,7 +232,7 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         :param update_rate: Rate at which we check the odometry.
         :return:
         """
-        rospy.logwarn("START wait_until_twist_achieved...")
+        rospy.logdebug("START wait_until_twist_achieved...")
         
         rate = rospy.Rate(update_rate)
         start_wait_time = rospy.get_rostime().to_sec()
@@ -252,8 +252,9 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         
         while not rospy.is_shutdown():
             current_odometry = self._check_odom_ready()
+            # IN turtlebot3 the odometry angular readings are inverted, so we have to invert the sign.
             odom_linear_vel = current_odometry.twist.twist.linear.x
-            odom_angular_vel = current_odometry.twist.twist.angular.z
+            odom_angular_vel = -1*current_odometry.twist.twist.angular.z
             
             rospy.logdebug("Linear VEL=" + str(odom_linear_vel) + ", ?RANGE=[" + str(linear_speed_minus) + ","+str(linear_speed_plus)+"]")
             rospy.logdebug("Angular VEL=" + str(odom_angular_vel) + ", ?RANGE=[" + str(angular_speed_minus) + ","+str(angular_speed_plus)+"]")
@@ -262,15 +263,15 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
             angular_vel_are_close = (odom_angular_vel <= angular_speed_plus) and (odom_angular_vel > angular_speed_minus)
             
             if linear_vel_are_close and angular_vel_are_close:
-                rospy.logwarn("Reached Velocity!")
+                rospy.logdebug("Reached Velocity!")
                 end_wait_time = rospy.get_rostime().to_sec()
                 break
-            rospy.logwarn("Not there yet, keep waiting...")
+            rospy.logdebug("Not there yet, keep waiting...")
             rate.sleep()
         delta_time = end_wait_time- start_wait_time
         rospy.logdebug("[Wait Time=" + str(delta_time)+"]")
         
-        rospy.logwarn("END wait_until_twist_achieved...")
+        rospy.logdebug("END wait_until_twist_achieved...")
         
         return delta_time
         
