@@ -5,7 +5,7 @@ from openai_ros import sumitxl_env
 from gym.envs.registration import register
 from geometry_msgs.msg import Vector3
 
-# The path is __init__.py of openai_ros, where we import the TurtleBot2MazeEnv directly
+# The path is __init__.py of openai_ros, where we import the SumitXlMazeEnv directly
 timestep_limit_per_episode = 10000 # Can be any Value
 
 register(
@@ -105,7 +105,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
 
     def _set_action(self, action):
         """
-        This set action will Set the linear and angular speed of the turtlebot2
+        This set action will Set the linear and angular speed of the SumitXl
         based on the action number given.
         :param action: The action integer that set s what movement to do next.
         """
@@ -125,7 +125,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
             angular_speed = -1*self.angular_speed
             self.last_action = "TURN_RIGHT"
         
-        # We tell TurtleBot2 the linear and angular speed to set to execute
+        # We tell SumitXL the linear and angular speed to set to execute
         self.move_base(linear_speed, angular_speed, epsilon=0.05, update_rate=10)
         
         rospy.logdebug("END Set Action ==>"+str(action))
@@ -134,7 +134,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         """
         Here we define what sensor data defines our robots observations
         To know which Variables we have acces to, we need to read the
-        TurtleBot2Env API DOCS
+        SumitXlEnv API DOCS
         :return:
         """
         rospy.logdebug("Start Get Observation ==>")
@@ -153,18 +153,18 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
     def _is_done(self, observations):
         
         if self._episode_done:
-            rospy.logerr("TurtleBot2 is Too Close to wall==>")
+            rospy.logerr("SumitXl is Too Close to wall==>")
         else:
-            rospy.logwarn("TurtleBot2 is NOT close to a wall ==>")
+            rospy.logwarn("SumitXl is NOT close to a wall ==>")
             
         # Now we check if it has crashed based on the imu
         imu_data = self.get_imu()
         linear_acceleration_magnitude = self.get_vector_magnitude(imu_data.linear_acceleration)
         if linear_acceleration_magnitude > self.max_linear_aceleration:
-            rospy.logerr("TurtleBot2 Crashed==>"+str(linear_acceleration_magnitude)+">"+str(self.max_linear_aceleration))
+            rospy.logerr("SumitXl Crashed==>"+str(linear_acceleration_magnitude)+">"+str(self.max_linear_aceleration))
             self._episode_done = True
         else:
-            rospy.logerr("DIDNT crash TurtleBot2 ==>"+str(linear_acceleration_magnitude)+">"+str(self.max_linear_aceleration))
+            rospy.logerr("DIDNT crash SumitXl ==>"+str(linear_acceleration_magnitude)+">"+str(self.max_linear_aceleration))
         
 
         return self._episode_done

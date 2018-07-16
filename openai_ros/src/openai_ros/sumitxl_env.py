@@ -10,7 +10,7 @@ from sensor_msgs.msg import Imu
 from sensor_msgs.msg import NavSatFix
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
-from geometry_msgs-msg import Vector3Stamped
+from geometry_msgs.msg import Vector3Stamped
 
 
 class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -66,7 +66,7 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
         super(SumitXlEnv, self).__init__(controllers_list=self.controllers_list,
                                             robot_name_space=self.robot_name_space,
-                                            reset_controls=True,
+                                            reset_controls=False,
                                             start_init_physics_parameters=False)
 
         self.gazebo.unpauseSim()
@@ -193,7 +193,7 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("Waiting for /summit_xl/odom to be READY...")
         while self.odom is None and not rospy.is_shutdown():
             try:
-                self.odom = rospy.wait_for_message("/summit_xl/odom", Odometry, timeout=5.0)
+                self.odom = rospy.wait_for_message("/summit_xl/odom", Odometry, timeout=0.5)
                 rospy.logdebug("Current /summit_xl/odom READY=>")
 
             except:
@@ -320,7 +320,7 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         cmd_vel_value = Twist()
         cmd_vel_value.linear.x = linear_speed
         cmd_vel_value.angular.z = angular_speed
-        rospy.logdebug("TurtleBot3 Base Twist Cmd>>" + str(cmd_vel_value))
+        rospy.logdebug("SumitXL Base Twist Cmd>>" + str(cmd_vel_value))
         self._check_publishers_connection()
         self._cmd_vel_pub.publish(cmd_vel_value)
         self.wait_until_twist_achieved(cmd_vel_value,

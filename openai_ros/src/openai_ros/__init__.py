@@ -11,5 +11,5 @@ from openai_ros.turtlebot3_env import TurtleBot3Env
 from openai_ros.turtlebot3.turtlebot3_world import TurtleBot3WorldEnv
 # SumitXL
 from openai_ros.sumitxl_env import SumitXlEnv
-from openai_ros.sumit_xl.sumit_xl_room import TurtleBot3WorldEnv
+from openai_ros.sumit_xl.sumit_xl_room import SumitXlRoom
 
