@@ -4,6 +4,9 @@ from gym import spaces
 from openai_ros import sumitxl_env
 from gym.envs.registration import register
 from geometry_msgs.msg import Vector3
+from geometry_msgs.msg import Point
+from tf.transformations import euler_from_quaternion
+
 
 # The path is __init__.py of openai_ros, where we import the SumitXlMazeEnv directly
 timestep_limit_per_episode = 10000 # Can be any Value
@@ -29,20 +32,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         # We set the reward range, which is not compulsory but here we do it.
         self.reward_range = (-numpy.inf, numpy.inf)
         
-        
-        #number_observations = rospy.get_param('/sumit_xl/n_observations')
-        """
-        We set the Observation space for the 6 observations
-        cube_observations = [
-            round(current_disk_roll_vel, 0),
-            round(y_distance, 1),
-            round(roll, 1),
-            round(pitch, 1),
-            round(y_linear_speed,1),
-            round(yaw, 1),
-        ]
-        """
-        
+
         # Actions and Observations
         self.linear_forward_speed = rospy.get_param('/sumit_xl/linear_forward_speed')
         self.linear_turn_speed = rospy.get_param('/sumit_xl/linear_turn_speed')
@@ -56,23 +46,42 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         self.min_laser_value = rospy.get_param('/sumit_xl/min_laser_value')
         self.max_linear_aceleration = rospy.get_param('/sumit_xl/max_linear_aceleration')
         
+        self.max_distance = rospy.get_param('/sumit_xl/max_distance')
         
-        # We create two arrays based on the binary values that will be assigned
-        # In the discretization method.
+        
+        # Get Desired Point to Get
+        self.desired_point = Point()
+        self.desired_point.x = rospy.get_param("/sumit_xl/desired_pose/x")
+        self.desired_point.y = rospy.get_param("/sumit_xl/desired_pose/y")
+        self.desired_point.z = rospy.get_param("/sumit_xl/desired_pose/z")
+        
+        
+        # We create the arrays for the laser readings
+        # We also create the arrays for the odometry readings
+        # We join them toeguether.
         laser_scan = self._check_laser_scan_ready()
         num_laser_readings = len(laser_scan.ranges)/self.new_ranges
-        high = numpy.full((num_laser_readings), self.max_laser_value)
-        low = numpy.full((num_laser_readings), self.min_laser_value)
+        high_laser = numpy.full((num_laser_readings), self.max_laser_value)
+        low_laser = numpy.full((num_laser_readings), self.min_laser_value)
         
-        # We only use two integers
+        # We place the Maximum and minimum values of the X,Y and YAW of the odometry
+        # The odometry yaw can be any value in the circunference.
+        high_odometry = numpy.array([self.max_distance, self.max_distance, 3.14])
+        low_odometry = numpy.array([-1*self.max_distance, -1*self.max_distance, -1*3.14])
+        
+        # We join both arrays
+        high = numpy.concatenate([high_laser, high_odometry])
+        low = numpy.concatenate([low_laser, low_odometry])
+        
         self.observation_space = spaces.Box(low, high)
         
         rospy.logdebug("ACTION SPACES TYPE===>"+str(self.action_space))
         rospy.logdebug("OBSERVATION SPACES TYPE===>"+str(self.observation_space))
         
         # Rewards
-        self.forwards_reward = rospy.get_param("/sumit_xl/forwards_reward")
-        self.turn_reward = rospy.get_param("/sumit_xl/turn_reward")
+        self.closer_to_point_reward = rospy.get_param("/sumit_xl/closer_to_point_reward")
+        self.not_ending_point_reward = rospy.get_param("/sumit_xl/not_ending_point_reward")
+        
         self.end_episode_points = rospy.get_param("/sumit_xl/end_episode_points")
 
         self.cumulated_steps = 0.0
@@ -101,6 +110,9 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         self.cumulated_reward = 0.0
         # Set to false Done, because its calculated asyncronously
         self._episode_done = False
+        
+        odometry = self.get_odom()
+        self.total_distance_from_des_point = self.get_distance_from_desired_point(odometry.pose.pose.position)
 
 
     def _set_action(self, action):
@@ -141,13 +153,28 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         # We get the laser scan data
         laser_scan = self.get_laser_scan()
         
-        discretized_observations = self.discretize_scan_observation(    laser_scan,
+        discretized_laser_scan = self.discretize_scan_observation(    laser_scan,
                                                                         self.new_ranges
                                                                         )
+        # We get the odometry so that SumitXL knows where it is.
+        odometry = self.get_odom()
+        x_position = odometry.pose.pose.position.x
+        y_position = odometry.pose.pose.position.y
+        
+        # We get the orientation of the cube in RPY
+        roll, pitch, yaw = self.get_orientation_euler()
+        # We round to only two decimals to avoid very big Observation space
+        odometry_array = [  round(x_position, 2),
+                            round(y_position, 2),
+                            round(yaw, 2)]
 
-        rospy.logdebug("Observations==>"+str(discretized_observations))
+        # We only want the X and Y position and the Yaw
+
+        observations = discretized_laser_scan + odometry_array
+
+        rospy.logdebug("Observations==>"+str(observations))
         rospy.logdebug("END Get Observation ==>")
-        return discretized_observations
+        return observations
         
 
     def _is_done(self, observations):
@@ -166,16 +193,50 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         else:
             rospy.logerr("DIDNT crash SumitXl ==>"+str(linear_acceleration_magnitude)+">"+str(self.max_linear_aceleration))
         
+        
+        x_position = observations[-3]
+        y_position = observations[-2]
+        
+        if abs(x_position) <= self.max_distance:
+            if abs(y_position) <= self.max_distance:
+                rospy.logwarn("SummitXL Position is OK ==>["+str(x_position)+","+str(y_position)+"]")
+            else:
+                rospy.logerr("SummitXL to Far in Y Pos ==>"+str(x_position))
+                self._episode_done = True
+        else:
+            rospy.logerr("SummitXL to Far in X Pos ==>"+str(x_position))
+            self._episode_done = True
 
         return self._episode_done
 
     def _compute_reward(self, observations, done):
+        """
+        We give reward to the robot when it gets closer to the desired point.
+        We Dont give it contsnatly, but only if there is an improvement
+        """
+
+        # We get the current Position from the obervations
+        current_position = Point()
+        current_position.x = observations[-3]
+        current_position.y = observations[-2]
+        current_position.z = 0.0
+        
+        distance_from_des_point = self.get_distance_from_desired_point(current_position)
+        
+        distance_difference =  distance_from_des_point - self.total_distance_from_des_point
+
+        rospy.logwarn("total_distance_from_des_point=" + str(self.total_distance_from_des_point))
+        rospy.logwarn("distance_from_des_point=" + str(distance_from_des_point))
+        rospy.logwarn("distance_difference=" + str(distance_difference))
 
         if not done:
-            if self.last_action == "FORWARDS":
-                reward = self.forwards_reward
+            # If there has been a decreese in the distance to the desired point, we reward it
+            if distance_difference < 0.0:
+                reward = self.closer_to_point_reward
             else:
-                reward = self.turn_reward
+                # If it didnt get closer, we give much less points in theory
+                # This should trigger the behaviour of moving towards the point
+                reward = self.not_ending_point_reward
         else:
             reward = -1*self.end_episode_points
 
@@ -235,4 +296,40 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         force_magnitude = numpy.linalg.norm(contact_force_np)
 
         return force_magnitude
+        
+        
+    def get_orientation_euler(self):
+        # We convert from quaternions to euler
+        orientation_list = [self.odom.pose.pose.orientation.x,
+                            self.odom.pose.pose.orientation.y,
+                            self.odom.pose.pose.orientation.z,
+                            self.odom.pose.pose.orientation.w]
+    
+        roll, pitch, yaw = euler_from_quaternion(orientation_list)
+        return roll, pitch, yaw
+        
+        
+    def get_distance_from_desired_point(self, current_position):
+        """
+        Calculates the distance from the current position to the desired point
+        :param start_point:
+        :return:
+        """
+        distance = self.get_distance_from_point(current_position,
+                                                self.desired_point)
+    
+        return distance
+    
+    def get_distance_from_point(self, pstart, p_end):
+        """
+        Given a Vector3 Object, get distance from current position
+        :param p_end:
+        :return:
+        """
+        a = numpy.array((pstart.x, pstart.y, pstart.z))
+        b = numpy.array((p_end.x, p_end.y, p_end.z))
+    
+        distance = numpy.linalg.norm(a - b)
+    
+        return distance
 

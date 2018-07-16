@@ -381,6 +381,25 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         return delta_time
         
 
+    def get_gps_fix(self):
+        return self.gps_fix
+        
+    def get_gps_fix_velocity(self):
+        return self.gps_fix_velocity
+        
+    def get_laser_scan(self):
+        return self.laser_scan
+
+
+    def get_camera_depth_image_raw(self):
+        return self.camera_depth_image_raw
+        
+    def get_camera_depth_points(self):
+        return self.camera_depth_points
+        
+    def get_camera_rgb_image_raw(self):
+        return self.camera_rgb_image_raw
+
     def get_odom(self):
         return self.odom
         
