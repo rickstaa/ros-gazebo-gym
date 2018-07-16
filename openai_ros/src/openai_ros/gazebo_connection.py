@@ -9,7 +9,7 @@ from geometry_msgs.msg import Vector3
 
 class GazeboConnection():
     
-    def __init__(self, start_init_physics_parameters):
+    def __init__(self, start_init_physics_parameters, reset_world_or_sim):
         
         self.unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
         self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
@@ -23,6 +23,7 @@ class GazeboConnection():
 
         self.set_physics = rospy.ServiceProxy(service_name, SetPhysicsProperties)
         self.start_init_physics_parameters = start_init_physics_parameters
+        self.reset_world_or_sim = reset_world_or_sim
         self.init_values()
         # We always pause the simulation, important for legged robots learning
         self.pauseSim()
@@ -40,8 +41,25 @@ class GazeboConnection():
             self.unpause()
         except rospy.ServiceException as e:
             print ("/gazebo/unpause_physics service call failed")
-        
+    
+    
     def resetSim(self):
+        """
+        This was implemented because some simulations, when reseted the simulation
+        the systems that work with TF break, and because sometime we wont be able to change them
+        we need to reset world that ONLY resets the object position, not the entire simulation
+        systems.
+        """
+        if self.reset_world_or_sim == "SIMULATION":
+            rospy.logerr("SIMULATION RESET")
+            self.resetSimulation()
+        elif self.reset_world_or_sim == "WORLD":
+            rospy.logerr("WORLD RESET")
+            self.resetWorld
+        else:
+            rospy.logerr("WRONG Reset Option:"+str(self.reset_world_or_sim))
+    
+    def resetSimulation(self):
         rospy.wait_for_service('/gazebo/reset_simulation')
         try:
             self.reset_proxy()
@@ -57,12 +75,7 @@ class GazeboConnection():
 
     def init_values(self):
 
-        rospy.wait_for_service('/gazebo/reset_simulation')
-        try:
-            # reset_proxy.call()
-            self.reset_proxy()
-        except rospy.ServiceException as e:
-            print ("/gazebo/reset_simulation service call failed")
+        self.resetSim()
 
         if self.start_init_physics_parameters:
             rospy.logwarn("Initialising Simulation Physics Parameters")

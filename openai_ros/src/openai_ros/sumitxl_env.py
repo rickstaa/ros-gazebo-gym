@@ -67,7 +67,8 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         super(SumitXlEnv, self).__init__(controllers_list=self.controllers_list,
                                             robot_name_space=self.robot_name_space,
                                             reset_controls=False,
-                                            start_init_physics_parameters=False)
+                                            start_init_physics_parameters=False,
+                                            reset_world_or_sim="WORLD")
 
         self.gazebo.unpauseSim()
         self.controllers_object.reset_controllers()
