@@ -193,19 +193,25 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         else:
             rospy.logerr("DIDNT crash SumitXl ==>"+str(linear_acceleration_magnitude)+">"+str(self.max_linear_aceleration))
         
+        current_position = Point()
+        current_position.x = observations[-3]
+        current_position.y = observations[-2]
+        current_position.z = 0.0
         
-        x_position = observations[-3]
-        y_position = observations[-2]
-        
-        if abs(x_position) <= self.max_distance:
-            if abs(y_position) <= self.max_distance:
-                rospy.logwarn("SummitXL Position is OK ==>["+str(x_position)+","+str(y_position)+"]")
+        if abs(current_position.x) <= self.max_distance:
+            if abs(current_position.y) <= self.max_distance:
+                rospy.logwarn("SummitXL Position is OK ==>["+str(current_position.x)+","+str(current_position.y)+"]")
             else:
-                rospy.logerr("SummitXL to Far in Y Pos ==>"+str(x_position))
+                rospy.logerr("SummitXL to Far in Y Pos ==>"+str(current_position.x))
                 self._episode_done = True
         else:
-            rospy.logerr("SummitXL to Far in X Pos ==>"+str(x_position))
+            rospy.logerr("SummitXL to Far in X Pos ==>"+str(current_position.x))
             self._episode_done = True
+            
+        
+        if self.is_in_desired_position(current_position):
+            self._episode_done = True
+        
 
         return self._episode_done
 
@@ -238,14 +244,19 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
                 # This should trigger the behaviour of moving towards the point
                 reward = self.not_ending_point_reward
         else:
-            reward = -1*self.end_episode_points
+            if self.is_in_desired_position(current_position):
+                reward = self.end_episode_points
+                rospy.logwarn("GOT TO DESIRED POINT ; DONE, reward=" + str(reward))
+            else:
+                reward = -1*self.end_episode_points
+                rospy.logerr("SOMETHING WENT WRONG ; DONE, reward=" + str(reward))
 
 
-        rospy.logdebug("reward=" + str(reward))
+        rospy.logwarn("reward=" + str(reward))
         self.cumulated_reward += reward
-        rospy.logdebug("Cumulated_reward=" + str(self.cumulated_reward))
+        rospy.logwarn("Cumulated_reward=" + str(self.cumulated_reward))
         self.cumulated_steps += 1
-        rospy.logdebug("Cumulated_steps=" + str(self.cumulated_steps))
+        rospy.logwarn("Cumulated_steps=" + str(self.cumulated_steps))
         
         return reward
 
@@ -332,4 +343,28 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         distance = numpy.linalg.norm(a - b)
     
         return distance
+        
+    
+    def is_in_desired_position(self,current_position, epsilon=0.05):
+        """
+        It return True if the current position is similar to the desired poistion
+        """
+        
+        is_in_desired_pos = False
+        
+        
+        x_pos_plus = self.desired_point.x + epsilon
+        x_pos_plus_minus = self.desired_point.x - epsilon
+        y_pos_plus = self.desired_point.y + epsilon
+        y_pos_minus = self.desired_point.y - epsilon
+        
+        x_current = current_position.x
+        y_current = current_position.y
+        
+        x_pos_are_close = (x_current <= x_pos_plus) and (x_current > x_pos_plus_minus)
+        y_pos_are_close = (y_current <= y_pos_plus) and (y_current > y_pos_plus_minus)
+        
+        is_in_desired_pos = x_pos_are_close and y_pos_are_close
+        
+        return is_in_desired_pos
 
