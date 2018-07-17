@@ -342,7 +342,6 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         rate = rospy.Rate(update_rate)
         start_wait_time = rospy.get_rostime().to_sec()
         end_wait_time = 0.0
-        epsilon = 0.05
         
         rospy.logwarn("Desired Twist Cmd>>" + str(cmd_vel_value))
         rospy.logwarn("epsilon>>" + str(epsilon))
@@ -352,13 +351,22 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         
         linear_speed_plus = linear_speed + epsilon
         linear_speed_minus = linear_speed - epsilon
-        angular_speed_plus = angular_speed + epsilon
-        angular_speed_minus = angular_speed - epsilon
+        # Correcting factor for angular based on observations
+        angular_factor = 2.0
+        epsilon_angular_factor = 6.0
+        angular_speed_plus = (angular_factor* angular_speed) + (epsilon * epsilon_angular_factor)
+        angular_speed_minus = (angular_factor * angular_speed) - (epsilon * epsilon_angular_factor)
         
         while not rospy.is_shutdown():
             current_odometry = self._check_odom_ready()
             
             odom_linear_vel = current_odometry.twist.twist.linear.x
+            """
+            When asking to turn EX: angular.Z = 0.3 --> Odometry is 0.6
+            In linera runs ok. It also flutuates a lot, due to the turning through friction.
+            Therefore we will have to multiply the angular by 2 and broaden the 
+            accepted error for angular.
+            """
             odom_angular_vel = current_odometry.twist.twist.angular.z
             
             rospy.logwarn("Linear VEL=" + str(odom_linear_vel) + ", ?RANGE=[" + str(linear_speed_minus) + ","+str(linear_speed_plus)+"]")
