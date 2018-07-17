@@ -112,7 +112,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         self._episode_done = False
         
         odometry = self.get_odom()
-        self.total_distance_from_des_point = self.get_distance_from_desired_point(odometry.pose.pose.position)
+        self.previous_distance_from_des_point = self.get_distance_from_desired_point(odometry.pose.pose.position)
 
 
     def _set_action(self, action):
@@ -122,7 +122,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         :param action: The action integer that set s what movement to do next.
         """
         
-        rospy.logwarn("Start Set Action ==>"+str(action))
+        rospy.logdebug("Start Set Action ==>"+str(action))
         # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
         if action == 0: #FORWARD
             linear_speed = self.linear_forward_speed
@@ -163,7 +163,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         
         :return:
         """
-        rospy.logwarn("Start Get Observation ==>")
+        rospy.logdebug("Start Get Observation ==>")
         # We get the laser scan data
         laser_scan = self.get_laser_scan()
         
@@ -186,8 +186,8 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
 
         observations = discretized_laser_scan + odometry_array
 
-        rospy.logwarn("Observations==>"+str(observations))
-        rospy.logwarn("END Get Observation ==>")
+        rospy.logdebug("Observations==>"+str(observations))
+        rospy.logdebug("END Get Observation ==>")
         
         return observations
         
@@ -197,7 +197,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         if self._episode_done:
             rospy.logerr("SumitXl is Too Close to wall==>")
         else:
-            rospy.logwarn("SumitXl is NOT close to a wall ==>")
+            rospy.logdebug("SumitXl is NOT close to a wall ==>")
             
         # Now we check if it has crashed based on the imu
         imu_data = self.get_imu()
@@ -215,7 +215,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         
         if abs(current_position.x) <= self.max_distance:
             if abs(current_position.y) <= self.max_distance:
-                rospy.logwarn("SummitXL Position is OK ==>["+str(current_position.x)+","+str(current_position.y)+"]")
+                rospy.logdebug("SummitXL Position is OK ==>["+str(current_position.x)+","+str(current_position.y)+"]")
             else:
                 rospy.logerr("SummitXL to Far in Y Pos ==>"+str(current_position.x))
                 self._episode_done = True
@@ -244,19 +244,25 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         
         distance_from_des_point = self.get_distance_from_desired_point(current_position)
         
-        distance_difference =  distance_from_des_point - self.total_distance_from_des_point
+        distance_difference =  distance_from_des_point - self.previous_distance_from_des_point
 
-        rospy.logwarn("total_distance_from_des_point=" + str(self.total_distance_from_des_point))
+
+        rospy.logwarn("current_position=" + str(current_position))
+        rospy.logwarn("desired_point=" + str(self.desired_point))
+        
+        rospy.logwarn("total_distance_from_des_point=" + str(self.previous_distance_from_des_point))
         rospy.logwarn("distance_from_des_point=" + str(distance_from_des_point))
         rospy.logwarn("distance_difference=" + str(distance_difference))
 
         if not done:
-            # If there has been a decreese in the distance to the desired point, we reward it
+            # If there has been a decrease in the distance to the desired point, we reward it
             if distance_difference < 0.0:
+                rospy.logwarn("DECREASE IN DISTANCE GOOD")
                 reward = self.closer_to_point_reward
             else:
                 # If it didnt get closer, we give much less points in theory
                 # This should trigger the behaviour of moving towards the point
+                rospy.logwarn("NO DECREASE IN DISTANCE, so much less points")
                 reward = self.not_ending_point_reward
         else:
             if self.is_in_desired_position(current_position):
@@ -266,12 +272,13 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
                 reward = -1*self.end_episode_points
                 rospy.logerr("SOMETHING WENT WRONG ; DONE, reward=" + str(reward))
 
-
+        self.previous_distance_from_des_point = distance_from_des_point
+        
         rospy.logwarn("reward=" + str(reward))
         self.cumulated_reward += reward
-        rospy.logwarn("Cumulated_reward=" + str(self.cumulated_reward))
+        rospy.logdebug("Cumulated_reward=" + str(self.cumulated_reward))
         self.cumulated_steps += 1
-        rospy.logwarn("Cumulated_steps=" + str(self.cumulated_steps))
+        rospy.logdebug("Cumulated_steps=" + str(self.cumulated_steps))
         
         return reward
 
@@ -305,7 +312,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
                     rospy.logerr("done Validation >>> item=" + str(item)+"< "+str(self.min_range))
                     self._episode_done = True
                 else:
-                    rospy.logwarn("NOT done Validation >>> item=" + str(item)+"< "+str(self.min_range))
+                    rospy.logdebug("NOT done Validation >>> item=" + str(item)+"< "+str(self.min_range))
                     
 
         return discretized_ranges

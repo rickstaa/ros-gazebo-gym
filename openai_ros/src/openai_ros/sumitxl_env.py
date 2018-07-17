@@ -343,8 +343,8 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         start_wait_time = rospy.get_rostime().to_sec()
         end_wait_time = 0.0
         
-        rospy.logwarn("Desired Twist Cmd>>" + str(cmd_vel_value))
-        rospy.logwarn("epsilon>>" + str(epsilon))
+        rospy.logdebug("Desired Twist Cmd>>" + str(cmd_vel_value))
+        rospy.logdebug("epsilon>>" + str(epsilon))
         
         linear_speed = cmd_vel_value.linear.x
         angular_speed = cmd_vel_value.angular.z
@@ -369,22 +369,22 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
             """
             odom_angular_vel = current_odometry.twist.twist.angular.z
             
-            rospy.logwarn("Linear VEL=" + str(odom_linear_vel) + ", ?RANGE=[" + str(linear_speed_minus) + ","+str(linear_speed_plus)+"]")
-            rospy.logwarn("Angular VEL=" + str(odom_angular_vel) + ", ?RANGE=[" + str(angular_speed_minus) + ","+str(angular_speed_plus)+"]")
+            rospy.logdebug("Linear VEL=" + str(odom_linear_vel) + ", ?RANGE=[" + str(linear_speed_minus) + ","+str(linear_speed_plus)+"]")
+            rospy.logdebug("Angular VEL=" + str(odom_angular_vel) + ", ?RANGE=[" + str(angular_speed_minus) + ","+str(angular_speed_plus)+"]")
             
             linear_vel_are_close = (odom_linear_vel <= linear_speed_plus) and (odom_linear_vel > linear_speed_minus)
             angular_vel_are_close = (odom_angular_vel <= angular_speed_plus) and (odom_angular_vel > angular_speed_minus)
             
             if linear_vel_are_close and angular_vel_are_close:
-                rospy.logwarn("Reached Velocity!")
+                rospy.logdebug("Reached Velocity!")
                 end_wait_time = rospy.get_rostime().to_sec()
                 break
-            rospy.logerr("Not there yet, keep waiting...")
+            rospy.logdebug("Not there yet, keep waiting...")
             rate.sleep()
         delta_time = end_wait_time- start_wait_time
-        rospy.logwarn("[Wait Time=" + str(delta_time)+"]")
+        rospy.logdebug("[Wait Time=" + str(delta_time)+"]")
         
-        rospy.logwarn("END wait_until_twist_achieved...")
+        rospy.logdebug("END wait_until_twist_achieved...")
         
         return delta_time
         
