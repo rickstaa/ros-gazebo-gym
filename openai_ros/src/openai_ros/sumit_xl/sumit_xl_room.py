@@ -122,7 +122,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         :param action: The action integer that set s what movement to do next.
         """
         
-        rospy.logdebug("Start Set Action ==>"+str(action))
+        rospy.logwarn("Start Set Action ==>"+str(action))
         # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
         if action == 0: #FORWARD
             linear_speed = self.linear_forward_speed
@@ -290,7 +290,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
                     rospy.logerr("done Validation >>> item=" + str(item)+"< "+str(self.min_range))
                     self._episode_done = True
                 else:
-                    rospy.logdebug("NOT done Validation >>> item=" + str(item)+"< "+str(self.min_range))
+                    rospy.logwarn("NOT done Validation >>> item=" + str(item)+"< "+str(self.min_range))
                     
 
         return discretized_ranges
@@ -354,15 +354,15 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         
         
         x_pos_plus = self.desired_point.x + epsilon
-        x_pos_plus_minus = self.desired_point.x - epsilon
+        x_pos_minus = self.desired_point.x - epsilon
         y_pos_plus = self.desired_point.y + epsilon
         y_pos_minus = self.desired_point.y - epsilon
         
         x_current = current_position.x
         y_current = current_position.y
         
-        x_pos_are_close = (x_current <= x_pos_plus) and (x_current > x_pos_plus_minus)
-        y_pos_are_close = (y_current <= y_pos_plus) and (y_current > y_pos_plus_minus)
+        x_pos_are_close = (x_current <= x_pos_plus) and (x_current > x_pos_minus)
+        y_pos_are_close = (y_current <= y_pos_plus) and (y_current > y_pos_minus)
         
         is_in_desired_pos = x_pos_are_close and y_pos_are_close
         

@@ -344,8 +344,8 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         end_wait_time = 0.0
         epsilon = 0.05
         
-        rospy.logdebug("Desired Twist Cmd>>" + str(cmd_vel_value))
-        rospy.logdebug("epsilon>>" + str(epsilon))
+        rospy.logwarn("Desired Twist Cmd>>" + str(cmd_vel_value))
+        rospy.logwarn("epsilon>>" + str(epsilon))
         
         linear_speed = cmd_vel_value.linear.x
         angular_speed = cmd_vel_value.angular.z
@@ -357,26 +357,26 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         
         while not rospy.is_shutdown():
             current_odometry = self._check_odom_ready()
-            # IN turtlebot3 the odometry angular readings are inverted, so we have to invert the sign.
-            odom_linear_vel = current_odometry.twist.twist.linear.x
-            odom_angular_vel = -1*current_odometry.twist.twist.angular.z
             
-            rospy.logdebug("Linear VEL=" + str(odom_linear_vel) + ", ?RANGE=[" + str(linear_speed_minus) + ","+str(linear_speed_plus)+"]")
-            rospy.logdebug("Angular VEL=" + str(odom_angular_vel) + ", ?RANGE=[" + str(angular_speed_minus) + ","+str(angular_speed_plus)+"]")
+            odom_linear_vel = current_odometry.twist.twist.linear.x
+            odom_angular_vel = current_odometry.twist.twist.angular.z
+            
+            rospy.logwarn("Linear VEL=" + str(odom_linear_vel) + ", ?RANGE=[" + str(linear_speed_minus) + ","+str(linear_speed_plus)+"]")
+            rospy.logwarn("Angular VEL=" + str(odom_angular_vel) + ", ?RANGE=[" + str(angular_speed_minus) + ","+str(angular_speed_plus)+"]")
             
             linear_vel_are_close = (odom_linear_vel <= linear_speed_plus) and (odom_linear_vel > linear_speed_minus)
             angular_vel_are_close = (odom_angular_vel <= angular_speed_plus) and (odom_angular_vel > angular_speed_minus)
             
             if linear_vel_are_close and angular_vel_are_close:
-                rospy.logdebug("Reached Velocity!")
+                rospy.logwarn("Reached Velocity!")
                 end_wait_time = rospy.get_rostime().to_sec()
                 break
-            rospy.logdebug("Not there yet, keep waiting...")
+            rospy.logerr("Not there yet, keep waiting...")
             rate.sleep()
         delta_time = end_wait_time- start_wait_time
-        rospy.logdebug("[Wait Time=" + str(delta_time)+"]")
+        rospy.logwarn("[Wait Time=" + str(delta_time)+"]")
         
-        rospy.logdebug("END wait_until_twist_achieved...")
+        rospy.logwarn("END wait_until_twist_achieved...")
         
         return delta_time
         
