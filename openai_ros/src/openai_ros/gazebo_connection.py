@@ -13,7 +13,8 @@ class GazeboConnection():
         
         self.unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
         self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
-        self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
+        self.reset_simulation_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
+        self.reset_world_proxy = rospy.ServiceProxy('/gazebo/reset_world', Empty)
 
         # Setup the Gravity Controle system
         service_name = '/gazebo/set_physics_properties'
@@ -55,21 +56,21 @@ class GazeboConnection():
             self.resetSimulation()
         elif self.reset_world_or_sim == "WORLD":
             rospy.logerr("WORLD RESET")
-            self.resetWorld
+            self.resetWorld()
         else:
             rospy.logerr("WRONG Reset Option:"+str(self.reset_world_or_sim))
     
     def resetSimulation(self):
         rospy.wait_for_service('/gazebo/reset_simulation')
         try:
-            self.reset_proxy()
+            self.reset_simulation_proxy()
         except rospy.ServiceException as e:
             print ("/gazebo/reset_simulation service call failed")
 
     def resetWorld(self):
         rospy.wait_for_service('/gazebo/reset_world')
         try:
-            self.reset_proxy()
+            self.reset_world_proxy()
         except rospy.ServiceException as e:
             print ("/gazebo/reset_world service call failed")
 

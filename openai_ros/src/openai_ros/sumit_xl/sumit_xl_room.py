@@ -136,6 +136,10 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
             linear_speed = self.linear_turn_speed
             angular_speed = -1*self.angular_speed
             self.last_action = "TURN_RIGHT"
+        elif action == 3: #STOP
+            linear_speed = 0.0
+            angular_speed = 0.0
+            self.last_action = "STOP"
         
         # We tell SumitXL the linear and angular speed to set to execute
         self.move_base(linear_speed, angular_speed, epsilon=0.05, update_rate=10)
@@ -147,9 +151,17 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         Here we define what sensor data defines our robots observations
         To know which Variables we have acces to, we need to read the
         SumitXlEnv API DOCS
+        
+        WALL CLOSE LEFT [1, 1, 9, 0, 0, 0, -1.8, 0.46, 0.01]
+        WALL CLOSE RIGHT [0, 0, 0, 10, 1, 2, -1.8, -0.61, 0.01]
+        WALL BACK [0, 9, 1, 1, 6, 0, -1.8, -0.54, 1.59]
+        WALL FRONT [2, 9, 0, 0, 2, 2, -1.83, 0.51, 1.58]
+        
+        0 in reality is arround front 0.4, back 0.5, sides 0.3
+        
         :return:
         """
-        rospy.logdebug("Start Get Observation ==>")
+        rospy.logwarn("Start Get Observation ==>")
         # We get the laser scan data
         laser_scan = self.get_laser_scan()
         
@@ -172,8 +184,9 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
 
         observations = discretized_laser_scan + odometry_array
 
-        rospy.logdebug("Observations==>"+str(observations))
-        rospy.logdebug("END Get Observation ==>")
+        rospy.logwarn("Observations==>"+str(observations))
+        rospy.logwarn("END Get Observation ==>")
+        
         return observations
         
 
