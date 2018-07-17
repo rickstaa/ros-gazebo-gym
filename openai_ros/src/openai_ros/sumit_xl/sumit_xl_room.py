@@ -136,10 +136,12 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
             linear_speed = self.linear_turn_speed
             angular_speed = -1*self.angular_speed
             self.last_action = "TURN_RIGHT"
+        """
         elif action == 3: #STOP
             linear_speed = 0.0
             angular_speed = 0.0
             self.last_action = "STOP"
+        """
         
         # We tell SumitXL the linear and angular speed to set to execute
         self.move_base(linear_speed, angular_speed, epsilon=0.05, update_rate=10)
