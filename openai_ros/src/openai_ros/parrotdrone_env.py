@@ -308,6 +308,65 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         
     # Methods that the TrainingEnvironment will need.
     # ----------------------------
+    
+    def takeoff(self):
+        """
+        Sends the takeoff command and checks it has taken of
+        """
+        takeoff_cmd = Empty()
+        self._takeoff_pub.publish(takeoff_cmd)
+        
+        # When it takes of value of height is around 1.3
+        self.wait_for_height(   heigh_value_to_check=1.0,
+                                smaller_than=False,
+                                epsilon = 0.05)
+        
+        
+    def land(self):
+        """
+        Sends the Landing command and checks it has landed
+        """
+        land_cmd = Empty()
+        self._land_pub.publish(land_cmd)
+        # When Drone is on the floor, the readings are 0.5
+        self.wait_for_height(   heigh_value_to_check=0.6,
+                                smaller_than=True,
+                                epsilon = 0.05)
+        
+        
+    def wait_for_height(self, heigh_value_to_check, smaller_than, epsilon):
+        """
+        Checks if current height is smaller or bigger than a value
+        :param: smaller_than: If True, we will wait until value is smaller than the one given
+        """
+        
+        rate = rospy.Rate(update_rate)
+        start_wait_time = rospy.get_rostime().to_sec()
+        end_wait_time = 0.0
+        
+        
+        rospy.logdebug("Desired Twist Cmd>>" + str(cmd_vel_value))
+        rospy.logdebug("epsilon>>" + str(epsilon))
+        
+        while not rospy.is_shutdown():
+            current_gt_pose = self._check_gt_pose_ready()
+            
+            current_height = gt_pose.position.z
+            
+            if smaller_than:
+                takeoff_height_achieved = current_height <= heigh_value_to_check
+            else:
+                takeoff_height_achieved = current_height >= heigh_value_to_check
+            
+            if vel_values_are_close:
+                rospy.logwarn("Reached TakeOffHeight!")
+                end_wait_time = rospy.get_rostime().to_sec()
+                break
+            rospy.logwarn("Not there yet, keep waiting...")
+            rate.sleep()
+        
+    
+    
     def move_base(self, linear_speed_vector, angular_speed epsilon=0.05, update_rate=10):
         """
         It will move the base based on the linear and angular speeds given.
@@ -355,12 +414,12 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
                             cmd_vel_value.angular.z]
         
         while not rospy.is_shutdown():
-            current_odometry = self._check_odom_ready()
+            current_gt_vel = self._check_gt_vel_ready()
             
-            values_to_check = [ current_odometry.twist.twist.linear.x,
-                                current_odometry.twist.twist.linear.y,
-                                current_odometry.twist.twist.linear.z,
-                                current_odometry.twist.twist.angular.z]
+            values_to_check = [ current_gt_vel.linear.x,
+                                current_gt_vel.linear.y,
+                                current_gt_vel.linear.z,
+                                current_gt_vel.angular.z]
             
             vel_values_are_close = self.check_array_similar(values_of_ref,values_to_check,epsilon)
             

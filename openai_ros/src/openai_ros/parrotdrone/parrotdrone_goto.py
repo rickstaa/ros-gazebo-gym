@@ -84,6 +84,13 @@ class ParrotDroneGotoEnv(parrotdrone_env.droneEnv):
     def _set_init_pose(self):
         """Sets the Robot in its init lienar and angular speeds
         """
+        
+        # We Issue the landing command to be sure it starts landing
+        self.land()
+        
+        # We TakeOff before sending any movement commands
+        self.takeoff()
+        
         self.move_base(self.linear_speed_vector,
                         self.init_angular_turn_speed,
                         epsilon=0.05,
@@ -103,8 +110,8 @@ class ParrotDroneGotoEnv(parrotdrone_env.droneEnv):
         # Set to false Done, because its calculated asyncronously
         self._episode_done = False
         
-        odometry = self.get_gt_pose()
-        self.previous_distance_from_des_point = self.get_distance_from_desired_point(odometry.pose.pose.position)
+        gt_pose = self.get_gt_pose()
+        self.previous_distance_from_des_point = self.get_distance_from_desired_point(gt_pose.position)
 
 
     def _set_action(self, action):
