@@ -36,10 +36,10 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         
         self.init_linear_forward_speed = rospy.get_param('/drone/init_linear_forward_speed')
         
-        self.linear_speed_vector = Vector3()
-        self.linear_speed_vector.x = rospy.get_param('/drone/linear_speed_vector/x')
-        self.linear_speed_vector.y = rospy.get_param('/drone/linear_speed_vector/y')
-        self.linear_speed_vector.z = rospy.get_param('/drone/linear_speed_vector/z')
+        self.init_linear_speed_vector = Vector3()
+        self.init_linear_speed_vector.x = rospy.get_param('/drone/init_linear_speed_vector/x')
+        self.init_linear_speed_vector.y = rospy.get_param('/drone/init_linear_speed_vector/y')
+        self.init_linear_speed_vector.z = rospy.get_param('/drone/init_linear_speed_vector/z')
         
         self.init_angular_turn_speed = rospy.get_param('/drone/init_angular_turn_speed')
         
@@ -91,7 +91,7 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         # We TakeOff before sending any movement commands
         self.takeoff()
         
-        self.move_base(self.linear_speed_vector,
+        self.move_base(self.init_linear_speed_vector,
                         self.init_angular_turn_speed,
                         epsilon=0.05,
                         update_rate=10)
@@ -122,23 +122,35 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         """
         
         rospy.logdebug("Start Set Action ==>"+str(action))
-        # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
-        if action == 0: #FORWARD
-            linear_speed = self.linear_forward_speed
-            angular_speed = 0.0
+        # We convert the actions to speed movements to send to the parent class of Parrot
+        linear_speed_vector = Vector3()
+        angular_speed = 0.0
+        
+        if action == 0: #FORWARDS
+            linear_speed_vector.x = self.linear_forward_speed
             self.last_action = "FORWARDS"
-        elif action == 1: #LEFT
-            linear_speed = self.angular_turn_speed
-            angular_speed = self.angular_speed
-            self.last_action = "TURN_LEFT"
-        elif action == 2: #RIGHT
-            linear_speed = self.angular_turn_speed
-            angular_speed = -1*self.angular_speed
-            self.last_action = "TURN_RIGHT"
+        elif action == 1: #BACKWARDS
+            linear_speed_vector.x = -1*self.linear_forward_speed
+            self.last_action = "BACKWARDS"
+        elif action == 2: #STRAFE_LEFT
+            linear_speed_vector.y = self.linear_forward_speed
+            self.last_action = "STRAFE_LEFT"
+        elif action == 3: #STRAFE_RIGHT
+            linear_speed_vector.y = -1*self.linear_forward_speed
+            self.last_action = "STRAFE_RIGHT"
+        elif action == 4: #UP
+            linear_speed_vector.z = self.linear_forward_speed
+            self.last_action = "UP"
+        elif action == 5: #DOWN
+            linear_speed_vector.z = -1*self.linear_forward_speed
+            self.last_action = "DOWN"
 
         
         # We tell drone the linear and angular speed to set to execute
-        self.move_base(linear_speed, angular_speed, epsilon=0.05, update_rate=10)
+        self.move_base(linear_speed_vector,
+                        angular_speed,
+                        epsilon=0.05,
+                        update_rate=10)
         
         rospy.logdebug("END Set Action ==>"+str(action))
 
