@@ -5,6 +5,7 @@ from openai_ros import parrotdrone_env
 from gym.envs.registration import register
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Vector3
+from tf.transformations import euler_from_quaternion
 
 timestep_limit_per_episode = 10000 # Can be any Value
 
@@ -45,6 +46,8 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         
 
         self.min_sonar_value = rospy.get_param('/drone/min_sonar_value')
+        self.max_sonar_value = rospy.get_param('/drone/max_sonar_value')
+        
         
         
         
@@ -56,16 +59,39 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         self.work_space_z_max = rospy.get_param("/drone/work_space/z_max")
         self.work_space_z_min = rospy.get_param("/drone/work_space/z_min")
         
+        # Maximum RPY values
+        self.max_roll = rospy.get_param("/drone/max_roll")
+        self.max_pitch = rospy.get_param("/drone/max_pitch")
+        self.max_yaw = rospy.get_param("/drone/max_yaw")
+        
         # Get Desired Point to Get
         self.desired_point = Point()
         self.desired_point.x = rospy.get_param("/drone/desired_pose/x")
         self.desired_point.y = rospy.get_param("/drone/desired_pose/y")
         self.desired_point.z = rospy.get_param("/drone/desired_pose/z")
         
-        # We create two arrays based on the binary values that will be assigned
-        # In the discretization method.
-        # TODO: OBESRVATION SPACE
-        # We only use two integers
+
+        # We place the Maximum and minimum values of the X,Y,Z,R,P,Yof the pose
+        
+        
+        
+        high = numpy.array([self.work_space_x_max,
+                            self.work_space_y_max,
+                            self.work_space_z_max,
+                            self.max_roll,
+                            self.max_pitch,
+                            self.max_yaw,
+                            self.max_sonar_value])
+                                        
+        low = numpy.array([ self.work_space_x_min,
+                            self.work_space_y_min,
+                            self.work_space_z_min,
+                            -1*self.max_roll,
+                            -1*self.max_pitch,
+                            -self.max_yaw,
+                            self.min_sonar_value])
+
+        
         self.observation_space = spaces.Box(low, high)
         
         rospy.logdebug("ACTION SPACES TYPE===>"+str(self.action_space))
@@ -107,9 +133,7 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         """
         # For Info Purposes
         self.cumulated_reward = 0.0
-        # Set to false Done, because its calculated asyncronously
-        self._episode_done = False
-        
+        # We get the initial pose to mesure the distance from the desired point.
         gt_pose = self.get_gt_pose()
         self.previous_distance_from_des_point = self.get_distance_from_desired_point(gt_pose.position)
 
@@ -163,70 +187,61 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         """
         rospy.logdebug("Start Get Observation ==>")
         # We get the laser scan data
-        laser_scan = self.get_laser_scan()
+        gt_pose = self.get_gt_pose()
         
-        discretized_laser_scan = self.discretize_observation( laser_scan,
-                                                                self.new_ranges
-                                                                )
+        
+        # We get the orientation of the cube in RPY
+        roll, pitch, yaw = self.get_orientation_euler()
+        
+        # We get the sonar value
+        sonar = self.get_sonar()
+        sonar_value = sonar.range
+        
+        observations = [    round(gt_pose.position.x, 1),
+                            round(gt_pose.position.y, 1),
+                            round(gt_pose.position.z, 1),
+                            round(roll, 1),
+                            round(pitch, 1),
+                            round(yaw, 1),
+                            round(sonar_value,1)]
                                                                 
                                                                 
-        # We get the odometry so that SumitXL knows where it is.
-        odometry = self.get_odom()
-        x_position = odometry.pose.pose.position.x
-        y_position = odometry.pose.pose.position.y
-
-        # We round to only two decimals to avoid very big Observation space
-        odometry_array = [round(x_position, 2),round(y_position, 2)]
-
-        # We only want the X and Y position and the Yaw
-
-        observations = discretized_laser_scan + odometry_array
-
+        
         rospy.logdebug("Observations==>"+str(observations))
         rospy.logdebug("END Get Observation ==>")
         return observations
         
 
     def _is_done(self, observations):
+        """
+        The done can be done due to three reasons:
+        1) It went outside the workspace
+        2) It detected something with the sonar that is too close
+        3) It flipped due to a crash or something
+        """
         
-        if self._episode_done:
-            rospy.logerr("drone is Too Close to wall==>")
-        else:
-            rospy.logerr("drone didnt crash at least ==>")
-       
-       
-            current_position = Point()
-            current_position.x = observations[-2]
-            current_position.y = observations[-1]
-            current_position.z = 0.0
-            
-            MAX_X = 6.0
-            MIN_X = -1.0
-            MAX_Y = 3.0
-            MIN_Y = -3.0
-            
-            # We see if we are outside the Learning Space
-            
-            if current_position.x <= MAX_X and current_position.x > MIN_X:
-                if current_position.y <= MAX_Y and current_position.y > MIN_Y:
-                    rospy.logdebug("TurtleBot Position is OK ==>["+str(current_position.x)+","+str(current_position.y)+"]")
-                    
-                    # We see if it got to the desired point
-                    if self.is_in_desired_position(current_position):
-                        self._episode_done = True
-                    
-                    
-                else:
-                    rospy.logerr("TurtleBot to Far in Y Pos ==>"+str(current_position.x))
-                    self._episode_done = True
-            else:
-                rospy.logerr("TurtleBot to Far in X Pos ==>"+str(current_position.x))
-                self._episode_done = True
-            
-            
-            
+        episode_done = False
+        
+        current_position = Point()
+        current_position.x = observations[0]
+        current_position.y = observations[1]
+        current_position.z = observations[2]
+        
+        current_orientation = Point()
+        current_orientation.x = observations[3]
+        current_orientation.y = observations[4]
+        current_orientation.z = observations[5]
+        
+        sonar_value = observations[6]
+        
+        is_inside_workspace_now = self.is_inside_workspace(current_position)
+        sonar_detected_something_too_close_now = self.sonar_detected_something_too_close(sonar_value)
+        drone_flipped = self.drone_has_flipped(current_orientation)
+        
+        # We see if we are outside the Learning Space
+        episode_done = not(is_inside_workspace_now) or sonar_detected_something_too_close_now or drone_flipped
 
-        return self._episode_done
+        return episode_done
 
     def _compute_reward(self, observations, done):
 
@@ -276,39 +291,6 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
 
     # Internal TaskEnv Methods
     
-    def discretize_observation(self,data,new_ranges):
-        """
-        Discards all the laser readings that are not multiple in index of new_ranges
-        value.
-        """
-        self._episode_done = False
-        
-        discretized_ranges = []
-        mod = len(data.ranges)/new_ranges
-        
-        rospy.logdebug("data=" + str(data))
-        rospy.logwarn("new_ranges=" + str(new_ranges))
-        rospy.logwarn("mod=" + str(mod))
-        
-        for i, item in enumerate(data.ranges):
-            if (i%mod==0):
-                if item == float ('Inf') or numpy.isinf(item):
-                    discretized_ranges.append(self.max_laser_value)
-                elif numpy.isnan(item):
-                    discretized_ranges.append(self.min_laser_value)
-                else:
-                    discretized_ranges.append(int(item))
-                    
-                if (self.min_range > item > 0):
-                    rospy.logerr("done Validation >>> item=" + str(item)+"< "+str(self.min_range))
-                    self._episode_done = True
-                else:
-                    rospy.logwarn("NOT done Validation >>> item=" + str(item)+"< "+str(self.min_range))
-                    
-
-        return discretized_ranges
-        
-        
     def is_in_desired_position(self,current_position, epsilon=0.05):
         """
         It return True if the current position is similar to the desired poistion
@@ -331,7 +313,44 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         is_in_desired_pos = x_pos_are_close and y_pos_are_close
         
         return is_in_desired_pos
+    
+    def is_inside_workspace(self,current_position):
+        """
+        Check if the Drone is inside the Workspace defined
+        """
+        is_inside = True
+
+        if current_position.x > self.work_space_x_min and current_position.x <= self.work_space_x_max:
+            if current_position.y > self.work_space_y_min and current_position.y <= self.work_space_y_max:
+                if current_position.z > self.work_space_z_min and current_position.z <= self.work_space_z_max:
+                    is_inside = False
         
+        return is_inside
+        
+    def sonar_detected_something_too_close(self, sonar_value):
+        """
+        Detects if there is something too close to the drone front
+        """
+        too_close = sonar_value < self.min_sonar_value
+        
+        return too_close
+        
+    def drone_has_flipped(self,current_orientation):
+        """
+        Based on the orientation RPY given states if the drone has flipped
+        """
+        has_flipped = True
+        
+        
+        self.max_roll = rospy.get_param("/drone/max_roll")
+        self.max_pitch = rospy.get_param("/drone/max_pitch")
+        
+        
+        if current_orientation.x > -1*self.max_roll and current_orientation.x <= self.max_roll:
+            if current_orientation.y > -1*self.max_pitch and current_orientation.y <= self.max_pitch:
+                    is_inside = has_flipped
+        
+        return has_flipped
         
     def get_distance_from_desired_point(self, current_position):
         """
@@ -356,4 +375,14 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         distance = numpy.linalg.norm(a - b)
     
         return distance
+        
+    def get_orientation_euler(self, quaternion_vector):
+        # We convert from quaternions to euler
+        orientation_list = [quaternion_vector.x,
+                            quaternion_vector.y,
+                            quaternion_vector.z,
+                            quaternion_vector.w]
+    
+        roll, pitch, yaw = euler_from_quaternion(orientation_list)
+        return roll, pitch, yaw
 
