@@ -9,6 +9,7 @@ from sensor_msgs.msg import PointCloud2
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Range
+from sensor_msgs.msg import Imu
 from geometry_msgs.msg import Pose
 from std_msgs.msg import Empty
 
@@ -312,29 +313,44 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
     def takeoff(self):
         """
         Sends the takeoff command and checks it has taken of
+        It unpauses the simulation and pauses again
+        to allow it to be a self contained action
         """
+        self.gazebo.unpauseSim()
+        self._check_takeoff_pub_connection()
+        
         takeoff_cmd = Empty()
         self._takeoff_pub.publish(takeoff_cmd)
         
         # When it takes of value of height is around 1.3
         self.wait_for_height(   heigh_value_to_check=1.0,
                                 smaller_than=False,
-                                epsilon = 0.05)
-        
+                                epsilon = 0.05,
+                                update_rate = 10)
+        self.gazebo.pauseSim()
         
     def land(self):
         """
         Sends the Landing command and checks it has landed
+        It unpauses the simulation and pauses again
+        to allow it to be a self contained action
         """
+        self.gazebo.unpauseSim()
+        
+        self._check_land_pub_connection()
+        
         land_cmd = Empty()
         self._land_pub.publish(land_cmd)
         # When Drone is on the floor, the readings are 0.5
         self.wait_for_height(   heigh_value_to_check=0.6,
                                 smaller_than=True,
-                                epsilon = 0.05)
+                                epsilon = 0.05,
+                                update_rate = 10)
+        
+        self.gazebo.pauseSim()
         
         
-    def wait_for_height(self, heigh_value_to_check, smaller_than, epsilon):
+    def wait_for_height(self, heigh_value_to_check, smaller_than, epsilon, update_rate):
         """
         Checks if current height is smaller or bigger than a value
         :param: smaller_than: If True, we will wait until value is smaller than the one given
@@ -344,25 +360,25 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         start_wait_time = rospy.get_rostime().to_sec()
         end_wait_time = 0.0
         
-        
-        rospy.logdebug("Desired Twist Cmd>>" + str(cmd_vel_value))
         rospy.logdebug("epsilon>>" + str(epsilon))
         
         while not rospy.is_shutdown():
             current_gt_pose = self._check_gt_pose_ready()
             
-            current_height = gt_pose.position.z
+            current_height = current_gt_pose.position.z
             
             if smaller_than:
                 takeoff_height_achieved = current_height <= heigh_value_to_check
+                rospy.logwarn("SMALLER THAN HEIGHT...current_height="+str(current_height)+"<="+str(heigh_value_to_check))
             else:
                 takeoff_height_achieved = current_height >= heigh_value_to_check
+                rospy.logwarn("BIGGER THAN HEIGHT...current_height="+str(current_height)+">="+str(heigh_value_to_check))
             
-            if vel_values_are_close:
-                rospy.logwarn("Reached TakeOffHeight!")
+            if takeoff_height_achieved:
+                rospy.logwarn("Reached Height!")
                 end_wait_time = rospy.get_rostime().to_sec()
                 break
-            rospy.logwarn("Not there yet, keep waiting...")
+            rospy.logwarn("Height Not there yet, keep waiting...")
             rate.sleep()
         
     
@@ -383,7 +399,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         cmd_vel_value.linear.z = linear_speed_vector.z
         cmd_vel_value.angular.z = angular_speed
         rospy.logdebug("TurtleBot2 Base Twist Cmd>>" + str(cmd_vel_value))
-        self._check_publishers_connection()
+        self._check_cmd_vel_pub_connection()
         self._cmd_vel_pub.publish(cmd_vel_value)
         self.wait_until_twist_achieved(cmd_vel_value,
                                         epsilon,

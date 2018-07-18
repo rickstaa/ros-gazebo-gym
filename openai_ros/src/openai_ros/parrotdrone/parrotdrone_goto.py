@@ -11,7 +11,7 @@ timestep_limit_per_episode = 10000 # Can be any Value
 
 register(
         id='ParrotDroneGoto-v0',
-        entry_point='parrotdrone_goto:ParrotDroneGotoEnv',
+        entry_point='openai_ros:ParrotDroneGotoEnv',
         timestep_limit=timestep_limit_per_episode,
     )
 
@@ -34,8 +34,6 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         self.angular_turn_speed = rospy.get_param('/drone/angular_turn_speed')
         self.angular_speed = rospy.get_param('/drone/angular_speed')
         
-        
-        self.init_linear_forward_speed = rospy.get_param('/drone/init_linear_forward_speed')
         
         self.init_linear_speed_vector = Vector3()
         self.init_linear_speed_vector.x = rospy.get_param('/drone/init_linear_speed_vector/x')
@@ -89,7 +87,7 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
                             self.work_space_z_min,
                             -1*self.max_roll,
                             -1*self.max_pitch,
-                            -self.max_yaw,
+                            -numpy.inf,
                             self.min_sonar_value])
 
         
@@ -109,20 +107,19 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         super(ParrotDroneGotoEnv, self).__init__()
 
     def _set_init_pose(self):
-        """Sets the Robot in its init lienar and angular speeds
         """
-        
-        # We Issue the landing command to be sure it starts landing
-        self.land()
-        
-        # We TakeOff before sending any movement commands
-        self.takeoff()
-        
+        Sets the Robot in its init linear and angular speeds
+        and lands the robot. Its preparing it to be reseted in the world.
+        """
+        raw_input("INIT SPEED PRESS")
         self.move_base(self.init_linear_speed_vector,
                         self.init_angular_turn_speed,
                         epsilon=0.05,
                         update_rate=10)
-
+        # We Issue the landing command to be sure it starts landing
+        #raw_input("LAND PRESS")
+        #self.land()
+        
         return True
 
 
@@ -132,12 +129,17 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         of an episode.
         :return:
         """
+        raw_input("TakeOFF PRESS")
+        # We TakeOff before sending any movement commands
+        self.takeoff()
+        
         # For Info Purposes
         self.cumulated_reward = 0.0
         # We get the initial pose to mesure the distance from the desired point.
         gt_pose = self.get_gt_pose()
         self.previous_distance_from_des_point = self.get_distance_from_desired_point(gt_pose.position)
 
+        
 
     def _set_action(self, action):
         """
@@ -192,7 +194,7 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         
         
         # We get the orientation of the cube in RPY
-        roll, pitch, yaw = self.get_orientation_euler()
+        roll, pitch, yaw = self.get_orientation_euler(gt_pose.orientation)
         
         # We get the sonar value
         sonar = self.get_sonar()
