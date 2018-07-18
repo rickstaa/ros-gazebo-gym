@@ -349,26 +349,22 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("Desired Twist Cmd>>" + str(cmd_vel_value))
         rospy.logdebug("epsilon>>" + str(epsilon))
         
-        linear_speed = cmd_vel_value.linear.x
-        angular_speed = cmd_vel_value.angular.z
-        
-        linear_speed_plus = linear_speed + epsilon
-        linear_speed_minus = linear_speed - epsilon
-        angular_speed_plus = angular_speed + epsilon
-        angular_speed_minus = angular_speed - epsilon
+        values_of_ref = [   cmd_vel_value.linear.x,
+                            cmd_vel_value.linear.y,
+                            cmd_vel_value.linear.z,
+                            cmd_vel_value.angular.z]
         
         while not rospy.is_shutdown():
             current_odometry = self._check_odom_ready()
-            odom_linear_vel = current_odometry.twist.twist.linear.x
-            odom_angular_vel = current_odometry.twist.twist.angular.z
             
-            rospy.logdebug("Linear VEL=" + str(odom_linear_vel) + ", ?RANGE=[" + str(linear_speed_minus) + ","+str(linear_speed_plus)+"]")
-            rospy.logdebug("Angular VEL=" + str(odom_angular_vel) + ", ?RANGE=[" + str(angular_speed_minus) + ","+str(angular_speed_plus)+"]")
+            values_to_check = [ current_odometry.twist.twist.linear.x,
+                                current_odometry.twist.twist.linear.y,
+                                current_odometry.twist.twist.linear.z,
+                                current_odometry.twist.twist.angular.z]
             
-            linear_vel_are_close = (odom_linear_vel <= linear_speed_plus) and (odom_linear_vel > linear_speed_minus)
-            angular_vel_are_close = (odom_angular_vel <= angular_speed_plus) and (odom_angular_vel > angular_speed_minus)
+            vel_values_are_close = self.check_array_similar(values_of_ref,values_to_check,epsilon)
             
-            if linear_vel_are_close and angular_vel_are_close:
+            if vel_values_are_close:
                 rospy.logwarn("Reached Velocity!")
                 end_wait_time = rospy.get_rostime().to_sec()
                 break
@@ -380,19 +376,29 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logwarn("END wait_until_twist_achieved...")
         
         return delta_time
-        
+    
+    def check_array_similar(self,ref_value_array,check_value_array,epsilon):
+        """
+        It checks if the check_value id similar to the ref_value
+        """
+        return numpy.allclose(ref_value_array, check_value_array, atol=epsilon)
+    
 
-    def get_odom(self):
-        return self.odom
+    def get_down_camera_rgb_image_raw(self):
+        return self.down_camera_rgb_image_raw
+    
+    def get_front_camera_rgb_image_raw(self):
+        return self.front_camera_rgb_image_raw
+    
+    def get_imu(self):
+        return self.imu
         
-    def get_camera_depth_image_raw(self):
-        return self.camera_depth_image_raw
+    def get_sonar(self):
+        return self.sonar
         
-    def get_camera_depth_points(self):
-        return self.camera_depth_points
+    def get_gt_pose(self):
+        return self.gt_pose
         
-    def get_camera_rgb_image_raw(self):
-        return self.camera_rgb_image_raw
-        
-    def get_laser_scan(self):
-        return self.laser_scan
+    def get_gt_vel(self):
+        return self.gt_vel
+
