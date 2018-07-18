@@ -159,7 +159,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("Waiting for /drone/sonar to be READY...")
         while self.sonar is None and not rospy.is_shutdown():
             try:
-                self.sonar = rospy.wait_for_message("/drone/sonar", Imu, timeout=5.0)
+                self.sonar = rospy.wait_for_message("/drone/sonar", Range, timeout=5.0)
                 rospy.logdebug("Current/drone/sonar READY=>")
 
             except:
@@ -174,7 +174,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("Waiting for /drone/gt_pose to be READY...")
         while self.gt_pose is None and not rospy.is_shutdown():
             try:
-                self.gt_pose = rospy.wait_for_message("/drone/gt_pose", Imu, timeout=5.0)
+                self.gt_pose = rospy.wait_for_message("/drone/gt_pose", Pose, timeout=5.0)
                 rospy.logdebug("Current /drone/gt_pose READY=>")
 
             except:
@@ -189,7 +189,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("Waiting for /drone/gt_vel to be READY...")
         while self.gt_vel is None and not rospy.is_shutdown():
             try:
-                self.gt_vel = rospy.wait_for_message("/drone/gt_vel", Imu, timeout=5.0)
+                self.gt_vel = rospy.wait_for_message("/drone/gt_vel", Twist, timeout=5.0)
                 rospy.logdebug("Current /drone/gt_vel READY=>")
 
             except:

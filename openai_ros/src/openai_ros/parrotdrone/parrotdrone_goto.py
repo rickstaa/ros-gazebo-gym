@@ -4,6 +4,7 @@ from gym import spaces
 from openai_ros import parrotdrone_env
 from gym.envs.registration import register
 from geometry_msgs.msg import Point
+from geometry_msgs.msg import Vector3
 
 timestep_limit_per_episode = 10000 # Can be any Value
 
@@ -31,7 +32,15 @@ class ParrotDroneGotoEnv(parrotdrone_env.droneEnv):
         self.linear_forward_speed = rospy.get_param('/drone/linear_forward_speed')
         self.angular_turn_speed = rospy.get_param('/drone/angular_turn_speed')
         self.angular_speed = rospy.get_param('/drone/angular_speed')
+        
+        
         self.init_linear_forward_speed = rospy.get_param('/drone/init_linear_forward_speed')
+        
+        self.linear_speed_vector = Vector3()
+        self.linear_speed_vector.x = rospy.get_param('/drone/linear_speed_vector/x')
+        self.linear_speed_vector.y = rospy.get_param('/drone/linear_speed_vector/y')
+        self.linear_speed_vector.z = rospy.get_param('/drone/linear_speed_vector/z')
+        
         self.init_angular_turn_speed = rospy.get_param('/drone/init_angular_turn_speed')
         
 
@@ -73,9 +82,9 @@ class ParrotDroneGotoEnv(parrotdrone_env.droneEnv):
         super(ParrotDroneGotoEnv, self).__init__()
 
     def _set_init_pose(self):
-        """Sets the Robot in its init pose
+        """Sets the Robot in its init lienar and angular speeds
         """
-        self.move_base( self.init_linear_forward_speed,
+        self.move_base(self.linear_speed_vector,
                         self.init_angular_turn_speed,
                         epsilon=0.05,
                         update_rate=10)
@@ -94,7 +103,7 @@ class ParrotDroneGotoEnv(parrotdrone_env.droneEnv):
         # Set to false Done, because its calculated asyncronously
         self._episode_done = False
         
-        odometry = self.get_odom()
+        odometry = self.get_gt_pose()
         self.previous_distance_from_des_point = self.get_distance_from_desired_point(odometry.pose.pose.position)
 
 
