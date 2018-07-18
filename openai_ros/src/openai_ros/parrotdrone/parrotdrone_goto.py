@@ -14,7 +14,7 @@ register(
         timestep_limit=timestep_limit_per_episode,
     )
 
-class ParrotDroneGotoEnv(parrotdrone_env.droneEnv):
+class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
     def __init__(self):
         """
         Make parrotdrone learn how to navigate to get to a point

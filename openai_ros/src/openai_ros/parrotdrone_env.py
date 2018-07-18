@@ -367,7 +367,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         
     
     
-    def move_base(self, linear_speed_vector, angular_speed epsilon=0.05, update_rate=10):
+    def move_base(self, linear_speed_vector, angular_speed, epsilon=0.05, update_rate=10):
         """
         It will move the base based on the linear and angular speeds given.
         It will wait untill those twists are achived reading from the odometry topic.
