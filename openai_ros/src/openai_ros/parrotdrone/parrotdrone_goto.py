@@ -70,6 +70,7 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         self.desired_point.y = rospy.get_param("/drone/desired_pose/y")
         self.desired_point.z = rospy.get_param("/drone/desired_pose/z")
         
+        self.desired_point_epsilon = rospy.get_param("/drone/desired_point_epsilon")
 
         # We place the Maximum and minimum values of the X,Y,Z,R,P,Yof the pose
         
@@ -218,6 +219,7 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         1) It went outside the workspace
         2) It detected something with the sonar that is too close
         3) It flipped due to a crash or something
+        4) It has reached the desired point
         """
         
         episode_done = False
@@ -237,18 +239,19 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         is_inside_workspace_now = self.is_inside_workspace(current_position)
         sonar_detected_something_too_close_now = self.sonar_detected_something_too_close(sonar_value)
         drone_flipped = self.drone_has_flipped(current_orientation)
+        has_reached_des_point = self.is_in_desired_position(current_position, self.desired_point_epsilon)
         
         # We see if we are outside the Learning Space
-        episode_done = not(is_inside_workspace_now) or sonar_detected_something_too_close_now or drone_flipped
+        episode_done = not(is_inside_workspace_now) or sonar_detected_something_too_close_now or drone_flipped or has_reached_des_point
 
         return episode_done
 
     def _compute_reward(self, observations, done):
 
         current_position = Point()
-        current_position.x = observations[-2]
-        current_position.y = observations[-1]
-        current_position.z = 0.0
+        current_position.x = observations[0]
+        current_position.y = observations[1]
+        current_position.z = observations[2]
 
         distance_from_des_point = self.get_distance_from_desired_point(current_position)
         distance_difference =  distance_from_des_point - self.previous_distance_from_des_point
@@ -256,22 +259,17 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
 
         if not done:
             
-            if self.last_action == "FORWARDS":
-                reward = self.forwards_reward
-            else:
-                reward = self.turn_reward
-                
             # If there has been a decrease in the distance to the desired point, we reward it
             if distance_difference < 0.0:
                 rospy.logwarn("DECREASE IN DISTANCE GOOD")
-                reward += self.forwards_reward
+                reward = self.closer_to_point_reward
             else:
                 rospy.logerr("ENCREASE IN DISTANCE BAD")
-                reward += 0
+                reward = 0
                 
         else:
             
-            if self.is_in_desired_position(current_position):
+            if self.is_in_desired_position(current_position, epsilon=0.5):
                 reward = self.end_episode_points
             else:
                 reward = -1*self.end_episode_points
