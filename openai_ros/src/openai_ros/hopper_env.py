@@ -181,7 +181,7 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
         
     def _contact_callback(self, data):
         self.lowerleg_contactsensor_state = data
-
+        
     def _joints_state_callback(self, data):
         self.joint_states = data
 

@@ -58,25 +58,38 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         self.min_height = rospy.get_param("/monoped/min_height")
         self.max_height = rospy.get_param("/monoped/max_height")
         
-        # We place the Maximum and minimum values of the X,Y,Z,R,P,Yof the pose
+        self.distance_from_desired_point_max = rospy.get_param("/monoped/distance_from_desired_point_max")
         
+        self.max_incl = rospy.get_param("/monoped/max_incl")
+        self.max_contact_force = rospy.get_param("/monoped/max_contact_force")
         
+        self.maximum_haa_joint = rospy.get_param("/monoped/max_incl")
+        self.maximum_hfe_joint = rospy.get_param("/monoped/max_incl")
+        self.maximum_kfe_joint = rospy.get_param("/monoped/max_incl")
+        self.min_kfe_joint = rospy.get_param("/monoped/max_incl")
         
-        high = numpy.array([self.work_space_x_max,
-                            self.work_space_y_max,
-                            self.work_space_z_max,
-                            self.max_roll,
-                            self.max_pitch,
-                            self.max_yaw,
-                            self.max_sonar_value])
+        # We place the Maximum and minimum values of observations
+
+        
+        high = numpy.array([self.distance_from_desired_point_max,
+                            self.max_incl,
+                            self.max_incl,
+                            3.14,
+                            self.max_contact_force,
+                            self.maximum_haa_joint,
+                            self.maximum_hfe_joint,
+                            self.maximum_kfe_joint,
+                            self.max_height])
                                         
-        low = numpy.array([ self.work_space_x_min,
-                            self.work_space_y_min,
-                            self.work_space_z_min,
-                            -1*self.max_roll,
-                            -1*self.max_pitch,
-                            -numpy.inf,
-                            self.min_sonar_value])
+        low = numpy.array([ 0.0,
+                            -1*self.max_incl,
+                            -1*self.max_incl,
+                            -1*3.14,
+                            0.0,
+                            self.maximum_haa_joint,
+                            self.maximum_hfe_joint,
+                            self.min_kfe_joint,
+                            self.min_height])
 
         
         self.observation_space = spaces.Box(low, high)
@@ -441,9 +454,31 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         Fx = 7.08 N
         :return:
         """
-        contact_force = self.contact_force
+        # We get the Contact Sensor data
+        lowerleg_contactsensor_state = self.get_lowerleg_contactsensor_state()
+        # We extract what we need that is only the total_wrench force
+        contact_force = self.get_contact_force(lowerleg_contactsensor_state)
+        # We create an array with each component XYZ
         contact_force_np = numpy.array((contact_force.x, contact_force.y, contact_force.z))
+        # We calculate the magnitude of the Force Vector, array.
         force_magnitude = numpy.linalg.norm(contact_force_np)
 
         return force_magnitude
+        
+    def get_contact_force(self, lowerleg_contactsensor_state):
+        """
+        /lowerleg_contactsensor_state/states[0]/contact_positions ==> PointContact in World
+        /lowerleg_contactsensor_state/states[0]/contact_normals ==> NormalContact in World
+
+        ==> One is an array of all the forces, the other total,
+         and are relative to the contact link referred to in the sensor.
+        /lowerleg_contactsensor_state/states[0]/wrenches[]
+        /lowerleg_contactsensor_state/states[0]/total_wrench
+        :return:
+        """
+        contact_force = None
+        for state in lowerleg_contactsensor_state.states:
+            self.contact_force = state.total_wrench.force
+        
+        return contact_force
 
