@@ -259,14 +259,6 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
           i += 1
         self.wait_time_for_execute_movement(joints_array, epsilon=0.05, update_rate=10)
     
-    def wait_time_for_execute_movement(self):
-        """
-        Because this Parrot Drone position is global, we really dont have
-        a way to know if its moving in the direction desired, because it would need
-        to evaluate the diference in position and speed on the local reference.
-        """
-        time.sleep(1.0)
-    
     def wait_time_for_execute_movement(self, joints_array, epsilon, update_rate):
         """
         We wait until Joints are where we asked them to be based on the joints_states
