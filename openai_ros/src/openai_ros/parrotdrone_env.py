@@ -1,5 +1,6 @@
 import numpy
 import rospy
+import time
 from openai_ros import robot_gazebo_env
 from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
@@ -323,7 +324,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         self._takeoff_pub.publish(takeoff_cmd)
         
         # When it takes of value of height is around 1.3
-        self.wait_for_height(   heigh_value_to_check=1.0,
+        self.wait_for_height(   heigh_value_to_check=0.8,
                                 smaller_than=False,
                                 epsilon = 0.05,
                                 update_rate = 10)
@@ -401,12 +402,24 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("TurtleBot2 Base Twist Cmd>>" + str(cmd_vel_value))
         self._check_cmd_vel_pub_connection()
         self._cmd_vel_pub.publish(cmd_vel_value)
+        """
         self.wait_until_twist_achieved(cmd_vel_value,
                                         epsilon,
                                         update_rate)
+        """
+        self.wait_time_for_execute_movement()
+                                        
+    def wait_time_for_execute_movement(self):
+        """
+        Because this Parrot Drone position is global, we really dont have
+        a way to know if its moving in the direction desired, because it would need
+        to evaluate the diference in position and speed on the local reference.
+        """
+        time.sleep(1.5)
     
     def wait_until_twist_achieved(self, cmd_vel_value, epsilon, update_rate):
         """
+        # TODO: Make it work using TF conversions 
         We wait for the cmd_vel twist given to be reached by the robot reading
         from the odometry.
         :param cmd_vel_value: Twist we want to wait to reach.
@@ -421,8 +434,8 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         end_wait_time = 0.0
         epsilon = 0.05
         
-        rospy.logdebug("Desired Twist Cmd>>" + str(cmd_vel_value))
-        rospy.logdebug("epsilon>>" + str(epsilon))
+        rospy.logwarn("Desired Twist Cmd>>" + str(cmd_vel_value))
+        rospy.logwarn("epsilon>>" + str(epsilon))
         
         values_of_ref = [   cmd_vel_value.linear.x,
                             cmd_vel_value.linear.y,
@@ -456,6 +469,8 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         It checks if the check_value id similar to the ref_value
         """
+        rospy.logwarn("ref_value_array="+str(ref_value_array))
+        rospy.logwarn("check_value_array="+str(check_value_array))
         return numpy.allclose(ref_value_array, check_value_array, atol=epsilon)
     
 
