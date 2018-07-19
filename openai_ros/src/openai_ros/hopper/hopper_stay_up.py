@@ -49,18 +49,23 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         self.desired_point.y = rospy.get_param("/monoped/desired_point/y")
         self.desired_point.z = rospy.get_param("/monoped/desired_point/z")
         
+        self.desired_yaw = rospy.get_param("/monoped/desired_yaw")
         
         self.joint_increment_value = rospy.get_param("/monoped/joint_increment_value")
         
         
         self.dec_obs = rospy.get_param("/monoped/number_decimals_precision_obs")
         
+        self.max_x_pos = rospy.get_param("/monoped/max_x_pos")
+        self.max_y_pos = rospy.get_param("/monoped/max_y_pos")
+        
         self.min_height = rospy.get_param("/monoped/min_height")
         self.max_height = rospy.get_param("/monoped/max_height")
         
         self.distance_from_desired_point_max = rospy.get_param("/monoped/distance_from_desired_point_max")
         
-        self.max_incl = rospy.get_param("/monoped/max_incl")
+        self.max_incl_roll = rospy.get_param("/monoped/max_incl")
+        self.max_incl_pitch = rospy.get_param("/monoped/max_incl")
         self.max_contact_force = rospy.get_param("/monoped/max_contact_force")
         
         self.maximum_haa_joint = rospy.get_param("/monoped/max_incl")
@@ -70,26 +75,31 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         
         # We place the Maximum and minimum values of observations
 
-        
         high = numpy.array([self.distance_from_desired_point_max,
-                            self.max_incl,
-                            self.max_incl,
+                            self.max_incl_roll,
+                            self.max_incl_pitch,
                             3.14,
                             self.max_contact_force,
                             self.maximum_haa_joint,
                             self.maximum_hfe_joint,
                             self.maximum_kfe_joint,
-                            self.max_height])
+                            self.max_x_pos,
+                            self.max_y_pos,
+                            self.max_height
+                            ])
                                         
         low = numpy.array([ 0.0,
-                            -1*self.max_incl,
-                            -1*self.max_incl,
+                            -1*self.max_incl_roll,
+                            -1*self.max_incl_pitch,
                             -1*3.14,
                             0.0,
                             self.maximum_haa_joint,
                             self.maximum_hfe_joint,
                             self.min_kfe_joint,
-                            self.min_height])
+                            -1*self.max_x_pos,
+                            -1*self.max_y_pos,
+                            self.min_height
+                            ])
 
         
         self.observation_space = spaces.Box(low, high)
@@ -98,7 +108,14 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         rospy.logdebug("OBSERVATION SPACES TYPE===>"+str(self.observation_space))
         
         # Rewards
-        # TODO
+        self.weight_joint_position = rospy.get_param("/monoped/rewards_weight/weight_joint_position")
+        self.weight_joint_effort = rospy.get_param("/monoped/rewards_weight/weight_joint_effort")
+        self.weight_contact_force = rospy.get_param("/monoped/rewards_weight/weight_contact_force")
+        self.weight_orientation = rospy.get_param("/monoped/rewards_weight/weight_orientation")
+        self.weight_distance_from_des_point = rospy.get_param("/monoped/rewards_weight/weight_distance_from_des_point")
+        
+        self.alive_reward =rospy.get_param("/monoped/alive_reward")
+        self.done_reward =rospy.get_param("/monoped/done_reward")
 
         # Here we will add any init functions prior to starting the MyRobotEnv
         super(HopperStayUpEnv, self).__init__()
@@ -202,7 +219,7 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
                  base_roll,
                  base_pitch,
                  base_yaw,
-                 contact_force,
+                 force_magnitude,
                  joint_states_haa,
                  joint_states_hfe,
                  joint_states_kfe,
@@ -211,14 +228,14 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         """
         rospy.logdebug("Start Get Observation ==>")
         
-        distance_from_desired_point = self.get_distance_from_desired_point(self.desired_world_point)
+        distance_from_desired_point = self.get_distance_from_desired_point(self.desired_point)
 
         base_orientation = self.get_base_rpy()
         base_roll = base_orientation.x
         base_pitch = base_orientation.y
         base_yaw = base_orientation.z
 
-        contact_force = self.get_contact_force_magnitude()
+        force_magnitude = self.get_contact_force_magnitude()
 
         joint_states = self.get_joint_states()
         joint_states_haa = joint_states.position[0]
@@ -227,19 +244,20 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         
         odom = self.get_odom()
         base_position = odom.pose.pose.position
-        height_base = get_base_height(base_position)
 
         observation = []
         observation.append(round(distance_from_desired_point,self.dec_obs))
         observation.append(round(base_roll,self.dec_obs))
         observation.append(round(base_pitch,self.dec_obs))
         observation.append(round(base_yaw,self.dec_obs))
-        observation.append(round(contact_force,self.dec_obs))
+        observation.append(round(force_magnitude,self.dec_obs))
         observation.append(round(joint_states_haa,self.dec_obs)
         observation.append(round(joint_states_hfe,self.dec_obs))
         observation.append(round(joint_states_kfe,self.dec_obs))
-        observation.append(round(joint_states_kfe,self.dec_obs))
-        observation.append(round(height_base,self.dec_obs))
+        
+        observation.append(round(base_position.x,self.dec_obs))
+        observation.append(round(base_position.y,self.dec_obs))
+        observation.append(round(base_position.z,self.dec_obs)) # height
 
         return observation
         
@@ -251,7 +269,10 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         2) The Orientation is outside a threshold
         """
         
-        monoped_height_ok = self.monoped_height_ok()
+        
+        height_base = observations[10]
+        
+        monoped_height_ok = self.monoped_height_ok(height_base)
         monoped_orientation_ok = self.monoped_orientation_ok()
 
         done = not(monoped_height_ok and monoped_orientation_ok)
@@ -259,42 +280,42 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         return done
 
     def _compute_reward(self, observations, done):
-
+        """
+        We Base the rewards in if its done or not and we base it on
+        the joint poisition, effort, contact force, orientation and distance from desired point.
+        :return:
+        """
+        
+        joints_state_array = observations[5:8]
+        r1 = self.calculate_reward_joint_position(joints_state_array, self.weight_joint_position)
+        # Desired Force in Newtons, taken form idle contact with 9.81 gravity.
+        
+        force_magnitude = observations[4]
+        r2 = self.calculate_reward_contact_force(force_magnitude, self.weight_contact_force)
+        
+        rpy_array = observations[1:4]
+        r3 = self.calculate_reward_orientation(rpy_array, self.weight_orientation)
+        
+        
         current_position = Point()
-        current_position.x = observations[0]
-        current_position.y = observations[1]
-        current_position.z = observations[2]
+        current_position.x = observations[8]
+        current_position.y = observations[9]
+        current_position.z = observations[10]
+        r4 = self.calculate_reward_distance_from_des_point(current_position, self.weight_distance_from_des_point)
 
-        distance_from_des_point = self.get_distance_from_desired_point(current_position)
-        distance_difference =  distance_from_des_point - self.previous_distance_from_des_point
+        # The sign depend on its function.
+        total_reward = self.alive_reward - r1 - r2 - r3 - r4
 
+        rospy.logdebug("###############")
+        rospy.logdebug("alive_bonus=" + str(self.alive_reward))
+        rospy.logdebug("r1 joint_position=" + str(r1))
+        rospy.logdebug("r2 contact_force=" + str(r2))
+        rospy.logdebug("r3 orientation=" + str(r3))
+        rospy.logdebug("r4 distance=" + str(r4))
+        rospy.logdebug("total_reward=" + str(total_reward))
+        rospy.logdebug("###############")
 
-        if not done:
-            
-            # If there has been a decrease in the distance to the desired point, we reward it
-            if distance_difference < 0.0:
-                rospy.logwarn("DECREASE IN DISTANCE GOOD")
-                reward = self.closer_to_point_reward
-            else:
-                rospy.logerr("ENCREASE IN DISTANCE BAD")
-                reward = 0
-                
-        else:
-            
-            if self.is_in_desired_position(current_position, epsilon=0.5):
-                reward = self.end_episode_points
-            else:
-                reward = -1*self.end_episode_points
-
-
-        self.previous_distance_from_des_point = distance_from_des_point
-
-
-        rospy.logdebug("reward=" + str(reward))
-        self.cumulated_reward += reward
-        rospy.logdebug("Cumulated_reward=" + str(self.cumulated_reward))
-
-        return reward
+        return total_reward
 
 
     # Internal TaskEnv Methods
@@ -420,16 +441,9 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         roll, pitch, yaw = euler_from_quaternion(orientation_list)
         return roll, pitch, yaw
         
-    def monoped_height_ok(self):
 
-        height_ok = self.min_height <= self.get_base_height() < self.max_height
-        return height_ok
-        
-    def get_base_height(self, base_position):
-        return base_position.z
-        
     def get_base_rpy(self):
-        
+
         imu = self.get_imu()
         base_orientation = imu.orientation
         
@@ -481,4 +495,81 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
             self.contact_force = state.total_wrench.force
         
         return contact_force
+        
+        
+    def monoped_height_ok(self, height_base):
+
+        height_ok = self.min_height <= height_base < self.max_height
+        return height_ok
+        
+    def monoped_orientation_ok(self):
+
+        orientation_rpy = self.get_base_rpy()
+        roll_ok = self.max_incl_roll > abs(orientation_rpy.x)
+        pitch_ok = self.max_incl_pitch > abs(orientation_rpy.y)
+        orientation_ok = roll_ok and pitch_ok
+        return orientation_ok
+        
+        
+    def calculate_reward_joint_position(self, joints_state_array, weight=1.0):
+        """
+        We calculate reward base on the joints configuration. The more near 0 the better.
+        :return:
+        """
+        acumulated_joint_pos = 0.0
+        for joint_pos in joints_state_array:
+            # Abs to remove sign influence, it doesnt matter the direction of turn.
+            acumulated_joint_pos += abs(joint_pos)
+            rospy.logdebug("calculate_reward_joint_position>>acumulated_joint_pos=" + str(acumulated_joint_pos))
+        reward = weight * acumulated_joint_pos
+        rospy.logdebug("calculate_reward_joint_position>>reward=" + str(reward))
+        return reward
+        
+    def calculate_reward_contact_force(self, force_magnitude, weight=1.0):
+        """
+        We calculate reward base on the contact force.
+        The nearest to the desired contact force the better.
+        We use exponential to magnify big departures from the desired force.
+        Default ( 7.08 N ) desired force was taken from reading of the robot touching
+        the ground from a negligible height of 5cm.
+        :return:
+        """
+        force_displacement = force_magnitude - self._desired_force
+
+        rospy.logdebug("calculate_reward_contact_force>>force_magnitude=" + str(force_magnitude))
+        rospy.logdebug("calculate_reward_contact_force>>force_displacement=" + str(force_displacement))
+        # Abs to remove sign
+        reward = weight * abs(force_displacement)
+        rospy.logdebug("calculate_reward_contact_force>>reward=" + str(reward))
+        return reward
+        
+    def calculate_reward_orientation(self, rpy_array, weight=1.0):
+        """
+        We calculate the reward based on the orientation.
+        The more its closser to 0 the better because it means its upright
+        desired_yaw is the yaw that we want it to be.
+        to praise it to have a certain orientation, here is where to set it.
+        :param: rpy_array: Its an array with Roll Pitch and Yaw in place 0, 1 and 2 respectively.
+        :return:
+        """
+
+        yaw_displacement = rpy_array[2] - self.desired_yaw
+        acumulated_orientation_displacement = abs(rpy_array[0]) + abs(rpy_array[1]) + abs(yaw_displacement)
+        reward = weight * acumulated_orientation_displacement
+        rospy.logdebug("calculate_reward_orientation>>reward=" + str(reward))
+        return reward
+        
+    def calculate_reward_distance_from_des_point(self, current_position, weight=1.0):
+        """
+        We calculate the distance from the desired point.
+        The closser the better
+        :param weight:
+        :return:reward
+        """
+        distance = self.get_distance_from_desired_point(current_position)
+        reward = weight * distance
+        rospy.logdebug("calculate_reward_orientation>>reward=" + str(reward))
+        return reward
+        
+    
 
