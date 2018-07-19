@@ -15,4 +15,7 @@ from openai_ros.sumit_xl.sumit_xl_room import SumitXlRoom
 # ParrotDrone
 from openai_ros.parrotdrone_env import ParrotDroneEnv
 from openai_ros.parrotdrone.parrotdrone_goto import ParrotDroneGotoEnv
+# Hopper
+from openai_ros.hopper_env import HopperEnv
+from openai_ros.hopper.hopper_stay_up import HopperStayUpEnv
 

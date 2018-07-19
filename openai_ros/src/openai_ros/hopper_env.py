@@ -2,27 +2,21 @@ import numpy
 import rospy
 import time
 from openai_ros import robot_gazebo_env
-from std_msgs.msg import Float64
-from sensor_msgs.msg import JointState
-from sensor_msgs.msg import Image
-from sensor_msgs.msg import LaserScan
-from sensor_msgs.msg import PointCloud2
-from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist
-from sensor_msgs.msg import Range
+from gazebo_msgs.msg import ContactsState
 from sensor_msgs.msg import Imu
-from geometry_msgs.msg import Pose
-from std_msgs.msg import Empty
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Point, Quaternion, Vector3
+from sensor_msgs.msg import JointState
 
 
 
-class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
-    """Superclass for all CubeSingleDisk environments.
+class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
+    """Superclass for all HopperEnv environments.
     """
 
     def __init__(self):
         """
-        Initializes a new ParrotDroneEnv environment.
+        Initializes a new HopperEnv environment.
         
         To check any topic we need to have the simulations running, we need to do two things:
         1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
@@ -48,19 +42,22 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         
         Args:
         """
-        rospy.logdebug("Start ParrotDroneEnv INIT...")
+        rospy.logdebug("Start HopperEnv INIT...")
         # Variables that we give through the constructor.
         # None in this case
 
         # Internal Vars
         # Doesnt have any accesibles
-        self.controllers_list = []
+        self.controllers_list = ['joint_state_controller',
+                                 'haa_joint_position_controller',
+                                 'hfe_joint_position_controller',
+                                 'kfe_joint_position_controller']
 
         # It doesnt use namespace
-        self.robot_name_space = ""
+        self.robot_name_space = "monoped"
 
         # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
-        super(ParrotDroneEnv, self).__init__(controllers_list=self.controllers_list,
+        super(HopperEnv, self).__init__(controllers_list=self.controllers_list,
                                             robot_name_space=self.robot_name_space,
                                             reset_controls=False,
                                             start_init_physics_parameters=False,
@@ -71,25 +68,33 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self.gazebo.unpauseSim()
         #self.controllers_object.reset_controllers()
-        self._check_all_sensors_ready()
+        self._check_all_systems_ready()
+
 
         # We Start all the ROS related Subscribers and publishers
-        rospy.Subscriber("/drone/down_camera/image_raw", Image, self._down_camera_rgb_image_raw_callback)
-        rospy.Subscriber("/drone/front_camera/image_raw", Image, self._front_camera_rgb_image_raw_callback)
-        rospy.Subscriber("/drone/imu", Imu, self._imu_callback)
-        rospy.Subscriber("/drone/sonar", Range, self._sonar_callback)
-        rospy.Subscriber("/drone/gt_pose", Pose, self._gt_pose_callback)
-        rospy.Subscriber("/drone/gt_vel", Twist, self._gt_vel_callback)
+        rospy.Subscriber("/odom", Odometry, self._odom_callback)
+        # We use the IMU for orientation and linearacceleration detection
+        rospy.Subscriber("/monoped/imu/data", Imu, self._imu_callback)
+        # We use it to get the contact force, to know if its in the air or stumping too hard.
+        rospy.Subscriber("/lowerleg_contactsensor_state", ContactsState, self._contact_callback)
+        # We use it to get the joints positions and calculate the reward associated to it
+        rospy.Subscriber("/monoped/joint_states", JointState, self._joints_state_callback)
+        
 
-        self._cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-        self._takeoff_pub = rospy.Publisher('/drone/takeoff', Empty, queue_size=1)
-        self._land_pub = rospy.Publisher('/drone/land', Empty, queue_size=1)
+        self.publishers_array = []
+        self._haa_joint_pub = rospy.Publisher('/monoped/haa_joint_position_controller/command', Float64, queue_size=1)
+        self._hfe_joint_pub = rospy.Publisher('/monoped/hfe_joint_position_controller/command', Float64, queue_size=1)
+        self._kfe_joint_pub = rospy.Publisher('/monoped/kfe_joint_position_controller/command', Float64, queue_size=1)
+        
+        self.publishers_array.append(self._haa_joint_pub)
+        self.publishers_array.append(self._hfe_joint_pub)
+        self.publishers_array.append(self._kfe_joint_pub)
 
         self._check_all_publishers_ready()
 
         self.gazebo.pauseSim()
         
-        rospy.logdebug("Finished ParrotDroneEnv INIT...")
+        rospy.logdebug("Finished HopperEnv INIT...")
 
     # Methods needed by the RobotGazeboEnv
     # ----------------------------
@@ -109,118 +114,77 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _check_all_sensors_ready(self):
         rospy.logdebug("START ALL SENSORS READY")
-        self._check_down_camera_rgb_image_raw_ready()
-        self._check_front_camera_rgb_image_raw_ready()
+        self._check_odom_ready()
         self._check_imu_ready()
-        self._check_sonar_ready()
-        self._check_gt_pose_ready()
-        self._check_gt_vel_ready()
+        self._check_lowerleg_contactsensor_state_ready()
+        self._check_joint_states_ready()
         rospy.logdebug("ALL SENSORS READY")
 
         
-    def _check_down_camera_rgb_image_raw_ready(self):
-        self.down_camera_rgb_image_raw = None
-        rospy.logdebug("Waiting for /drone/down_camera/image_raw to be READY...")
-        while self.down_camera_rgb_image_raw is None and not rospy.is_shutdown():
+    def _check_odom_ready(self):
+        self.odom = None
+        rospy.logdebug("Waiting for /odom to be READY...")
+        while self.odom is None and not rospy.is_shutdown():
             try:
-                self.down_camera_rgb_image_raw = rospy.wait_for_message("/drone/down_camera/image_raw", Image, timeout=5.0)
-                rospy.logdebug("Current /drone/down_camera/image_raw READY=>")
+                self.odom = rospy.wait_for_message("/odom", Odometry, timeout=1.0)
+                rospy.logdebug("Current /odom READY=>")
 
             except:
-                rospy.logerr("Current /drone/down_camera/image_raw not ready yet, retrying for getting down_camera_rgb_image_raw")
-        return self.down_camera_rgb_image_raw
+                rospy.logerr("Current /odom not ready yet, retrying for getting odom")
+        return self.odom
         
-    def _check_front_camera_rgb_image_raw_ready(self):
-        self.front_camera_rgb_image_raw = None
-        rospy.logdebug("Waiting for /drone/front_camera/image_raw to be READY...")
-        while self.front_camera_rgb_image_raw is None and not rospy.is_shutdown():
-            try:
-                self.front_camera_rgb_image_raw = rospy.wait_for_message("/drone/front_camera/image_raw", Image, timeout=5.0)
-                rospy.logdebug("Current /drone/front_camera/image_raw READY=>")
-
-            except:
-                rospy.logerr("Current /drone/front_camera/image_raw not ready yet, retrying for getting front_camera_rgb_image_raw")
-        return self.front_camera_rgb_image_raw
         
-
     def _check_imu_ready(self):
         self.imu = None
-        rospy.logdebug("Waiting for /drone/imu to be READY...")
+        rospy.logdebug("Waiting for /monoped/imu/data to be READY...")
         while self.imu is None and not rospy.is_shutdown():
             try:
-                self.imu = rospy.wait_for_message("/drone/imu", Imu, timeout=5.0)
-                rospy.logdebug("Current/drone/imu READY=>")
+                self.imu = rospy.wait_for_message("/monoped/imu/data", Imu, timeout=1.0)
+                rospy.logdebug("Current /monoped/imu/data READY=>")
 
             except:
-                rospy.logerr("Current /drone/imu not ready yet, retrying for getting imu")
-
+                rospy.logerr("Current /monoped/imu/data not ready yet, retrying for getting imu")
         return self.imu
+
         
-    def _check_sonar_ready(self):
-        self.sonar = None
-        rospy.logdebug("Waiting for /drone/sonar to be READY...")
-        while self.sonar is None and not rospy.is_shutdown():
+    def _check_lowerleg_contactsensor_state_ready(self):
+        self.lowerleg_contactsensor_state = None
+        rospy.logdebug("Waiting for /lowerleg_contactsensor_state to be READY...")
+        while self.lowerleg_contactsensor_state is None and not rospy.is_shutdown():
             try:
-                self.sonar = rospy.wait_for_message("/drone/sonar", Range, timeout=5.0)
-                rospy.logdebug("Current/drone/sonar READY=>")
+                self.lowerleg_contactsensor_state = rospy.wait_for_message("/lowerleg_contactsensor_state", ContactsState, timeout=1.0)
+                rospy.logdebug("Current /lowerleg_contactsensor_state READY=>")
 
             except:
-                rospy.logerr("Current /drone/sonar not ready yet, retrying for getting sonar")
-
-        return self.sonar
+                rospy.logerr("Current /lowerleg_contactsensor_state not ready yet, retrying for getting lowerleg_contactsensor_state")
+        return self.lowerleg_contactsensor_state
         
-        
-            
-    def _check_gt_pose_ready(self):
-        self.gt_pose = None
-        rospy.logdebug("Waiting for /drone/gt_pose to be READY...")
-        while self.gt_pose is None and not rospy.is_shutdown():
+    def _check_joint_states_ready(self):
+        self.joint_states = None
+        rospy.logdebug("Waiting for /monoped/joint_states to be READY...")
+        while self.joint_states is None and not rospy.is_shutdown():
             try:
-                self.gt_pose = rospy.wait_for_message("/drone/gt_pose", Pose, timeout=5.0)
-                rospy.logdebug("Current /drone/gt_pose READY=>")
+                self.lowerleg_contactsensor_state = rospy.wait_for_message("/monoped/joint_states", JointState, timeout=1.0)
+                rospy.logdebug("Current /monoped/joint_states READY=>")
 
             except:
-                rospy.logerr("Current /drone/gt_pose not ready yet, retrying for getting gt_pose")
+                rospy.logerr("Current /monoped/joint_states not ready yet, retrying for getting joint_states")
+        return self.joint_states
 
-        return self.gt_pose
-        
-        
-            
-    def _check_gt_vel_ready(self):
-        self.gt_vel = None
-        rospy.logdebug("Waiting for /drone/gt_vel to be READY...")
-        while self.gt_vel is None and not rospy.is_shutdown():
-            try:
-                self.gt_vel = rospy.wait_for_message("/drone/gt_vel", Twist, timeout=5.0)
-                rospy.logdebug("Current /drone/gt_vel READY=>")
 
-            except:
-                rospy.logerr("Current /drone/gt_vel not ready yet, retrying for getting gt_vel")
 
-        return self.gt_vel
-        
-
-    def _down_camera_rgb_image_raw_callback(self, data):
-        self.down_camera_rgb_image_raw = data
+    def _odom_callback(self, data):
+        self.odom = data
     
-    def _front_camera_rgb_image_raw_callback(self, data):
-        self.front_camera_rgb_image_raw = data
-        
     def _imu_callback(self, data):
         self.imu = data
         
-    def _sonar_callback(self, data):
-        self.sonar = data
-        
-    def _gt_pose_callback(self, data):
-        self.gt_pose = data
-        
-    def _gt_vel_callback(self, data):
-        self.gt_vel = data
+    def _contact_callback(self, data):
+        self.lowerleg_contactsensor_state = data
 
+    def _joints_state_callback(self, data):
+        self.joint_states = data
 
-
-        self._land_pub = rospy.Publisher('/drone/land', Empty, queue_size=1)
 
     def _check_all_publishers_ready(self):
         """
@@ -228,52 +192,24 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         :return:
         """
         rospy.logdebug("START ALL SENSORS READY")
-        self._check_cmd_vel_pub_connection()
-        self._check_takeoff_pub_connection()
-        self._check_land_pub_connection()
+        for publisher_object in self.publishers_array:
+            self._check_pub_connection(publisher_object)
         rospy.logdebug("ALL SENSORS READY")
 
-    def _check_cmd_vel_pub_connection(self):
+    def _check_pub_connection(self, publisher_object):
 
         rate = rospy.Rate(10)  # 10hz
-        while self._cmd_vel_pub.get_num_connections() == 0 and not rospy.is_shutdown():
-            rospy.logdebug("No susbribers to _cmd_vel_pub yet so we wait and try again")
+        while self.publisher_object.get_num_connections() == 0 and not rospy.is_shutdown():
+            rospy.logdebug("No susbribers to publisher_object yet so we wait and try again")
             try:
                 rate.sleep()
             except rospy.ROSInterruptException:
                 # This is to avoid error when world is rested, time when backwards.
                 pass
-        rospy.logdebug("_cmd_vel_pub Publisher Connected")
+        rospy.logdebug("publisher_object Publisher Connected")
 
         rospy.logdebug("All Publishers READY")
         
-    def _check_takeoff_pub_connection(self):
-
-        rate = rospy.Rate(10)  # 10hz
-        while self._takeoff_pub.get_num_connections() == 0 and not rospy.is_shutdown():
-            rospy.logdebug("No susbribers to _takeoff_pub yet so we wait and try again")
-            try:
-                rate.sleep()
-            except rospy.ROSInterruptException:
-                # This is to avoid error when world is rested, time when backwards.
-                pass
-        rospy.logdebug("_takeoff_pub Publisher Connected")
-
-        rospy.logdebug("All Publishers READY")
-        
-    def _check_land_pub_connection(self):
-
-        rate = rospy.Rate(10)  # 10hz
-        while self._land_pub.get_num_connections() == 0 and not rospy.is_shutdown():
-            rospy.logdebug("No susbribers to _land_pub yet so we wait and try again")
-            try:
-                rate.sleep()
-            except rospy.ROSInterruptException:
-                # This is to avoid error when world is rested, time when backwards.
-                pass
-        rospy.logdebug("_land_pub Publisher Connected")
-
-        rospy.logdebug("All Publishers READY")
     
     # Methods that the TrainingEnvironment will need to define here as virtual
     # because they will be used in RobotGazeboEnv GrandParentClass and defined in the
@@ -310,105 +246,19 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         
     # Methods that the TrainingEnvironment will need.
     # ----------------------------
+    def move_joints(self, joints_array, epsilon=0.05, update_rate=10):
+        """
+        It will move the Hopper Joints to the given Joint_Array values
+        """
+        i = 0
+        for publisher_object in self.publishers_array:
+          joint_value = Float64()
+          joint_value.data = joints_array[i]
+          rospy.logdebug("JointsPos>>"+str(joint_value))
+          publisher_object.publish(joint_value)
+          i += 1
+        self.wait_time_for_execute_movement(joints_array, epsilon=0.05, update_rate=10)
     
-    def takeoff(self):
-        """
-        Sends the takeoff command and checks it has taken of
-        It unpauses the simulation and pauses again
-        to allow it to be a self contained action
-        """
-        self.gazebo.unpauseSim()
-        self._check_takeoff_pub_connection()
-        
-        takeoff_cmd = Empty()
-        self._takeoff_pub.publish(takeoff_cmd)
-        
-        # When it takes of value of height is around 1.3
-        self.wait_for_height(   heigh_value_to_check=0.8,
-                                smaller_than=False,
-                                epsilon = 0.05,
-                                update_rate = 10)
-        self.gazebo.pauseSim()
-        
-    def land(self):
-        """
-        Sends the Landing command and checks it has landed
-        It unpauses the simulation and pauses again
-        to allow it to be a self contained action
-        """
-        self.gazebo.unpauseSim()
-        
-        self._check_land_pub_connection()
-        
-        land_cmd = Empty()
-        self._land_pub.publish(land_cmd)
-        # When Drone is on the floor, the readings are 0.5
-        self.wait_for_height(   heigh_value_to_check=0.6,
-                                smaller_than=True,
-                                epsilon = 0.05,
-                                update_rate = 10)
-        
-        self.gazebo.pauseSim()
-        
-        
-    def wait_for_height(self, heigh_value_to_check, smaller_than, epsilon, update_rate):
-        """
-        Checks if current height is smaller or bigger than a value
-        :param: smaller_than: If True, we will wait until value is smaller than the one given
-        """
-        
-        rate = rospy.Rate(update_rate)
-        start_wait_time = rospy.get_rostime().to_sec()
-        end_wait_time = 0.0
-        
-        rospy.logdebug("epsilon>>" + str(epsilon))
-        
-        while not rospy.is_shutdown():
-            current_gt_pose = self._check_gt_pose_ready()
-            
-            current_height = current_gt_pose.position.z
-            
-            if smaller_than:
-                takeoff_height_achieved = current_height <= heigh_value_to_check
-                rospy.logwarn("SMALLER THAN HEIGHT...current_height="+str(current_height)+"<="+str(heigh_value_to_check))
-            else:
-                takeoff_height_achieved = current_height >= heigh_value_to_check
-                rospy.logwarn("BIGGER THAN HEIGHT...current_height="+str(current_height)+">="+str(heigh_value_to_check))
-            
-            if takeoff_height_achieved:
-                rospy.logwarn("Reached Height!")
-                end_wait_time = rospy.get_rostime().to_sec()
-                break
-            rospy.logwarn("Height Not there yet, keep waiting...")
-            rate.sleep()
-        
-    
-    
-    def move_base(self, linear_speed_vector, angular_speed, epsilon=0.05, update_rate=10):
-        """
-        It will move the base based on the linear and angular speeds given.
-        It will wait untill those twists are achived reading from the odometry topic.
-        :param linear_speed_vector: Speed in the XYZ axis of the robot base frame, because drones can move in any direction
-        :param angular_speed: Speed of the angular turning of the robot base frame, because this drone only turns on the Z axis.
-        :param epsilon: Acceptable difference between the speed asked and the odometry readings
-        :param update_rate: Rate at which we check the odometry.
-        :return: 
-        """
-        cmd_vel_value = Twist()
-        cmd_vel_value.linear.x = linear_speed_vector.x
-        cmd_vel_value.linear.y = linear_speed_vector.y
-        cmd_vel_value.linear.z = linear_speed_vector.z
-        cmd_vel_value.angular.z = angular_speed
-        rospy.logdebug("TurtleBot2 Base Twist Cmd>>" + str(cmd_vel_value))
-        self._check_cmd_vel_pub_connection()
-        self._cmd_vel_pub.publish(cmd_vel_value)
-        """
-        self.wait_until_twist_achieved(cmd_vel_value,
-                                        epsilon,
-                                        update_rate)
-        """
-        self.wait_time_for_execute_movement()
-                                        
     def wait_time_for_execute_movement(self):
         """
         Because this Parrot Drone position is global, we really dont have
@@ -417,14 +267,12 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         time.sleep(1.0)
     
-    def wait_until_twist_achieved(self, cmd_vel_value, epsilon, update_rate):
+    def wait_time_for_execute_movement(self, joints_array, epsilon, update_rate):
         """
-        # TODO: Make it work using TF conversions 
-        We wait for the cmd_vel twist given to be reached by the robot reading
-        from the odometry.
-        :param cmd_vel_value: Twist we want to wait to reach.
+        We wait until Joints are where we asked them to be based on the joints_states
+        :param joints_array:Joints Values in radians of each of the three joints of hopper leg.
         :param epsilon: Error acceptable in odometry readings.
-        :param update_rate: Rate at which we check the odometry.
+        :param update_rate: Rate at which we check the joint_states.
         :return:
         """
         rospy.logwarn("START wait_until_twist_achieved...")
@@ -434,26 +282,20 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         end_wait_time = 0.0
         epsilon = 0.05
         
-        rospy.logwarn("Desired Twist Cmd>>" + str(cmd_vel_value))
+        rospy.logwarn("Desired JointsState>>" + str(joints_array))
         rospy.logwarn("epsilon>>" + str(epsilon))
         
-        values_of_ref = [   cmd_vel_value.linear.x,
-                            cmd_vel_value.linear.y,
-                            cmd_vel_value.linear.z,
-                            cmd_vel_value.angular.z]
-        
         while not rospy.is_shutdown():
-            current_gt_vel = self._check_gt_vel_ready()
+            current_joint_states = self._check_joint_states_ready()
             
-            values_to_check = [ current_gt_vel.linear.x,
-                                current_gt_vel.linear.y,
-                                current_gt_vel.linear.z,
-                                current_gt_vel.angular.z]
+            values_to_check = [ current_gt_vel.position[0],
+                                current_gt_vel.position[1],
+                                current_gt_vel.position[2]]
             
-            vel_values_are_close = self.check_array_similar(values_of_ref,values_to_check,epsilon)
+            vel_values_are_close = self.check_array_similar(joints_array,values_to_check,epsilon)
             
             if vel_values_are_close:
-                rospy.logwarn("Reached Velocity!")
+                rospy.logwarn("Reached JointStates!")
                 end_wait_time = rospy.get_rostime().to_sec()
                 break
             rospy.logwarn("Not there yet, keep waiting...")
@@ -461,7 +303,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         delta_time = end_wait_time- start_wait_time
         rospy.logdebug("[Wait Time=" + str(delta_time)+"]")
         
-        rospy.logwarn("END wait_until_twist_achieved...")
+        rospy.logwarn("END wait_until_jointstate_achieved...")
         
         return delta_time
     
@@ -474,21 +316,16 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         return numpy.allclose(ref_value_array, check_value_array, atol=epsilon)
     
 
-    def get_down_camera_rgb_image_raw(self):
-        return self.down_camera_rgb_image_raw
-    
-    def get_front_camera_rgb_image_raw(self):
-        return self.front_camera_rgb_image_raw
+    def get_odom(self):
+        return self.odom
     
     def get_imu(self):
         return self.imu
+    
+    def get_lowerleg_contactsensor_state(self):
+        return self.lowerleg_contactsensor_state
         
-    def get_sonar(self):
-        return self.sonar
-        
-    def get_gt_pose(self):
-        return self.gt_pose
-        
-    def get_gt_vel(self):
-        return self.gt_vel
+    def get_joint_states(self):
+        return self.joint_states
+
 

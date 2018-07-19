@@ -1,5 +1,5 @@
 from gym import utils
-from openai_ros import cartpole_env
+from openai_ros import hopper_env
 from gym.envs.registration import register
 from gym import error, spaces
 import rospy
@@ -8,12 +8,12 @@ import numpy as np
 
 # The path is __init__.py of openai_ros, where we import the MovingCubeOneDiskWalkEnv directly
 register(
-        id='CartPoleStayUp-v0',
-        entry_point='openai_ros:CartPoleStayUpEnv',
+        id='HopperStayUp-v0',
+        entry_point='openai_ros:HopperStayUpEnv',
         timestep_limit=1000,
     )
 
-class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
+class HopperStayUpEnv(cartpole_env.HopperEnv):
     def __init__(self):
         
         self.get_params()
@@ -26,7 +26,7 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
             np.finfo(np.float32).max])
         self.observation_space = spaces.Box(-high, high)
         
-        cartpole_env.CartPoleEnv.__init__(
+        cartpole_env.HopperStayUpEnv.__init__(
             self, control_type=self.control_type
             )
             

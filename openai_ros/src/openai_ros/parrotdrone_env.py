@@ -218,10 +218,6 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
     def _gt_vel_callback(self, data):
         self.gt_vel = data
 
-
-
-        self._land_pub = rospy.Publisher('/drone/land', Empty, queue_size=1)
-
     def _check_all_publishers_ready(self):
         """
         Checks that all the publishers are working
