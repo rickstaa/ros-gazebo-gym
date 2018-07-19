@@ -200,6 +200,7 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         sonar = self.get_sonar()
         sonar_value = sonar.range
         
+        """
         observations = [    round(gt_pose.position.x, 1),
                             round(gt_pose.position.y, 1),
                             round(gt_pose.position.z, 1),
@@ -207,7 +208,15 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
                             round(pitch, 1),
                             round(yaw, 1),
                             round(sonar_value,1)]
-                                                                
+        """
+        # We simplify a bit the spatial grid to make learning faster
+        observations = [    int(gt_pose.position.x),
+                            int(gt_pose.position.y),
+                            int(gt_pose.position.z),
+                            round(roll,1),
+                            round(pitch,1),
+                            round(yaw,1),
+                            round(sonar_value,1)]
                                                                 
         
         rospy.logdebug("Observations==>"+str(observations))
