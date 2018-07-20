@@ -12,6 +12,7 @@ class RobotGazeboEnv(gym.Env):
     def __init__(self, robot_name_space, controllers_list, reset_controls, start_init_physics_parameters=True, reset_world_or_sim="SIMULATION"):
 
         # To reset Simulations
+        rospy.logwarn("START init RobotGazeboEnv")
         self.gazebo = GazeboConnection(start_init_physics_parameters,reset_world_or_sim)
         self.controllers_object = ControllersConnection(namespace=robot_name_space, controllers_list=controllers_list)
         self.reset_controls = reset_controls
@@ -21,6 +22,7 @@ class RobotGazeboEnv(gym.Env):
         self.episode_num = 0
         self.cumulated_episode_reward = 0
         self.reward_pub = rospy.Publisher('/openai/reward', RLExperimentInfo, queue_size=1)
+        rospy.logwarn("END init RobotGazeboEnv")
 
     # Env methods
     def seed(self, seed=None):

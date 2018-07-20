@@ -28,6 +28,7 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         3-4) Increment/Decrement hfe_joint
         5-6) Increment/Decrement kfe_joint
         """
+        rospy.logwarn("Start HopperStayUpEnv INIT...")
         number_actions = rospy.get_param('/monoped/n_actions')
         self.action_space = spaces.Discrete(number_actions)
         
@@ -55,6 +56,8 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         
         
         self.dec_obs = rospy.get_param("/monoped/number_decimals_precision_obs")
+        
+        self.desired_force = rospy.get_param("/monoped/desired_force")
         
         self.max_x_pos = rospy.get_param("/monoped/max_x_pos")
         self.max_y_pos = rospy.get_param("/monoped/max_y_pos")
@@ -109,7 +112,6 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         
         # Rewards
         self.weight_joint_position = rospy.get_param("/monoped/rewards_weight/weight_joint_position")
-        self.weight_joint_effort = rospy.get_param("/monoped/rewards_weight/weight_joint_effort")
         self.weight_contact_force = rospy.get_param("/monoped/rewards_weight/weight_contact_force")
         self.weight_orientation = rospy.get_param("/monoped/rewards_weight/weight_orientation")
         self.weight_distance_from_des_point = rospy.get_param("/monoped/rewards_weight/weight_distance_from_des_point")
@@ -119,6 +121,8 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
 
         # Here we will add any init functions prior to starting the MyRobotEnv
         super(HopperStayUpEnv, self).__init__()
+        
+        rospy.logwarn("END HopperStayUpEnv INIT...")
 
     def _set_init_pose(self):
         """
@@ -194,7 +198,7 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
 
         
         # We tell monoped where to place its joints next
-        self.move_joints(   joints_array,
+        self.move_joints(   action_position,
                             epsilon=0.05,
                             update_rate=10)
         
@@ -251,7 +255,7 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         observation.append(round(base_pitch,self.dec_obs))
         observation.append(round(base_yaw,self.dec_obs))
         observation.append(round(force_magnitude,self.dec_obs))
-        observation.append(round(joint_states_haa,self.dec_obs)
+        observation.append(round(joint_states_haa,self.dec_obs))
         observation.append(round(joint_states_hfe,self.dec_obs))
         observation.append(round(joint_states_kfe,self.dec_obs))
         
@@ -490,7 +494,9 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         /lowerleg_contactsensor_state/states[0]/total_wrench
         :return:
         """
-        contact_force = None
+        
+        # We create an empty element , in case there is no contact.
+        contact_force = Vector3()
         for state in lowerleg_contactsensor_state.states:
             self.contact_force = state.total_wrench.force
         
@@ -534,7 +540,7 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         the ground from a negligible height of 5cm.
         :return:
         """
-        force_displacement = force_magnitude - self._desired_force
+        force_displacement = force_magnitude - self.desired_force
 
         rospy.logdebug("calculate_reward_contact_force>>force_magnitude=" + str(force_magnitude))
         rospy.logdebug("calculate_reward_contact_force>>force_displacement=" + str(force_displacement))
