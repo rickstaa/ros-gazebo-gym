@@ -43,7 +43,7 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
         
         Args:
         """
-        rospy.logwarn("Start HopperEnv INIT...")
+        rospy.logdebug("Start HopperEnv INIT...")
         # Variables that we give through the constructor.
         # None in this case
 
@@ -66,7 +66,7 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
 
 
 
-        rospy.logwarn("HopperEnv unpause1...")
+        rospy.logdebug("HopperEnv unpause1...")
         self.gazebo.unpauseSim()
         #self.controllers_object.reset_controllers()
         
@@ -96,7 +96,7 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self.gazebo.pauseSim()
         
-        rospy.logwarn("Finished HopperEnv INIT...")
+        rospy.logdebug("Finished HopperEnv INIT...")
 
     # Methods needed by the RobotGazeboEnv
     # ----------------------------
@@ -107,9 +107,9 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
         Checks that all the sensors, publishers and other simulation systems are
         operational.
         """
-        rospy.logwarn("HopperEnv check_all_systems_ready...")
+        rospy.logdebug("HopperEnv check_all_systems_ready...")
         self._check_all_sensors_ready()
-        rospy.logwarn("END HopperEnv _check_all_systems_ready...")
+        rospy.logdebug("END HopperEnv _check_all_systems_ready...")
         return True
 
 
@@ -117,21 +117,21 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
     # ----------------------------
 
     def _check_all_sensors_ready(self):
-        rospy.logwarn("START ALL SENSORS READY")
+        rospy.logdebug("START ALL SENSORS READY")
         self._check_odom_ready()
         self._check_imu_ready()
         self._check_lowerleg_contactsensor_state_ready()
         self._check_joint_states_ready()
-        rospy.logwarn("ALL SENSORS READY")
+        rospy.logdebug("ALL SENSORS READY")
 
         
     def _check_odom_ready(self):
         self.odom = None
-        rospy.logwarn("Waiting for /odom to be READY...")
+        rospy.logdebug("Waiting for /odom to be READY...")
         while self.odom is None and not rospy.is_shutdown():
             try:
                 self.odom = rospy.wait_for_message("/odom", Odometry, timeout=1.0)
-                rospy.logwarn("Current /odom READY=>")
+                rospy.logdebug("Current /odom READY=>")
 
             except:
                 rospy.logerr("Current /odom not ready yet, retrying for getting odom")
@@ -140,11 +140,11 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
         
     def _check_imu_ready(self):
         self.imu = None
-        rospy.logwarn("Waiting for /monoped/imu/data to be READY...")
+        rospy.logdebug("Waiting for /monoped/imu/data to be READY...")
         while self.imu is None and not rospy.is_shutdown():
             try:
                 self.imu = rospy.wait_for_message("/monoped/imu/data", Imu, timeout=1.0)
-                rospy.logwarn("Current /monoped/imu/data READY=>")
+                rospy.logdebug("Current /monoped/imu/data READY=>")
 
             except:
                 rospy.logerr("Current /monoped/imu/data not ready yet, retrying for getting imu")
@@ -153,11 +153,11 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
         
     def _check_lowerleg_contactsensor_state_ready(self):
         self.lowerleg_contactsensor_state = None
-        rospy.logwarn("Waiting for /lowerleg_contactsensor_state to be READY...")
+        rospy.logdebug("Waiting for /lowerleg_contactsensor_state to be READY...")
         while self.lowerleg_contactsensor_state is None and not rospy.is_shutdown():
             try:
                 self.lowerleg_contactsensor_state = rospy.wait_for_message("/lowerleg_contactsensor_state", ContactsState, timeout=1.0)
-                rospy.logwarn("Current /lowerleg_contactsensor_state READY=>")
+                rospy.logdebug("Current /lowerleg_contactsensor_state READY=>")
 
             except:
                 rospy.logerr("Current /lowerleg_contactsensor_state not ready yet, retrying for getting lowerleg_contactsensor_state")
@@ -165,11 +165,11 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
         
     def _check_joint_states_ready(self):
         self.joint_states = None
-        rospy.logwarn("Waiting for /monoped/joint_states to be READY...")
+        rospy.logdebug("Waiting for /monoped/joint_states to be READY...")
         while self.joint_states is None and not rospy.is_shutdown():
             try:
                 self.joint_states = rospy.wait_for_message("/monoped/joint_states", JointState, timeout=1.0)
-                rospy.logwarn("Current /monoped/joint_states READY=>")
+                rospy.logdebug("Current /monoped/joint_states READY=>")
 
             except:
                 rospy.logerr("Current /monoped/joint_states not ready yet, retrying for getting joint_states")
@@ -261,7 +261,7 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
           rospy.logdebug("JointsPos>>"+str(joint_value))
           publisher_object.publish(joint_value)
           i += 1
-        self.wait_time_for_execute_movement(joints_array, epsilon=0.1, update_rate=10)
+        self.wait_time_for_execute_movement(joints_array, epsilon, update_rate)
     
     def wait_time_for_execute_movement(self, joints_array, epsilon, update_rate):
         """
@@ -271,15 +271,14 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
         :param update_rate: Rate at which we check the joint_states.
         :return:
         """
-        rospy.logwarn("START wait_until_twist_achieved...")
+        rospy.logdebug("START wait_until_twist_achieved...")
         
         rate = rospy.Rate(update_rate)
         start_wait_time = rospy.get_rostime().to_sec()
         end_wait_time = 0.0
-        epsilon = 0.05
-        
-        rospy.logwarn("Desired JointsState>>" + str(joints_array))
-        rospy.logwarn("epsilon>>" + str(epsilon))
+
+        rospy.logdebug("Desired JointsState>>" + str(joints_array))
+        rospy.logdebug("epsilon>>" + str(epsilon))
         
         while not rospy.is_shutdown():
             current_joint_states = self._check_joint_states_ready()
@@ -291,15 +290,15 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
             vel_values_are_close = self.check_array_similar(joints_array,values_to_check,epsilon)
             
             if vel_values_are_close:
-                rospy.logwarn("Reached JointStates!")
+                rospy.logdebug("Reached JointStates!")
                 end_wait_time = rospy.get_rostime().to_sec()
                 break
-            rospy.logwarn("Not there yet, keep waiting...")
+            rospy.logdebug("Not there yet, keep waiting...")
             rate.sleep()
         delta_time = end_wait_time- start_wait_time
         rospy.logdebug("[Wait Time=" + str(delta_time)+"]")
         
-        rospy.logwarn("END wait_until_jointstate_achieved...")
+        rospy.logdebug("END wait_until_jointstate_achieved...")
         
         return delta_time
     
@@ -307,8 +306,8 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         It checks if the check_value id similar to the ref_value
         """
-        rospy.logwarn("ref_value_array="+str(ref_value_array))
-        rospy.logwarn("check_value_array="+str(check_value_array))
+        rospy.logdebug("ref_value_array="+str(ref_value_array))
+        rospy.logdebug("check_value_array="+str(check_value_array))
         return numpy.allclose(ref_value_array, check_value_array, atol=epsilon)
     
 

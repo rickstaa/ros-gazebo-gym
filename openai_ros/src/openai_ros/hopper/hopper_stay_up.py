@@ -28,7 +28,7 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         3-4) Increment/Decrement hfe_joint
         5-6) Increment/Decrement kfe_joint
         """
-        rospy.logwarn("Start HopperStayUpEnv INIT...")
+        rospy.logdebug("Start HopperStayUpEnv INIT...")
         number_actions = rospy.get_param('/monoped/n_actions')
         self.action_space = spaces.Discrete(number_actions)
         
@@ -49,12 +49,14 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         self.desired_point.x = rospy.get_param("/monoped/desired_point/x")
         self.desired_point.y = rospy.get_param("/monoped/desired_point/y")
         self.desired_point.z = rospy.get_param("/monoped/desired_point/z")
+        self.accepted_error_in_des_pos = rospy.get_param("/monoped/accepted_error_in_des_pos")
         
         self.desired_yaw = rospy.get_param("/monoped/desired_yaw")
         
         self.joint_increment_value = rospy.get_param("/monoped/joint_increment_value")
-        
-        
+        self.accepted_joint_error = rospy.get_param("/monoped/accepted_joint_error")
+        self.update_rate = rospy.get_param("/monoped/update_rate")
+
         self.dec_obs = rospy.get_param("/monoped/number_decimals_precision_obs")
         
         self.desired_force = rospy.get_param("/monoped/desired_force")
@@ -122,7 +124,7 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         # Here we will add any init functions prior to starting the MyRobotEnv
         super(HopperStayUpEnv, self).__init__()
         
-        rospy.logwarn("END HopperStayUpEnv INIT...")
+        rospy.logdebug("END HopperStayUpEnv INIT...")
 
     def _set_init_pose(self):
         """
@@ -135,8 +137,8 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
                         self.init_joint_states.z]
         
         self.move_joints(   joints_array,
-                            epsilon=0.05,
-                            update_rate=10)
+                            epsilon=self.accepted_joint_error,
+                            update_rate=self.update_rate)
 
         return True
 
@@ -199,8 +201,8 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         
         # We tell monoped where to place its joints next
         self.move_joints(   action_position,
-                            epsilon=0.05,
-                            update_rate=10)
+                            epsilon=self.accepted_joint_error,
+                            update_rate=self.update_rate)
         
         rospy.logdebug("END Set Action ==>"+str(action))
 
@@ -345,14 +347,14 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         
         is_in_desired_pos = x_pos_are_close and y_pos_are_close
         
-        rospy.logwarn("###### IS DESIRED POS ? ######")
-        rospy.logwarn("current_position"+str(current_position))
-        rospy.logwarn("x_pos_plus"+str(x_pos_plus)+",x_pos_minus="+str(x_pos_minus))
-        rospy.logwarn("y_pos_plus"+str(y_pos_plus)+",y_pos_minus="+str(y_pos_minus))
-        rospy.logwarn("x_pos_are_close"+str(x_pos_are_close))
-        rospy.logwarn("y_pos_are_close"+str(y_pos_are_close))
-        rospy.logwarn("is_in_desired_pos"+str(is_in_desired_pos))
-        rospy.logwarn("############")
+        rospy.logdebug("###### IS DESIRED POS ? ######")
+        rospy.logdebug("current_position"+str(current_position))
+        rospy.logdebug("x_pos_plus"+str(x_pos_plus)+",x_pos_minus="+str(x_pos_minus))
+        rospy.logdebug("y_pos_plus"+str(y_pos_plus)+",y_pos_minus="+str(y_pos_minus))
+        rospy.logdebug("x_pos_are_close"+str(x_pos_are_close))
+        rospy.logdebug("y_pos_are_close"+str(y_pos_are_close))
+        rospy.logdebug("is_in_desired_pos"+str(is_in_desired_pos))
+        rospy.logdebug("############")
         
         return is_in_desired_pos
     
@@ -362,12 +364,12 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         """
         is_inside = False
 
-        rospy.logwarn("##### INSIDE WORK SPACE? #######")
-        rospy.logwarn("XYZ current_position"+str(current_position))
-        rospy.logwarn("work_space_x_max"+str(self.work_space_x_max)+",work_space_x_min="+str(self.work_space_x_min))
-        rospy.logwarn("work_space_y_max"+str(self.work_space_y_max)+",work_space_y_min="+str(self.work_space_y_min))
-        rospy.logwarn("work_space_z_max"+str(self.work_space_z_max)+",work_space_z_min="+str(self.work_space_z_min))
-        rospy.logwarn("############")
+        rospy.logdebug("##### INSIDE WORK SPACE? #######")
+        rospy.logdebug("XYZ current_position"+str(current_position))
+        rospy.logdebug("work_space_x_max"+str(self.work_space_x_max)+",work_space_x_min="+str(self.work_space_x_min))
+        rospy.logdebug("work_space_y_max"+str(self.work_space_y_max)+",work_space_y_min="+str(self.work_space_y_min))
+        rospy.logdebug("work_space_z_max"+str(self.work_space_z_max)+",work_space_z_min="+str(self.work_space_z_min))
+        rospy.logdebug("############")
 
         if current_position.x > self.work_space_x_min and current_position.x <= self.work_space_x_max:
             if current_position.y > self.work_space_y_min and current_position.y <= self.work_space_y_max:
@@ -380,9 +382,9 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         """
         Detects if there is something too close to the monoped front
         """
-        rospy.logwarn("##### SONAR TOO CLOSE? #######")
-        rospy.logwarn("sonar_value"+str(sonar_value)+",min_sonar_value="+str(self.min_sonar_value))
-        rospy.logwarn("############")
+        rospy.logdebug("##### SONAR TOO CLOSE? #######")
+        rospy.logdebug("sonar_value"+str(sonar_value)+",min_sonar_value="+str(self.min_sonar_value))
+        rospy.logdebug("############")
         
         too_close = sonar_value < self.min_sonar_value
         
@@ -398,11 +400,11 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         self.max_roll = rospy.get_param("/monoped/max_roll")
         self.max_pitch = rospy.get_param("/monoped/max_pitch")
         
-        rospy.logwarn("#### HAS FLIPPED? ########")
-        rospy.logwarn("RPY current_orientation"+str(current_orientation))
-        rospy.logwarn("max_roll"+str(self.max_roll)+",min_roll="+str(-1*self.max_roll))
-        rospy.logwarn("max_pitch"+str(self.max_pitch)+",min_pitch="+str(-1*self.max_pitch))
-        rospy.logwarn("############")
+        rospy.logdebug("#### HAS FLIPPED? ########")
+        rospy.logdebug("RPY current_orientation"+str(current_orientation))
+        rospy.logdebug("max_roll"+str(self.max_roll)+",min_roll="+str(-1*self.max_roll))
+        rospy.logdebug("max_pitch"+str(self.max_pitch)+",min_pitch="+str(-1*self.max_pitch))
+        rospy.logdebug("############")
         
         
         if current_orientation.x > -1*self.max_roll and current_orientation.x <= self.max_roll:
