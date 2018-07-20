@@ -1,7 +1,7 @@
 import rospy
 import numpy
 from gym import spaces
-from openai_ros import turtlebot3_env
+from openai_ros.robot_envs import turtlebot3_env
 from gym.envs.registration import register
 from geometry_msgs.msg import Vector3
 

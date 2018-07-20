@@ -2,7 +2,7 @@ import rospy
 import numpy
 import math
 from gym import spaces
-from openai_ros import cube_single_disk_env
+from openai_ros.robot_envs import cube_single_disk_env
 from gym.envs.registration import register
 from geometry_msgs.msg import Point
 from tf.transformations import euler_from_quaternion

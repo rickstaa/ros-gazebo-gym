@@ -1,7 +1,7 @@
 import rospy
 import numpy
 from gym import spaces
-from openai_ros import turtlebot2_env
+from openai_ros.robot_envs import turtlebot2_env
 from gym.envs.registration import register
 
 # The path is __init__.py of openai_ros, where we import the TurtleBot2MazeEnv directly
