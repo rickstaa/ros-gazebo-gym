@@ -8,9 +8,11 @@ class ControllersConnection():
     
     def __init__(self, namespace, controllers_list):
 
+        rospy.logwarn("Start Init ControllersConnection")
         self.controllers_list = controllers_list
         self.switch_service_name = '/'+namespace+'/controller_manager/switch_controller'
         self.switch_service = rospy.ServiceProxy(self.switch_service_name, SwitchController)
+        rospy.logwarn("END Init ControllersConnection")
 
     def switch_controllers(self, controllers_on, controllers_off, strictness=1):
         """
