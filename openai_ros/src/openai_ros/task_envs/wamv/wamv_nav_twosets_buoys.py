@@ -171,13 +171,7 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         :return: observation
         """
         rospy.logdebug("Start Get Observation ==>")
-        
-        
-        joint_states = self.get_joint_states()
-        joint_states_haa = joint_states.position[0]
-        joint_states_hfe = joint_states.position[1]
-        joint_states_kfe = joint_states.position[2]
-        
+
         odom = self.get_odom()
         base_position = odom.pose.pose.position
         base_orientation_quat = odom.pose.pose.orientation
