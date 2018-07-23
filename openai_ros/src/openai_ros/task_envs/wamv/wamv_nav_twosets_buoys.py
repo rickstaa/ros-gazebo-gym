@@ -45,7 +45,7 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         self.desired_point.x = rospy.get_param("/wamv/desired_point/x")
         self.desired_point.y = rospy.get_param("/wamv/desired_point/y")
         self.desired_point.z = rospy.get_param("/wamv/desired_point/z")
-        self.accepted_error_in_des_pos = rospy.get_param("/wamv/accepted_error_in_des_pos")
+        self.desired_point_epsilon = rospy.get_param("/wamv/desired_point_epsilon")
         
         self.work_space_x_max = rospy.get_param("/wamv/work_space/x_max")
         self.work_space_x_min = rospy.get_param("/wamv/work_space/x_min")
@@ -87,8 +87,9 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         
         # Rewards
         
-        self.alive_reward =rospy.get_param("/wamv/alive_reward")
         self.done_reward =rospy.get_param("/wamv/done_reward")
+
+        self.cumulated_steps = 0.0
 
         # Here we will add any init functions prior to starting the MyRobotEnv
         super(WamvNavTwoSetsBuoysEnv, self).__init__()
@@ -121,7 +122,10 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         self.cumulated_reward = 0.0
         # We get the initial pose to mesure the distance from the desired point.
         odom = self.get_odom()
-        self.previous_distance_from_des_point = self.get_distance_from_desired_point(odom.pose.pose.position)
+        current_position = Vector3()
+        current_position.x = odom.pose.pose.position.x
+        current_position.y = odom.pose.pose.position.y
+        self.previous_distance_from_des_point = self.get_distance_from_desired_point(current_position)
 
         
 
@@ -205,6 +209,7 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         """
         We consider the episode done if:
         1) The wamvs is ouside the workspace
+        2) It got to the desired point
         """
         distance_from_desired_point = observations[8]
 
@@ -213,46 +218,56 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         current_position.y = observations[1]
         
         is_inside_corridor = self.is_inside_workspace(current_position)
+        has_reached_des_point = self.is_in_desired_position(current_position, self.desired_point_epsilon)
         
-        return is_inside_corridor
+        done = not(is_inside_corridor) or has_reached_des_point
+        
+        return done
 
     def _compute_reward(self, observations, done):
         """
         We Base the rewards in if its done or not and we base it on
-        the joint poisition, effort, contact force, orientation and distance from desired point.
+        if the distance to the desired point has increased or not
         :return:
         """
-        
-        joints_state_array = observations[5:8]
-        r1 = self.calculate_reward_joint_position(joints_state_array, self.weight_joint_position)
-        # Desired Force in Newtons, taken form idle contact with 9.81 gravity.
-        
-        force_magnitude = observations[4]
-        r2 = self.calculate_reward_contact_force(force_magnitude, self.weight_contact_force)
-        
-        rpy_array = observations[1:4]
-        r3 = self.calculate_reward_orientation(rpy_array, self.weight_orientation)
-        
-        
+
+        # We only consider the plane, the fluctuation in z is due mainly to wave
         current_position = Point()
-        current_position.x = observations[8]
-        current_position.y = observations[9]
-        current_position.z = observations[10]
-        r4 = self.calculate_reward_distance_from_des_point(current_position, self.weight_distance_from_des_point)
+        current_position.x = observations[0]
+        current_position.y = observations[1]
+        
+        distance_from_des_point = self.get_distance_from_desired_point(current_position)
+        distance_difference =  distance_from_des_point - self.previous_distance_from_des_point
 
-        # The sign depend on its function.
-        total_reward = self.alive_reward - r1 - r2 - r3 - r4
 
-        rospy.logdebug("###############")
-        rospy.logdebug("alive_bonus=" + str(self.alive_reward))
-        rospy.logdebug("r1 joint_position=" + str(r1))
-        rospy.logdebug("r2 contact_force=" + str(r2))
-        rospy.logdebug("r3 orientation=" + str(r3))
-        rospy.logdebug("r4 distance=" + str(r4))
-        rospy.logdebug("total_reward=" + str(total_reward))
-        rospy.logdebug("###############")
+        if not done:
+            
+            # If there has been a decrease in the distance to the desired point, we reward it
+            if distance_difference < 0.0:
+                rospy.logwarn("DECREASE IN DISTANCE GOOD")
+                reward = self.closer_to_point_reward
+            else:
+                rospy.logerr("ENCREASE IN DISTANCE BAD")
+                reward = 0
 
-        return total_reward
+        else:
+            
+            if self.is_in_desired_position(current_position, self.desired_point_epsilon):
+                reward = self.done_reward
+            else:
+                reward = -1*self.done_reward
+
+
+        self.previous_distance_from_des_point = distance_from_des_point
+
+
+        rospy.logdebug("reward=" + str(reward))
+        self.cumulated_reward += reward
+        rospy.logdebug("Cumulated_reward=" + str(self.cumulated_reward))
+        self.cumulated_steps += 1
+        rospy.logdebug("Cumulated_steps=" + str(self.cumulated_steps))
+
+        return reward
 
 
     # Internal TaskEnv Methods
@@ -322,120 +337,6 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
     
         roll, pitch, yaw = euler_from_quaternion(orientation_list)
         return roll, pitch, yaw
-        
-    def get_contact_force_magnitude(self):
-        """
-        You will see that because the X axis is the one pointing downwards, it will be the one with
-        higher value when touching the floor
-        For a Robot of total mas of 0.55Kg, a gravity of 9.81 m/sec**2, Weight = 0.55*9.81=5.39 N
-        Falling from around 5centimetres ( negligible height ), we register peaks around
-        Fx = 7.08 N
-        :return:
-        """
-        # We get the Contact Sensor data
-        lowerleg_contactsensor_state = self.get_lowerleg_contactsensor_state()
-        # We extract what we need that is only the total_wrench force
-        contact_force = self.get_contact_force(lowerleg_contactsensor_state)
-        # We create an array with each component XYZ
-        contact_force_np = numpy.array((contact_force.x, contact_force.y, contact_force.z))
-        # We calculate the magnitude of the Force Vector, array.
-        force_magnitude = numpy.linalg.norm(contact_force_np)
-
-        return force_magnitude
-        
-    def get_contact_force(self, lowerleg_contactsensor_state):
-        """
-        /lowerleg_contactsensor_state/states[0]/contact_positions ==> PointContact in World
-        /lowerleg_contactsensor_state/states[0]/contact_normals ==> NormalContact in World
-
-        ==> One is an array of all the forces, the other total,
-         and are relative to the contact link referred to in the sensor.
-        /lowerleg_contactsensor_state/states[0]/wrenches[]
-        /lowerleg_contactsensor_state/states[0]/total_wrench
-        :return:
-        """
-        
-        # We create an empty element , in case there is no contact.
-        contact_force = Vector3()
-        for state in lowerleg_contactsensor_state.states:
-            self.contact_force = state.total_wrench.force
-        
-        return contact_force
-        
-        
-    def wamv_height_ok(self, height_base):
-
-        height_ok = self.min_height <= height_base < self.max_height
-        return height_ok
-        
-    def wamv_orientation_ok(self):
-
-        orientation_rpy = self.get_base_rpy()
-        roll_ok = self.max_incl_roll > abs(orientation_rpy.x)
-        pitch_ok = self.max_incl_pitch > abs(orientation_rpy.y)
-        orientation_ok = roll_ok and pitch_ok
-        return orientation_ok
-        
-        
-    def calculate_reward_joint_position(self, joints_state_array, weight=1.0):
-        """
-        We calculate reward base on the joints configuration. The more near 0 the better.
-        :return:
-        """
-        acumulated_joint_pos = 0.0
-        for joint_pos in joints_state_array:
-            # Abs to remove sign influence, it doesnt matter the direction of turn.
-            acumulated_joint_pos += abs(joint_pos)
-            rospy.logdebug("calculate_reward_joint_position>>acumulated_joint_pos=" + str(acumulated_joint_pos))
-        reward = weight * acumulated_joint_pos
-        rospy.logdebug("calculate_reward_joint_position>>reward=" + str(reward))
-        return reward
-        
-    def calculate_reward_contact_force(self, force_magnitude, weight=1.0):
-        """
-        We calculate reward base on the contact force.
-        The nearest to the desired contact force the better.
-        We use exponential to magnify big departures from the desired force.
-        Default ( 7.08 N ) desired force was taken from reading of the robot touching
-        the ground from a negligible height of 5cm.
-        :return:
-        """
-        force_displacement = force_magnitude - self.desired_force
-
-        rospy.logdebug("calculate_reward_contact_force>>force_magnitude=" + str(force_magnitude))
-        rospy.logdebug("calculate_reward_contact_force>>force_displacement=" + str(force_displacement))
-        # Abs to remove sign
-        reward = weight * abs(force_displacement)
-        rospy.logdebug("calculate_reward_contact_force>>reward=" + str(reward))
-        return reward
-        
-    def calculate_reward_orientation(self, rpy_array, weight=1.0):
-        """
-        We calculate the reward based on the orientation.
-        The more its closser to 0 the better because it means its upright
-        desired_yaw is the yaw that we want it to be.
-        to praise it to have a certain orientation, here is where to set it.
-        :param: rpy_array: Its an array with Roll Pitch and Yaw in place 0, 1 and 2 respectively.
-        :return:
-        """
-
-        yaw_displacement = rpy_array[2] - self.desired_yaw
-        acumulated_orientation_displacement = abs(rpy_array[0]) + abs(rpy_array[1]) + abs(yaw_displacement)
-        reward = weight * acumulated_orientation_displacement
-        rospy.logdebug("calculate_reward_orientation>>reward=" + str(reward))
-        return reward
-        
-    def calculate_reward_distance_from_des_point(self, current_position, weight=1.0):
-        """
-        We calculate the distance from the desired point.
-        The closser the better
-        :param weight:
-        :return:reward
-        """
-        distance = self.get_distance_from_desired_point(current_position)
-        reward = weight * distance
-        rospy.logdebug("calculate_reward_orientation>>reward=" + str(reward))
-        return reward
         
     def is_inside_workspace(self,current_position):
         """
