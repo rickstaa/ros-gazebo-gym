@@ -18,4 +18,7 @@ from openai_ros.task_envs.parrotdrone.parrotdrone_goto import ParrotDroneGotoEnv
 # Hopper
 from openai_ros.robot_envs.hopper_env import HopperEnv
 from openai_ros.task_envs.hopper.hopper_stay_up import HopperStayUpEnv
+# VMRC
+from openai_ros.robot_envs.vmrc_env import HopperEnv
+from openai_ros.task_envs.vmrc.vmrc_nav_twosets_buoys import VMRCNavTwoSetsBuoysEnv
 
