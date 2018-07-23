@@ -1,7 +1,7 @@
 import rospy
 import numpy
 from gym import spaces
-from openai_ros.robot_envs import hopper_env
+from openai_ros.robot_envs import wamv_env
 from gym.envs.registration import register
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Vector3
@@ -10,12 +10,12 @@ from tf.transformations import euler_from_quaternion
 timestep_limit_per_episode = 10000 # Can be any Value
 
 register(
-        id='HopperStayUp-v0',
-        entry_point='openai_ros:HopperStayUpEnv',
+        id='WamvNavTwoSetsBuoys-v0',
+        entry_point='openai_ros:WamvNavTwoSetsBuoysEnv',
         timestep_limit=timestep_limit_per_episode,
     )
 
-class HopperStayUpEnv(hopper_env.HopperEnv):
+class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
     def __init__(self):
         """
         Make Hopper Learn how to Stay Up indefenitly
@@ -28,7 +28,7 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         3-4) Increment/Decrement hfe_joint
         5-6) Increment/Decrement kfe_joint
         """
-        rospy.logdebug("Start HopperStayUpEnv INIT...")
+        rospy.logdebug("Start WamvNavTwoSetsBuoysEnv INIT...")
         number_actions = rospy.get_param('/monoped/n_actions')
         self.action_space = spaces.Discrete(number_actions)
         
@@ -122,9 +122,9 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         self.done_reward =rospy.get_param("/monoped/done_reward")
 
         # Here we will add any init functions prior to starting the MyRobotEnv
-        super(HopperStayUpEnv, self).__init__()
+        super(WamvNavTwoSetsBuoysEnv, self).__init__()
         
-        rospy.logdebug("END HopperStayUpEnv INIT...")
+        rospy.logdebug("END WamvNavTwoSetsBuoysEnv INIT...")
 
     def _set_init_pose(self):
         """
