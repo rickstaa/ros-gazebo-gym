@@ -18,18 +18,14 @@ register(
 class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
     def __init__(self):
         """
-        Make Hopper Learn how to Stay Up indefenitly
+        Make Wamv learn how to move straight from The starting point
+        to a desired point inside the designed corridor.
         """
         
         # Only variable needed to be set here
-        """
-        For this version, we consider 6 actions
-        1-2) Increment/Decrement haa_joint
-        3-4) Increment/Decrement hfe_joint
-        5-6) Increment/Decrement kfe_joint
-        """
+
         rospy.logdebug("Start WamvNavTwoSetsBuoysEnv INIT...")
-        number_actions = rospy.get_param('/monoped/n_actions')
+        number_actions = rospy.get_param('/wamv/n_actions')
         self.action_space = spaces.Discrete(number_actions)
         
         # We set the reward range, which is not compulsory but here we do it.
@@ -39,47 +35,23 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         # Actions and Observations
         
         self.init_joint_states = Vector3()
-        self.init_joint_states.x = rospy.get_param('/monoped/init_joint_states/haa_joint')
-        self.init_joint_states.y = rospy.get_param('/monoped/init_joint_states/hfe_joint')
-        self.init_joint_states.z = rospy.get_param('/monoped/init_joint_states/kfe_joint')
+        self.init_joint_states.x = rospy.get_param('/wamv/init_joint_states/haa_joint')
+        self.init_joint_states.y = rospy.get_param('/wamv/init_joint_states/hfe_joint')
+        self.init_joint_states.z = rospy.get_param('/wamv/init_joint_states/kfe_joint')
         
         
         # Get Desired Point to Get
         self.desired_point = Point()
-        self.desired_point.x = rospy.get_param("/monoped/desired_point/x")
-        self.desired_point.y = rospy.get_param("/monoped/desired_point/y")
-        self.desired_point.z = rospy.get_param("/monoped/desired_point/z")
-        self.accepted_error_in_des_pos = rospy.get_param("/monoped/accepted_error_in_des_pos")
+        self.desired_point.x = rospy.get_param("/wamv/desired_point/x")
+        self.desired_point.y = rospy.get_param("/wamv/desired_point/y")
+        self.desired_point.z = rospy.get_param("/wamv/desired_point/z")
+        self.accepted_error_in_des_pos = rospy.get_param("/wamv/accepted_error_in_des_pos")
         
-        self.desired_yaw = rospy.get_param("/monoped/desired_yaw")
+        self.dec_obs = rospy.get_param("/wamv/number_decimals_precision_obs")
         
-        self.joint_increment_value = rospy.get_param("/monoped/joint_increment_value")
-        self.accepted_joint_error = rospy.get_param("/monoped/accepted_joint_error")
-        self.update_rate = rospy.get_param("/monoped/update_rate")
-
-        self.dec_obs = rospy.get_param("/monoped/number_decimals_precision_obs")
-        
-        self.desired_force = rospy.get_param("/monoped/desired_force")
-        
-        self.max_x_pos = rospy.get_param("/monoped/max_x_pos")
-        self.max_y_pos = rospy.get_param("/monoped/max_y_pos")
-        
-        self.min_height = rospy.get_param("/monoped/min_height")
-        self.max_height = rospy.get_param("/monoped/max_height")
-        
-        self.distance_from_desired_point_max = rospy.get_param("/monoped/distance_from_desired_point_max")
-        
-        self.max_incl_roll = rospy.get_param("/monoped/max_incl")
-        self.max_incl_pitch = rospy.get_param("/monoped/max_incl")
-        self.max_contact_force = rospy.get_param("/monoped/max_contact_force")
-        
-        self.maximum_haa_joint = rospy.get_param("/monoped/max_incl")
-        self.maximum_hfe_joint = rospy.get_param("/monoped/max_incl")
-        self.maximum_kfe_joint = rospy.get_param("/monoped/max_incl")
-        self.min_kfe_joint = rospy.get_param("/monoped/max_incl")
         
         # We place the Maximum and minimum values of observations
-
+        # TODO: 
         high = numpy.array([self.distance_from_desired_point_max,
                             self.max_incl_roll,
                             self.max_incl_pitch,
@@ -113,13 +85,9 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         rospy.logdebug("OBSERVATION SPACES TYPE===>"+str(self.observation_space))
         
         # Rewards
-        self.weight_joint_position = rospy.get_param("/monoped/rewards_weight/weight_joint_position")
-        self.weight_contact_force = rospy.get_param("/monoped/rewards_weight/weight_contact_force")
-        self.weight_orientation = rospy.get_param("/monoped/rewards_weight/weight_orientation")
-        self.weight_distance_from_des_point = rospy.get_param("/monoped/rewards_weight/weight_distance_from_des_point")
         
-        self.alive_reward =rospy.get_param("/monoped/alive_reward")
-        self.done_reward =rospy.get_param("/monoped/done_reward")
+        self.alive_reward =rospy.get_param("/wamv/alive_reward")
+        self.done_reward =rospy.get_param("/wamv/done_reward")
 
         # Here we will add any init functions prior to starting the MyRobotEnv
         super(WamvNavTwoSetsBuoysEnv, self).__init__()
@@ -160,7 +128,7 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
 
     def _set_action(self, action):
         """
-        It sets the joints of monoped based on the action integer given
+        It sets the joints of wamv based on the action integer given
         based on the action number given.
         :param action: The action integer that sets what movement to do next.
         """
@@ -199,7 +167,7 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
             action_position[2] = joint_states_position[2] - self.joint_increment_value
 
         
-        # We tell monoped where to place its joints next
+        # We tell wamv where to place its joints next
         self.move_joints(   action_position,
                             epsilon=self.accepted_joint_error,
                             update_rate=self.update_rate)
@@ -271,17 +239,17 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
     def _is_done(self, observations):
         """
         We consider the episode done if:
-        1) The Monopeds height is lower than a threshhold
+        1) The wamvs height is lower than a threshhold
         2) The Orientation is outside a threshold
         """
         
         
         height_base = observations[10]
         
-        monoped_height_ok = self.monoped_height_ok(height_base)
-        monoped_orientation_ok = self.monoped_orientation_ok()
+        wamv_height_ok = self.wamv_height_ok(height_base)
+        wamv_orientation_ok = self.wamv_orientation_ok()
 
-        done = not(monoped_height_ok and monoped_orientation_ok)
+        done = not(wamv_height_ok and wamv_orientation_ok)
         
         return done
 
@@ -360,7 +328,7 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
     
     def is_inside_workspace(self,current_position):
         """
-        Check if the monoped is inside the Workspace defined
+        Check if the wamv is inside the Workspace defined
         """
         is_inside = False
 
@@ -380,7 +348,7 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         
     def sonar_detected_something_too_close(self, sonar_value):
         """
-        Detects if there is something too close to the monoped front
+        Detects if there is something too close to the wamv front
         """
         rospy.logdebug("##### SONAR TOO CLOSE? #######")
         rospy.logdebug("sonar_value"+str(sonar_value)+",min_sonar_value="+str(self.min_sonar_value))
@@ -390,15 +358,15 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         
         return too_close
         
-    def monoped_has_flipped(self,current_orientation):
+    def wamv_has_flipped(self,current_orientation):
         """
-        Based on the orientation RPY given states if the monoped has flipped
+        Based on the orientation RPY given states if the wamv has flipped
         """
         has_flipped = True
         
         
-        self.max_roll = rospy.get_param("/monoped/max_roll")
-        self.max_pitch = rospy.get_param("/monoped/max_pitch")
+        self.max_roll = rospy.get_param("/wamv/max_roll")
+        self.max_pitch = rospy.get_param("/wamv/max_pitch")
         
         rospy.logdebug("#### HAS FLIPPED? ########")
         rospy.logdebug("RPY current_orientation"+str(current_orientation))
@@ -505,12 +473,12 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         return contact_force
         
         
-    def monoped_height_ok(self, height_base):
+    def wamv_height_ok(self, height_base):
 
         height_ok = self.min_height <= height_base < self.max_height
         return height_ok
         
-    def monoped_orientation_ok(self):
+    def wamv_orientation_ok(self):
 
         orientation_rpy = self.get_base_rpy()
         roll_ok = self.max_incl_roll > abs(orientation_rpy.x)
