@@ -88,6 +88,7 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         # Rewards
         
         self.done_reward =rospy.get_param("/wamv/done_reward")
+        self.closer_to_point_reward = rospy.get_param("/wamv/closer_to_point_reward")
 
         self.cumulated_steps = 0.0
 
@@ -242,7 +243,7 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
                 reward = self.closer_to_point_reward
             else:
                 rospy.logerr("ENCREASE IN DISTANCE BAD")
-                reward = 0
+                reward = -1*self.closer_to_point_reward
 
         else:
             
