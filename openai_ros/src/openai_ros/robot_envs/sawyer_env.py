@@ -137,26 +137,26 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         self.joints = limb.joint_names()
     
         self.bindings = {
-            '1': (self.set_j, [self.joints[0], joint_delta], self.joints[0]+" increase"),
-            'q': (self.set_j, [self.joints[0], -joint_delta], self.joints[0]+" decrease"),
-            '2': (self.set_j, [self.joints[1], joint_delta], self.joints[1]+" increase"),
-            'w': (self.set_j, [self.joints[1], -joint_delta], self.joints[1]+" decrease"),
-            '3': (self.set_j, [self.joints[2], joint_delta], self.joints[2]+" increase"),
-            'e': (self.set_j, [self.joints[2], -joint_delta], self.joints[2]+" decrease"),
-            '4': (self.set_j, [self.joints[3], joint_delta], self.joints[3]+" increase"),
-            'r': (self.set_j, [self.joints[3], -joint_delta], self.joints[3]+" decrease"),
-            '5': (self.set_j, [self.joints[4], joint_delta], self.joints[4]+" increase"),
-            't': (self.set_j, [self.joints[4], -joint_delta], self.joints[4]+" decrease"),
-            '6': (self.set_j, [self.joints[5], joint_delta], self.joints[5]+" increase"),
-            'y': (self.set_j, [self.joints[5], -joint_delta], self.joints[5]+" decrease"),
-            '7': (self.set_j, [self.joints[6], joint_delta], self.joints[6]+" increase"),
-            'u': (self.set_j, [self.joints[6], -joint_delta], self.joints[6]+" decrease")
+            self.joints[0]+"_increase": (self.set_j, [self.joints[0], joint_delta], self.joints[0]+" increase"),
+            self.joints[0]+"_decrease": (self.set_j, [self.joints[0], -joint_delta], self.joints[0]+" decrease"),
+            self.joints[1]+"_increase": (self.set_j, [self.joints[1], joint_delta], self.joints[1]+" increase"),
+            self.joints[1]+"_decrease": (self.set_j, [self.joints[1], -joint_delta], self.joints[1]+" decrease"),
+            self.joints[2]+"_increase": (self.set_j, [self.joints[2], joint_delta], self.joints[2]+" increase"),
+            self.joints[2]+"_decrease": (self.set_j, [self.joints[2], -joint_delta], self.joints[2]+" decrease"),
+            self.joints[3]+"_increase": (self.set_j, [self.joints[3], joint_delta], self.joints[3]+" increase"),
+            self.joints[3]+"_decrease": (self.set_j, [self.joints[3], -joint_delta], self.joints[3]+" decrease"),
+            self.joints[4]+"_increase": (self.set_j, [self.joints[4], joint_delta], self.joints[4]+" increase"),
+            self.joints[4]+"_decrease": (self.set_j, [self.joints[4], -joint_delta], self.joints[4]+" decrease"),
+            self.joints[5]+"_increase": (self.set_j, [self.joints[5], joint_delta], self.joints[5]+" increase"),
+            self.joints[5]+"_decrease": (self.set_j, [self.joints[5], -joint_delta], self.joints[5]+" decrease"),
+            self.joints[6]+"_increase": (self.set_j, [self.joints[6], joint_delta], self.joints[6]+" increase"),
+            self.joints[6]+"_decrease": (self.set_j, [self.joints[6], -joint_delta], self.joints[6]+" decrease")
          }
         if self.has_gripper:
             self.bindings.update({
-            '8': (self.set_g, "close", side+" gripper close"),
-            'i': (self.set_g, "open", side+" gripper open"),
-            '9': (self.set_g, "calibrate", side+" gripper calibrate")
+            "close": (self.set_g, "close", side+" gripper close"),
+            "open": (self.set_g, "open", side+" gripper open"),
+            "calibrate": (self.set_g, "calibrate", side+" gripper calibrate")
             })
         
         rospy.loginfo("Controlling joints...")
@@ -203,28 +203,28 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         of Sawyer, including the gripper if it has it.
         :param: action_id: These are the possible action_id values and the action asociated.
         
-        '1': self.joints[0]+" increase,
-        'q': self.joints[0]+" decrease,
-        '2': self.joints[1]+" increase,
-        'w': self.joints[1]+" decrease,
-        '3': self.joints[2]+" increase,
-        'e': self.joints[2]+" decrease,
-        '4': self.joints[3]+" increase,
-        'r': self.joints[3]+" decrease,
-        '5': self.joints[4]+" increase,
-        't': self.joints[4]+" decrease,
-        '6': self.joints[5]+" increase,
-        'y': self.joints[5]+" decrease,
-        '7': self.joints[6]+" increase,
-        'u': self.joints[6]+" decrease,
-        '8': gripper close"),
-        'i': gripper open"),
-        '9': gripper calibrate")
+        self.joints[0]+"_increase",
+        self.joints[0]+_decrease,
+        self.joints[1]+"_increase",
+        self.joints[1]+"_decrease",
+        self.joints[2]+"_increase",
+        self.joints[2]+"_decrease",
+        self.joints[3]+"_increase",
+        self.joints[3]+"_decrease",
+        self.joints[4]+"_increase",
+        self.joints[4]+"_decrease",
+        self.joints[5]+"_increase",
+        self.joints[5]+"_decrease",
+        self.joints[6]+"_increase",
+        self.joints[6]+"_decrease",
+        gripper_close,
+        gripper_open,
+        gripper_calibrate
         """
 
         if c in self.bindings:
             cmd = self.bindings[c]
-            if c == '8' or c == 'i' or c == '9':
+            if c == "gripper_close" or c == "gripper_open" or c == "gripper_calibrate":
                 cmd[0](cmd[1])
                 rospy.loginfo("command: %s" % (cmd[2],))
             else:
@@ -242,7 +242,8 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         current_position = self.limb.joint_angle(joint_name)
         joint_command = {joint_name: current_position + delta}
         self.limb.set_joint_positions(joint_command)
-
+        
+        
     def set_g(self,action):
         if self.has_gripper:
             if action == "close":
@@ -251,6 +252,20 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
                 self.gripper.open()
             elif action == "calibrate":
                 self.gripper.calibrate()
+                
+
+    def set_joints_to_angle_directly(self,joint_name, new_joint_angle):
+        """
+        It sets the joint angle to the given one, no increment.
+        """
+        joint_command = {joint_name: new_joint_angle}
+        self.limb.set_joint_positions(joint_command)    
+    
+    def get_limb_joint_names_array(self):
+        """
+        Returns the Joint Names array of the Limb.
+        """
+        return self.joints
     
     def get_all_limb_joint_angles(self):
         """

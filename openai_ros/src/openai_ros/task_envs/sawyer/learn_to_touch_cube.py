@@ -10,12 +10,12 @@ from tf.transformations import euler_from_quaternion
 timestep_limit_per_episode = 10000 # Can be any Value
 
 register(
-        id='SawyerPickCube-v0',
-        entry_point='openai_ros:SawyerPickCubeEnv',
+        id='SawyerTouchCube-v0',
+        entry_point='openai_ros:SawyerTouchCubeEnv',
         timestep_limit=timestep_limit_per_episode,
     )
 
-class SawyerPickCubeEnv(sawyer_env.sawyerEnv):
+class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
     def __init__(self):
         """
         Make sawyer learn how pick up a cube
@@ -23,37 +23,25 @@ class SawyerPickCubeEnv(sawyer_env.sawyerEnv):
         
         # Only variable needed to be set here
 
-        rospy.logdebug("Start SawyerPickCubeEnv INIT...")
+        rospy.logdebug("Start SawyerTouchCubeEnv INIT...")
         number_actions = rospy.get_param('/sawyer/n_actions')
         self.action_space = spaces.Discrete(number_actions)
         
         # We set the reward range, which is not compulsory but here we do it.
         self.reward_range = (-numpy.inf, numpy.inf)
         
-        
-        # Actions and Observations
-        self.propeller_high_speed = rospy.get_param('/sawyer/propeller_high_speed')
-        self.propeller_low_speed = rospy.get_param('/sawyer/propeller_low_speed')
-        self.max_angular_speed = rospy.get_param('/sawyer/max_angular_speed')
-        self.max_distance_from_des_point = rospy.get_param('/sawyer/max_distance_from_des_point')
-        
-        # Get Desired Point to Get
-        self.desired_point = Point()
-        self.desired_point.x = rospy.get_param("/sawyer/desired_point/x")
-        self.desired_point.y = rospy.get_param("/sawyer/desired_point/y")
-        self.desired_point.z = rospy.get_param("/sawyer/desired_point/z")
-        self.desired_point_epsilon = rospy.get_param("/sawyer/desired_point_epsilon")
-        
         self.work_space_x_max = rospy.get_param("/sawyer/work_space/x_max")
         self.work_space_x_min = rospy.get_param("/sawyer/work_space/x_min")
         self.work_space_y_max = rospy.get_param("/sawyer/work_space/y_max")
         self.work_space_y_min = rospy.get_param("/sawyer/work_space/y_min")
+        self.work_space_z_max = rospy.get_param("/sawyer/work_space/z_max")
+        self.work_space_z_min = rospy.get_param("/sawyer/work_space/z_min")
         
         self.dec_obs = rospy.get_param("/sawyer/number_decimals_precision_obs")
         
         
         # We place the Maximum and minimum values of observations
-
+        # TODO: Fill when get_observations is done.
         high = numpy.array([self.work_space_x_max,
                             self.work_space_y_max,
                             1.57,
@@ -90,9 +78,9 @@ class SawyerPickCubeEnv(sawyer_env.sawyerEnv):
         self.cumulated_steps = 0.0
 
         # Here we will add any init functions prior to starting the MyRobotEnv
-        super(SawyerPickCubeEnv, self).__init__()
+        super(SawyerTouchCubeEnv, self).__init__()
         
-        rospy.logdebug("END SawyerPickCubeEnv INIT...")
+        rospy.logdebug("END SawyerTouchCubeEnv INIT...")
 
     def _set_init_pose(self):
         """
@@ -100,11 +88,14 @@ class SawyerPickCubeEnv(sawyer_env.sawyerEnv):
         to allow the action to be executed
         """
 
-        right_propeller_speed = 0.0
-        left_propeller_speed = 0.0
-        self.set_propellers_speed(  right_propeller_speed,
-                                    left_propeller_speed,
-                                    time_sleep=1.0)
+        # We set the angles to zero of the limb
+        self.joints = self.get_limb_joint_names_array()
+        new_joint_angle = 0.0
+        for joint_name in self.joints:
+            self.set_joints_to_angle_directly(joint_name, new_joint_angle)
+            
+        # We Open the gripper
+        self.set_g(action="open")
 
         return True
 
@@ -119,11 +110,14 @@ class SawyerPickCubeEnv(sawyer_env.sawyerEnv):
         # For Info Purposes
         self.cumulated_reward = 0.0
         # We get the initial pose to mesure the distance from the desired point.
-        odom = self.get_odom()
-        current_position = Vector3()
-        current_position.x = odom.pose.pose.position.x
-        current_position.y = odom.pose.pose.position.y
-        self.previous_distance_from_des_point = self.get_distance_from_desired_point(current_position)
+        translation_tcp_block, rotation_tcp_block = self.get_tf_start_to_end_frames(start_frame_name="right_electric_gripper_base",
+                                                                                    end_frame_name="block")
+        tf_tcp_to_block_vector = Vector3()
+        tf_tcp_to_block_vector.x = translation_tcp_block[0]
+        tf_tcp_to_block_vector.y = translation_tcp_block[1]
+        tf_tcp_to_block_vector.z = translation_tcp_block[2]
+        
+        self.previous_distance_from_block = self.get_magnitud_tf_tcp_to_block(tf_tcp_to_block_vector)
 
         
 
@@ -137,21 +131,34 @@ class SawyerPickCubeEnv(sawyer_env.sawyerEnv):
         rospy.logdebug("Start Set Action ==>"+str(action))
        
         
-        right_propeller_speed = 0.0
-        left_propeller_speed = 0.0
-        
-        if action == 0: # Go Forwards
-            right_propeller_speed = self.propeller_high_speed
-            left_propeller_speed = self.propeller_high_speed
-        elif action == 1: # Go BackWards
-            right_propeller_speed = -1*self.propeller_high_speed
-            left_propeller_speed = -1*self.propeller_high_speed
-        elif action == 2: # Turn Left
-            right_propeller_speed = self.propeller_high_speed
-            left_propeller_speed = -1*self.propeller_high_speed
-        elif action == 3: # Turn Right
-            right_propeller_speed = -1*self.propeller_high_speed
-            left_propeller_speed = self.propeller_high_speed
+        if action == 0: # Increase joint_0
+            action_id = self.joints[0]+"_increase"
+        elif action == 1: # Decrease joint_0
+            action_id = self.joints[0]+"_decrease"
+        elif action == 2: # Increase joint_1
+            action_id = self.joints[1]+"_increase"
+        elif action == 3: # Decrease joint_1
+            action_id = self.joints[1]+"_decrease"
+        elif action == 4: # Increase joint_2
+            action_id = self.joints[2]+"_increase"
+        elif action == 5: # Decrease joint_2
+            action_id = self.joints[2]+"_decrease"
+        elif action == 6: # Increase joint_3
+            action_id = self.joints[3]+"_increase"
+        elif action == 7: # Decrease joint_3
+           action_id = self.joints[3]+"_decrease"
+        elif action == 8: # Increase joint_4
+            action_id = self.joints[4]+"_increase"
+        elif action == 9: # Decrease joint_4
+            action_id = self.joints[4]+"_decrease"
+        elif action == 10: # Increase joint_5
+            action_id = self.joints[5]+"_increase"
+        elif action == 11: # Decrease joint_5
+            action_id = self.joints[5]+"_decrease"
+        elif action == 12: # Increase joint_6
+            action_id = self.joints[6]+"_increase"
+        elif action == 13: # Decrease joint_6
+            action_id = self.joints[6]+"_decrease"
 
         
         # We tell sawyer the propeller speeds
@@ -306,7 +313,7 @@ class SawyerPickCubeEnv(sawyer_env.sawyerEnv):
                                                 self.desired_point)
     
         return distance
-    
+        
     def get_distance_from_point(self, pstart, p_end):
         """
         Given a Vector3 Object, get distance from current position
@@ -317,6 +324,20 @@ class SawyerPickCubeEnv(sawyer_env.sawyerEnv):
         b = numpy.array((p_end.x, p_end.y, p_end.z))
     
         distance = numpy.linalg.norm(a - b)
+    
+        return distance
+    
+    def get_magnitud_tf_tcp_to_block(self, translation_vector):
+        """
+        Given a Vector3 Object, get the magnitud
+        :param p_end:
+        :return:
+        """
+        a = numpy.array((   translation_vector.x,
+                            translation_vector.y,
+                            translation_vector.z))
+        
+        distance = numpy.linalg.norm(a)
     
         return distance
         

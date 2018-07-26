@@ -23,5 +23,5 @@ from openai_ros.robot_envs.wamv_env import WamvEnv
 from openai_ros.task_envs.wamv.wamv_nav_twosets_buoys import WamvNavTwoSetsBuoysEnv
 # Sawyer
 from openai_ros.robot_envs.sawyer_env import SawyerEnv
-from openai_ros.task_envs.sawyer.learn_to_pick_cube import SawyerPickCubeEnv
+from openai_ros.task_envs.sawyer.learn_to_touch_cube import SawyerTouchCubeEnv
 
