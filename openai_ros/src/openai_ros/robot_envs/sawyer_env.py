@@ -113,82 +113,117 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         self.map_actions_to_movement()
         
         
-    def map_actions_to_movement(self, side="right"):
+    def map_actions_to_movement(self, side="right", joint_delta=0.1):
         
-        limb = intera_interface.Limb(side)
+        self.limb = intera_interface.Limb(side)
 
         try:
-            gripper = intera_interface.Gripper(side + '_gripper')
+            self.gripper = intera_interface.Gripper(side + '_gripper')
         except:
-            has_gripper = False
+            self.has_gripper = False
             rospy.loginfo("The electric gripper is not detected on the robot.")
         else:
-            has_gripper = True
+            self.has_gripper = True
     
-        joints = limb.joint_names()
+        self.joints = limb.joint_names()
     
-        bindings = {
-            '1': (self.set_j, [limb, joints[0], 0.1], joints[0]+" increase"),
-            'q': (self.set_j, [limb, joints[0], -0.1], joints[0]+" decrease"),
-            '2': (self.set_j, [limb, joints[1], 0.1], joints[1]+" increase"),
-            'w': (self.set_j, [limb, joints[1], -0.1], joints[1]+" decrease"),
-            '3': (self.set_j, [limb, joints[2], 0.1], joints[2]+" increase"),
-            'e': (self.set_j, [limb, joints[2], -0.1], joints[2]+" decrease"),
-            '4': (self.set_j, [limb, joints[3], 0.1], joints[3]+" increase"),
-            'r': (self.set_j, [limb, joints[3], -0.1], joints[3]+" decrease"),
-            '5': (self.set_j, [limb, joints[4], 0.1], joints[4]+" increase"),
-            't': (self.set_j, [limb, joints[4], -0.1], joints[4]+" decrease"),
-            '6': (self.set_j, [limb, joints[5], 0.1], joints[5]+" increase"),
-            'y': (self.set_j, [limb, joints[5], -0.1], joints[5]+" decrease"),
-            '7': (self.set_j, [limb, joints[6], 0.1], joints[6]+" increase"),
-            'u': (self.set_j, [limb, joints[6], -0.1], joints[6]+" decrease")
+        self.bindings = {
+            '1': (self.set_j, [self.joints[0], joint_delta], self.joints[0]+" increase"),
+            'q': (self.set_j, [self.joints[0], -joint_delta], self.joints[0]+" decrease"),
+            '2': (self.set_j, [self.joints[1], joint_delta], self.joints[1]+" increase"),
+            'w': (self.set_j, [self.joints[1], -joint_delta], self.joints[1]+" decrease"),
+            '3': (self.set_j, [self.joints[2], joint_delta], self.joints[2]+" increase"),
+            'e': (self.set_j, [self.joints[2], -joint_delta], self.joints[2]+" decrease"),
+            '4': (self.set_j, [self.joints[3], joint_delta], self.joints[3]+" increase"),
+            'r': (self.set_j, [self.joints[3], -joint_delta], self.joints[3]+" decrease"),
+            '5': (self.set_j, [self.joints[4], joint_delta], self.joints[4]+" increase"),
+            't': (self.set_j, [self.joints[4], -joint_delta], self.joints[4]+" decrease"),
+            '6': (self.set_j, [self.joints[5], joint_delta], self.joints[5]+" increase"),
+            'y': (self.set_j, [self.joints[5], -joint_delta], self.joints[5]+" decrease"),
+            '7': (self.set_j, [self.joints[6], joint_delta], self.joints[6]+" increase"),
+            'u': (self.set_j, [self.joints[6], -joint_delta], self.joints[6]+" decrease")
          }
-        if has_gripper:
-            bindings.update({
+        if self.has_gripper:
+            self.bindings.update({
             '8': (self.set_g, "close", side+" gripper close"),
             'i': (self.set_g, "open", side+" gripper open"),
             '9': (self.set_g, "calibrate", side+" gripper calibrate")
             })
-        done = False
-        print("Controlling joints. Press ? for help, Esc to quit.")
-        while not done and not rospy.is_shutdown():
-            c = intera_external_devices.getch()
-            if c:
-                #catch Esc or ctrl-c
-                if c in ['\x1b', '\x03']:
-                    done = True
-                    rospy.signal_shutdown("Example finished.")
-                elif c in bindings:
-                    cmd = bindings[c]
-                    if c == '8' or c == 'i' or c == '9':
-                        cmd[0](cmd[1])
-                        print("command: %s" % (cmd[2],))
-                    else:
-                        #expand binding to something like "self.set_j(right, 'j0', 0.1)"
-                        cmd[0](*cmd[1])
-                        print("command: %s" % (cmd[2],))
-                else:
-                    print("key bindings: ")
-                    print("  Esc: Quit")
-                    print("  ?: Help")
-                    for key, val in sorted(bindings.items(),
-                                           key=lambda x: x[1][2]):
-                        print("  %s: %s" % (key, val[2]))
+        
+        rospy.loginfo("Controlling joints...")
+        
+        
+        
+    def execute_movement(self, action_id):
+        """
+        It executed the command given through an id. This will move any joint 
+        of Sawyer, including the gripper if it has it.
+        :param: action_id: These are the possible action_id values and the action asociated.
+        
+        '1': self.joints[0]+" increase,
+        'q': self.joints[0]+" decrease,
+        '2': self.joints[1]+" increase,
+        'w': self.joints[1]+" decrease,
+        '3': self.joints[2]+" increase,
+        'e': self.joints[2]+" decrease,
+        '4': self.joints[3]+" increase,
+        'r': self.joints[3]+" decrease,
+        '5': self.joints[4]+" increase,
+        't': self.joints[4]+" decrease,
+        '6': self.joints[5]+" increase,
+        'y': self.joints[5]+" decrease,
+        '7': self.joints[6]+" increase,
+        'u': self.joints[6]+" decrease,
+        '8': gripper close"),
+        'i': gripper open"),
+        '9': gripper calibrate")
+        """
+
+        if c in self.bindings:
+            cmd = self.bindings[c]
+            if c == '8' or c == 'i' or c == '9':
+                cmd[0](cmd[1])
+                rospy.loginfo("command: %s" % (cmd[2],))
+            else:
+                #expand binding to something like "self.set_j(right, 'j0', joint_delta)"
+                cmd[0](*cmd[1])
+                rospy.loginfo("command: %s" % (cmd[2],))
+        else:
+            rospy.logerr("NOT VALID key binding, it should be one of these: ")
+            for key, val in sorted(self.bindings.items(),
+                                   key=lambda x: x[1][2]):
+                rospy.logerr("  %s: %s" % (key, val[2]))
 
                         
-    def set_j(self,limb, joint_name, delta):
-        current_position = limb.joint_angle(joint_name)
+    def set_j(self,joint_name, delta):
+        current_position = self.limb.joint_angle(joint_name)
         joint_command = {joint_name: current_position + delta}
-        limb.set_joint_positions(joint_command)
+        self.limb.set_joint_positions(joint_command)
 
     def set_g(self,action):
-        if has_gripper:
+        if self.has_gripper:
             if action == "close":
-                gripper.close()
+                self.gripper.close()
             elif action == "open":
-                gripper.open()
+                self.gripper.open()
             elif action == "calibrate":
-                gripper.calibrate()
+                self.gripper.calibrate()
+    
+    def get_all_limb_joint_angles(self):
+        """
+        Retunr array with all the joints angles
+        """
+        joints_angles_array = []
+        for join_name in self.joints:
+            joints_angles_array.append(self.get_limp_joint_angle(joint_name))
+        return joints_angles_array
+    
+    def get_limp_joint_angle(self, joint_name):
+        """
+        Returns the angle of each joint searchable by name
+        """
+        return self.limb.joint_angle(joint_name)
+        
         
         
 
