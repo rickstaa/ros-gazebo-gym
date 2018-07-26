@@ -1,6 +1,7 @@
 import numpy
 import rospy
 import time
+import tf
 from openai_ros import robot_gazebo_env
 import intera_interface
 import intera_external_devices
@@ -53,14 +54,16 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
 
 
 
-        rospy.logdebug("SawyerEnv unpause1...")
+        rospy.logdebug("SawyerEnv unpause...")
         self.gazebo.unpauseSim()
         #self.controllers_object.reset_controllers()
         
         # TODO: Fill it with the sensors
         self._check_all_systems_ready()
 
-        self._check_movement_system_ready()
+        self._setup_tf_listener()
+        self._setup_movement_system()
+        
 
         self.gazebo.pauseSim()
         
@@ -89,8 +92,14 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         # TODO: Here go the sensors like cameras and joint states
         rospy.logdebug("ALL SENSORS READY")
 
+    def _setup_tf_listener(self):
+        """
+        Set ups the TF listener for getting the transforms you ask for.
+        """
+        self.listener = tf.TransformListener()
+
         
-    def _check_movement_system_ready(self):
+    def _setup_movement_system(self):
         """
         Setup of the movement system.
         :return:
@@ -110,10 +119,10 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         
         rospy.loginfo("Enabling robot...")
         rs.enable()
-        self.map_actions_to_movement()
+        self._map_actions_to_movement()
         
         
-    def map_actions_to_movement(self, side="right", joint_delta=0.1):
+    def _map_actions_to_movement(self, side="right", joint_delta=0.1):
         
         self.limb = intera_interface.Limb(side)
 
@@ -152,8 +161,42 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         
         rospy.loginfo("Controlling joints...")
         
+
+    # Methods that the TrainingEnvironment will need to define here as virtual
+    # because they will be used in RobotGazeboEnv GrandParentClass and defined in the
+    # TrainingEnvironment.
+    # ----------------------------
+    def _set_init_pose(self):
+        """Sets the Robot in its init pose
+        """
+        raise NotImplementedError()
+    
+    def _init_env_variables(self):
+        """Inits variables needed to be initialised each time we reset at the start
+        of an episode.
+        """
+        raise NotImplementedError()
+
+    def _compute_reward(self, observations, done):
+        """Calculates the reward to give based on the observations given.
+        """
+        raise NotImplementedError()
+
+    def _set_action(self, action):
+        """Applies the given action to the simulation.
+        """
+        raise NotImplementedError()
+
+    def _get_obs(self):
+        raise NotImplementedError()
+
+    def _is_done(self, observations):
+        """Checks if episode done based on observations given.
+        """
+        raise NotImplementedError()
         
-        
+    # Methods that the TrainingEnvironment will need.
+    # ----------------------------
     def execute_movement(self, action_id):
         """
         It executed the command given through an id. This will move any joint 
@@ -224,42 +267,23 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         return self.limb.joint_angle(joint_name)
         
+    def get_tf_start_to_end_frames(self,start_frame_name, end_frame_name):
+        """
+        Given two frames, it returns the transform from the start_frame_name to the end_frame_name.
+        It will only return something different to None if the TFs of the Two frames are in TF topic
+        published and are connected through the TF tree.
+        :param: start_frame_name: Start Frame of the TF transform
+                end_frame_name: End Frame of the TF transform
+        :return: trans,rot of the transform between the start and end frames.
+        """
+        start_frame = "/"+start_frame_name
+        end_frame = "/"+end_frame_name
         
+        trans,rot = None, None
         
-
-    # Methods that the TrainingEnvironment will need to define here as virtual
-    # because they will be used in RobotGazeboEnv GrandParentClass and defined in the
-    # TrainingEnvironment.
-    # ----------------------------
-    def _set_init_pose(self):
-        """Sets the Robot in its init pose
-        """
-        raise NotImplementedError()
-    
-    def _init_env_variables(self):
-        """Inits variables needed to be initialised each time we reset at the start
-        of an episode.
-        """
-        raise NotImplementedError()
-
-    def _compute_reward(self, observations, done):
-        """Calculates the reward to give based on the observations given.
-        """
-        raise NotImplementedError()
-
-    def _set_action(self, action):
-        """Applies the given action to the simulation.
-        """
-        raise NotImplementedError()
-
-    def _get_obs(self):
-        raise NotImplementedError()
-
-    def _is_done(self, observations):
-        """Checks if episode done based on observations given.
-        """
-        raise NotImplementedError()
+        try:
+            (trans,rot) = listener.lookupTransform(start_frame, end_frame, rospy.Time(0))
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+            continue
         
-    # Methods that the TrainingEnvironment will need.
-    # ----------------------------
-    
+        return trans,rot
