@@ -15,11 +15,18 @@ register(
         timestep_limit=timestep_limit_per_episode,
     )
 
-class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
+class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
     def __init__(self):
         """
         Make sawyer learn how pick up a cube
         """
+        
+        # We execute this one before because there are some functions that this
+        # TaskEnv uses that use variables from the parent class, like the effort limit fetch.
+        super(SawyerTouchCubeEnv, self).__init__()
+        
+        # Here we will add any init functions prior to starting the MyRobotEnv
+        
         
         # Only variable needed to be set here
 
@@ -54,11 +61,9 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
   
         Plus the first three are the block_to_tcp vector
         """
-        self.gazebo.unpauseSim()
-        self.joint_limits = self.check_joint_limits_ready()
-        self.gazebo.pauseSim()
         
-        
+        # We fetch the limits of the joinst to get the effort and angle limits
+        self.joint_limits = self.init_joint_limits()
         
         high = numpy.array([self.work_space_x_max,
                             self.work_space_y_max,
@@ -103,8 +108,7 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
 
         self.cumulated_steps = 0.0
 
-        # Here we will add any init functions prior to starting the MyRobotEnv
-        super(SawyerTouchCubeEnv, self).__init__()
+        
         
         rospy.logdebug("END SawyerTouchCubeEnv INIT...")
 
@@ -116,9 +120,22 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
 
         # We set the angles to zero of the limb
         self.joints = self.get_limb_joint_names_array()
-        new_joint_angle = 0.0
-        for joint_name in self.joints:
-            self.set_joints_to_angle_directly(joint_name, new_joint_angle)
+        join_values_array = [0.0]*len(self.joints)
+        joint_positions_dict_zero = dict( zip( self.joints, join_values_array))
+        
+        actual_joint_angles_dict = self.get_all_limb_joint_angles()
+        # We generate the two step movement. Turn Right/Left where you are and then set all to zero
+        if "right_j0" in actual_joint_angles_dict:
+            # We turn to the left or to the right based on where the position is to avoid the table.
+            if actual_joint_angles_dict["right_j0"] >= 0.0:
+                actual_joint_angles_dict["right_j0"] = 1.57
+            else:
+                actual_joint_angles_dict["right_j0"] = -1.57
+        if "right_j1" in actual_joint_angles_dict:
+            actual_joint_angles_dict["right_j1"] = actual_joint_angles_dict["right_j1"] - 0.3
+        
+        self.move_joints_to_angle_blocking(actual_joint_angles_dict, timeout=15.0, threshold=0.008726646)
+        self.move_joints_to_angle_blocking(joint_positions_dict_zero, timeout=15.0, threshold=0.008726646)
             
         # We Open the gripper
         self.set_g(action="open")
@@ -264,6 +281,13 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
         
         done = is_stuck or not(is_inside_workspace) or has_reached_the_block
         
+        rospy.logwarn("#### IS DONE ? ####")
+        rospy.logwarn("is_stuck ?="+str(is_stuck))
+        rospy.logwarn("Not is_inside_workspace ?="+str(not(is_inside_workspace)))
+        rospy.logwarn("has_reached_the_block ?="+str(has_reached_the_block))
+        rospy.logwarn("done ?="+str(done))
+        rospy.logwarn("#### #### ####")
+        
         return done
 
     def _compute_reward(self, observations, done):
@@ -273,10 +297,10 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
         :return:
         """
 
-        tcp_to_block_pos = Vector3()
-        tcp_to_block_pos.x = observations[0]
-        tcp_to_block_pos.y = observations[1]
-        tcp_to_block_pos.z = observations[2]
+        tf_tcp_to_block_vector = Vector3()
+        tf_tcp_to_block_vector.x = observations[0]
+        tf_tcp_to_block_vector.y = observations[1]
+        tf_tcp_to_block_vector.z = observations[2]
         
         distance_block_to_tcp = self.get_magnitud_tf_tcp_to_block(tf_tcp_to_block_vector)
         distance_difference =  distance_block_to_tcp - self.previous_distance_from_block
@@ -296,7 +320,7 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
             
 
         
-            if self.reached_block(tcp_to_block_pos,self.acceptable_distance_to_cube,self.translation_tcp_world[2], self.tcp_z_position_min):
+            if self.reached_block(tf_tcp_to_block_vector,self.acceptable_distance_to_cube,self.translation_tcp_world[2], self.tcp_z_position_min):
                 reward = self.done_reward
             else:
                 reward = -1*self.done_reward
@@ -360,7 +384,7 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
         rospy.logdebug("###### REACHED BLOCK ? ######")
         rospy.logdebug("tcp_z_pos_ok==>"+str(tcp_z_pos_ok))
         rospy.logdebug("distance_ok==>"+str(distance_ok))
-        rospy.logdebug("reached_block_b==>"+str(is_in_desired_pos))
+        rospy.logdebug("reached_block_b==>"+str(reached_block_b))
         rospy.logdebug("############")
         
         return reached_block_b

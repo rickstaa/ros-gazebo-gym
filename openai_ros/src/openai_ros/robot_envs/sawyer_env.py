@@ -173,7 +173,7 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         else:
             self.has_gripper = True
     
-        self.joints = limb.joint_names()
+        self.joints = self.limb.joint_names()
     
         self.bindings = {
             self.joints[0]+"_increase": (self.set_j, [self.joints[0], joint_delta], self.joints[0]+" increase"),
@@ -261,9 +261,9 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         gripper_calibrate
         """
 
-        if c in self.bindings:
-            cmd = self.bindings[c]
-            if c == "gripper_close" or c == "gripper_open" or c == "gripper_calibrate":
+        if action_id in self.bindings:
+            cmd = self.bindings[action_id]
+            if action_id == "gripper_close" or action_id == "gripper_open" or action_id == "gripper_calibrate":
                 cmd[0](cmd[1])
                 rospy.loginfo("command: %s" % (cmd[2],))
             else:
@@ -291,15 +291,18 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
                 self.gripper.open()
             elif action == "calibrate":
                 self.gripper.calibrate()
-                
-
-    def set_joints_to_angle_directly(self,joint_name, new_joint_angle):
-        """
-        It sets the joint angle to the given one, no increment.
-        """
-        joint_command = {joint_name: new_joint_angle}
-        self.limb.set_joint_positions(joint_command)    
     
+    
+    
+    def move_joints_to_angle_blocking(self,joint_positions_dict, timeout=15.0, threshold=0.008726646):
+        """
+        It moves all the joints to the given position and doesnt exit until it reaches that position
+        """
+        self.limb.move_to_joint_positions(  positions=joint_positions_dict,
+                                            timeout=15.0,
+                                            threshold=0.008726646,
+                                            test=None)
+                                            
     def get_limb_joint_names_array(self):
         """
         Returns the Joint Names array of the Limb.
@@ -333,9 +336,10 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         trans,rot = None, None
         
         try:
-            (trans,rot) = listener.lookupTransform(start_frame, end_frame, rospy.Time(0))
+            (trans,rot) = self.listener.lookupTransform(start_frame, end_frame, rospy.Time(0))
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-            continue
+            rospy.logerr("TF start to end not ready YET...")
+            pass
         
         return trans,rot
     
@@ -362,3 +366,13 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
     
     def get_right_hand_camera_image_raw(self):
         return self.right_hand_camera_image_raw
+        
+    def init_joint_limits(self):
+        """
+        Get the Joint Limits, in the init fase where we need to unpause the simulation to get them
+        :return: joint_limits: The Joint Limits Dictionary, with names, angles, vel and effort limits.
+        """
+        self.gazebo.unpauseSim()
+        joint_limits = self.check_joint_limits_ready()
+        self.gazebo.pauseSim()
+        return joint_limits
