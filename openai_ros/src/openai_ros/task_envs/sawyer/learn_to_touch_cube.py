@@ -37,8 +37,13 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
         self.work_space_z_max = rospy.get_param("/sawyer/work_space/z_max")
         self.work_space_z_min = rospy.get_param("/sawyer/work_space/z_min")
         
+        self.max_effort = rospy.get_param("/sawyer/max_effort")
+        
         self.dec_obs = rospy.get_param("/sawyer/number_decimals_precision_obs")
         
+        self.acceptable_distance_to_cube = rospy.get_param("/sawyer/acceptable_distance_to_cube")
+        
+        self.tcp_z_position_min = rospy.get_param("/sawyer/tcp_z_position_min")
         
         # We place the Maximum and minimum values of observations
         # TODO: Fill when get_observations is done.
@@ -73,7 +78,7 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
         # Rewards
         
         self.done_reward =rospy.get_param("/sawyer/done_reward")
-        self.closer_to_point_reward = rospy.get_param("/sawyer/closer_to_point_reward")
+        self.closer_to_block_reward = rospy.get_param("/sawyer/closer_to_block_reward")
 
         self.cumulated_steps = 0.0
 
@@ -110,14 +115,18 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
         # For Info Purposes
         self.cumulated_reward = 0.0
         # We get the initial pose to mesure the distance from the desired point.
-        translation_tcp_block, rotation_tcp_block = self.get_tf_start_to_end_frames(start_frame_name="right_electric_gripper_base",
-                                                                                    end_frame_name="block")
+        translation_tcp_block, rotation_tcp_block = self.get_tf_start_to_end_frames(start_frame_name="block",
+                                                                                    end_frame_name="right_electric_gripper_base")
         tf_tcp_to_block_vector = Vector3()
         tf_tcp_to_block_vector.x = translation_tcp_block[0]
         tf_tcp_to_block_vector.y = translation_tcp_block[1]
         tf_tcp_to_block_vector.z = translation_tcp_block[2]
         
         self.previous_distance_from_block = self.get_magnitud_tf_tcp_to_block(tf_tcp_to_block_vector)
+        
+        self.translation_tcp_world, _ = self.get_tf_start_to_end_frames(start_frame_name="world",
+                                                                                    end_frame_name="right_electric_gripper_base")
+                                                                                     
 
         
 
@@ -161,12 +170,10 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
             action_id = self.joints[6]+"_decrease"
 
         
-        # We tell sawyer the propeller speeds
-        self.set_propellers_speed(  right_propeller_speed,
-                                    left_propeller_speed,
-                                    time_sleep=1.0)
+        # We tell sawyer the action to perform
+        self.execute_movement(action_id)
         
-        rospy.logdebug("END Set Action ==>"+str(action))
+        rospy.logdebug("END Set Action ==>"+str(action)+","+str(action_id))
 
     def _get_obs(self):
         """
@@ -177,29 +184,27 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
         """
         rospy.logdebug("Start Get Observation ==>")
 
-        odom = self.get_odom()
-        base_position = odom.pose.pose.position
-        base_orientation_quat = odom.pose.pose.orientation
-        base_roll, base_pitch, base_yaw = self.get_orientation_euler(base_orientation_quat)
-        base_speed_linear = odom.twist.twist.linear
-        base_speed_angular_yaw = odom.twist.twist.angular.z
+        # We get the translation of the base of the gripper to the block
+        translation_tcp_block, _ = self.get_tf_start_to_end_frames(start_frame_name="block",
+                                                                                    end_frame_name="right_electric_gripper_base")
+                                                                                    
         
-        distance_from_desired_point = self.get_distance_from_desired_point(base_position)
+        translation_tcp_block_round = numpy.around(translation_tcp_block, decimals=self.dec_obs)
+        
+        # We get this data but we dont put it in the observations because its somthing internal for evaluation.
+        # The order is cucial, get it upside down and it make no sense.
+        self.translation_tcp_world, _ = self.get_tf_start_to_end_frames(start_frame_name="world",
+                                                                                    end_frame_name="right_electric_gripper_base")
 
-        observation = []
-        observation.append(round(base_position.x,self.dec_obs))
-        observation.append(round(base_position.y,self.dec_obs))
+        # Same here, the values are used internally for knowing if done, they wont define the state ( although these are left out for performance)
+        self.joints_efforts_dict = self.get_all_limb_joint_efforts()
         
-        observation.append(round(base_roll,self.dec_obs))
-        observation.append(round(base_pitch,self.dec_obs))
-        observation.append(round(base_yaw,self.dec_obs))
         
-        observation.append(round(base_speed_linear.x,self.dec_obs))
-        observation.append(round(base_speed_linear.y,self.dec_obs))
+        joints_angles_array = self.get_all_limb_joint_angles().values()
+        joints_angles_array_round = numpy.around(joints_angles_array, decimals=self.dec_obs)
         
-        observation.append(round(base_speed_angular_yaw,self.dec_obs))
-        
-        observation.append(round(distance_from_desired_point,self.dec_obs))
+        # We concatenate the two rounded arrays and convert them to standard Python list
+        observation = numpy.concatenate((translation_tcp_block_round,joints_angles_array_round), axis=0).tolist()
 
         return observation
         
@@ -207,36 +212,48 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
     def _is_done(self, observations):
         """
         We consider the episode done if:
-        1) The sawyers is ouside the workspace
-        2) It got to the desired point
+        1) The sawyer TCP is outside the workspace, with self.translation_tcp_world
+        2) The Joints exeded a certain effort ( it got stuck somewhere ), self.joints_efforts_array
+        3) The TCP to block distance is lower than a threshold ( it got to the place )
         """
-        distance_from_desired_point = observations[8]
-
-        current_position = Vector3()
-        current_position.x = observations[0]
-        current_position.y = observations[1]
         
-        is_inside_corridor = self.is_inside_workspace(current_position)
-        has_reached_des_point = self.is_in_desired_position(current_position, self.desired_point_epsilon)
+        is_stuck = self.is_arm_stuck(self.joints_efforts_dict)
         
-        done = not(is_inside_corridor) or has_reached_des_point
+        tcp_current_pos = Vector3()
+        tcp_current_pos.x = self.translation_tcp_world[0]
+        tcp_current_pos.y = self.translation_tcp_world[1]
+        tcp_current_pos.z = self.translation_tcp_world[2]
+        
+        is_inside_workspace = self.is_inside_workspace(tcp_current_pos)
+        
+        tcp_to_block_pos = Vector3()
+        tcp_to_block_pos.x = observations[0]
+        tcp_to_block_pos.y = observations[1]
+        tcp_to_block_pos.z = observations[2]
+        
+        has_reached_the_block = self.reached_block( tcp_to_block_pos,
+                                                    self.acceptable_distance_to_cube,
+                                                    self.translation_tcp_world[2],
+                                                    self.tcp_z_position_min)
+        
+        done = is_stuck or not(is_inside_workspace) or has_reached_the_block
         
         return done
 
     def _compute_reward(self, observations, done):
         """
         We Base the rewards in if its done or not and we base it on
-        if the distance to the desired point has increased or not
+        if the distance to the block has increased or not.
         :return:
         """
 
-        # We only consider the plane, the fluctuation in z is due mainly to wave
-        current_position = Point()
-        current_position.x = observations[0]
-        current_position.y = observations[1]
+        tcp_to_block_pos = Vector3()
+        tcp_to_block_pos.x = observations[0]
+        tcp_to_block_pos.y = observations[1]
+        tcp_to_block_pos.z = observations[2]
         
-        distance_from_des_point = self.get_distance_from_desired_point(current_position)
-        distance_difference =  distance_from_des_point - self.previous_distance_from_des_point
+        distance_block_to_tcp = self.get_magnitud_tf_tcp_to_block(tf_tcp_to_block_vector)
+        distance_difference =  distance_block_to_tcp - self.previous_distance_from_block
 
 
         if not done:
@@ -244,20 +261,22 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
             # If there has been a decrease in the distance to the desired point, we reward it
             if distance_difference < 0.0:
                 rospy.logwarn("DECREASE IN DISTANCE GOOD")
-                reward = self.closer_to_point_reward
+                reward = self.closer_to_block_reward
             else:
                 rospy.logerr("ENCREASE IN DISTANCE BAD")
-                reward = -1*self.closer_to_point_reward
+                reward = -1*self.closer_to_block_reward
 
         else:
             
-            if self.is_in_desired_position(current_position, self.desired_point_epsilon):
+
+        
+            if self.reached_block(tcp_to_block_pos,self.acceptable_distance_to_cube,self.translation_tcp_world[2], self.tcp_z_position_min):
                 reward = self.done_reward
             else:
                 reward = -1*self.done_reward
 
 
-        self.previous_distance_from_des_point = distance_from_des_point
+        self.previous_distance_from_block = distance_block_to_tcp
 
 
         rospy.logdebug("reward=" + str(reward))
@@ -270,38 +289,58 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
 
 
     # Internal TaskEnv Methods
+    def is_arm_stuck(self, joints_efforts_dict):
+        """
+        Checks if the efforts in the arm joints exceed certain theshhold
+        We will only check the joints_0,1,2,3,4,5,6
+        """
+        is_arm_stuck = False
+        
+        effort_eval_joints = [  "right_j0",
+                                "right_j1",
+                                "right_j2",
+                                "right_j3",
+                                "right_j4",
+                                "right_j5",
+                                "right_j6"]
+        
+        for key, value in joints_efforts_dict.iteritems():
+            if key in effort_eval_joints:
+                if abs(value) > self.max_effort:
+                    is_arm_stuck = True
+                    rospy.logerr("Joint Effort TOO MUCH ==>"+str(key)+","+str(value))
+                    break
+                else:
+                    rospy.logwarn("Joint Effort is ok==>"+str(key)+","+str(value))
+            else:
+                rospy.logerr("Joint Name is not in Effort list==>"+str(key))
+                
+        return is_arm_stuck
     
-    def is_in_desired_position(self,current_position, epsilon=0.05):
+    
+    def reached_block(self,block_to_tcp_vector, minimum_distance, tcp_z_position, tcp_z_position_min):
         """
-        It return True if the current position is similar to the desired poistion
+        It return True if the transform TCP to block vector magnitude is smaller than
+        the minimum_distance.
+        tcp_z_position we use it to only consider that it has reached if its above the table.
         """
         
-        is_in_desired_pos = False
+        reached_block_b = False
         
         
-        x_pos_plus = self.desired_point.x + epsilon
-        x_pos_minus = self.desired_point.x - epsilon
-        y_pos_plus = self.desired_point.y + epsilon
-        y_pos_minus = self.desired_point.y - epsilon
+        distance_to_block = self.get_magnitud_tf_tcp_to_block(block_to_tcp_vector)
         
-        x_current = current_position.x
-        y_current = current_position.y
+        tcp_z_pos_ok = tcp_z_position >= tcp_z_position_min
+        distance_ok = distance_to_block <= minimum_distance
+        reached_block_b = distance_ok and tcp_z_pos_ok
         
-        x_pos_are_close = (x_current <= x_pos_plus) and (x_current > x_pos_minus)
-        y_pos_are_close = (y_current <= y_pos_plus) and (y_current > y_pos_minus)
-        
-        is_in_desired_pos = x_pos_are_close and y_pos_are_close
-        
-        rospy.logdebug("###### IS DESIRED POS ? ######")
-        rospy.logdebug("current_position"+str(current_position))
-        rospy.logdebug("x_pos_plus"+str(x_pos_plus)+",x_pos_minus="+str(x_pos_minus))
-        rospy.logdebug("y_pos_plus"+str(y_pos_plus)+",y_pos_minus="+str(y_pos_minus))
-        rospy.logdebug("x_pos_are_close"+str(x_pos_are_close))
-        rospy.logdebug("y_pos_are_close"+str(y_pos_are_close))
-        rospy.logdebug("is_in_desired_pos"+str(is_in_desired_pos))
+        rospy.logdebug("###### REACHED BLOCK ? ######")
+        rospy.logdebug("tcp_z_pos_ok==>"+str(tcp_z_pos_ok))
+        rospy.logdebug("distance_ok==>"+str(distance_ok))
+        rospy.logdebug("reached_block_b==>"+str(is_in_desired_pos))
         rospy.logdebug("############")
         
-        return is_in_desired_pos
+        return reached_block_b
     
     def get_distance_from_desired_point(self, current_position):
         """
@@ -361,10 +400,12 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
         rospy.logwarn("XYZ current_position"+str(current_position))
         rospy.logwarn("work_space_x_max"+str(self.work_space_x_max)+",work_space_x_min="+str(self.work_space_x_min))
         rospy.logwarn("work_space_y_max"+str(self.work_space_y_max)+",work_space_y_min="+str(self.work_space_y_min))
+        rospy.logwarn("work_space_z_max"+str(self.work_space_z_max)+",work_space_z_min="+str(self.work_space_z_min))
         rospy.logwarn("############")
 
         if current_position.x > self.work_space_x_min and current_position.x <= self.work_space_x_max:
             if current_position.y > self.work_space_y_min and current_position.y <= self.work_space_y_max:
+                if current_position.z > self.work_space_z_min and current_position.z <= self.work_space_z_max:
                     is_inside = True
         
         return is_inside

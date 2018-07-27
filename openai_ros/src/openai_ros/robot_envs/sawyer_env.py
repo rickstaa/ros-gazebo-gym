@@ -269,18 +269,15 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
     
     def get_all_limb_joint_angles(self):
         """
-        Retunr array with all the joints angles
+        Return dictionary dict({str:float}) with all the joints angles
         """
-        joints_angles_array = []
-        for join_name in self.joints:
-            joints_angles_array.append(self.get_limp_joint_angle(joint_name))
-        return joints_angles_array
+        return self.limb.joint_angles()
     
-    def get_limp_joint_angle(self, joint_name):
+    def get_all_limb_joint_efforts(self):
         """
-        Returns the angle of each joint searchable by name
+        Returns a dictionary dict({str:float}) with all the joints efforts
         """
-        return self.limb.joint_angle(joint_name)
+        return self.limb.joint_efforts()
         
     def get_tf_start_to_end_frames(self,start_frame_name, end_frame_name):
         """
