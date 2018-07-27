@@ -47,26 +47,47 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
         
         # We place the Maximum and minimum values of observations
         # TODO: Fill when get_observations is done.
+        """
+        We supose that its all these:
+        head_pan, right_gripper_l_finger_joint, right_gripper_r_finger_joint, right_j0, right_j1,
+  right_j2, right_j3, right_j4, right_j5, right_j6
+  
+        Plus the first three are the block_to_tcp vector
+        """
+        self.gazebo.unpauseSim()
+        self.joint_limits = self.check_joint_limits_ready()
+        self.gazebo.pauseSim()
+        
+        
+        
         high = numpy.array([self.work_space_x_max,
                             self.work_space_y_max,
-                            1.57,
-                            1.57,
-                            3.14,
-                            self.propeller_high_speed,
-                            self.propeller_high_speed,
-                            self.max_angular_speed,
-                            self.max_distance_from_des_point
+                            self.work_space_z_max,
+                            self.joint_limits.position_upper[0],
+                            self.joint_limits.position_upper[1],
+                            self.joint_limits.position_upper[2],
+                            self.joint_limits.position_upper[3],
+                            self.joint_limits.position_upper[4],
+                            self.joint_limits.position_upper[5],
+                            self.joint_limits.position_upper[6],
+                            self.joint_limits.position_upper[7],
+                            self.joint_limits.position_upper[8],
+                            self.joint_limits.position_upper[9]
                             ])
                                         
         low = numpy.array([ self.work_space_x_min,
                             self.work_space_y_min,
-                            -1*1.57,
-                            -1*1.57,
-                            -1*3.14,
-                            -1*self.propeller_high_speed,
-                            -1*self.propeller_high_speed,
-                            -1*self.max_angular_speed,
-                            0.0
+                            self.work_space_z_min,
+                            self.joint_limits.position_lower[0],
+                            self.joint_limits.position_lower[1],
+                            self.joint_limits.position_lower[2],
+                            self.joint_limits.position_lower[3],
+                            self.joint_limits.position_lower[4],
+                            self.joint_limits.position_lower[5],
+                            self.joint_limits.position_lower[6],
+                            self.joint_limits.position_lower[7],
+                            self.joint_limits.position_lower[8],
+                            self.joint_limits.position_lower[9]
                             ])
 
         
@@ -198,7 +219,12 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
 
         # Same here, the values are used internally for knowing if done, they wont define the state ( although these are left out for performance)
         self.joints_efforts_dict = self.get_all_limb_joint_efforts()
-        
+        rospy.logwarn("JOINTS EFFORTS DICT OBSERVATION METHOD==>"+str(self.joints_efforts_dict))
+        """
+        We supose that its all these:
+        head_pan, right_gripper_l_finger_joint, right_gripper_r_finger_joint, right_j0, right_j1,
+  right_j2, right_j3, right_j4, right_j5, right_j6
+        """
         
         joints_angles_array = self.get_all_limb_joint_angles().values()
         joints_angles_array_round = numpy.around(joints_angles_array, decimals=self.dec_obs)
@@ -296,25 +322,22 @@ class SawyerTouchCubeEnv(sawyer_env.sawyerEnv):
         """
         is_arm_stuck = False
         
-        effort_eval_joints = [  "right_j0",
-                                "right_j1",
-                                "right_j2",
-                                "right_j3",
-                                "right_j4",
-                                "right_j5",
-                                "right_j6"]
-        
-        for key, value in joints_efforts_dict.iteritems():
-            if key in effort_eval_joints:
-                if abs(value) > self.max_effort:
+        for joint_name in self.joint_limits.joint_names:
+            if joint_name in joints_efforts_dict:
+                
+                effort_value = joints_efforts_dict[joint_name]
+                index = self.joint_limits.joint_names.index(joint_name)
+                effort_limit = self.joint_limits.effort[index]
+                
+                if abs(effort_value) > effort_limit:
                     is_arm_stuck = True
-                    rospy.logerr("Joint Effort TOO MUCH ==>"+str(key)+","+str(value))
+                    rospy.logerr("Joint Effort TOO MUCH ==>"+str(joint_name)+","+str(effort_value))
                     break
                 else:
-                    rospy.logwarn("Joint Effort is ok==>"+str(key)+","+str(value))
+                    rospy.logwarn("Joint Effort is ok==>"+str(joint_name)+","+str(effort_value))
             else:
-                rospy.logerr("Joint Name is not in Effort list==>"+str(key))
-                
+                rospy.logerr("Joint Name is not in the effort dict==>"+str(joint_name))
+        
         return is_arm_stuck
     
     

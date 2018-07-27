@@ -6,7 +6,7 @@ from openai_ros import robot_gazebo_env
 import intera_interface
 import intera_external_devices
 from intera_interface import CHECK_VERSION
-
+from intera_core_msgs.msg import JointLimits
 
 
 class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -27,7 +27,7 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         The Sensors: The sensors accesible are the ones considered usefull for AI learning.
         
         Sensor Topic List:
-        * /wamv/odom: Odometry of the Base of Wamv
+        * /robot/joint_limits: Odometry of the Base of Wamv
         
         Actuators Topic List: 
         * As actuator we will use a class to interface with the movements through commands.
@@ -60,6 +60,11 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         
         # TODO: Fill it with the sensors
         self._check_all_systems_ready()
+        
+        
+        # We Start all the ROS related Subscribers and publishers
+        rospy.Subscriber("/robot/joint_limits", JointLimits, self._joint_limits_callback)
+        
 
         self._setup_tf_listener()
         self._setup_movement_system()
@@ -90,7 +95,12 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
     def _check_all_sensors_ready(self):
         rospy.logdebug("START ALL SENSORS READY")
         # TODO: Here go the sensors like cameras and joint states
+        self._check_joint_limits_ready()
         rospy.logdebug("ALL SENSORS READY")
+        
+        
+    def _joint_limits_callback(self, data):
+        self.joint_limits = data
 
     def _setup_tf_listener(self):
         """
@@ -299,3 +309,20 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
             continue
         
         return trans,rot
+    
+    
+    def check_joint_limits_ready(self):
+        self.joint_limits = None
+        rospy.logdebug("Waiting for /robot/joint_limits to be READY...")
+        while self.joint_limits is None and not rospy.is_shutdown():
+            try:
+                self.joint_limits = rospy.wait_for_message("/robot/joint_limits", JointLimits, timeout=3.0)
+                rospy.logdebug("Current /robot/joint_limits READY=>")
+
+            except:
+                rospy.logerr("Current /robot/joint_limits not ready yet, retrying for getting joint_limits")
+        return self.joint_limits
+    
+    
+    def get_joint_limits(self):
+        return self.joint_limits
