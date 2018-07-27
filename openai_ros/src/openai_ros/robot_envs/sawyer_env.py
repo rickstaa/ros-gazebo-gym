@@ -7,6 +7,7 @@ import intera_interface
 import intera_external_devices
 from intera_interface import CHECK_VERSION
 from intera_core_msgs.msg import JointLimits
+from sensor_msgs.msg import Image
 
 
 class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -61,11 +62,9 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         # TODO: Fill it with the sensors
         self._check_all_systems_ready()
         
+        rospy.Subscriber("/io/internal_camera/head_camera/image_raw", Image, self._head_camera_image_raw_callback)
+        rospy.Subscriber("/io/internal_camera/right_hand_camera/image_raw", Image, self._right_hand_camera_image_raw_callback)
         
-        # We Start all the ROS related Subscribers and publishers
-        rospy.Subscriber("/robot/joint_limits", JointLimits, self._joint_limits_callback)
-        
-
         self._setup_tf_listener()
         self._setup_movement_system()
         
@@ -95,13 +94,43 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
     def _check_all_sensors_ready(self):
         rospy.logdebug("START ALL SENSORS READY")
         # TODO: Here go the sensors like cameras and joint states
-        self._check_joint_limits_ready()
+        self._check_head_camera_image_raw_ready()
+        self._check_right_hand_camera_image_raw_ready()
         rospy.logdebug("ALL SENSORS READY")
         
-        
-    def _joint_limits_callback(self, data):
-        self.joint_limits = data
+    
+    def _check_head_camera_image_raw_ready(self):
+        self.head_camera_image_raw = None
+        rospy.logdebug("Waiting for /io/internal_camera/head_camera/image_raw to be READY...")
+        while self.head_camera_image_raw is None and not rospy.is_shutdown():
+            try:
+                self.head_camera_image_raw = rospy.wait_for_message("/io/internal_camera/head_camera/image_raw", Image, timeout=5.0)
+                rospy.logdebug("Current /io/internal_camera/head_camera/image_raw READY=>")
 
+            except:
+                rospy.logerr("Current /io/internal_camera/head_camera/image_raw not ready yet, retrying for getting head_camera_image_raw")
+        return self.head_camera_image_raw
+    
+    def _check_right_hand_camera_image_raw_ready(self):
+        self.right_hand_camera_image_raw = None
+        rospy.logdebug("Waiting for /io/internal_camera/right_hand_camera/image_raw to be READY...")
+        while self.right_hand_camera_image_raw is None and not rospy.is_shutdown():
+            try:
+                self.right_hand_camera_image_raw = rospy.wait_for_message("/io/internal_camera/right_hand_camera/image_raw", Image, timeout=5.0)
+                rospy.logdebug("Current /io/internal_camera/right_hand_camera/image_raw READY=>")
+
+            except:
+                rospy.logerr("Current /io/internal_camera/right_hand_camera/image_raw not ready yet, retrying for getting right_hand_camera_image_raw")
+        return self.right_hand_camera_image_raw
+        
+        
+    def _head_camera_image_raw_callback(self, data):
+        self.head_camera_image_raw = data
+        
+    def _right_hand_camera_image_raw_callback(self, data):
+        self.right_hand_camera_image_raw = data
+        
+    
     def _setup_tf_listener(self):
         """
         Set ups the TF listener for getting the transforms you ask for.
@@ -326,3 +355,10 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
     
     def get_joint_limits(self):
         return self.joint_limits
+        
+    
+    def get_head_camera_image_raw(self):
+        return self.head_camera_image_raw    
+    
+    def get_right_hand_camera_image_raw(self):
+        return self.right_hand_camera_image_raw
