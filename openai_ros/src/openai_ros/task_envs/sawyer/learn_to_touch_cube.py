@@ -236,7 +236,7 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
 
         # Same here, the values are used internally for knowing if done, they wont define the state ( although these are left out for performance)
         self.joints_efforts_dict = self.get_all_limb_joint_efforts()
-        rospy.logwarn("JOINTS EFFORTS DICT OBSERVATION METHOD==>"+str(self.joints_efforts_dict))
+        rospy.logdebug("JOINTS EFFORTS DICT OBSERVATION METHOD==>"+str(self.joints_efforts_dict))
         """
         We supose that its all these:
         head_pan, right_gripper_l_finger_joint, right_gripper_r_finger_joint, right_j0, right_j1,
@@ -281,12 +281,12 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         
         done = is_stuck or not(is_inside_workspace) or has_reached_the_block
         
-        rospy.logwarn("#### IS DONE ? ####")
-        rospy.logwarn("is_stuck ?="+str(is_stuck))
-        rospy.logwarn("Not is_inside_workspace ?="+str(not(is_inside_workspace)))
-        rospy.logwarn("has_reached_the_block ?="+str(has_reached_the_block))
-        rospy.logwarn("done ?="+str(done))
-        rospy.logwarn("#### #### ####")
+        rospy.logdebug("#### IS DONE ? ####")
+        rospy.logdebug("is_stuck ?="+str(is_stuck))
+        rospy.logdebug("Not is_inside_workspace ?="+str(not(is_inside_workspace)))
+        rospy.logdebug("has_reached_the_block ?="+str(has_reached_the_block))
+        rospy.logdebug("done ?="+str(done))
+        rospy.logdebug("#### #### ####")
         
         return done
 
@@ -310,11 +310,12 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
             
             # If there has been a decrease in the distance to the desired point, we reward it
             if distance_difference < 0.0:
-                rospy.logwarn("DECREASE IN DISTANCE GOOD")
+                rospy.logdebug("DECREASE IN DISTANCE GOOD")
                 reward = self.closer_to_block_reward
             else:
                 rospy.logerr("ENCREASE IN DISTANCE BAD")
-                reward = -1*self.closer_to_block_reward
+                #reward = -1*self.closer_to_block_reward
+                reward = 0.0
 
         else:
             
@@ -353,14 +354,16 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
                 index = self.joint_limits.joint_names.index(joint_name)
                 effort_limit = self.joint_limits.effort[index]
                 
+                rospy.logdebug("Joint Effort ==>Name="+str(joint_name)+",Effort="+str(effort_value)+",Limit="+str(effort_limit))
+
                 if abs(effort_value) > effort_limit:
                     is_arm_stuck = True
                     rospy.logerr("Joint Effort TOO MUCH ==>"+str(joint_name)+","+str(effort_value))
                     break
                 else:
-                    rospy.logwarn("Joint Effort is ok==>"+str(joint_name)+","+str(effort_value))
+                    rospy.logdebug("Joint Effort is ok==>"+str(joint_name)+","+str(effort_value))
             else:
-                rospy.logerr("Joint Name is not in the effort dict==>"+str(joint_name))
+                rospy.logdebug("Joint Name is not in the effort dict==>"+str(joint_name))
         
         return is_arm_stuck
     
@@ -443,12 +446,12 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         """
         is_inside = False
 
-        rospy.logwarn("##### INSIDE WORK SPACE? #######")
-        rospy.logwarn("XYZ current_position"+str(current_position))
-        rospy.logwarn("work_space_x_max"+str(self.work_space_x_max)+",work_space_x_min="+str(self.work_space_x_min))
-        rospy.logwarn("work_space_y_max"+str(self.work_space_y_max)+",work_space_y_min="+str(self.work_space_y_min))
-        rospy.logwarn("work_space_z_max"+str(self.work_space_z_max)+",work_space_z_min="+str(self.work_space_z_min))
-        rospy.logwarn("############")
+        rospy.logdebug("##### INSIDE WORK SPACE? #######")
+        rospy.logdebug("XYZ current_position"+str(current_position))
+        rospy.logdebug("work_space_x_max"+str(self.work_space_x_max)+",work_space_x_min="+str(self.work_space_x_min))
+        rospy.logdebug("work_space_y_max"+str(self.work_space_y_max)+",work_space_y_min="+str(self.work_space_y_min))
+        rospy.logdebug("work_space_z_max"+str(self.work_space_z_max)+",work_space_z_min="+str(self.work_space_z_min))
+        rospy.logdebug("############")
 
         if current_position.x > self.work_space_x_min and current_position.x <= self.work_space_x_max:
             if current_position.y > self.work_space_y_min and current_position.y <= self.work_space_y_max:
