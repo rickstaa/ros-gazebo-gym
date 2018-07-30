@@ -10,57 +10,54 @@ from tf.transformations import euler_from_quaternion
 timestep_limit_per_episode = 10000 # Can be any Value
 
 register(
-        id='SawyerTouchCube-v0',
-        entry_point='openai_ros:SawyerTouchCubeEnv',
+        id='ShadowTcGetBall-v0',
+        entry_point='openai_ros:ShadowTcGetBallEnv',
         timestep_limit=timestep_limit_per_episode,
     )
 
-class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
+class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
     def __init__(self):
         """
-        Make sawyer learn how pick up a cube
+        Make sawyer learn how pick up a ball
         """
         
         # We execute this one before because there are some functions that this
         # TaskEnv uses that use variables from the parent class, like the effort limit fetch.
-        super(SawyerTouchCubeEnv, self).__init__()
+        super(ShadowTcGetBallEnv, self).__init__()
         
         # Here we will add any init functions prior to starting the MyRobotEnv
         
         
         # Only variable needed to be set here
 
-        rospy.logdebug("Start SawyerTouchCubeEnv INIT...")
+        rospy.logdebug("Start ShadowTcGetBallEnv INIT...")
         number_actions = rospy.get_param('/sawyer/n_actions')
         self.action_space = spaces.Discrete(number_actions)
         
         # We set the reward range, which is not compulsory but here we do it.
         self.reward_range = (-numpy.inf, numpy.inf)
         
-        self.work_space_x_max = rospy.get_param("/sawyer/work_space/x_max")
-        self.work_space_x_min = rospy.get_param("/sawyer/work_space/x_min")
-        self.work_space_y_max = rospy.get_param("/sawyer/work_space/y_max")
-        self.work_space_y_min = rospy.get_param("/sawyer/work_space/y_min")
-        self.work_space_z_max = rospy.get_param("/sawyer/work_space/z_max")
-        self.work_space_z_min = rospy.get_param("/sawyer/work_space/z_min")
         
-        self.max_effort = rospy.get_param("/sawyer/max_effort")
+        self.movement_delta =rospy.get_param("/shadow_tc/movement_delta")
         
-        self.dec_obs = rospy.get_param("/sawyer/number_decimals_precision_obs")
+        self.work_space_x_max = rospy.get_param("/shadow_tc/work_space/x_max")
+        self.work_space_x_min = rospy.get_param("/shadow_tc/work_space/x_min")
+        self.work_space_y_max = rospy.get_param("/shadow_tc/work_space/y_max")
+        self.work_space_y_min = rospy.get_param("/shadow_tc/work_space/y_min")
+        self.work_space_z_max = rospy.get_param("/shadow_tc/work_space/z_max")
+        self.work_space_z_min = rospy.get_param("/shadow_tc/work_space/z_min")
         
-        self.acceptable_distance_to_cube = rospy.get_param("/sawyer/acceptable_distance_to_cube")
+        self.max_effort = rospy.get_param("/shadow_tc/max_effort")
         
-        self.tcp_z_position_min = rospy.get_param("/sawyer/tcp_z_position_min")
+        self.dec_obs = rospy.get_param("/shadow_tc/number_decimals_precision_obs")
+        
+        self.acceptable_distance_to_cube = rospy.get_param("/shadow_tc/acceptable_distance_to_cube")
+        
+        self.tcp_z_position_min = rospy.get_param("/shadow_tc/tcp_z_position_min")
         
         # We place the Maximum and minimum values of observations
         # TODO: Fill when get_observations is done.
-        """
-        We supose that its all these:
-        head_pan, right_gripper_l_finger_joint, right_gripper_r_finger_joint, right_j0, right_j1,
-  right_j2, right_j3, right_j4, right_j5, right_j6
-  
-        Plus the first three are the block_to_tcp vector
-        """
+        
         
         # We fetch the limits of the joinst to get the effort and angle limits
         self.joint_limits = self.init_joint_limits()
@@ -103,42 +100,22 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         
         # Rewards
         
-        self.done_reward =rospy.get_param("/sawyer/done_reward")
-        self.closer_to_block_reward = rospy.get_param("/sawyer/closer_to_block_reward")
+        self.done_reward =rospy.get_param("/shadow_tc/done_reward")
+        self.closer_to_block_reward = rospy.get_param("/shadow_tc/closer_to_block_reward")
 
         self.cumulated_steps = 0.0
 
         
         
-        rospy.logdebug("END SawyerTouchCubeEnv INIT...")
+        rospy.logdebug("END shadow_tcGetBallEnv INIT...")
 
     def _set_init_pose(self):
         """
-        Sets the two proppelers speed to 0.0 and waits for the time_sleep
-        to allow the action to be executed
+        Sets the UR5 arm to the initial position and the objects to the original position.
         """
 
         # We set the angles to zero of the limb
-        self.joints = self.get_limb_joint_names_array()
-        join_values_array = [0.0]*len(self.joints)
-        joint_positions_dict_zero = dict( zip( self.joints, join_values_array))
-        
-        actual_joint_angles_dict = self.get_all_limb_joint_angles()
-        # We generate the two step movement. Turn Right/Left where you are and then set all to zero
-        if "right_j0" in actual_joint_angles_dict:
-            # We turn to the left or to the right based on where the position is to avoid the table.
-            if actual_joint_angles_dict["right_j0"] >= 0.0:
-                actual_joint_angles_dict["right_j0"] = 1.57
-            else:
-                actual_joint_angles_dict["right_j0"] = -1.57
-        if "right_j1" in actual_joint_angles_dict:
-            actual_joint_angles_dict["right_j1"] = actual_joint_angles_dict["right_j1"] - 0.3
-        
-        self.move_joints_to_angle_blocking(actual_joint_angles_dict, timeout=15.0, threshold=0.008726646)
-        self.move_joints_to_angle_blocking(joint_positions_dict_zero, timeout=15.0, threshold=0.008726646)
-            
-        # We Open the gripper
-        self.set_g(action="open")
+        self.reset_scene()
 
         return True
 
@@ -152,25 +129,17 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
 
         # For Info Purposes
         self.cumulated_reward = 0.0
-        # We get the initial pose to mesure the distance from the desired point.
-        translation_tcp_block, rotation_tcp_block = self.get_tf_start_to_end_frames(start_frame_name="block",
-                                                                                    end_frame_name="right_electric_gripper_base")
-        tf_tcp_to_block_vector = Vector3()
-        tf_tcp_to_block_vector.x = translation_tcp_block[0]
-        tf_tcp_to_block_vector.y = translation_tcp_block[1]
-        tf_tcp_to_block_vector.z = translation_tcp_block[2]
         
-        self.previous_distance_from_block = self.get_magnitud_tf_tcp_to_block(tf_tcp_to_block_vector)
         
-        self.translation_tcp_world, _ = self.get_tf_start_to_end_frames(start_frame_name="world",
-                                                                                    end_frame_name="right_electric_gripper_base")
-                                                                                     
-
+        ball_pose = self.get_ball_pose()
+        tcp_pose = self.get_tip_pose()
+        self.previous_distance_from_ball = self.get_distance_from_point(ball_pose.position, tcp_pose.position)
+        
         
 
     def _set_action(self, action):
         """
-        It sets the joints of sawyer based on the action integer given
+        It sets the joints of shadow_tc based on the action integer given
         based on the action number given.
         :param action: The action integer that sets what movement to do next.
         """
@@ -178,46 +147,45 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         rospy.logdebug("Start Set Action ==>"+str(action))
        
         
-        if action == 0: # Increase joint_0
-            action_id = self.joints[0]+"_increase"
-        elif action == 1: # Decrease joint_0
-            action_id = self.joints[0]+"_decrease"
-        elif action == 2: # Increase joint_1
-            action_id = self.joints[1]+"_increase"
-        elif action == 3: # Decrease joint_1
-            action_id = self.joints[1]+"_decrease"
-        elif action == 4: # Increase joint_2
-            action_id = self.joints[2]+"_increase"
-        elif action == 5: # Decrease joint_2
-            action_id = self.joints[2]+"_decrease"
-        elif action == 6: # Increase joint_3
-            action_id = self.joints[3]+"_increase"
-        elif action == 7: # Decrease joint_3
-           action_id = self.joints[3]+"_decrease"
-        elif action == 8: # Increase joint_4
-            action_id = self.joints[4]+"_increase"
-        elif action == 9: # Decrease joint_4
-            action_id = self.joints[4]+"_decrease"
-        elif action == 10: # Increase joint_5
-            action_id = self.joints[5]+"_increase"
-        elif action == 11: # Decrease joint_5
-            action_id = self.joints[5]+"_decrease"
-        elif action == 12: # Increase joint_6
-            action_id = self.joints[6]+"_increase"
-        elif action == 13: # Decrease joint_6
-            action_id = self.joints[6]+"_decrease"
+        increment_vector = Vector3() 
+        action_id="move"
+        
+        if action == 0: # Increase X
+            increment_vector.x = self.movement_delta
+        elif action == 1: # Decrease X
+            increment_vector.x = -1*self.movement_delta
+        elif action == 2: # Increase Y
+            increment_vector.x = self.movement_delta
+        elif action == 3: # Decrease Y
+            increment_vector.x = -1*self.movement_delta
+        elif action == 4: # Increase Z
+            increment_vector.x = self.movement_delta
+        elif action == 5: # Decrease Z
+            increment_vector.x = -1*self.movement_delta
+        elif action == 6: # Open Claw
+            action_id = "open"
+        elif action == 7: # Close Claw
+           action_id = "close"
+        
 
+        if action_id == "move":
+            # We tell shadow_tc the action to perform
+            # We dont change the RPY, therefore it will always be zero
+            self.move_tip(  x=increment_vector.x,
+                            y=increment_vector.y,
+                            z=increment_vector.z)
+        elif  action_id == "open":
+            self.open_hand()
+        elif action_id == "close":
+            self.close_hand()
         
-        # We tell sawyer the action to perform
-        self.execute_movement(action_id)
-        
-        rospy.logdebug("END Set Action ==>"+str(action)+","+str(action_id))
+        rospy.logdebug("END Set Action ==>"+str(action)+",action_id="+str(action_id)+",IncrementVector===>"+str(increment_vector))
 
     def _get_obs(self):
         """
         Here we define what sensor data defines our robots observations
         To know which Variables we have access to, we need to read the
-        sawyerEnv API DOCS.
+        shadow_tcEnv API DOCS.
         :return: observation
         """
         rospy.logdebug("Start Get Observation ==>")
@@ -255,7 +223,7 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
     def _is_done(self, observations):
         """
         We consider the episode done if:
-        1) The sawyer TCP is outside the workspace, with self.translation_tcp_world
+        1) The shadow_tc TCP is outside the workspace, with self.translation_tcp_world
         2) The Joints exeded a certain effort ( it got stuck somewhere ), self.joints_efforts_array
         3) The TCP to block distance is lower than a threshold ( it got to the place )
         """
@@ -303,7 +271,7 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         tf_tcp_to_block_vector.z = observations[2]
         
         distance_block_to_tcp = self.get_magnitud_tf_tcp_to_block(tf_tcp_to_block_vector)
-        distance_difference =  distance_block_to_tcp - self.previous_distance_from_block
+        distance_difference =  distance_block_to_tcp - self.previous_distance_from_ball
 
 
         if not done:
@@ -327,7 +295,7 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
                 reward = -1*self.done_reward
 
 
-        self.previous_distance_from_block = distance_block_to_tcp
+        self.previous_distance_from_ball = distance_block_to_tcp
 
 
         rospy.logdebug("reward=" + str(reward))
@@ -442,7 +410,7 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         
     def is_inside_workspace(self,current_position):
         """
-        Check if the sawyer is inside the Workspace defined
+        Check if the shadow_tc is inside the Workspace defined
         """
         is_inside = False
 

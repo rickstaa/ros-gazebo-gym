@@ -24,4 +24,7 @@ from openai_ros.task_envs.wamv.wamv_nav_twosets_buoys import WamvNavTwoSetsBuoys
 # Sawyer
 from openai_ros.robot_envs.sawyer_env import SawyerEnv
 from openai_ros.task_envs.sawyer.learn_to_touch_cube import SawyerTouchCubeEnv
+# ShadowTc
+from openai_ros.robot_envs.shadow_tc_env import ShadowTcEnv
+from openai_ros.task_envs.shadow_tc.learn_to_pick_ball import ShadowTcGetBallEnv
 
