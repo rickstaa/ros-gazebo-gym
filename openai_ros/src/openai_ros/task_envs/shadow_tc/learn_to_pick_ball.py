@@ -51,7 +51,7 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
         
         self.dec_obs = rospy.get_param("/shadow_tc/number_decimals_precision_obs")
         
-        self.acceptable_distance_to_cube = rospy.get_param("/shadow_tc/acceptable_distance_to_cube")
+        self.acceptable_distance_to_ball = rospy.get_param("/shadow_tc/acceptable_distance_to_ball")
         
         self.tcp_z_position_min = rospy.get_param("/shadow_tc/tcp_z_position_min")
         
@@ -65,32 +65,12 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
         high = numpy.array([self.work_space_x_max,
                             self.work_space_y_max,
                             self.work_space_z_max,
-                            self.joint_limits.position_upper[0],
-                            self.joint_limits.position_upper[1],
-                            self.joint_limits.position_upper[2],
-                            self.joint_limits.position_upper[3],
-                            self.joint_limits.position_upper[4],
-                            self.joint_limits.position_upper[5],
-                            self.joint_limits.position_upper[6],
-                            self.joint_limits.position_upper[7],
-                            self.joint_limits.position_upper[8],
-                            self.joint_limits.position_upper[9]
-                            ])
+                            1])
                                         
         low = numpy.array([ self.work_space_x_min,
                             self.work_space_y_min,
                             self.work_space_z_min,
-                            self.joint_limits.position_lower[0],
-                            self.joint_limits.position_lower[1],
-                            self.joint_limits.position_lower[2],
-                            self.joint_limits.position_lower[3],
-                            self.joint_limits.position_lower[4],
-                            self.joint_limits.position_lower[5],
-                            self.joint_limits.position_lower[6],
-                            self.joint_limits.position_lower[7],
-                            self.joint_limits.position_lower[8],
-                            self.joint_limits.position_lower[9]
-                            ])
+                            0])
 
         
         self.observation_space = spaces.Box(low, high)
@@ -116,6 +96,8 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
 
         # We set the angles to zero of the limb
         self.reset_scene()
+        # Un check just in case was left activated
+        self.get_finguers_colision(False)
 
         return True
 
@@ -131,9 +113,10 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
         self.cumulated_reward = 0.0
         
         
-        ball_pose = self.get_ball_pose()
+        self.ball_pose = self.get_ball_pose()
         tcp_pose = self.get_tip_pose()
-        self.previous_distance_from_ball = self.get_distance_from_point(ball_pose.position, tcp_pose.position)
+        self.previous_distance_from_ball = self.get_distance_from_point(self.ball_pose.position, tcp_pose.position)
+        
         
         
 
@@ -178,6 +161,7 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
             self.open_hand()
         elif action_id == "close":
             self.close_hand()
+            
         
         rospy.logdebug("END Set Action ==>"+str(action)+",action_id="+str(action_id)+",IncrementVector===>"+str(increment_vector))
 
@@ -189,33 +173,21 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
         :return: observation
         """
         rospy.logdebug("Start Get Observation ==>")
-
-        # We get the translation of the base of the gripper to the block
-        translation_tcp_block, _ = self.get_tf_start_to_end_frames(start_frame_name="block",
-                                                                                    end_frame_name="right_electric_gripper_base")
-                                                                                    
         
-        translation_tcp_block_round = numpy.around(translation_tcp_block, decimals=self.dec_obs)
+        tcp_pose = self.get_tip_pose()
         
-        # We get this data but we dont put it in the observations because its somthing internal for evaluation.
-        # The order is cucial, get it upside down and it make no sense.
-        self.translation_tcp_world, _ = self.get_tf_start_to_end_frames(start_frame_name="world",
-                                                                                    end_frame_name="right_electric_gripper_base")
-
-        # Same here, the values are used internally for knowing if done, they wont define the state ( although these are left out for performance)
-        self.joints_efforts_dict = self.get_all_limb_joint_efforts()
-        rospy.logdebug("JOINTS EFFORTS DICT OBSERVATION METHOD==>"+str(self.joints_efforts_dict))
-        """
-        We supose that its all these:
-        head_pan, right_gripper_l_finger_joint, right_gripper_r_finger_joint, right_j0, right_j1,
-  right_j2, right_j3, right_j4, right_j5, right_j6
-        """
+        # We dont add it to the observations because is not part of the robot
+        self.ball_pose = self.get_ball_pose()
         
-        joints_angles_array = self.get_all_limb_joint_angles().values()
-        joints_angles_array_round = numpy.around(joints_angles_array, decimals=self.dec_obs)
+        # We activate the Finguer collision detection
+        self.finguer_collided = self.get_finguers_colision(True)
+        self.get_finguers_colision(False)
         
-        # We concatenate the two rounded arrays and convert them to standard Python list
-        observation = numpy.concatenate((translation_tcp_block_round,joints_angles_array_round), axis=0).tolist()
+        observation = [ round(ball_pose.position.x,self.dec_obs),
+                        round(ball_pose.position.y,self.dec_obs),
+                        round(ball_pose.position.z,self.dec_obs),
+                        int(self.finguer_collided)
+                        ]
 
         return observation
         
@@ -223,36 +195,29 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
     def _is_done(self, observations):
         """
         We consider the episode done if:
-        1) The shadow_tc TCP is outside the workspace, with self.translation_tcp_world
-        2) The Joints exeded a certain effort ( it got stuck somewhere ), self.joints_efforts_array
-        3) The TCP to block distance is lower than a threshold ( it got to the place )
+        1) The shadow_tc TCP is outside the workspace.
+        2) The TCP to block distance is lower than a threshold ( it got to the place )
+           and the the collisions in the figuers are true.
         """
+        tcp_pos = Vector3()
+        tcp_pos.x = observations[0]
+        tcp_pos.y = observations[1]
+        tcp_pos.z = observations[2]
+        finguers_collided = observations[3]
         
-        is_stuck = self.is_arm_stuck(self.joints_efforts_dict)
+        is_inside_workspace = self.is_inside_workspace(tcp_pos)
         
-        tcp_current_pos = Vector3()
-        tcp_current_pos.x = self.translation_tcp_world[0]
-        tcp_current_pos.y = self.translation_tcp_world[1]
-        tcp_current_pos.z = self.translation_tcp_world[2]
         
-        is_inside_workspace = self.is_inside_workspace(tcp_current_pos)
+        has_reached_the_ball = self.reached_ball(  tcp_pos,
+                                                    self.ball_pose.position,
+                                                    self.acceptable_distance_to_ball,
+                                                    finguers_collided)
         
-        tcp_to_block_pos = Vector3()
-        tcp_to_block_pos.x = observations[0]
-        tcp_to_block_pos.y = observations[1]
-        tcp_to_block_pos.z = observations[2]
-        
-        has_reached_the_block = self.reached_block( tcp_to_block_pos,
-                                                    self.acceptable_distance_to_cube,
-                                                    self.translation_tcp_world[2],
-                                                    self.tcp_z_position_min)
-        
-        done = is_stuck or not(is_inside_workspace) or has_reached_the_block
+        done = has_reached_the_ball or not(is_inside_workspace)
         
         rospy.logdebug("#### IS DONE ? ####")
-        rospy.logdebug("is_stuck ?="+str(is_stuck))
         rospy.logdebug("Not is_inside_workspace ?="+str(not(is_inside_workspace)))
-        rospy.logdebug("has_reached_the_block ?="+str(has_reached_the_block))
+        rospy.logdebug("has_reached_the_ball ?="+str(has_reached_the_ball))
         rospy.logdebug("done ?="+str(done))
         rospy.logdebug("#### #### ####")
         
@@ -265,13 +230,14 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
         :return:
         """
 
-        tf_tcp_to_block_vector = Vector3()
-        tf_tcp_to_block_vector.x = observations[0]
-        tf_tcp_to_block_vector.y = observations[1]
-        tf_tcp_to_block_vector.z = observations[2]
+        tcp_pos = Vector3()
+        tcp_pos.x = observations[0]
+        tcp_pos.y = observations[1]
+        tcp_pos.z = observations[2]
         
-        distance_block_to_tcp = self.get_magnitud_tf_tcp_to_block(tf_tcp_to_block_vector)
-        distance_difference =  distance_block_to_tcp - self.previous_distance_from_ball
+        self.distance_from_ball = self.get_distance_from_point(self.ball_pose.position, tcp_pos)
+        
+        distance_difference =  distance_from_ball - self.previous_distance_from_ball
 
 
         if not done:
@@ -289,7 +255,7 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
             
 
         
-            if self.reached_block(tf_tcp_to_block_vector,self.acceptable_distance_to_cube,self.translation_tcp_world[2], self.tcp_z_position_min):
+            if self.reached_ball(tf_tcp_to_block_vector,self.acceptable_distance_to_cube,self.translation_tcp_world[2], self.tcp_z_position_min):
                 reward = self.done_reward
             else:
                 reward = -1*self.done_reward
@@ -336,29 +302,26 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
         return is_arm_stuck
     
     
-    def reached_block(self,block_to_tcp_vector, minimum_distance, tcp_z_position, tcp_z_position_min):
+    def reached_ball(self,tcp_position, ball_position, minimum_distance, finguers_collided):
         """
-        It return True if the transform TCP to block vector magnitude is smaller than
-        the minimum_distance.
-        tcp_z_position we use it to only consider that it has reached if its above the table.
+        Return true if the distance from TCP position to the ball position is 
+        lower than the minimum_distance.
         """
         
-        reached_block_b = False
+        distance_from_ball = self.get_distance_from_point(tcp_position, ball_position)
         
+        distance_to_ball_ok = distance_from_ball < minimum_distance
         
-        distance_to_block = self.get_magnitud_tf_tcp_to_block(block_to_tcp_vector)
-        
-        tcp_z_pos_ok = tcp_z_position >= tcp_z_position_min
-        distance_ok = distance_to_block <= minimum_distance
-        reached_block_b = distance_ok and tcp_z_pos_ok
+        reached_ball_b = distance_to_ball_ok and finguers_collided
         
         rospy.logdebug("###### REACHED BLOCK ? ######")
-        rospy.logdebug("tcp_z_pos_ok==>"+str(tcp_z_pos_ok))
-        rospy.logdebug("distance_ok==>"+str(distance_ok))
-        rospy.logdebug("reached_block_b==>"+str(reached_block_b))
+        rospy.logdebug("distance_from_ball==>"+str(distance_from_ball))
+        rospy.logdebug("distance_to_ball_ok==>"+str(distance_to_ball_ok))
+        rospy.logdebug("reached_ball_b==>"+str(reached_ball_b))
+        rospy.logdebug("finguers_collided==>"+str(finguers_collided))
         rospy.logdebug("############")
         
-        return reached_block_b
+        return reached_ball_b
     
     def get_distance_from_desired_point(self, current_position):
         """
