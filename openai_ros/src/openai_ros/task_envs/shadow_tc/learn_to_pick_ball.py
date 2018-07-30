@@ -205,7 +205,7 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
         tcp_pos.z = observations[2]
         finguers_collided = observations[3]
         
-        is_inside_workspace = self.is_inside_workspace(tcp_pos)
+        bool_is_inside_workspace = self.is_inside_workspace(tcp_pos)
         
         
         has_reached_the_ball = self.reached_ball(  tcp_pos,
@@ -213,10 +213,10 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
                                                     self.acceptable_distance_to_ball,
                                                     finguers_collided)
         
-        done = has_reached_the_ball or not(is_inside_workspace)
+        done = has_reached_the_ball or not(bool_is_inside_workspace)
         
         rospy.logdebug("#### IS DONE ? ####")
-        rospy.logdebug("Not is_inside_workspace ?="+str(not(is_inside_workspace)))
+        rospy.logdebug("Not bool_is_inside_workspace ?="+str(not(bool_is_inside_workspace)))
         rospy.logdebug("has_reached_the_ball ?="+str(has_reached_the_ball))
         rospy.logdebug("done ?="+str(done))
         rospy.logdebug("#### #### ####")
@@ -226,7 +226,7 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
     def _compute_reward(self, observations, done):
         """
         We Base the rewards in if its done or not and we base it on
-        if the distance to the block has increased or not.
+        if the distance to the ball has increased or not.
         :return:
         """
 
@@ -234,6 +234,7 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
         tcp_pos.x = observations[0]
         tcp_pos.y = observations[1]
         tcp_pos.z = observations[2]
+        finguers_collided = observations[3]
         
         self.distance_from_ball = self.get_distance_from_point(self.ball_pose.position, tcp_pos)
         
@@ -253,9 +254,12 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
 
         else:
             
-
+            has_reached_the_ball = self.reached_ball(   tcp_pos,
+                                                        self.ball_pose.position,
+                                                        self.acceptable_distance_to_ball,
+                                                        finguers_collided)
         
-            if self.reached_ball(tf_tcp_to_block_vector,self.acceptable_distance_to_cube,self.translation_tcp_world[2], self.tcp_z_position_min):
+            if has_reached_the_ball:
                 reward = self.done_reward
             else:
                 reward = -1*self.done_reward
@@ -274,34 +278,7 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
 
 
     # Internal TaskEnv Methods
-    def is_arm_stuck(self, joints_efforts_dict):
-        """
-        Checks if the efforts in the arm joints exceed certain theshhold
-        We will only check the joints_0,1,2,3,4,5,6
-        """
-        is_arm_stuck = False
-        
-        for joint_name in self.joint_limits.joint_names:
-            if joint_name in joints_efforts_dict:
-                
-                effort_value = joints_efforts_dict[joint_name]
-                index = self.joint_limits.joint_names.index(joint_name)
-                effort_limit = self.joint_limits.effort[index]
-                
-                rospy.logdebug("Joint Effort ==>Name="+str(joint_name)+",Effort="+str(effort_value)+",Limit="+str(effort_limit))
 
-                if abs(effort_value) > effort_limit:
-                    is_arm_stuck = True
-                    rospy.logerr("Joint Effort TOO MUCH ==>"+str(joint_name)+","+str(effort_value))
-                    break
-                else:
-                    rospy.logdebug("Joint Effort is ok==>"+str(joint_name)+","+str(effort_value))
-            else:
-                rospy.logdebug("Joint Name is not in the effort dict==>"+str(joint_name))
-        
-        return is_arm_stuck
-    
-    
     def reached_ball(self,tcp_position, ball_position, minimum_distance, finguers_collided):
         """
         Return true if the distance from TCP position to the ball position is 
@@ -322,17 +299,7 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
         rospy.logdebug("############")
         
         return reached_ball_b
-    
-    def get_distance_from_desired_point(self, current_position):
-        """
-        Calculates the distance from the current position to the desired point
-        :param start_point:
-        :return:
-        """
-        distance = self.get_distance_from_point(current_position,
-                                                self.desired_point)
-    
-        return distance
+
         
     def get_distance_from_point(self, pstart, p_end):
         """
@@ -347,30 +314,7 @@ class ShadowTcGetBallEnv(shadow_tc_env.SawyerEnv):
     
         return distance
     
-    def get_magnitud_tf_tcp_to_block(self, translation_vector):
-        """
-        Given a Vector3 Object, get the magnitud
-        :param p_end:
-        :return:
-        """
-        a = numpy.array((   translation_vector.x,
-                            translation_vector.y,
-                            translation_vector.z))
-        
-        distance = numpy.linalg.norm(a)
-    
-        return distance
-        
-    def get_orientation_euler(self, quaternion_vector):
-        # We convert from quaternions to euler
-        orientation_list = [quaternion_vector.x,
-                            quaternion_vector.y,
-                            quaternion_vector.z,
-                            quaternion_vector.w]
-    
-        roll, pitch, yaw = euler_from_quaternion(orientation_list)
-        return roll, pitch, yaw
-        
+
     def is_inside_workspace(self,current_position):
         """
         Check if the shadow_tc is inside the Workspace defined
