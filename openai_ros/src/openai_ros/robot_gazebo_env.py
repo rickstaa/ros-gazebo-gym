@@ -12,7 +12,7 @@ class RobotGazeboEnv(gym.Env):
     def __init__(self, robot_name_space, controllers_list, reset_controls, start_init_physics_parameters=True, reset_world_or_sim="SIMULATION"):
 
         # To reset Simulations
-        rospy.logwarn("START init RobotGazeboEnv")
+        rospy.logdebug("START init RobotGazeboEnv")
         self.gazebo = GazeboConnection(start_init_physics_parameters,reset_world_or_sim)
         self.controllers_object = ControllersConnection(namespace=robot_name_space, controllers_list=controllers_list)
         self.reset_controls = reset_controls
@@ -22,7 +22,7 @@ class RobotGazeboEnv(gym.Env):
         self.episode_num = 0
         self.cumulated_episode_reward = 0
         self.reward_pub = rospy.Publisher('/openai/reward', RLExperimentInfo, queue_size=1)
-        rospy.logwarn("END init RobotGazeboEnv")
+        rospy.logdebug("END init RobotGazeboEnv")
 
     # Env methods
     def seed(self, seed=None):
@@ -54,12 +54,12 @@ class RobotGazeboEnv(gym.Env):
         return obs, reward, done, info
 
     def reset(self):
-        rospy.logwarn("Reseting RobotGazeboEnvironment")
+        rospy.logdebug("Reseting RobotGazeboEnvironment")
         self._reset_sim()
         self._init_env_variables()
         self._update_episode()
         obs = self._get_obs()
-        rospy.logwarn("END Reseting RobotGazeboEnvironment")
+        rospy.logdebug("END Reseting RobotGazeboEnvironment")
         return obs
 
     def close(self):
@@ -103,7 +103,7 @@ class RobotGazeboEnv(gym.Env):
     def _reset_sim(self):
         """Resets a simulation
         """
-        rospy.logwarn("START robot gazebo _reset_sim")
+        rospy.logdebug("START robot gazebo _reset_sim")
         if self.reset_controls :
             self.gazebo.unpauseSim()
             self.controllers_object.reset_controllers()
@@ -128,7 +128,7 @@ class RobotGazeboEnv(gym.Env):
             self._check_all_systems_ready()
             self.gazebo.pauseSim()
         
-        rospy.logwarn("END robot gazebo _reset_sim")
+        rospy.logdebug("END robot gazebo _reset_sim")
         return True
 
     def _set_init_pose(self):
