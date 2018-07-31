@@ -59,6 +59,7 @@ class RobotGazeboEnv(gym.Env):
         self._init_env_variables()
         self._update_episode()
         obs = self._get_obs()
+        rospy.logwarn("END Reseting RobotGazeboEnvironment")
         return obs
 
     def close(self):
@@ -102,6 +103,7 @@ class RobotGazeboEnv(gym.Env):
     def _reset_sim(self):
         """Resets a simulation
         """
+        rospy.logwarn("START robot gazebo _reset_sim")
         if self.reset_controls :
             self.gazebo.unpauseSim()
             self.controllers_object.reset_controllers()
@@ -126,7 +128,7 @@ class RobotGazeboEnv(gym.Env):
             self._check_all_systems_ready()
             self.gazebo.pauseSim()
         
-
+        rospy.logwarn("END robot gazebo _reset_sim")
         return True
 
     def _set_init_pose(self):

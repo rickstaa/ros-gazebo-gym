@@ -6,6 +6,7 @@ from openai_ros import robot_gazebo_env
 from sensor_msgs.msg import Imu
 from sensor_msgs.msg import JointState
 from smart_grasping_sandbox.smart_grasper import SmartGrasper
+from moveit_msgs.msg import PlanningScene
 
 
 class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -37,7 +38,7 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         
         Args:
         """
-        rospy.logdebug("Start ShadowTcEnv INIT...")
+        rospy.logwarn("Start ShadowTcEnv INIT...")
         # Variables that we give through the constructor.
         # None in this case
 
@@ -53,11 +54,11 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
                                             robot_name_space=self.robot_name_space,
                                             reset_controls=False,
                                             start_init_physics_parameters=False,
-                                            reset_world_or_sim="WORLD")
+                                            reset_world_or_sim="NO_RESET_SIM")
 
 
 
-        rospy.logdebug("ShadowTcEnv unpause...")
+        rospy.logwarn("ShadowTcEnv unpause...")
         self.gazebo.unpauseSim()
         #self.controllers_object.reset_controllers()
         
@@ -65,13 +66,13 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         
         rospy.Subscriber("/imu/data", Imu, self._imu_callback)
         rospy.Subscriber("/joint_states", JointState, self._joints_state_callback)
+        #rospy.Subscriber('/planning_scene', PlanningScene, self._planning_scene_callback)
         
         self._setup_smart_grasper()
-        self.reset_scene()
         
         self.gazebo.pauseSim()
         
-        rospy.logdebug("Finished ShadowTcEnv INIT...")
+        rospy.logwarn("Finished ShadowTcEnv INIT...")
 
     # Methods needed by the RobotGazeboEnv
     # ----------------------------
@@ -82,9 +83,9 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         Checks that all the sensors, publishers and other simulation systems are
         operational.
         """
-        rospy.logdebug("ShadowTcEnv check_all_systems_ready...")
+        rospy.logwarn("ShadowTcEnv check_all_systems_ready...")
         self._check_all_sensors_ready()
-        rospy.logdebug("END ShadowTcEnv _check_all_systems_ready...")
+        rospy.logwarn("END ShadowTcEnv _check_all_systems_ready...")
         return True
 
 
@@ -92,19 +93,21 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
     # ----------------------------
 
     def _check_all_sensors_ready(self):
-        rospy.logdebug("START ALL SENSORS READY")
+        rospy.logwarn("START ALL SENSORS READY")
         self._check_imu_ready()
         self._check_joint_states_ready()
-        rospy.logdebug("ALL SENSORS READY")
+        #self._check_planning_scene_ready()
+        
+        rospy.logwarn("ALL SENSORS READY")
         
     
     def _check_imu_ready(self):
         self.imu = None
-        rospy.logdebug("Waiting for /imu/data to be READY...")
+        rospy.logwarn("Waiting for /imu/data to be READY...")
         while self.imu is None and not rospy.is_shutdown():
             try:
                 self.imu = rospy.wait_for_message("/imu/data", Imu, timeout=5.0)
-                rospy.logdebug("Current/imu/data READY=>")
+                rospy.logwarn("Current/imu/data READY=>")
 
             except:
                 rospy.logerr("Current /imu/data not ready yet, retrying for getting imu")
@@ -113,15 +116,28 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         
     def _check_joint_states_ready(self):
         self.joint_states = None
-        rospy.logdebug("Waiting for /joint_states to be READY...")
+        rospy.logwarn("Waiting for /joint_states to be READY...")
         while self.joint_states is None and not rospy.is_shutdown():
             try:
                 self.joint_states = rospy.wait_for_message("/joint_states", JointState, timeout=1.0)
-                rospy.logdebug("Current /joint_states READY=>")
+                rospy.logwarn("Current /joint_states READY=>")
 
             except:
                 rospy.logerr("Current /joint_states not ready yet, retrying for getting joint_states")
         return self.joint_states
+        
+    
+    def _check_planning_scene_ready(self):
+        self.planning_scene = None
+        rospy.logwarn("Waiting for /planning_scene to be READY...")
+        while self.planning_scene is None and not rospy.is_shutdown():
+            try:
+                self.planning_scene = rospy.wait_for_message('/planning_scene', PlanningScene, timeout=1.0)
+                rospy.logwarn("Current /planning_scene READY=>")
+
+            except:
+                rospy.logerr("Current /planning_scene not ready yet, retrying for getting planning_scene")
+        return self.planning_scene
         
         
     def _imu_callback(self, data):
@@ -129,6 +145,9 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         
     def _joints_state_callback(self, data):
         self.joint_states = data
+        
+    def _planning_scene_callback(self, data):
+        self.planning_scene = data
         
     
     def _setup_tf_listener(self):
@@ -143,7 +162,10 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         Setup of the movement system.
         :return:
         """
-        self.sgs = SmartGrasper()
+        rospy.logwarn("START _setup_smart_grasper")
+        # We need to tell it to not start a node
+        self.sgs = SmartGrasper(init_ros_node=False)
+        rospy.logwarn("END _setup_smart_grasper")
     
     # Methods that the TrainingEnvironment will need to define here as virtual
     # because they will be used in RobotGazeboEnv GrandParentClass and defined in the
@@ -193,18 +215,36 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         self.sgs.close_hand()
         
-    def get_ball_pose(self)
+    def get_ball_pose(self):
         """
         Get Ball Pose
         return: Ball Pose in the World frame
+        We unpause and pause the simulation because this calss is a service call.
+        This means that if the simulation is NOT
+        running it wont get the Ball information of position.
         """
-        return self.sgs.get_object_pose()
+        rospy.logwarn("START get_ball_pose ==>")
+        self.gazebo.unpauseSim()
+        ball_pose = self.sgs.get_object_pose()
+        self.gazebo.pauseSim()
+        rospy.logwarn("ball_pose ==>"+str(ball_pose))
+        rospy.logwarn("STOP get_ball_pose ==>")
+        
+        return ball_pose
         
     def get_tip_pose(self):
         """
         Returns the pose of the tip of the TCP
+        We unpause and pause the simulation because this calss is a service call.
+        This means that if the simulation is NOT
+        running it wont get the TCP information of position.
         """
-        return self.sgs.get_tip_pose()
+        rospy.logwarn("START get_tip_pose ==>")
+        self.gazebo.unpauseSim()
+        tcp_pose = self.sgs.get_tip_pose()
+        self.gazebo.pauseSim()
+        rospy.logwarn("END get_tip_pose ==>")
+        return tcp_pose
         
     def move_tcp_world_frame(self, desired_pose):
         """
@@ -237,13 +277,91 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         self.sgs.send_command(command, duration)
     
         
-    def get_finguers_colision(self, activate=False):
+    def set_fingers_colision(self, activate=False):
         """
-        It activates or deactivates the ginguer collisions checks and returns
-        if activated  True if figuers are collising with something.
-        :return: has_colided: Reurns a boolean value TRue if finguers are colliding with something.
+        It activates or deactivates the finger collisions.
+        It also will triguer the publish into the planning_scene the collisions.
+        We puase and unpause for the smae exact reason as the get TCP and get ball pos.
+        Being a service, untill the simulation is unpaused it wont get response.
         """
-        return self.sgs.check_fingers_collisions(activate)
+        rospy.logwarn("START get_fingers_colision")
+        self.sgs.check_fingers_collisions(activate)
+        rospy.logwarn("END get_fingers_colision")
+
+        
+    def get_fingers_colision(self, object_collision_name):
+        """
+        Returns the collision of the three fingers
+        object_collision_name: Here yo ustate the name of the model to check collision
+        with fingers.
+        Objects in sim: cricket_ball__link, drill__link
+        """
+        self.gazebo.unpauseSim()
+        self.set_fingers_colision(True)
+        planning_scene = self._check_planning_scene_ready()
+        self.gazebo.pauseSim()
+        
+        objects_scene = planning_scene.allowed_collision_matrix.entry_names
+        colissions_matrix = planning_scene.allowed_collision_matrix.entry_values
+        
+        # We look for the Ball object model name in the objects sceen list and get the index:
+        object_collision_name_index = objects_scene.index(object_collision_name)
+        
+        Finger_Links_Names = [ "H1_F1_base_link",
+                                "H1_F1_link_1",
+                                "H1_F1_link_2",
+                                "H1_F1_palm_link",
+                                "H1_F1_tip",
+                                "H1_F2_base_link",
+                                "H1_F2_link_1",
+                                "H1_F2_link_2",
+                                "H1_F2_palm_link",
+                                "H1_F2_tip",
+                                "H1_F3_base_link",
+                                "H1_F3_link_1",
+                                "H1_F3_link_2",
+                                "H1_F3_palm_link",
+                                "H1_F3_tip"]
+                    
+                             
+        # We get all the index of the model links that are part of the fingers
+        # We separate by finguer to afterwards be easy to detect that there is contact in all of the finguers
+        finger1_indices = [i for i, var in enumerate(Finger_Links_Names) if "H1_F1" in var]
+        finger2_indices = [i for i, var in enumerate(Finger_Links_Names) if "H1_F2" in var]
+        finger3_indices = [i for i, var in enumerate(Finger_Links_Names) if "H1_F3" in var]
+        
+        # Now we search in the entry_value corresponding to the object to check the collision
+        # With all the rest of objects.
+        object_collision_array = colissions_matrix[object_collision_name_index].enabled
+        
+        # Is there a collision with Finguer1
+        f1_collision = False
+        for finger_index in finger1_indices:
+            if object_collision_array[finger_index]:
+                f1_collision = True
+                break
+        
+        # Is there a collision with Finguer2
+        f2_collision = False
+        for finger_index in finger2_indices:
+            if object_collision_array[finger_index]:
+                f2_collision = True
+                break
+            
+        # Is there a collision with Finguer3
+        f3_collision = False
+        for finger_index in finger3_indices:
+            if object_collision_array[finger_index]:
+                f3_collision = True
+                break
+            
+        finger_collision_dict = {   
+                                    "f1":f1_collision,
+                                    "f2":f2_collision,
+                                    "f3":f3_collision
+                                }
+        
+        return finger_collision_dict
         
     def reset_scene(self):
         """
