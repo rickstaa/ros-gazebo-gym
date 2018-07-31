@@ -6,7 +6,6 @@ depends:
 - python-catkin-pkg
 - rospy
 - catkin
-- theconstruct_msgs
 description: The openai_ros package
 license: TODO
 maintainers: rdaneel <rdaneel@todo.todo>
