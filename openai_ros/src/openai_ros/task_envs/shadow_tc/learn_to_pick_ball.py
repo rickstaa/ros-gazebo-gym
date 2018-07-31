@@ -131,31 +131,33 @@ class ShadowTcGetBallEnv(shadow_tc_env.ShadowTcEnv):
         elif action == 1: # Decrease X
             increment_vector.x = -1*self.movement_delta
         elif action == 2: # Increase Y
-            increment_vector.x = self.movement_delta
+            increment_vector.y = self.movement_delta
         elif action == 3: # Decrease Y
-            increment_vector.x = -1*self.movement_delta
+            increment_vector.y = -1*self.movement_delta
         elif action == 4: # Increase Z
-            increment_vector.x = self.movement_delta
+            increment_vector.z = self.movement_delta
         elif action == 5: # Decrease Z
-            increment_vector.x = -1*self.movement_delta
+            increment_vector.z = -1*self.movement_delta
         elif action == 6: # Open Claw
             action_id = "open"
         elif action == 7: # Close Claw
            action_id = "close"
         
+        rospy.logwarn("Action_id="+str(action_id)+",IncrementVector===>"+str(increment_vector))
 
         if action_id == "move":
             # We tell shadow_tc the action to perform
             # We dont change the RPY, therefore it will always be zero
+            
             self.move_tip(  x=increment_vector.x,
                             y=increment_vector.y,
                             z=increment_vector.z)
+        
         elif  action_id == "open":
             self.open_hand()
         elif action_id == "close":
             self.close_hand()
             
-        
         rospy.logwarn("END Set Action ==>"+str(action)+",action_id="+str(action_id)+",IncrementVector===>"+str(increment_vector))
 
     def _get_obs(self):
