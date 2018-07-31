@@ -367,7 +367,7 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         Restarts the simulation and world objects
         """
-        self.sgs.reset_world
+        self.sgs.reset_world()
     
     
     def get_imu(self):
