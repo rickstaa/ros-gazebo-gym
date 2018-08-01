@@ -56,7 +56,7 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
             self.max_y_linear_speed,
             ])
         
-        self.observation_space = spaces.Box(-high, high, dtype = numpy.float32)
+        self.observation_space = spaces.Box(-high, high)
         
         rospy.logwarn("ACTION SPACES TYPE===>"+str(self.action_space))
         rospy.logwarn("OBSERVATION SPACES TYPE===>"+str(self.observation_space))
