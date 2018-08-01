@@ -13,7 +13,7 @@ timestep_limit_per_episode = 10000 # Can be any Value
 
 register(
         id='SumitXlRoom-v0',
-        entry_point='openai_ros:SumitXlRoom',
+        entry_point='openai_ros:task_envs.sumit_xl.sumit_xl_room.SumitXlRoom',
         timestep_limit=timestep_limit_per_episode,
     )
 

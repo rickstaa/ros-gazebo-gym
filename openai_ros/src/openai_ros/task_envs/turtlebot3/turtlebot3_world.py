@@ -10,7 +10,7 @@ timestep_limit_per_episode = 10000 # Can be any Value
 
 register(
         id='TurtleBot3World-v0',
-        entry_point='openai_ros:TurtleBot3WorldEnv',
+        entry_point='openai_ros:task_envs.turtlebot3.turtlebot3_world.TurtleBot3WorldEnv',
         timestep_limit=timestep_limit_per_episode,
     )
 

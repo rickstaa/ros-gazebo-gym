@@ -11,7 +11,7 @@ timestep_limit_per_episode = 10000 # Can be any Value
 
 register(
         id='WamvNavTwoSetsBuoys-v0',
-        entry_point='openai_ros:WamvNavTwoSetsBuoysEnv',
+        entry_point='openai_ros:task_envs.wamv.wamv_nav_twosets_buoys.WamvNavTwoSetsBuoysEnv',
         timestep_limit=timestep_limit_per_episode,
     )
 

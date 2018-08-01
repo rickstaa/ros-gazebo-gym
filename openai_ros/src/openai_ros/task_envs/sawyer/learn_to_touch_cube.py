@@ -11,7 +11,7 @@ timestep_limit_per_episode = 10000 # Can be any Value
 
 register(
         id='SawyerTouchCube-v0',
-        entry_point='openai_ros:SawyerTouchCubeEnv',
+        entry_point='openai_ros:task_envs.sawyer.learn_to_touch_cube.SawyerTouchCubeEnv',
         timestep_limit=timestep_limit_per_episode,
     )
 

@@ -12,7 +12,7 @@ timestep_limit_per_episode = 10000 # Can be any Value
 
 register(
         id='MovingCubeOneDiskWalk-v0',
-        entry_point='openai_ros:MovingCubeOneDiskWalkEnv',
+        entry_point='openai_ros:task_envs.moving_cube.one_disk_walk.MovingCubeOneDiskWalkEnv',
         timestep_limit=timestep_limit_per_episode,
     )
 

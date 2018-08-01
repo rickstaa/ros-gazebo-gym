@@ -11,7 +11,7 @@ timestep_limit_per_episode = 10000 # Can be any Value
 
 register(
         id='ShadowTcGetBall-v0',
-        entry_point='openai_ros:ShadowTcGetBallEnv',
+        entry_point='openai_ros:task_envs.shadow_tc.learn_to_pick_ball.ShadowTcGetBallEnv',
         timestep_limit=timestep_limit_per_episode,
     )
 

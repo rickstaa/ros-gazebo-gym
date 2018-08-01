@@ -11,7 +11,7 @@ timestep_limit_per_episode = 10000 # Can be any Value
 
 register(
         id='ParrotDroneGoto-v0',
-        entry_point='openai_ros:ParrotDroneGotoEnv',
+        entry_point='openai_ros:task_envs.parrotdrone.parrotdrone_goto.ParrotDroneGotoEnv',
         timestep_limit=timestep_limit_per_episode,
     )
 

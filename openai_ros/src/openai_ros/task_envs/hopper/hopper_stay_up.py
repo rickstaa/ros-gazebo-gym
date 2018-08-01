@@ -11,7 +11,7 @@ timestep_limit_per_episode = 10000 # Can be any Value
 
 register(
         id='HopperStayUp-v0',
-        entry_point='openai_ros:HopperStayUpEnv',
+        entry_point='openai_ros:task_envs.hopper.hopper_stay_up.HopperStayUpEnv',
         timestep_limit=timestep_limit_per_episode,
     )
 

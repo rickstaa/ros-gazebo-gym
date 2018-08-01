@@ -9,7 +9,7 @@ timestep_limit_per_episode = 10000 # Can be any Value
 
 register(
         id='TurtleBot2Maze-v0',
-        entry_point='openai_ros:TurtleBot2MazeEnv',
+        entry_point='openai_ros:task_envs.turtlebot2.turtlebot2_maze.TurtleBot2MazeEnv',
         timestep_limit=timestep_limit_per_episode,
     )
 
