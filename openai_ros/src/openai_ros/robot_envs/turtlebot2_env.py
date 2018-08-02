@@ -100,9 +100,10 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
     def _check_all_sensors_ready(self):
         rospy.logdebug("START ALL SENSORS READY")
         self._check_odom_ready()
-        self._check_camera_depth_image_raw_ready()
-        self._check_camera_depth_points_ready()
-        self._check_camera_rgb_image_raw_ready()
+        # We dont need to check for the moment, takes too long
+        #self._check_camera_depth_image_raw_ready()
+        #self._check_camera_depth_points_ready()
+        #self._check_camera_rgb_image_raw_ready()
         self._check_laser_scan_ready()
         rospy.logdebug("ALL SENSORS READY")
 
@@ -164,7 +165,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("Waiting for /kobuki/laser/scan to be READY...")
         while self.laser_scan is None and not rospy.is_shutdown():
             try:
-                self.laser_scan = rospy.wait_for_message("/kobuki/laser/scan", LaserScan, timeout=1.0)
+                self.laser_scan = rospy.wait_for_message("/kobuki/laser/scan", LaserScan, timeout=5.0)
                 rospy.logdebug("Current /kobuki/laser/scan READY=>")
 
             except:
