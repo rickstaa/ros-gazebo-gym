@@ -6,6 +6,8 @@ from gym.envs.registration import register
 from geometry_msgs.msg import Vector3
 from geometry_msgs.msg import Point
 from tf.transformations import euler_from_quaternion
+from sensor_msgs.msg import LaserScan
+from std_msgs.msg import Header
 
 
 # The path is __init__.py of openai_ros, where we import the SumitXlMazeEnv directly
@@ -106,6 +108,8 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
 
         self.cumulated_steps = 0.0
 
+        self.laser_filtered_pub = rospy.Publisher('/rosbot/laser/scan_filtered', LaserScan, queue_size=1)
+
         # Here we will add any init functions prior to starting the MyRobotEnv
         super(HusarionGetToPosTurtleBotPlayGroundEnv, self).__init__()
 
@@ -128,6 +132,8 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         """
         # For Info Purposes
         self.cumulated_reward = 0.0
+        
+        self.index = 0
 
         odometry = self.get_odom()
         self.previous_distance_from_des_point = self.get_distance_from_desired_point(odometry.pose.pose.position, self.desired_position)
@@ -343,6 +349,8 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         discretized_ranges = []
         mod = len(data.ranges)/new_ranges
         
+        filtered_range = []
+        
         rospy.logdebug("data=" + str(data))
         rospy.logdebug("new_ranges=" + str(new_ranges))
         rospy.logdebug("mod=" + str(mod))
@@ -368,9 +376,17 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
                     else:
                         rospy.logwarn("Normal Item, no processing=>" + str(item))
                         discretized_ranges.append(round(item,1))
+                # We add last value appended
+                filtered_range.append(discretized_ranges[-1]) 
+            else:
+                # We add value zero
+                filtered_range.append(0.0)
                     
                     
         rospy.logwarn(">>>>>>>>>>>>>>>>>>>>>>discretized_ranges=>" + str(discretized_ranges))
+        
+        self.publish_filtered_laser_scan(   laser_original_data=data,
+                                            new_filtered_laser_range=filtered_range)
         
         return discretized_ranges
         
@@ -486,3 +502,33 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         rospy.logdebug("############")
         
         return is_in_desired_pos
+        
+        
+    def publish_filtered_laser_scan(self, laser_original_data, new_filtered_laser_range):
+        
+        length_range = len(laser_original_data.ranges)
+        length_intensities = len(laser_original_data.intensities)
+        
+        laser_filtered_object = LaserScan()
+
+        h = Header()
+        h.stamp = rospy.Time.now() # Note you need to call rospy.init_node() before this will work
+        h.frame_id = "chassis"
+        
+        laser_filtered_object.header = h
+        laser_filtered_object.angle_min = laser_original_data.angle_min
+        laser_filtered_object.angle_max = laser_original_data.angle_max
+        laser_filtered_object.angle_increment = laser_original_data.angle_increment
+        laser_filtered_object.time_increment = laser_original_data.time_increment
+        laser_filtered_object.scan_time = laser_original_data.scan_time
+        laser_filtered_object.range_min = laser_original_data.range_min
+        laser_filtered_object.range_max = laser_original_data.range_max
+        
+        laser_filtered_object.ranges = []
+        laser_filtered_object.intensities = []
+        for item in new_filtered_laser_range:
+            laser_filtered_object.ranges.append(item)
+            laser_filtered_object.intensities.append(item)
+        
+        
+        self.laser_filtered_pub.publish(laser_filtered_object)
