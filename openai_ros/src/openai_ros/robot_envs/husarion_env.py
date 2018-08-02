@@ -261,9 +261,11 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
                                         epsilon,
                                         update_rate)
     
-    def wait_until_twist_achieved(self, cmd_vel_value, epsilon, update_rate):
+    def wait_until_twist_achieved(self, cmd_vel_value, epsilon, update_rate, angular_speed_noise= 0.005):
         """
         We wait for the cmd_vel twist given to be reached by the robot reading
+        Bare in mind that the angular wont be controled , because its too imprecise.
+        We will only consider to check if its moving or not inside the angular_speed_noise fluctiations it has.
         from the odometry.
         :param cmd_vel_value: Twist we want to wait to reach.
         :param epsilon: Error acceptable in odometry readings.
@@ -275,7 +277,6 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
         rate = rospy.Rate(update_rate)
         start_wait_time = rospy.get_rostime().to_sec()
         end_wait_time = 0.0
-        epsilon = 0.05
         
         rospy.logdebug("Desired Twist Cmd>>" + str(cmd_vel_value))
         rospy.logdebug("epsilon>>" + str(epsilon))
@@ -283,10 +284,10 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
         linear_speed = cmd_vel_value.linear.x
         angular_speed = cmd_vel_value.angular.z
         
+        angular_speed_is = self.check_angular_speed_dir(angular_speed, angular_speed_noise)
+        
         linear_speed_plus = linear_speed + epsilon
         linear_speed_minus = linear_speed - epsilon
-        angular_speed_plus = angular_speed + epsilon
-        angular_speed_minus = angular_speed - epsilon
         
         while not rospy.is_shutdown():
             current_odometry = self._check_odom_ready()
@@ -294,10 +295,16 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
             odom_angular_vel = current_odometry.twist.twist.angular.z
             
             rospy.logdebug("Linear VEL=" + str(odom_linear_vel) + ", ?RANGE=[" + str(linear_speed_minus) + ","+str(linear_speed_plus)+"]")
-            rospy.logdebug("Angular VEL=" + str(odom_angular_vel) + ", ?RANGE=[" + str(angular_speed_minus) + ","+str(angular_speed_plus)+"]")
+            rospy.logdebug("Angular VEL=" + str(odom_angular_vel) + ", angular_speed asked=[" + str(angular_speed)+"]")
             
             linear_vel_are_close = (odom_linear_vel <= linear_speed_plus) and (odom_linear_vel > linear_speed_minus)
-            angular_vel_are_close = (odom_angular_vel <= angular_speed_plus) and (odom_angular_vel > angular_speed_minus)
+            
+            
+            odom_angular_speed_is = self.check_angular_speed_dir(odom_angular_vel, angular_speed_noise)
+                
+            # We check if its turning in the same diretion or has stopped
+            angular_vel_are_close = (angular_speed_is == odom_angular_speed_is)
+            
             
             if linear_vel_are_close and angular_vel_are_close:
                 rospy.logwarn("Reached Velocity!")
@@ -311,6 +318,22 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logwarn("END wait_until_twist_achieved...")
         
         return delta_time
+        
+    
+    def check_angular_speed_dir(self, angular_speed, angular_speed_noise):
+        """
+        It States if the speed is zero, posititive or negative
+        """
+        # We check if odom angular speed is positive or negative or "zero"
+        if (-angular_speed_noise < angular_speed <= angular_speed_noise):
+            angular_speed_is = 0
+        elif angular_speed > angular_speed_noise:
+            angular_speed_is = 1
+        elif angular_speed <= angular_speed_noise:
+            angular_speed_is = -1
+        else:
+            angular_speed_is = 0
+            rospy.logerr("Angular Speed has wrong value=="+str(angular_speed))
         
 
     def get_odom(self):

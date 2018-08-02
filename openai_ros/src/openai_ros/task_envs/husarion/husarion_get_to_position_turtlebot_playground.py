@@ -45,7 +45,6 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         self.new_ranges = rospy.get_param('/husarion/new_ranges')
         self.max_laser_value = rospy.get_param('/husarion/max_laser_value')
         self.min_laser_value = rospy.get_param('/husarion/min_laser_value')
-        self.max_linear_aceleration = rospy.get_param('/husarion/max_linear_aceleration')
         
         self.work_space_x_max = rospy.get_param("/husarion/work_space/x_max")
         self.work_space_x_min = rospy.get_param("/husarion/work_space/x_min")
@@ -61,6 +60,8 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         
         self.precision = rospy.get_param('/husarion/precision')
         self.precision_epsilon = 1.0 / (10.0 * self.precision)
+        
+        self.move_base_precision = rospy.get_param('/husarion/move_base_precision')
         
         # We create the arrays for the laser readings
         # We also create the arrays for the odometry readings
@@ -100,20 +101,20 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         
         # Rewards
         self.closer_to_point_reward = rospy.get_param("/husarion/closer_to_point_reward")
-        
+        self.alive_reward = rospy.get_param("/husarion/alive_reward")
         self.end_episode_points = rospy.get_param("/husarion/end_episode_points")
 
         self.cumulated_steps = 0.0
 
         # Here we will add any init functions prior to starting the MyRobotEnv
-        super(SumitXlRoom, self).__init__()
+        super(HusarionGetToPosTurtleBotPlayGroundEnv, self).__init__()
 
     def _set_init_pose(self):
         """Sets the Robot in its init pose
         """
         self.move_base( self.init_linear_forward_speed,
                         self.init_linear_turn_speed,
-                        epsilon=0.05,
+                        epsilon=self.move_base_precision,
                         update_rate=10)
 
         return True
@@ -160,7 +161,7 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
 
         
         # We tell Husarion the linear and angular speed to set to execute
-        self.move_base(linear_speed, angular_speed, epsilon=0.05, update_rate=10)
+        self.move_base(linear_speed, angular_speed, epsilon=self.move_base_precision, update_rate=10)
         
         rospy.logdebug("END Set Action ==>"+str(action)+", ACTION="+str(last_action))
 
@@ -201,8 +202,8 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         # We concatenate all the lists.
         observations = discretized_laser_scan + odometry_array + desired_position
 
-        rospy.logdebug("Observations==>"+str(observations))
-        rospy.logdebug("END Get Observation ==>")
+        rospy.logwarn("Observations==>"+str(observations))
+        rospy.logwarn("END Get Observation ==>")
         
         return observations
         
@@ -217,11 +218,11 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         
         # We fetch data through the observations
         # Its all the array except from the last four elements, which are XY odom and XY des_pos
-        laser_readings = x[:-4]
+        laser_readings = observations[:-5]
         
         current_position = Point()
-        current_position.x = observations[-4]
-        current_position.y = observations[-3]
+        current_position.x = observations[-5]
+        current_position.y = observations[-4]
         current_position.z = 0.0
         
         desired_position = Point()
@@ -229,7 +230,9 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         desired_position.y = observations[-1]
         desired_position.z = 0.0
         
-        
+        rospy.logwarn("is DONE? laser_readings=" + str(laser_readings))
+        rospy.logwarn("is DONE? current_position=" + str(current_position))
+        rospy.logwarn("is DONE? desired_position=" + str(desired_position))
         
         too_close_to_object = self.check_husarion_has_crashed(laser_readings)
         inside_workspace = self.check_inside_workspace(current_position)
@@ -237,7 +240,17 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
                                                                 desired_position,
                                                                 self.precision_epsilon)
 
+        
         is_done = too_close_to_object or not(inside_workspace) or reached_des_pos
+        
+        
+        rospy.logwarn("####################")
+        rospy.logwarn("too_close_to_object=" + str(too_close_to_object))
+        rospy.logwarn("inside_workspace=" + str(inside_workspace))
+        rospy.logwarn("reached_des_pos=" + str(reached_des_pos))
+        rospy.logwarn("is_done=" + str(is_done))
+        rospy.logwarn("######## END DONE ##")
+
         
         return is_done
 
@@ -253,11 +266,11 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         
         """
 
-        laser_readings = x[:-4]
+        laser_readings = observations[:-5]
         
         current_position = Point()
-        current_position.x = observations[-4]
-        current_position.y = observations[-3]
+        current_position.x = observations[-5]
+        current_position.y = observations[-4]
         current_position.z = 0.0
         
         desired_position = Point()
@@ -282,6 +295,8 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
             if distance_difference < 0.0:
                 rospy.logwarn("DECREASE IN DISTANCE GOOD")
                 reward = self.closer_to_point_reward
+            else:
+                reward = self.alive_reward
         else:
             
             reached_des_pos = self.check_reached_desired_position(  current_position,
@@ -332,21 +347,31 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         rospy.logdebug("new_ranges=" + str(new_ranges))
         rospy.logdebug("mod=" + str(mod))
         
+        nan_value = (self.min_laser_value + self.min_laser_value) / 2.0
+        
         for i, item in enumerate(data.ranges):
             if (i%mod==0):
                 if item == float ('Inf') or numpy.isinf(item):
+                    rospy.logerr("Infinite Value=" + str(item)+"Assigning Max value")
                     discretized_ranges.append(self.max_laser_value)
                 elif numpy.isnan(item):
+                    rospy.logerr("Nan Value=" + str(item)+"Assigning MIN value")
                     discretized_ranges.append(self.min_laser_value)
                 else:
                     # We clamp the laser readings
                     if item > self.max_laser_value:
+                        rospy.logwarn("Item Bigger Than MAX, CLAMPING=>" + str(item)+", MAX="+str(self.max_laser_value))
                         discretized_ranges.append(round(self.max_laser_value,1))
                     elif item < self.min_laser_value:
+                        rospy.logwarn("Item smaller Than MIN, CLAMPING=>" + str(item)+", MIN="+str(self.min_laser_value))
                         discretized_ranges.append(round(self.min_laser_value,1))
                     else:
+                        rospy.logwarn("Normal Item, no processing=>" + str(item))
                         discretized_ranges.append(round(item,1))
                     
+                    
+        rospy.logwarn(">>>>>>>>>>>>>>>>>>>>>>discretized_ranges=>" + str(discretized_ranges))
+        
         return discretized_ranges
         
 
@@ -395,8 +420,10 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         husarion_has_crashed = False
         
         for laser_distance in laser_readings:
+            rospy.logwarn("laser_distance==>"+str(laser_distance))
             if laser_distance == self.min_laser_value:
                 husarion_has_crashed = True
+                rospy.logwarn("HAS CRASHED==>"+str(laser_distance)+", min="+str(self.min_laser_value))
                 break
                 
             elif laser_distance < self.min_laser_value:
