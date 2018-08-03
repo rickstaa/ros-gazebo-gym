@@ -2,7 +2,9 @@ Hopper Environment
 ==================
 
 Its a simulation of a monopod robot. The original 3D model was created by ETH Zurich,
-https://github.com/ethz-adrl/towr.
+HopperPage_
+
+.. _HopperPage: https://github.com/ethz-adrl/towr
 
 The simulation was created by TheConstructSim. Its the perfect system to test locomotion
 algorithms and AI learning for gait research.

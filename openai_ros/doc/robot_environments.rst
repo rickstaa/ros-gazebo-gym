@@ -11,3 +11,5 @@ use with your AI learning algorithms.
    cube_environment
    hopper_environment
    husarion_environment
+   parrotdrone_environment
+   sawyer_environment
