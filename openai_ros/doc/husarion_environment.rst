@@ -9,7 +9,7 @@ Here you have the link to the real robot: RosBotPage_
 .. _RosBotPage: https://husarion.com/#rosbot
 
 .. figure:: img/rosbot.jpg
-   :scale: 100 %
+   :scale: 10 %
    :alt: Real RosBot from Husarion
 
 The simulation is meant to be a basic wheeled robot for developing navigation and obstacle avoidance AI training.

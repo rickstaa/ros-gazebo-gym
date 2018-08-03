@@ -13,3 +13,4 @@ use with your AI learning algorithms.
    husarion_environment
    parrotdrone_environment
    sawyer_environment
+   shadow_tc_environment
