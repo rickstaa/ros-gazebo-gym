@@ -14,3 +14,7 @@ use with your AI learning algorithms.
    parrotdrone_environment
    sawyer_environment
    shadow_tc_environment
+   summitxl_environment
+   turtlebot2_environment
+   turtlebot3_environment
+   wamv_environment
