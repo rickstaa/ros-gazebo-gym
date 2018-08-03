@@ -26,6 +26,9 @@ sys.path.insert(0, os.path.abspath('/home/rdaneel/catkin_ws/devel/lib/python2.7/
 
 
 # -- General configuration ------------------------------------------------
+#autodoc_default_flags = ['members', 'undoc-members', 'private-members', 'special-members', 'inherited-members', 'show-inheritance']
+autodoc_default_flags = ['members', 'undoc-members', 'private-members', 'special-members']
+
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.0'

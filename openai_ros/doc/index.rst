@@ -8,9 +8,9 @@ Welcome to openai_ros's documentation!
 
 This ROS package http://wiki.ros.org/openai_ros
 Its a structure to make it easy to use OpenAI with ROS and Gazebo.
-You will find environents for most of the common robots used in
+You will find environments for most of the common robots used in
 ROS so that you only have to code the AI part, and don't worry on the
-connection to the Physiscal/Simulated robot.
+connection to the Physical/Simulated robot.
 
 
 Contents:
@@ -18,9 +18,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   openai_ros_core
    robot_environments
-   modules
-   CHANGELOG
 
 Indices and tables
 ==================
