@@ -241,7 +241,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         
     # Methods that the TrainingEnvironment will need.
     # ----------------------------
-    def move_base(self, linear_speed, angular_speed, epsilon=0.05, update_rate=10):
+    def move_base(self, linear_speed, angular_speed, epsilon=0.05, update_rate=10, min_laser_distance=-1):
         """
         It will move the base based on the linear and angular speeds given.
         It will wait untill those twists are achived reading from the odometry topic.
@@ -259,9 +259,10 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         self._cmd_vel_pub.publish(cmd_vel_value)
         self.wait_until_twist_achieved(cmd_vel_value,
                                         epsilon,
-                                        update_rate)
+                                        update_rate,
+                                        min_laser_distance)
     
-    def wait_until_twist_achieved(self, cmd_vel_value, epsilon, update_rate):
+    def wait_until_twist_achieved(self, cmd_vel_value, epsilon, update_rate, min_laser_distance=-1):
         """
         We wait for the cmd_vel twist given to be reached by the robot reading
         from the odometry.
@@ -289,6 +290,9 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         angular_speed_minus = angular_speed - epsilon
         
         while not rospy.is_shutdown():
+            
+            crashed_into_something = self.has_crashed(min_laser_distance)
+            
             current_odometry = self._check_odom_ready()
             odom_linear_vel = current_odometry.twist.twist.linear.x
             odom_angular_vel = current_odometry.twist.twist.angular.z
@@ -303,6 +307,11 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
                 rospy.logwarn("Reached Velocity!")
                 end_wait_time = rospy.get_rostime().to_sec()
                 break
+            
+            if crashed_into_something:
+                rospy.logerr("TurtleBot has crashed, stopping movement!")
+                break
+            
             rospy.logwarn("Not there yet, keep waiting...")
             rate.sleep()
         delta_time = end_wait_time- start_wait_time
@@ -311,6 +320,31 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         rospy.logwarn("END wait_until_twist_achieved...")
         
         return delta_time
+        
+    def has_crashed(self, min_laser_distance):
+        """
+        It states based on the laser scan if the robot has crashed or not.
+        Crashed means that the minimum laser reading is lower than the
+        min_laser_distance value given.
+        If min_laser_distance == -1, it returns always false, because its the way
+        to deactivate this check.
+        """
+        robot_has_crashed = False
+        
+        if min_laser_distance != -1:
+            laser_data = self.get_laser_scan()
+            for i, item in enumerate(laser_data.ranges):
+                if item == float ('Inf') or numpy.isinf(item):
+                    pass
+                elif numpy.isnan(item):
+                   pass
+                else:
+                    # Has a Non Infinite or Nan Value
+                    if (item < min_laser_distance):
+                        rospy.logerr("TurtleBot HAS CRASHED >>> item=" + str(item)+"< "+str(min_laser_distance))
+                        robot_has_crashed = True
+                        break
+        return robot_has_crashed
         
 
     def get_odom(self):

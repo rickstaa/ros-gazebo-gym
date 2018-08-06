@@ -1,5 +1,6 @@
 import rospy
 import numpy
+import time
 from gym import spaces
 from openai_ros.robot_envs import turtlebot2_env
 from gym.envs.registration import register
@@ -84,7 +85,8 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         self.move_base( self.init_linear_forward_speed,
                         self.init_linear_turn_speed,
                         epsilon=0.05,
-                        update_rate=10)
+                        update_rate=10,
+                        min_laser_distance=-1)
 
         return True
 
@@ -99,6 +101,10 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         self.cumulated_reward = 0.0
         # Set to false Done, because its calculated asyncronously
         self._episode_done = False
+        
+        # We wait a small ammount of time to start everything because in very fast resets, laser scan values are sluggish
+        # and sometimes still have values from the prior position that triguered the done.
+        time.sleep(0.2)
 
 
     def _set_action(self, action):
@@ -124,7 +130,11 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
             self.last_action = "TURN_RIGHT"
         
         # We tell TurtleBot2 the linear and angular speed to set to execute
-        self.move_base(linear_speed, angular_speed, epsilon=0.05, update_rate=10)
+        self.move_base( linear_speed,
+                        angular_speed,
+                        epsilon=0.05,
+                        update_rate=10,
+                        min_laser_distance=self.min_range)
         
         rospy.logdebug("END Set Action ==>"+str(action))
 
