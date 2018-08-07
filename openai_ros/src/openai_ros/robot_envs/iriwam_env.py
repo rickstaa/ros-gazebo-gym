@@ -274,6 +274,22 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
             pass
         
         return trans,rot
+        
+        
+    def get_camera_depth_image_raw_callback(self):
+        return self.camera_depth_image_raw
+        
+    def get_camera_depth_points_callback(self):
+        return self.camera_depth_points
+        
+    def get_camera_rgb_image_raw_callback(self):
+        return self.camera_rgb_image_raw
+        
+    def get_laser_scan_callback(self):
+        return self.laser_scan
+        
+    def get_joint_state_callback(self):
+        return self.joint_state
 
 
 

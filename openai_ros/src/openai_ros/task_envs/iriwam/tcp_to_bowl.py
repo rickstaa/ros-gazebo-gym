@@ -37,21 +37,30 @@ class IriWamTcpToBowlEnv(iriwam_env.iriwamEnv):
         # We set the reward range, which is not compulsory but here we do it.
         self.reward_range = (-numpy.inf, numpy.inf)
         
-        self.work_space_x_max = rospy.get_param("/iriwam/work_space/x_max")
-        self.work_space_x_min = rospy.get_param("/iriwam/work_space/x_min")
-        self.work_space_y_max = rospy.get_param("/iriwam/work_space/y_max")
-        self.work_space_y_min = rospy.get_param("/iriwam/work_space/y_min")
-        self.work_space_z_max = rospy.get_param("/iriwam/work_space/z_max")
-        self.work_space_z_min = rospy.get_param("/iriwam/work_space/z_min")
+        self.iri_wam_joint_1 = rospy.get_param("/iriwam/init_joints/iri_wam_joint_1")
+        self.iri_wam_joint_2 = rospy.get_param("/iriwam/init_joints/iri_wam_joint_2")
+        self.iri_wam_joint_3 = rospy.get_param("/iriwam/init_joints/iri_wam_joint_3")
+        self.iri_wam_joint_4 = rospy.get_param("/iriwam/init_joints/iri_wam_joint_4")
+        self.iri_wam_joint_5 = rospy.get_param("/iriwam/init_joints/iri_wam_joint_5")
+        self.iri_wam_joint_6 = rospy.get_param("/iriwam/init_joints/iri_wam_joint_6")
+        self.iri_wam_joint_7 = rospy.get_param("/iriwam/init_joints/iri_wam_joint_7")
         
-        self.max_effort = rospy.get_param("/iriwam/max_effort")
+        self.init_joints_positions_array = [self.iri_wam_joint_1,
+                                            self.iri_wam_joint_2,
+                                            self.iri_wam_joint_3,
+                                            self.iri_wam_joint_4,
+                                            self.iri_wam_joint_5,
+                                            self.iri_wam_joint_6,
+                                            self.iri_wam_joint_7]
+                                            
+                                            
+        self.joint_increment_value = rospy.get_param("/iriwam/joint_increment_value")
+        
+        self.max_distance_from_red_bowl = rospy.get_param("/iriwam/max_distance_from_red_bowl")
+        self.min_distance_from_red_bowl = rospy.get_param("/iriwam/min_distance_from_red_bowl")
         
         self.dec_obs = rospy.get_param("/iriwam/number_decimals_precision_obs")
-        
-        self.acceptable_distance_to_cube = rospy.get_param("/iriwam/acceptable_distance_to_cube")
-        
-        self.tcp_z_position_min = rospy.get_param("/iriwam/tcp_z_position_min")
-        
+
         # We place the Maximum and minimum values of observations
         # TODO: Fill when get_observations is done.
         """
@@ -65,9 +74,9 @@ class IriWamTcpToBowlEnv(iriwam_env.iriwamEnv):
         # We fetch the limits of the joinst to get the effort and angle limits
         self.joint_limits = self.init_joint_limits()
         
-        high = numpy.array([self.work_space_x_max,
-                            self.work_space_y_max,
-                            self.work_space_z_max,
+        high = numpy.array([self.init_joints_x_max,
+                            self.init_joints_y_max,
+                            self.init_joints_z_max,
                             self.joint_limits.position_upper[0],
                             self.joint_limits.position_upper[1],
                             self.joint_limits.position_upper[2],
@@ -80,9 +89,9 @@ class IriWamTcpToBowlEnv(iriwam_env.iriwamEnv):
                             self.joint_limits.position_upper[9]
                             ])
                                         
-        low = numpy.array([ self.work_space_x_min,
-                            self.work_space_y_min,
-                            self.work_space_z_min,
+        low = numpy.array([ self.init_joints_x_min,
+                            self.init_joints_y_min,
+                            self.init_joints_z_min,
                             self.joint_limits.position_lower[0],
                             self.joint_limits.position_lower[1],
                             self.joint_limits.position_lower[2],
@@ -107,6 +116,10 @@ class IriWamTcpToBowlEnv(iriwam_env.iriwamEnv):
         self.closer_to_block_reward = rospy.get_param("/iriwam/closer_to_block_reward")
 
         self.cumulated_steps = 0.0
+        
+        
+        # We init the CVBridge object
+        self.bridge_object = CvBridge()
 
         
         
@@ -118,28 +131,13 @@ class IriWamTcpToBowlEnv(iriwam_env.iriwamEnv):
         to allow the action to be executed
         """
 
-        # We set the angles to zero of the limb
-        self.joints = self.get_limb_joint_names_array()
-        join_values_array = [0.0]*len(self.joints)
-        joint_positions_dict_zero = dict( zip( self.joints, join_values_array))
-        
-        actual_joint_angles_dict = self.get_all_limb_joint_angles()
-        # We generate the two step movement. Turn Right/Left where you are and then set all to zero
-        if "right_j0" in actual_joint_angles_dict:
-            # We turn to the left or to the right based on where the position is to avoid the table.
-            if actual_joint_angles_dict["right_j0"] >= 0.0:
-                actual_joint_angles_dict["right_j0"] = 1.57
-            else:
-                actual_joint_angles_dict["right_j0"] = -1.57
-        if "right_j1" in actual_joint_angles_dict:
-            actual_joint_angles_dict["right_j1"] = actual_joint_angles_dict["right_j1"] - 0.3
-        
-        self.move_joints_to_angle_blocking(actual_joint_angles_dict, timeout=15.0, threshold=0.008726646)
-        self.move_joints_to_angle_blocking(joint_positions_dict_zero, timeout=15.0, threshold=0.008726646)
-            
-        # We Open the gripper
-        self.set_g(action="open")
+        # We set the angles of the IriWam to the init pose:
+        self.move_joints_to_angle_blocking(self.init_joints_positions_array)
 
+        self.joints = []
+        for joint_value in self.init_joints_positions_array:
+            self.joints.append(joint_value)
+            
         return True
 
 
@@ -152,21 +150,10 @@ class IriWamTcpToBowlEnv(iriwam_env.iriwamEnv):
 
         # For Info Purposes
         self.cumulated_reward = 0.0
-        # We get the initial pose to mesure the distance from the desired point.
-        translation_tcp_block, rotation_tcp_block = self.get_tf_start_to_end_frames(start_frame_name="block",
-                                                                                    end_frame_name="right_electric_gripper_base")
-        tf_tcp_to_block_vector = Vector3()
-        tf_tcp_to_block_vector.x = translation_tcp_block[0]
-        tf_tcp_to_block_vector.y = translation_tcp_block[1]
-        tf_tcp_to_block_vector.z = translation_tcp_block[2]
         
-        self.previous_distance_from_block = self.get_magnitud_tf_tcp_to_block(tf_tcp_to_block_vector)
-        
-        self.translation_tcp_world, _ = self.get_tf_start_to_end_frames(start_frame_name="world",
-                                                                                    end_frame_name="right_electric_gripper_base")
-                                                                                     
+        image_data = self.get_camera_rgb_image_raw_callback()
+        self.previous_distance_from_bowl = self.get_magnitud_tcp_to_block(data=image_data)
 
-        
 
     def _set_action(self, action):
         """
@@ -179,33 +166,37 @@ class IriWamTcpToBowlEnv(iriwam_env.iriwamEnv):
        
         
         if action == 0: # Increase joint_0
-            action_id = self.joints[0]+"_increase"
+            self.joints[0] += self.joint_increment_value
         elif action == 1: # Decrease joint_0
-            action_id = self.joints[0]+"_decrease"
+            self.joints[0] -= self.joint_increment_value
         elif action == 2: # Increase joint_1
-            action_id = self.joints[1]+"_increase"
+            self.joints[1] += self.joint_increment_value
         elif action == 3: # Decrease joint_1
-            action_id = self.joints[1]+"_decrease"
+            self.joints[1] -= self.joint_increment_value
         elif action == 4: # Increase joint_2
-            action_id = self.joints[2]+"_increase"
+            self.joints[2] += self.joint_increment_value
         elif action == 5: # Decrease joint_2
-            action_id = self.joints[2]+"_decrease"
+            self.joints[2] -= self.joint_increment_value
         elif action == 6: # Increase joint_3
-            action_id = self.joints[3]+"_increase"
+            self.joints[3] += self.joint_increment_value
         elif action == 7: # Decrease joint_3
-           action_id = self.joints[3]+"_decrease"
+           self.joints[3] -= self.joint_increment_value
         elif action == 8: # Increase joint_4
-            action_id = self.joints[4]+"_increase"
+            self.joints[4] += self.joint_increment_value
         elif action == 9: # Decrease joint_4
-            action_id = self.joints[4]+"_decrease"
+            self.joints[4] -= self.joint_increment_value
         elif action == 10: # Increase joint_5
-            action_id = self.joints[5]+"_increase"
+            self.joints[5] += self.joint_increment_value
         elif action == 11: # Decrease joint_5
-            action_id = self.joints[5]+"_decrease"
+            self.joints[5] -= self.joint_increment_value
         elif action == 12: # Increase joint_6
-            action_id = self.joints[6]+"_increase"
+            self.joints[6] += self.joint_increment_value
         elif action == 13: # Decrease joint_6
-            action_id = self.joints[6]+"_decrease"
+            self.joints[6] -= self.joint_increment_value
+        elif action == 14: # Increase joint_7
+            self.joints[7] += self.joint_increment_value
+        elif action == 15: # Decrease joint_7
+            self.joints[7] -= self.joint_increment_value
 
         
         # We tell iriwam the action to perform
@@ -448,17 +439,103 @@ class IriWamTcpToBowlEnv(iriwam_env.iriwamEnv):
 
         rospy.logdebug("##### INSIDE WORK SPACE? #######")
         rospy.logdebug("XYZ current_position"+str(current_position))
-        rospy.logdebug("work_space_x_max"+str(self.work_space_x_max)+",work_space_x_min="+str(self.work_space_x_min))
-        rospy.logdebug("work_space_y_max"+str(self.work_space_y_max)+",work_space_y_min="+str(self.work_space_y_min))
-        rospy.logdebug("work_space_z_max"+str(self.work_space_z_max)+",work_space_z_min="+str(self.work_space_z_min))
+        rospy.logdebug("init_joints_x_max"+str(self.init_joints_x_max)+",init_joints_x_min="+str(self.init_joints_x_min))
+        rospy.logdebug("init_joints_y_max"+str(self.init_joints_y_max)+",init_joints_y_min="+str(self.init_joints_y_min))
+        rospy.logdebug("init_joints_z_max"+str(self.init_joints_z_max)+",init_joints_z_min="+str(self.init_joints_z_min))
         rospy.logdebug("############")
 
-        if current_position.x > self.work_space_x_min and current_position.x <= self.work_space_x_max:
-            if current_position.y > self.work_space_y_min and current_position.y <= self.work_space_y_max:
-                if current_position.z > self.work_space_z_min and current_position.z <= self.work_space_z_max:
+        if current_position.x > self.init_joints_x_min and current_position.x <= self.init_joints_x_max:
+            if current_position.y > self.init_joints_y_min and current_position.y <= self.init_joints_y_max:
+                if current_position.z > self.init_joints_z_min and current_position.z <= self.init_joints_z_max:
                     is_inside = True
         
         return is_inside
         
+    def get_magnitud_tcp_to_block(self, data):
+        """
+        Retrieves the distance end effector laser element to the red bowl through the 
+        image data given
+        
+        :param: data: RGB image data
+        :return: magnitude: Distance in pixels from the center of the black blob ( the laser)
+        To the center of the red blob ( the red bowl)
+        Bear in mind that if the laser tip goes out of the cameras view, it will give a false positive
+        """
+        
+        try:
+            # We select bgr8 because its the OpneCV encoding by default
+            cv_image = self.bridge_object.imgmsg_to_cv2(data, desired_encoding="bgr8")
+        except CvBridgeError as e:
+            print(e)
+            
+        # We get image dimensions and crop the parts of the image we don't need
+        # Bear in mind that because the first value of the image matrix is start and second value is down limit.
+        # Select the limits so that it gets the line not too close and not too far, and the minimum portion possible
+        # To make process faster.
+        height, width, channels = cv_image.shape
+        descentre = -height/2
+        rows_to_watch = height
+        crop_img = cv_image[(height)/2+descentre:(height)/2+(descentre+rows_to_watch)][1:width]
+        
+        # Convert from RGB to HSV
+        hsv = cv2.cvtColor(crop_img, cv2.COLOR_BGR2HSV)
+        
+        
+        # We track two colours, the RedBowl and the Black tip of IriWam Arm ( laser ) which is black.
+        
+        # RED BOWL
+        
+        lower_red = np.array([0,204,100])
+        upper_red = np.array([0,255,255])
+
+        # Threshold the HSV image to get only yellow colors
+        mask = cv2.inRange(hsv, lower_red, upper_red)
+        
+        # Calculate centroid of the blob of binary image using ImageMoments
+        m = cv2.moments(mask, False)
+        try:
+            cx_red, cy_red = m['m10']/m['m00'], m['m01']/m['m00']
+        except ZeroDivisionError:
+            cy_red, cx_red = height/2, width/2
+        
+        
+        # Black Laser
+        lower_black = np.array([0,0,0])
+        upper_black = np.array([0,0,10])
+
+        # Threshold the HSV image to get only yellow colors
+        mask_black = cv2.inRange(hsv, lower_black, upper_black)
+        
+        # Calculate centroid of the blob of binary image using ImageMoments
+        m = cv2.moments(mask_black, False)
+        try:
+            cx_black, cy_black = m['m10']/m['m00'], m['m01']/m['m00']
+        except ZeroDivisionError:
+            cy_black, cx_black = height/2, width/2
+        
+        
+        # Bitwise-AND mask and original image
+        res_black = cv2.bitwise_and(crop_img,crop_img)
+        
+        # Draw the centroid in the resultut image
+        cv2.circle(res_black,(int(cx_red), int(cy_red)), 10,(255,0,0),-1)
+        cv2.circle(res_black,(int(cx_black), int(cy_black)), 10,(0,255,0),-1)
+
+        cv2.imshow("RES BLACK", res_black)
+        
+        cv2.waitKey(1)
+        
+        
+        error_x = cx_red - cx_black
+        error_y = cy_red - cy_black
+        error_array = np.array([error_x,error_y]) 
+        magnitude = np.linalg.norm(error_array)
+        rospy.logwarn("Magnitude==>"+str(magnitude))
+        
+        return magnitude
+        
+        
+    def clean_up(self):
+        cv2.destroyAllWindows()
     
 
