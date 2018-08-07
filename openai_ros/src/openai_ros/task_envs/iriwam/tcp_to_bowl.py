@@ -59,6 +59,8 @@ class IriWamTcpToBowlEnv(iriwam_env.iriwamEnv):
         self.max_distance_from_red_bowl = rospy.get_param("/iriwam/max_distance_from_red_bowl")
         self.min_distance_from_red_bowl = rospy.get_param("/iriwam/min_distance_from_red_bowl")
         
+        self.min_laser_distance = rospy.get_param("/iriwam/min_laser_distance")
+        
         self.dec_obs = rospy.get_param("/iriwam/number_decimals_precision_obs")
 
         # We place the Maximum and minimum values of observations
@@ -236,36 +238,21 @@ class IriWamTcpToBowlEnv(iriwam_env.iriwamEnv):
     def _is_done(self, observations):
         """
         We consider the episode done if:
-        1) The iriwam TCP is outside the workspace, with self.translation_tcp_world
-        2) The Joints exeded a certain effort ( it got stuck somewhere ), self.joints_efforts_array
-        3) The TCP to block distance is lower than a threshold ( it got to the place )
+        1) The iriwam end effector to bowl distance exceeds the maximum
+        2) The iriwam end effector to bowl distance reaches the minimum and laser distance is lower than minimum
+
         """
         
-        is_stuck = self.is_arm_stuck(self.joints_efforts_dict)
         
-        tcp_current_pos = Vector3()
-        tcp_current_pos.x = self.translation_tcp_world[0]
-        tcp_current_pos.y = self.translation_tcp_world[1]
-        tcp_current_pos.z = self.translation_tcp_world[2]
+        distance_laser = observations[-2]
+        magnitude_image = observations[-1]
         
-        is_inside_workspace = self.is_inside_workspace(tcp_current_pos)
+        has_reached_the_block = self.reached_bowl(distance_laser, magnitude_image)
+        too_faraway_bowl_b = too_faraway_bowl(magnitude_image)
         
-        tcp_to_block_pos = Vector3()
-        tcp_to_block_pos.x = observations[0]
-        tcp_to_block_pos.y = observations[1]
-        tcp_to_block_pos.z = observations[2]
-        
-        has_reached_the_block = self.reached_block( tcp_to_block_pos,
-                                                    self.acceptable_distance_to_cube,
-                                                    self.translation_tcp_world[2],
-                                                    self.tcp_z_position_min)
-        
-        done = is_stuck or not(is_inside_workspace) or has_reached_the_block
+        done = has_reached_the_block or too_faraway_bowl_b
         
         rospy.logdebug("#### IS DONE ? ####")
-        rospy.logdebug("is_stuck ?="+str(is_stuck))
-        rospy.logdebug("Not is_inside_workspace ?="+str(not(is_inside_workspace)))
-        rospy.logdebug("has_reached_the_block ?="+str(has_reached_the_block))
         rospy.logdebug("done ?="+str(done))
         rospy.logdebug("#### #### ####")
         
@@ -349,29 +336,40 @@ class IriWamTcpToBowlEnv(iriwam_env.iriwamEnv):
         return is_arm_stuck
     
     
-    def reached_block(self,block_to_tcp_vector, minimum_distance, tcp_z_position, tcp_z_position_min):
+    def reached_bowl(self, distance_laser, magnitude_image):
         """
-        It return True if the transform TCP to block vector magnitude is smaller than
-        the minimum_distance.
-        tcp_z_position we use it to only consider that it has reached if its above the table.
+        It return True if the distance red by the laser is smaller than minimum and
+        the distance by image is smaller than minimum
         """
         
-        reached_block_b = False
-        
-        
-        distance_to_block = self.get_magnitud_tf_tcp_to_block(block_to_tcp_vector)
-        
-        tcp_z_pos_ok = tcp_z_position >= tcp_z_position_min
-        distance_ok = distance_to_block <= minimum_distance
-        reached_block_b = distance_ok and tcp_z_pos_ok
+        laser_close_enough = (distance_laser <= self.min_laser_distance)
+        magnitude_image_enough = (magnitude_image <= self.min_distance_from_red_bowl)
+
+        reached_bowl_b = laser_close_enough and magnitude_image_enough
         
         rospy.logdebug("###### REACHED BLOCK ? ######")
-        rospy.logdebug("tcp_z_pos_ok==>"+str(tcp_z_pos_ok))
-        rospy.logdebug("distance_ok==>"+str(distance_ok))
+        rospy.logdebug("laser_close_enough==>"+str(laser_close_enough))
+        rospy.logdebug("magnitude_image_enough==>"+str(magnitude_image_enough))
         rospy.logdebug("reached_block_b==>"+str(reached_block_b))
         rospy.logdebug("############")
         
         return reached_block_b
+        
+    def too_faraway_bowl(self, magnitude_image):
+        """
+        It return True if the distance by image is bigger than maximum
+        """
+        
+        magnitude_image_too_big = (magnitude_image <= self.max_distance_from_red_bowl)
+
+        too_faraway_b = laser_close_enough and magnitude_image_enough
+        
+        rospy.logdebug("###### REACHED BLOCK ? ######")
+        rospy.logdebug("magnitude_image_too_big==>"+str(magnitude_image_too_big))
+        rospy.logdebug("too_faraway_b==>"+str(too_faraway_b))
+        rospy.logdebug("############")
+        
+        return too_faraway_b
     
     def get_distance_from_desired_point(self, current_position):
         """
