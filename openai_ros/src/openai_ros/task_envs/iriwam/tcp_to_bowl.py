@@ -151,7 +151,7 @@ class IriWamTcpToBowlEnv(iriwam_env.iriwamEnv):
         # For Info Purposes
         self.cumulated_reward = 0.0
         
-        image_data = self.get_camera_rgb_image_raw_callback()
+        image_data = self.get_camera_rgb_image_raw()
         self.previous_distance_from_bowl = self.get_magnitud_tcp_to_block(data=image_data)
 
 
@@ -200,9 +200,8 @@ class IriWamTcpToBowlEnv(iriwam_env.iriwamEnv):
 
         
         # We tell iriwam the action to perform
-        self.execute_movement(action_id)
+        self.move_joints_to_angle_blocking(self.joints)
         
-        rospy.logdebug("END Set Action ==>"+str(action)+","+str(action_id))
 
     def _get_obs(self):
         """
@@ -213,32 +212,23 @@ class IriWamTcpToBowlEnv(iriwam_env.iriwamEnv):
         """
         rospy.logdebug("Start Get Observation ==>")
 
-        # We get the translation of the base of the gripper to the block
-        translation_tcp_block, _ = self.get_tf_start_to_end_frames(start_frame_name="block",
-                                                                                    end_frame_name="right_electric_gripper_base")
-                                                                                    
-        
-        translation_tcp_block_round = numpy.around(translation_tcp_block, decimals=self.dec_obs)
-        
-        # We get this data but we dont put it in the observations because its somthing internal for evaluation.
-        # The order is cucial, get it upside down and it make no sense.
-        self.translation_tcp_world, _ = self.get_tf_start_to_end_frames(start_frame_name="world",
-                                                                                    end_frame_name="right_electric_gripper_base")
-
-        # Same here, the values are used internally for knowing if done, they wont define the state ( although these are left out for performance)
-        self.joints_efforts_dict = self.get_all_limb_joint_efforts()
-        rospy.logdebug("JOINTS EFFORTS DICT OBSERVATION METHOD==>"+str(self.joints_efforts_dict))
-        """
-        We supose that its all these:
-        head_pan, right_gripper_l_finger_joint, right_gripper_r_finger_joint, right_j0, right_j1,
-  right_j2, right_j3, right_j4, right_j5, right_j6
-        """
-        
-        joints_angles_array = self.get_all_limb_joint_angles().values()
+        # We get Join state currently of all the joints
+        join_state = self.get_joint_state()
+        joints_angles_array = join_state.actual.positions
         joints_angles_array_round = numpy.around(joints_angles_array, decimals=self.dec_obs)
         
+        # We get the Laser reading of the center laser ray, only one
+        laser_data = self.get_laser_scan()
+        center_laser_distance = laser_data.ranges[int(len(laser_data.ranges)/2)]
+        center_laser_distance_array = [round(center_laser_distance,self.dec_obs)]
+        
+        # We get the distance laser tip to the red bowl using the image blob detection system
+        image_data = self.get_camera_rgb_image_raw()
+        distance_from_bowl = self.get_magnitud_tcp_to_block(data=image_data)
+        distance_from_bowl_array = [round(distance_from_bowl,self.dec_obs)]
+        
         # We concatenate the two rounded arrays and convert them to standard Python list
-        observation = numpy.concatenate((translation_tcp_block_round,joints_angles_array_round), axis=0).tolist()
+        observation = numpy.concatenate((joints_angles_array_round,center_laser_distance_array,distance_from_bowl_array), axis=0).tolist()
 
         return observation
         
