@@ -65,8 +65,8 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
         rospy.loginfo("MOVING TO POS=="+str(self.pos))
 
         # 1st: unpause simulation
-        rospy.logdebug("Unpause SIM...")
-        self.gazebo.unpauseSim()
+        #rospy.logdebug("Unpause SIM...")
+        #self.gazebo.unpauseSim()
 
         self.move_joints(self.pos)
         rospy.logdebug("Wait for some time to execute movement, time="+str(self.running_step))
@@ -74,16 +74,17 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
         rospy.logdebug("DONE Wait for some time to execute movement, time=" + str(self.running_step))
 
         # 3rd: pause simulation
-        rospy.logdebug("Pause SIM...")
-        self.gazebo.pauseSim()
+        #rospy.logdebug("Pause SIM...")
+        #self.gazebo.pauseSim()
 
     def _get_obs(self):
         
         data = self.joints
         #       base_postion                base_velocity              pole angle                 pole velocity
-        obs = [round(data.position[1],1), round(data.velocity[1],1), round(data.position[0],1), round(data.velocity[0],1)]
+        #obs = [round(data.position[1],1), round(data.velocity[1],1), round(data.position[0],1), round(data.velocity[0],1)]
+        obs = [data.position[1], data.velocity[1], data.position[0], data.velocity[0]]
 
-        return obs
+        return np.array(obs)
         
     def _is_done(self, observations):
         done = False
@@ -99,7 +100,9 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
                 "Pole Angle Outside Limits==>min=" + str(self.min_pole_angle) + ",pos=" + str(observations[2]) + ",max=" + str(
                     self.max_pole_angle))
             done = True
-            
+        
+        rospy.loginfo("FINISHED get _is_done")
+        
         return done
         
     def _compute_reward(self, observations, done):
@@ -109,6 +112,7 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
         having different data than other previous functions
         :return:reward
         """
+        rospy.logdebug("START _compute_reward")
         
         if not done:
             reward = 1.0
@@ -121,6 +125,8 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
                 logger.warning("You are calling 'step()' even though this environment has already returned done = True. You should always call 'reset()' once you receive 'done = True' -- any further steps are undefined behavior.")
             self.steps_beyond_done += 1
             reward = 0.0
+        
+        rospy.logdebug("END _compute_reward")
         
         return reward
         

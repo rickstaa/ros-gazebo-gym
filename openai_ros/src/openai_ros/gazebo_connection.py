@@ -30,19 +30,25 @@ class GazeboConnection():
         self.pauseSim()
 
     def pauseSim(self):
+        rospy.logwarn("PAUSING START")
         rospy.wait_for_service('/gazebo/pause_physics')
         try:
             self.pause()
         except rospy.ServiceException as e:
             print ("/gazebo/pause_physics service call failed")
+            
+        rospy.logwarn("PAUSING FINISH")
         
     def unpauseSim(self):
+        rospy.logwarn("UNPAUSING START")
         rospy.wait_for_service('/gazebo/unpause_physics')
         try:
             self.unpause()
         except rospy.ServiceException as e:
             print ("/gazebo/unpause_physics service call failed")
-    
+        
+        rospy.logwarn("UNPAUSING FiNISH")
+        
     
     def resetSim(self):
         """

@@ -66,6 +66,7 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
             robot_name_space=self.robot_name_space,
             reset_controls=self.reset_controls
             )
+        
 
     def joints_callback(self, data):
         self.joints = data

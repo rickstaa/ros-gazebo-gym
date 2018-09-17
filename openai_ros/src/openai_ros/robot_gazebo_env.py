@@ -42,6 +42,8 @@ class RobotGazeboEnv(gym.Env):
         Here we should convert the action num to movement action, execute the action in the
         simulation and get the observations result of performing that action.
         """
+        rospy.logdebug("START STEP OpenAIROS")
+        
         self.gazebo.unpauseSim()
         self._set_action(action)
         self.gazebo.pauseSim()
@@ -50,6 +52,8 @@ class RobotGazeboEnv(gym.Env):
         info = {}
         reward = self._compute_reward(obs, done)
         self.cumulated_episode_reward += reward
+
+        rospy.logdebug("END STEP OpenAIROS")
 
         return obs, reward, done, info
 
