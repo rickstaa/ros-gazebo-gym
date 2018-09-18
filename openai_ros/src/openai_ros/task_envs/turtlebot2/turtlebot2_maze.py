@@ -73,7 +73,7 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         # This is the length that the dicretised observations array will have
         # Because 0 also counts it will have +1
         num_laser_readings = (len(laser_scan.ranges)/self.new_ranges)
-        rospy.logfatal("num_laser_readings len===>"+str(num_laser_readings))
+        rospy.logdebug("num_laser_readings len===>"+str(num_laser_readings))
         rospy.set_param('/turtlebot2/n_observations', num_laser_readings)
         aux = rospy.get_param('/turtlebot2/n_observations')
         rospy.logfatal("aux===>"+str(aux))
