@@ -54,6 +54,11 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         self.desired_yaw = rospy.get_param("/monoped/desired_yaw")
         
         self.joint_increment_value = rospy.get_param("/monoped/joint_increment_value")
+        self.init_move_time = rospy.get_param("/monoped/init_move_time", 1.0)
+        self.move_time = rospy.get_param("/monoped/move_time", 0.05)
+        self.check_position = rospy.get_param("/monoped/check_position", True)
+        
+        
         self.accepted_joint_error = rospy.get_param("/monoped/accepted_joint_error")
         self.update_rate = rospy.get_param("/monoped/update_rate")
 
@@ -73,12 +78,19 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         self.max_incl_pitch = rospy.get_param("/monoped/max_incl")
         self.max_contact_force = rospy.get_param("/monoped/max_contact_force")
         
-        self.maximum_haa_joint = rospy.get_param("/monoped/max_incl")
-        self.maximum_hfe_joint = rospy.get_param("/monoped/max_incl")
-        self.maximum_kfe_joint = rospy.get_param("/monoped/max_incl")
-        self.min_kfe_joint = rospy.get_param("/monoped/max_incl")
+        self.maximum_haa_joint = rospy.get_param("/monoped/maximum_haa_joint")
+        self.maximum_hfe_joint = rospy.get_param("/monoped/maximum_hfe_joint")
+        self.maximum_kfe_joint = rospy.get_param("/monoped/maximum_kfe_joint")
+        self.min_kfe_joint = rospy.get_param("/monoped/min_kfe_joint")
         
         # We place the Maximum and minimum values of observations
+        self.joint_ranges_array = { "maximum_haa":self.maximum_haa_joint,
+                                    "minimum_haa_joint":-self.maximum_haa_joint,
+                                    "maximum_hfe_joint":self.maximum_hfe_joint,
+                                    "minimum_hfe_joint":self.maximum_hfe_joint,
+                                    "maximum_kfe_joint":self.maximum_kfe_joint,
+                                    "min_kfe_joint":self.min_kfe_joint
+                                    }
 
         high = numpy.array([self.distance_from_desired_point_max,
                             self.max_incl_roll,
@@ -98,8 +110,8 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
                             -1*self.max_incl_pitch,
                             -1*3.14,
                             0.0,
-                            self.maximum_haa_joint,
-                            self.maximum_hfe_joint,
+                            -1*self.maximum_haa_joint,
+                            -1*self.maximum_hfe_joint,
                             self.min_kfe_joint,
                             -1*self.max_x_pos,
                             -1*self.max_y_pos,
@@ -138,7 +150,9 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         
         self.move_joints(   joints_array,
                             epsilon=self.accepted_joint_error,
-                            update_rate=self.update_rate)
+                            update_rate=self.update_rate,
+                            time_sleep=self.init_move_time,
+                            check_position=self.check_position)
 
         return True
 
@@ -173,36 +187,52 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         rospy.logdebug("get_action_to_position>>>"+str(joint_states_position))
         
         action_position = [0.0,0.0,0.0]
+        
+        rospy.logdebug("OLD-JOINT-STATE [haa,hfa,kfe]>>>"+str(joint_states_position))
+        
         if action == 0: #Increment haa_joint
+            rospy.logdebug("Increment haa_joint")
             action_position[0] = joint_states_position[0] + self.joint_increment_value
             action_position[1] = joint_states_position[1]
             action_position[2] = joint_states_position[2]
         elif action == 1: #Decrement haa_joint
+            rospy.logdebug("Decrement haa_joint")
             action_position[0] = joint_states_position[0] - self.joint_increment_value
             action_position[1] = joint_states_position[1]
             action_position[2] = joint_states_position[2]
         elif action == 2: #Increment hfe_joint
+            rospy.logdebug("Increment hfe_joint")
             action_position[0] = joint_states_position[0]
             action_position[1] = joint_states_position[1] + self.joint_increment_value
             action_position[2] = joint_states_position[2]
         elif action == 3: #Decrement hfe_joint
+            rospy.logdebug("Decrement hfe_joint")
             action_position[0] = joint_states_position[0]
             action_position[1] = joint_states_position[1] - self.joint_increment_value
             action_position[2] = joint_states_position[2]
         elif action == 4: #Increment kfe_joint
+            rospy.logdebug("Increment kfe_joint")
             action_position[0] = joint_states_position[0]
             action_position[1] = joint_states_position[1]
             action_position[2] = joint_states_position[2] + self.joint_increment_value
         elif action == 5:  #Decrement kfe_joint
+            rospy.logdebug("Decrement kfe_joint")
             action_position[0] = joint_states_position[0]
             action_position[1] = joint_states_position[1]
             action_position[2] = joint_states_position[2] - self.joint_increment_value
 
         
+        rospy.logdebug("NEW-JOINT-STATE [haa,hfa,kfe]>>>"+str(action_position))
+        rospy.logdebug("JOINT-RANGES>>>"+str(self.joint_ranges_array))
+        
+        rospy.logdebug("START ACTION EXECUTE>>>"+str(action))
         # We tell monoped where to place its joints next
         self.move_joints(   action_position,
                             epsilon=self.accepted_joint_error,
-                            update_rate=self.update_rate)
+                            update_rate=self.update_rate,
+                            time_sleep=self.move_time,
+                            check_position=self.check_position)
+        rospy.logdebug("END ACTION EXECUTE>>>"+str(action))
         
         rospy.logdebug("END Set Action ==>"+str(action))
 

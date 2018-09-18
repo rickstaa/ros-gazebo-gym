@@ -63,7 +63,7 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         # We create two arrays based on the binary values that will be assigned
         # In the discretization method.
         laser_scan = self._check_laser_scan_ready()
-        rospy.logfatal("laser_scan len===>"+str(len(laser_scan.ranges)))
+        rospy.logdebug("laser_scan len===>"+str(len(laser_scan.ranges)))
         
         # Laser data
         self.laser_scan_frame = laser_scan.header.frame_id
@@ -72,8 +72,8 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         
         # This is the length that the dicretised observations array will have
         # Because 0 also counts it will have +1
-        num_laser_readings = (len(laser_scan.ranges)/self.new_ranges) + 1
-        rospy.logfatal("num_laser_readings len===>"+str(num_laser_readings))
+        num_laser_readings = (len(laser_scan.ranges)/self.new_ranges)
+        rospy.logdebug("num_laser_readings len===>"+str(num_laser_readings))
         rospy.set_param('/turtlebot2/n_observations', num_laser_readings)
         
         
@@ -247,7 +247,7 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
                 # We add value zero
                 filtered_range.append(0.1)
                     
-        rospy.logfatal("Size of observations, discretized_ranges==>"+str(len(discretized_ranges)))
+        rospy.logdebug("Size of observations, discretized_ranges==>"+str(len(discretized_ranges)))
         
         
         self.publish_filtered_laser_scan(   laser_original_data=data,
@@ -258,7 +258,7 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
     
     def publish_filtered_laser_scan(self, laser_original_data, new_filtered_laser_range):
         
-        rospy.logfatal("new_filtered_laser_range==>"+str(new_filtered_laser_range))
+        rospy.logdebug("new_filtered_laser_range==>"+str(new_filtered_laser_range))
         
         laser_filtered_object = LaserScan()
 
