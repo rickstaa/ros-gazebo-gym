@@ -1,5 +1,6 @@
 import numpy
 import rospy
+import time
 from openai_ros import robot_gazebo_env
 from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
@@ -257,10 +258,14 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("TurtleBot2 Base Twist Cmd>>" + str(cmd_vel_value))
         self._check_publishers_connection()
         self._cmd_vel_pub.publish(cmd_vel_value)
+        time.sleep(0.1)
+        """
         self.wait_until_twist_achieved(cmd_vel_value,
                                         epsilon,
                                         update_rate,
                                         min_laser_distance)
+        """
+                        
     
     def wait_until_twist_achieved(self, cmd_vel_value, epsilon, update_rate, min_laser_distance=-1):
         """

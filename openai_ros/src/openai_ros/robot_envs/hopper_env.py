@@ -250,7 +250,7 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
         
     # Methods that the TrainingEnvironment will need.
     # ----------------------------
-    def move_joints(self, joints_array, epsilon=0.05, update_rate=10):
+    def move_joints(self, joints_array, epsilon=0.05, update_rate=10, time_sleep=0.05, check_position=True):
         """
         It will move the Hopper Joints to the given Joint_Array values
         """
@@ -261,7 +261,11 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
           rospy.logdebug("JointsPos>>"+str(joint_value))
           publisher_object.publish(joint_value)
           i += 1
-        self.wait_time_for_execute_movement(joints_array, epsilon, update_rate)
+        
+        if check_position:
+            self.wait_time_for_execute_movement(joints_array, epsilon, update_rate)
+        else:
+            self.wait_time_movement_hard(time_sleep=time_sleep)
     
     def wait_time_for_execute_movement(self, joints_array, epsilon, update_rate):
         """
@@ -301,6 +305,13 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("END wait_until_jointstate_achieved...")
         
         return delta_time
+        
+    def wait_time_movement_hard(self, time_sleep):
+        """
+        Hard Wait to avoid inconsistencies in times executing actions
+        """
+        rospy.logdebug("Test Wait="+str(time_sleep))
+        time.sleep(time_sleep)
     
     def check_array_similar(self,ref_value_array,check_value_array,epsilon):
         """
