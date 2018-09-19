@@ -1,6 +1,7 @@
 import rospy
 import numpy
 import time
+import math
 from gym import spaces
 from openai_ros.robot_envs import turtlebot2_env
 from gym.envs.registration import register
@@ -72,7 +73,9 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         
         # This is the length that the dicretised observations array will have
         # Because 0 also counts it will have +1
-        num_laser_readings = (len(laser_scan.ranges)/self.new_ranges)
+        num_laser_readings = int(math.ceil(float(len(laser_scan.ranges)) / float(self.new_ranges)))
+        
+        
         rospy.logdebug("num_laser_readings len===>"+str(num_laser_readings))
         rospy.set_param('/turtlebot2/n_observations', num_laser_readings)
         aux = rospy.get_param('/turtlebot2/n_observations')
