@@ -9,7 +9,7 @@ from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Header
 
 # The path is __init__.py of openai_ros, where we import the TurtleBot2MazeEnv directly
-timestep_limit_per_episode = 10000 # Can be any Value
+timestep_limit_per_episode = 600 # Can be any Value
 
 register(
         id='TurtleBot2Maze-v0',
@@ -53,7 +53,8 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         self.init_linear_forward_speed = rospy.get_param('/turtlebot2/init_linear_forward_speed')
         self.init_linear_turn_speed = rospy.get_param('/turtlebot2/init_linear_turn_speed')
         
-        self.new_ranges = rospy.get_param('/turtlebot2/new_ranges')
+        
+        self.n_observations = rospy.get_param('/turtlebot2/n_observations')
         self.min_range = rospy.get_param('/turtlebot2/min_range')
         self.max_laser_value = rospy.get_param('/turtlebot2/max_laser_value')
         self.min_laser_value = rospy.get_param('/turtlebot2/min_laser_value')
@@ -63,7 +64,8 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         
         # We create two arrays based on the binary values that will be assigned
         # In the discretization method.
-        laser_scan = self._check_laser_scan_ready()
+        #laser_scan = self._check_laser_scan_ready()
+        laser_scan = self.get_laser_scan()
         rospy.logdebug("laser_scan len===>"+str(len(laser_scan.ranges)))
         
         # Laser data
@@ -71,19 +73,15 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
 
         
         
-        # This is the length that the dicretised observations array will have
-        # Because 0 also counts it will have +1
-        num_laser_readings = int(math.ceil(float(len(laser_scan.ranges)) / float(self.new_ranges)))
+        # Number of laser reading jumped
+        self.new_ranges = int(math.ceil(float(len(laser_scan.ranges)) / float(self.n_observations)))
+        
+        rospy.logdebug("n_observations===>"+str(self.n_observations))
+        rospy.logdebug("new_ranges, jumping laser readings===>"+str(self.new_ranges))
         
         
-        rospy.logdebug("num_laser_readings len===>"+str(num_laser_readings))
-        rospy.set_param('/turtlebot2/n_observations', num_laser_readings)
-        aux = rospy.get_param('/turtlebot2/n_observations')
-        rospy.logfatal("aux===>"+str(aux))
-        
-        
-        high = numpy.full((num_laser_readings), self.max_laser_value)
-        low = numpy.full((num_laser_readings), self.min_laser_value)
+        high = numpy.full((self.n_observations), self.max_laser_value)
+        low = numpy.full((self.n_observations), self.min_laser_value)
         
         # We only use two integers
         self.observation_space = spaces.Box(low, high)
@@ -126,7 +124,13 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         
         # We wait a small ammount of time to start everything because in very fast resets, laser scan values are sluggish
         # and sometimes still have values from the prior position that triguered the done.
-        time.sleep(0.2)
+        time.sleep(1.0)
+        
+        # TODO: Add reset of published filtered laser readings
+        laser_scan = self.get_laser_scan()
+        discretized_ranges = laser_scan.ranges
+        self.publish_filtered_laser_scan(   laser_original_data=laser_scan,
+                                         new_filtered_laser_range=discretized_ranges)
 
 
     def _set_action(self, action):
@@ -158,7 +162,7 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
                         update_rate=10,
                         min_laser_distance=self.min_range)
         
-        rospy.logdebug("END Set Action ==>"+str(action))
+        rospy.logfatal("END Set Action ==>"+str(action)+", NAME="+str(self.last_action))
 
     def _get_obs(self):
         """
@@ -171,11 +175,14 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         # We get the laser scan data
         laser_scan = self.get_laser_scan()
         
+        rospy.logdebug("BEFORE DISCRET _episode_done==>"+str(self._episode_done))
+        
         discretized_observations = self.discretize_observation( laser_scan,
                                                                 self.new_ranges
                                                                 )
 
         rospy.logdebug("Observations==>"+str(discretized_observations))
+        rospy.logdebug("AFTER DISCRET_episode_done==>"+str(self._episode_done))
         rospy.logdebug("END Get Observation ==>")
         return discretized_observations
         
@@ -183,7 +190,7 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
     def _is_done(self, observations):
         
         if self._episode_done:
-            rospy.logerr("TurtleBot2 is Too Close to wall==>")
+            rospy.logdebug("TurtleBot2 is Too Close to wall==>"+str(self._episode_done))
         else:
             rospy.logerr("TurtleBot2 is Ok ==>")
 

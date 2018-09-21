@@ -69,9 +69,9 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
 
         # We Start all the ROS related Subscribers and publishers
         rospy.Subscriber("/odom", Odometry, self._odom_callback)
-        rospy.Subscriber("/camera/depth/image_raw", Image, self._camera_depth_image_raw_callback)
-        rospy.Subscriber("/camera/depth/points", PointCloud2, self._camera_depth_points_callback)
-        rospy.Subscriber("/camera/rgb/image_raw", Image, self._camera_rgb_image_raw_callback)
+        #rospy.Subscriber("/camera/depth/image_raw", Image, self._camera_depth_image_raw_callback)
+        #rospy.Subscriber("/camera/depth/points", PointCloud2, self._camera_depth_points_callback)
+        #rospy.Subscriber("/camera/rgb/image_raw", Image, self._camera_rgb_image_raw_callback)
         rospy.Subscriber("/kobuki/laser/scan", LaserScan, self._laser_scan_callback)
 
         self._cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
@@ -258,7 +258,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("TurtleBot2 Base Twist Cmd>>" + str(cmd_vel_value))
         self._check_publishers_connection()
         self._cmd_vel_pub.publish(cmd_vel_value)
-        time.sleep(0.1)
+        time.sleep(0.2)
         """
         self.wait_until_twist_achieved(cmd_vel_value,
                                         epsilon,
@@ -366,3 +366,11 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         
     def get_laser_scan(self):
         return self.laser_scan
+        
+    def reinit_sensors(self):
+        """
+        This method is for the tasks so that when reseting the episode
+        the sensors values are forced to be updated with the real data and 
+        
+        """
+        

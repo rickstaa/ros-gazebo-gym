@@ -128,7 +128,6 @@ class RobotGazeboEnv(gym.Env):
             self.gazebo.pauseSim()
             self.gazebo.resetSim()
             self.gazebo.unpauseSim()
-            
             self._check_all_systems_ready()
             self.gazebo.pauseSim()
         
