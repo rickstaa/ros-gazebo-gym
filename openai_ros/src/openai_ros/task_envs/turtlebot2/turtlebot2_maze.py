@@ -9,7 +9,7 @@ from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Header
 
 # The path is __init__.py of openai_ros, where we import the TurtleBot2MazeEnv directly
-timestep_limit_per_episode = 600 # Can be any Value
+timestep_limit_per_episode = 100 # Can be any Value
 
 register(
         id='TurtleBot2Maze-v0',
@@ -162,7 +162,7 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
                         update_rate=10,
                         min_laser_distance=self.min_range)
         
-        rospy.logfatal("END Set Action ==>"+str(action)+", NAME="+str(self.last_action))
+        rospy.logdebug("END Set Action ==>"+str(action)+", NAME="+str(self.last_action))
 
     def _get_obs(self):
         """
