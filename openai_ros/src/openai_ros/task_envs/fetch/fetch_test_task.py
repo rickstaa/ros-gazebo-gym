@@ -26,8 +26,8 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         
         self.action_space = spaces.Discrete(self.n_actions)
         
-        observations_high_range = np.array([self.position_ee_max]*self.n_obervations)
-        observations_low_range = np.array([self.position_ee_min]*self.n_obervations)
+        observations_high_range = np.array([self.position_ee_max]*self.n_observations)
+        observations_low_range = np.array([self.position_ee_min]*self.n_observations)
         self.observation_space = spaces.Box(observations_low_range, observations_high_range)
         
 
@@ -36,7 +36,7 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         #get configuration parameters
         
         self.n_actions = rospy.get_param('/fetch/n_actions')
-        self.n_obervations = rospy.get_param('/fetch/n_obervations')
+        self.n_observations = rospy.get_param('/fetch/n_observations')
         self.position_ee_max = rospy.get_param('/fetch/position_ee_max')
         self.position_ee_min = rospy.get_param('/fetch/position_ee_min')
         
@@ -58,7 +58,7 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         """
         # Check because it seems its not being used
         rospy.logdebug("Init Pos:")
-        rospy.logdebug(initial_qpos)
+        rospy.logdebug(self.init_pos)
 
         
         # Init Joint Pose
@@ -70,7 +70,7 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
             rospy.logerr("Moving To SETUP Position ")
             self.last_gripper_target = [self.setup_ee_pos["x"],self.setup_ee_pos["y"],self.setup_ee_pos["z"]]
             gripper_rotation = [1., 0., 1., 0.]
-            action = self.create_action(gripper_target,gripper_rotation)
+            action = self.create_action(self.last_gripper_target,gripper_rotation)
             self.movement_result = self.set_trajectory_ee(action)
         
         self.last_action = "INIT"
@@ -169,6 +169,8 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         Punishes differently if it reached a position that is imposible to move to.
         Rewards getting to a position close to the goal.
         """
+        desired_position = [self.goal_ee_pos["x"],self.goal_ee_pos["y"],self.goal_ee_pos["z"]]
+        current_pos = observations
         
         _ , reward = self.calculate_reward_and_if_done(self.movement_result,desired_position,current_pos)
         
@@ -190,7 +192,7 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
                 rospy.logerr("Reached a Desired Position!")
         else:
             done = True
-            reward = self.crashed_punishment
+            reward = self.impossible_movement_punishement
             rospy.logerr("Reached a TCP position not reachable")
             
         return done, reward

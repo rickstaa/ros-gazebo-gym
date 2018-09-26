@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import rospy
 from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
@@ -15,10 +15,21 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def __init__(self):
         rospy.logdebug("Entered Fetch Env")
+        
+        self.controllers_list = []
+
+        self.robot_name_space = ""
+        self.reset_controls = False
+        
+        super(FetchEnv, self).__init__(
+            controllers_list=self.controllers_list,
+            robot_name_space=self.robot_name_space,
+            reset_controls=self.reset_controls
+            )
+        
         # We Start all the ROS related Subscribers and publishers
         
         self.JOINT_STATES_SUBSCRIBER = '/joint_states'
-        
         self.join_names = ["joint0",
                           "joint1",
                           "joint2",
@@ -27,6 +38,7 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
                           "joint5",
                           "joint6"]
         
+        self.gazebo.unpauseSim()
         self._check_all_systems_ready()
         
         self.joint_states_sub = rospy.Subscriber(self.JOINT_STATES_SUBSCRIBER, JointState, self.joints_callback)
@@ -35,18 +47,10 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         # Start Services
         self.move_fetch_object = MoveFetch()
         
+        self.gazebo.pauseSim()
         # Variables that we give through the constructor.
-
-        self.controllers_list = []
-
-        self.robot_name_space = ""
-        self.reset_controls = True
         
-        super(FetchEnv, self).__init__(
-            controllers_list=self.controllers_list,
-            robot_name_space=self.robot_name_space,
-            reset_controls=self.reset_controls
-            )
+        
 
 
 
