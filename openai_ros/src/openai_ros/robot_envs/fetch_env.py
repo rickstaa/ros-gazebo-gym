@@ -19,6 +19,14 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         
         self.JOINT_STATES_SUBSCRIBER = '/joint_states'
         
+        self.join_names = ["joint0",
+                          "joint1",
+                          "joint2",
+                          "joint3",
+                          "joint4",
+                          "joint5",
+                          "joint6"]
+        
         self._check_all_systems_ready()
         
         self.joint_states_sub = rospy.Subscriber(self.JOINT_STATES_SUBSCRIBER, JointState, self.joints_callback)
@@ -78,34 +86,29 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def get_joints(self):
         return self.joints
+        
+    def get_joint_names(self):
+        return self.join_names
 
     def set_trajectory_ee(self, action):
         """
-        Helper function.
-        Wraps an action vector of joint angles into a JointTrajectory message.
-        The velocities, accelerations, and effort do not control the arm motion
+        Sets the Pose of the EndEffector based on the action variable.
+        The action variable contains the position and orientation of the EndEffector.
+        See create_action
         """
         # Set up a trajectory message to publish.
         ee_target = geometry_msgs.msg.Pose()
-        ee_target.pose.orientation.w = 1.0
-        ee_target.pose.position.x = action[0]
-        ee_target.pose.position.y = action[1]
-        ee_target.pose.position.z = action[2]
+        ee_target.orientation.w = 1.0
+        ee_target.position.x = action[0]
+        ee_target.position.y = action[1]
+        ee_target.position.z = action[2]
         
-        self.move_fetch_object.ee_traj(ee_target)
+        result = self.move_fetch_object.ee_traj(ee_target)
         
-        return True
+        return result
         
     def set_trajectory_joints(self, initial_qpos):
-        """
-        Helper function.
-        Wraps an action vector of joint angles into a JointTrajectory message.
-        The velocities, accelerations, and effort do not control the arm motion
-        """
-        # Set up a trajectory message to publish.
-        
-        joint_point = JointTrajRequest()
-        
+
         positions_array = [None] * 7
         positions_array[0] = initial_qpos["joint0"]
         positions_array[1] = initial_qpos["joint1"]
@@ -119,7 +122,54 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         
         return True
         
+    def create_action(self,position,orientation):
+        """
+        position = [x,y,z]
+        orientation= [x,y,z,w]
+        """
+        
+        gripper_target = np.array(position)
+        gripper_rotation = np.array(orientation)
+        action = np.concatenate([gripper_target, gripper_rotation])
+        
+        return action
+        
+    def create_joints_dict(self,joints_positions):
+        """
+        Based on the Order of the positions, they will be assigned to its joint name
+        names_in_order:
+          joint0: 0.0
+          joint1: 0.0
+          joint2: 0.0
+          joint3: -1.5
+          joint4: 0.0
+          joint5: 1.5
+          joint6: 0.0
+        """
+        
+        assert len(joints_positions) == len(self.join_names), "Wrong number of joints, there should be "+str(len(self.join_names))
+        joints_dict = dict(zip(self.join_names,joints_positions))
+        
+        return joints_dict
+        
     def get_ee_pose(self):
+        """
+        Returns geometry_msgs/PoseStamped
+            std_msgs/Header header
+              uint32 seq
+              time stamp
+              string frame_id
+            geometry_msgs/Pose pose
+              geometry_msgs/Point position
+                float64 x
+                float64 y
+                float64 z
+              geometry_msgs/Quaternion orientation
+                float64 x
+                float64 y
+                float64 z
+                float64 w
+        """
         
         gripper_pose = self.move_fetch_object.ee_pose()
         
@@ -180,9 +230,9 @@ class MoveFetch(object):
         
         self.group.set_pose_target(pose)
         
-        self.execute_trajectory()
+        result = self.execute_trajectory()
         
-        return True
+        return result
         
     def joint_traj(self, positions_array):
         
@@ -199,14 +249,16 @@ class MoveFetch(object):
         self.group_variable_values[5] = positions_array[5]
         self.group_variable_values[6] = positions_array[6]
         self.group.set_joint_value_target(self.group_variable_values)
-        self.execute_trajectory()
+        result =  self.execute_trajectory()
         
-        return True
+        return result
         
     def execute_trajectory(self):
         
         self.plan = self.group.plan()
-        self.group.go(wait=True)
+        result = self.group.go(wait=True)
+        
+        return result
 
     def ee_pose(self):
         
