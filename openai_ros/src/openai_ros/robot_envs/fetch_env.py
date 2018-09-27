@@ -111,9 +111,9 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         ee_target.position.y = action[1]
         ee_target.position.z = action[2]
         
-        rospy.logwarn("Set Trajectory EE...START...POSITION="+str(ee_target.position))
+        rospy.logdebug("Set Trajectory EE...START...POSITION="+str(ee_target.position))
         result = self.move_fetch_object.ee_traj(ee_target)
-        rospy.logwarn("Set Trajectory EE...END...RESULT="+str(result))
+        rospy.logdebug("Set Trajectory EE...END...RESULT="+str(result))
         
         return result
         
@@ -180,8 +180,9 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
                 float64 z
                 float64 w
         """
-        
+        self.gazebo.unpauseSim()
         gripper_pose = self.move_fetch_object.ee_pose()
+        self.gazebo.pauseSim()
         
         return gripper_pose
         
@@ -213,7 +214,7 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         0.050051597253287436)
         """
         import time
-        for i in range(15):
+        for i in range(20):
             current_joints = self.get_joints()
             joint_pos = current_joints.position
             #print("JOINTS POS NOW="+str(joint_pos))
@@ -280,10 +281,10 @@ class MoveFetch(object):
     def joint_traj(self, positions_array):
         
         self.group_variable_values = self.group.get_current_joint_values()
-        print ("Group Vars:")
-        print (self.group_variable_values)
-        print ("Point:")
-        print (positions_array)
+        rospy.logdebug("Group Vars:")
+        rospy.logdebug(self.group_variable_values)
+        rospy.logdebug("Point:")
+        rospy.logdebug(positions_array)
         self.group_variable_values[0] = positions_array[0]
         self.group_variable_values[1] = positions_array[1]
         self.group_variable_values[2] = positions_array[2]
@@ -307,7 +308,7 @@ class MoveFetch(object):
         
         gripper_pose = self.group.get_current_pose()
 
-        rospy.logerr("EE POSE==>"+str(gripper_pose))
+        rospy.logdebug("EE POSE==>"+str(gripper_pose))
 
         return gripper_pose
         

@@ -28,7 +28,14 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         
         observations_high_range = np.array([self.position_ee_max]*self.n_observations)
         observations_low_range = np.array([self.position_ee_min]*self.n_observations)
-        self.observation_space = spaces.Box(observations_low_range, observations_high_range)
+        
+        observations_high_dist = np.array([self.max_distance])
+        observations_low_dist = np.array([0.0])
+        
+        high = np.concatenate([observations_high_range, observations_high_dist])
+        low = np.concatenate([observations_low_range, observations_low_dist])
+        
+        self.observation_space = spaces.Box(low, high)
         
 
         
@@ -50,7 +57,10 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         self.impossible_movement_punishement = rospy.get_param('/fetch/impossible_movement_punishement')
         self.reached_goal_reward = rospy.get_param('/fetch/reached_goal_reward')
         
+        self.max_distance = rospy.get_param('/fetch/max_distance')
+        
         self.desired_position = [self.goal_ee_pos["x"],self.goal_ee_pos["y"],self.goal_ee_pos["z"]]
+        self.gripper_rotation = [1., 0., 1., 0.]
     
     
     def _set_init_pose(self):
@@ -61,25 +71,35 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         rospy.logdebug("Init Pos:")
         rospy.logdebug(self.init_pos)
 
-        
+        """
         # Init Joint Pose
-        rospy.logwarn("Moving To SETUP Joints ")
+        rospy.logdebug("Moving To SETUP Joints ")
         self.movement_result = self.set_trajectory_joints(self.init_pos)
-
+        """
+        
+        # We test the Desired Goal
+        
+        # INIT POSE
+        rospy.logdebug("Moving To TEST DESIRED GOAL Position ")
+        action = self.create_action(self.desired_position,self.gripper_rotation)
+        self.movement_result = self.set_trajectory_ee(action)
+            
+        
         if self.movement_result:
             # INIT POSE
-            rospy.logwarn("Moving To SETUP Position ")
+            rospy.logdebug("Moving To SETUP Position ")
             self.last_gripper_target = [self.setup_ee_pos["x"],self.setup_ee_pos["y"],self.setup_ee_pos["z"]]
-            gripper_rotation = [1., 0., 1., 0.]
-            action = self.create_action(self.last_gripper_target,gripper_rotation)
+            action = self.create_action(self.last_gripper_target,self.gripper_rotation)
             self.movement_result = self.set_trajectory_ee(action)
             
             self.current_dist_from_des_pos_ee = self.calculate_distance_between(self.desired_position,self.last_gripper_target)
-            rospy.logerr("INIT DISTANCE FROM GOAL==>"+str(self.current_dist_from_des_pos_ee))
+            rospy.logdebug("INIT DISTANCE FROM GOAL==>"+str(self.current_dist_from_des_pos_ee))
+        else:
+            assert False, "Desired GOAL EE is not possible"
         
         self.last_action = "INIT"
         
-        rospy.logwarn("Init Pose Results ==>"+str(self.movement_result))
+        rospy.logdebug("Init Pose Results ==>"+str(self.movement_result))
 
         return self.movement_result
 
@@ -129,9 +149,8 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         gripper_target[1] += delta_gripper_target[1]
         gripper_target[2] += delta_gripper_target[2]
         
-        gripper_rotation = [1., 0., 1., 0.]
         # Apply action to simulation.
-        action_end_effector = self.create_action(gripper_target,gripper_rotation)
+        action_end_effector = self.create_action(gripper_target,self.gripper_rotation)
         self.movement_result = self.set_trajectory_ee(action_end_effector)
         if self.movement_result:
             # If the End Effector Positioning was succesfull, we replace the last one with the new one.
@@ -144,14 +163,19 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
     def _get_obs(self):
         """
         It returns the Position of the TCP/EndEffector as observation.
+        And the distance from the desired point
         Orientation for the moment is not considered
         """
         
         grip_pos = self.get_ee_pose()
         grip_pos_array = [grip_pos.pose.position.x, grip_pos.pose.position.y, grip_pos.pose.position.z]
         obs = grip_pos_array
+        
+        new_dist_from_des_pos_ee = self.calculate_distance_between(self.desired_position,grip_pos_array)
+        
+        obs.append(new_dist_from_des_pos_ee)
 
-        rospy.logerr("OBSERVATIONS====>>>>>>>"+str(obs))
+        rospy.logdebug("OBSERVATIONS====>>>>>>>"+str(obs))
 
         return obs
         
@@ -162,10 +186,9 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         It will also end if it reaches its goal.
         """
         
-        current_pos = observations
-        rospy.logerr("current_pos in is_done method====>>>>>>>"+str(current_pos))
+        current_pos = observations[:3]
         
-        done, reward = self.calculate_reward_and_if_done(self.movement_result,self.desired_position,current_pos)
+        done = self.calculate_if_done(self.movement_result,self.desired_position,current_pos)
         
         return done
         
@@ -176,22 +199,40 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         Punishes differently if it reached a position that is imposible to move to.
         Rewards getting to a position close to the goal.
         """
-        current_pos = observations
-        rospy.logerr("current_pos in compute_reward method====>>>>>>>"+str(current_pos))
+        current_pos = observations[:3]
+        new_dist_from_des_pos_ee = observations[-1]
         
-        _ , reward = self.calculate_reward_and_if_done(self.movement_result,self.desired_position,current_pos)
+        reward = self.calculate_reward(self.movement_result, self.desired_position, current_pos, new_dist_from_des_pos_ee)
         rospy.logwarn(">>>REWARD>>>"+str(reward))
         
         return reward
         
 
-    def calculate_reward_and_if_done(self, movement_result,desired_position,current_pos):
+    def calculate_if_done(self, movement_result,desired_position,current_pos):
         """
-        It calculated whather it has finished or nota and how much reward to give
+        It calculated whather it has finished or not
         """
         done = False
         
+        if movement_result:
+            
+            position_similar = np.all(np.isclose(desired_position, current_pos, atol=1e-02))
+
+            if position_similar:
+                done = True
+                rospy.logdebug("Reached a Desired Position!")
+        else:
+            done = True
+            rospy.logdebug("Reached a TCP position not reachable")
+            
+        return done
         
+    
+    def calculate_reward(self, movement_result, desired_position, current_pos, new_dist_from_des_pos_ee):
+        """
+        It calculated whather it has finished or nota and how much reward to give
+        """
+
         if movement_result:
             position_similar = np.all(np.isclose(desired_position, current_pos, atol=1e-02))
             
@@ -199,15 +240,10 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
             rospy.logwarn("desired_position="+str(desired_position))
             rospy.logwarn("current_pos="+str(current_pos))
             rospy.logwarn("self.current_dist_from_des_pos_ee="+str(self.current_dist_from_des_pos_ee))
-            
-            
-            new_dist_from_des_pos_ee = self.calculate_distance_between(desired_position,current_pos)
-            
             rospy.logwarn("new_dist_from_des_pos_ee="+str(new_dist_from_des_pos_ee))
             
             delta_dist = new_dist_from_des_pos_ee - self.current_dist_from_des_pos_ee
             if position_similar:
-                done = True
                 reward = self.reached_goal_reward
                 rospy.logwarn("Reached a Desired Position!")
             else:
@@ -217,16 +253,16 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
                 else:
                     reward = self.step_punishment
                     rospy.logwarn("FURTHER FROM Desired Position!"+str(delta_dist))
-                
-                self.current_dist_from_des_pos_ee = new_dist_from_des_pos_ee
-                rospy.logwarn("Updated Distance from GOAL=="+str(self.current_dist_from_des_pos_ee))
             
         else:
-            done = True
             reward = self.impossible_movement_punishement
             rospy.logwarn("Reached a TCP position not reachable")
             
-        return done, reward
+        # We update the distance
+        self.current_dist_from_des_pos_ee = new_dist_from_des_pos_ee
+        rospy.logdebug("Updated Distance from GOAL=="+str(self.current_dist_from_des_pos_ee))
+            
+        return reward
         
     def calculate_distance_between(self,v1,v2):
         """

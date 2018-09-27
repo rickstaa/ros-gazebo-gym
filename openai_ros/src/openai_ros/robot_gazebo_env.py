@@ -81,12 +81,16 @@ class RobotGazeboEnv(gym.Env):
         increases the episode number by one.
         :return:
         """
+        rospy.logwarn("PUBLISHING REWARD...")
         self._publish_reward_topic(
                                     self.cumulated_episode_reward,
                                     self.episode_num
                                     )
+        rospy.logwarn("PUBLISHING REWARD...DONE="+str(self.cumulated_episode_reward)+",EP="+str(self.episode_num))
+        
         self.episode_num += 1
         self.cumulated_episode_reward = 0
+        
 
     def _publish_reward_topic(self, reward, episode_number=1):
         """
