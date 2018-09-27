@@ -21,12 +21,12 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         self.robot_name_space = ""
         self.reset_controls = False
         
-        super(FetchEnv, self).__init__(
-            controllers_list=self.controllers_list,
-            robot_name_space=self.robot_name_space,
-            reset_controls=self.reset_controls
-            )
-        
+        super(FetchEnv, self).__init__(controllers_list=self.controllers_list,
+                                            robot_name_space=self.robot_name_space,
+                                            reset_controls=False,
+                                            start_init_physics_parameters=False,
+                                            reset_world_or_sim="WORLD")
+            
         # We Start all the ROS related Subscribers and publishers
         
         self.JOINT_STATES_SUBSCRIBER = '/joint_states'
@@ -46,6 +46,10 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         
         # Start Services
         self.move_fetch_object = MoveFetch()
+        
+        # Wait until it has reached its Sturtup Position
+        self.wait_fetch_ready()
+        
         
         self.gazebo.pauseSim()
         # Variables that we give through the constructor.
@@ -92,7 +96,7 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         return self.joints
         
     def get_joint_names(self):
-        return self.join_names
+        return self.joints.name
 
     def set_trajectory_ee(self, action):
         """
@@ -107,7 +111,9 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         ee_target.position.y = action[1]
         ee_target.position.z = action[2]
         
+        rospy.logwarn("Set Trajectory EE...START...POSITION="+str(ee_target.position))
         result = self.move_fetch_object.ee_traj(ee_target)
+        rospy.logwarn("Set Trajectory EE...END...RESULT="+str(result))
         
         return result
         
@@ -184,6 +190,39 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         gripper_rpy = self.move_fetch_object.ee_rpy()
         
         return gripper_rpy
+        
+    def wait_fetch_ready(self):
+        """
+        # TODO: Make it wait for this position
+        Desired Position to wait for
+        
+        (0.44291739197591884,
+        -0.13691381375054146,
+        -4.498589757905556e-09,
+        0.006635104153645881,
+        0.0018354466563206273,
+        0.0023142971818792546,
+        1.3200059164171716,
+        1.399964660857453,
+        -0.19981518020955402,
+        1.719961735970255,
+        1.0394665737933906e-05, 
+        1.659980987917125,
+        -6.067103113238659e-06,
+        0.05001918351472232,
+        0.050051597253287436)
+        """
+        import time
+        for i in range(15):
+            current_joints = self.get_joints()
+            joint_pos = current_joints.position
+            #print("JOINTS POS NOW="+str(joint_pos))
+            print("WAITING..."+str(i))
+            time.sleep(1.0)
+            
+        print("WAITING...DONE")
+            
+            
     
     # ParticularEnv methods
     # ----------------------------
@@ -267,6 +306,8 @@ class MoveFetch(object):
     def ee_pose(self):
         
         gripper_pose = self.group.get_current_pose()
+
+        rospy.logerr("EE POSE==>"+str(gripper_pose))
 
         return gripper_pose
         

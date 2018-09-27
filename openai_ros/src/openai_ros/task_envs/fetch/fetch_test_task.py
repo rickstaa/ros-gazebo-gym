@@ -46,10 +46,11 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         
         self.position_delta = rospy.get_param('/fetch/position_delta')
         self.step_punishment = rospy.get_param('/fetch/step_punishment')
+        self.closer_reward = rospy.get_param('/fetch/closer_reward')
         self.impossible_movement_punishement = rospy.get_param('/fetch/impossible_movement_punishement')
         self.reached_goal_reward = rospy.get_param('/fetch/reached_goal_reward')
         
-        
+        self.desired_position = [self.goal_ee_pos["x"],self.goal_ee_pos["y"],self.goal_ee_pos["z"]]
     
     
     def _set_init_pose(self):
@@ -62,16 +63,19 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
 
         
         # Init Joint Pose
-        rospy.logerr("Moving To SETUP Joints ")
+        rospy.logwarn("Moving To SETUP Joints ")
         self.movement_result = self.set_trajectory_joints(self.init_pos)
 
         if self.movement_result:
             # INIT POSE
-            rospy.logerr("Moving To SETUP Position ")
+            rospy.logwarn("Moving To SETUP Position ")
             self.last_gripper_target = [self.setup_ee_pos["x"],self.setup_ee_pos["y"],self.setup_ee_pos["z"]]
             gripper_rotation = [1., 0., 1., 0.]
             action = self.create_action(self.last_gripper_target,gripper_rotation)
             self.movement_result = self.set_trajectory_ee(action)
+            
+            self.current_dist_from_des_pos_ee = self.calculate_distance_between(self.desired_position,self.last_gripper_target)
+            rospy.logerr("INIT DISTANCE FROM GOAL==>"+str(self.current_dist_from_des_pos_ee))
         
         self.last_action = "INIT"
         
@@ -135,7 +139,7 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         else:
             rospy.logerr("Impossible End Effector Position...."+str(gripper_target))
         
-        rospy.logdebug("END Set Action ==>"+str(action)+", NAME="+str(self.last_action))
+        rospy.logwarn("END Set Action ==>"+str(action)+", NAME="+str(self.last_action))
 
     def _get_obs(self):
         """
@@ -147,6 +151,8 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         grip_pos_array = [grip_pos.pose.position.x, grip_pos.pose.position.y, grip_pos.pose.position.z]
         obs = grip_pos_array
 
+        rospy.logerr("OBSERVATIONS====>>>>>>>"+str(obs))
+
         return obs
         
     def _is_done(self, observations):
@@ -155,10 +161,11 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         If the latest Action didnt succeed, it means that tha position asked was imposible therefore the episode must end.
         It will also end if it reaches its goal.
         """
-        desired_position = [self.goal_ee_pos["x"],self.goal_ee_pos["y"],self.goal_ee_pos["z"]]
-        current_pos = observations
         
-        done, reward = self.calculate_reward_and_if_done(self.movement_result,desired_position,current_pos)
+        current_pos = observations
+        rospy.logerr("current_pos in is_done method====>>>>>>>"+str(current_pos))
+        
+        done, reward = self.calculate_reward_and_if_done(self.movement_result,self.desired_position,current_pos)
         
         return done
         
@@ -169,10 +176,11 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         Punishes differently if it reached a position that is imposible to move to.
         Rewards getting to a position close to the goal.
         """
-        desired_position = [self.goal_ee_pos["x"],self.goal_ee_pos["y"],self.goal_ee_pos["z"]]
         current_pos = observations
+        rospy.logerr("current_pos in compute_reward method====>>>>>>>"+str(current_pos))
         
-        _ , reward = self.calculate_reward_and_if_done(self.movement_result,desired_position,current_pos)
+        _ , reward = self.calculate_reward_and_if_done(self.movement_result,self.desired_position,current_pos)
+        rospy.logwarn(">>>REWARD>>>"+str(reward))
         
         return reward
         
@@ -182,17 +190,47 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         It calculated whather it has finished or nota and how much reward to give
         """
         done = False
-        reward = self.step_punishment
+        
         
         if movement_result:
             position_similar = np.all(np.isclose(desired_position, current_pos, atol=1e-02))
+            
+            # Calculating Distance
+            rospy.logwarn("desired_position="+str(desired_position))
+            rospy.logwarn("current_pos="+str(current_pos))
+            rospy.logwarn("self.current_dist_from_des_pos_ee="+str(self.current_dist_from_des_pos_ee))
+            
+            
+            new_dist_from_des_pos_ee = self.calculate_distance_between(desired_position,current_pos)
+            
+            rospy.logwarn("new_dist_from_des_pos_ee="+str(new_dist_from_des_pos_ee))
+            
+            delta_dist = new_dist_from_des_pos_ee - self.current_dist_from_des_pos_ee
             if position_similar:
                 done = True
                 reward = self.reached_goal_reward
-                rospy.logerr("Reached a Desired Position!")
+                rospy.logwarn("Reached a Desired Position!")
+            else:
+                if delta_dist < 0:
+                    reward = self.closer_reward
+                    rospy.logwarn("CLOSER To Desired Position!="+str(delta_dist))
+                else:
+                    reward = self.step_punishment
+                    rospy.logwarn("FURTHER FROM Desired Position!"+str(delta_dist))
+                
+                self.current_dist_from_des_pos_ee = new_dist_from_des_pos_ee
+                rospy.logwarn("Updated Distance from GOAL=="+str(self.current_dist_from_des_pos_ee))
+            
         else:
             done = True
             reward = self.impossible_movement_punishement
-            rospy.logerr("Reached a TCP position not reachable")
+            rospy.logwarn("Reached a TCP position not reachable")
             
         return done, reward
+        
+    def calculate_distance_between(self,v1,v2):
+        """
+        Calculated the Euclidian distance between two vectors given as python lists.
+        """
+        dist = np.linalg.norm(np.array(v1)-np.array(v2))
+        return dist
