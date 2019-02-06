@@ -76,7 +76,8 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         self.y_linear_speed_reward_weight = rospy.get_param("/moving_cube/y_linear_speed_reward_weight")
         self.y_axis_angle_reward_weight = rospy.get_param("/moving_cube/y_axis_angle_reward_weight")
         self.end_episode_points = rospy.get_param("/moving_cube/end_episode_points")
-
+        
+        self.roll_reward_weight = rospy.get_param("/moving_cube/roll_reward_weight")
         self.cumulated_steps = 0.0
 
         # Here we will add any init functions prior to starting the MyRobotEnv
@@ -98,6 +99,7 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         """
         self.total_distance_moved = 0.0
         self.current_y_distance = self.get_y_dir_distance_from_start_point(self.start_point)
+        self.pre_roll_angle = 0
         self.roll_turn_speed = rospy.get_param('/moving_cube/init_roll_vel')
         # For Info Purposes
         self.cumulated_reward = 0.0
@@ -201,12 +203,17 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
             # Negative Reward for yaw different from zero.
             yaw_angle = observations[5]
             rospy.logdebug("yaw_angle=" + str(yaw_angle))
+
             # Worst yaw is 90 and 270 degrees, best 0 and 180. We use sin function for giving reward.
             sin_yaw_angle = math.sin(yaw_angle)
             rospy.logdebug("sin_yaw_angle=" + str(sin_yaw_angle))
             reward_y_axis_angle = -1 * abs(sin_yaw_angle) * self.y_axis_angle_reward_weight
 
-
+            #Rolling reward
+            roll_angle = observations[2]
+            roll_reward = math.sin(abs(self.pre_roll_angle - roll_angle)) * self.roll_reward_weight
+            self.pre_roll_angle = roll_angle
+            
             # We are not intereseted in decimals of the reward, doesnt give any advatage.
             reward = round(reward_distance, 0) + round(reward_y_axis_speed, 0) + round(reward_y_axis_angle, 0)
             rospy.logdebug("reward_distance=" + str(reward_distance))
