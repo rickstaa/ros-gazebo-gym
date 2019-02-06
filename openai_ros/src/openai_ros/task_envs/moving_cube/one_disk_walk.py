@@ -5,9 +5,16 @@ from gym import spaces
 from openai_ros.robot_envs import cube_single_disk_env
 from geometry_msgs.msg import Point
 from tf.transformations import euler_from_quaternion
+from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
+from openai_ros.openai_ros_common import ROSLauncher
 
 class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
     def __init__(self):
+        
+        # Launch the Task Simulated-Environment
+        
+        self.roslauncher_obj = ROSLauncher( rospackage_name = "moving_cube_description",
+                                            launch_file_name = "start_world.launch")
         
         # Load Params from the desired Yaml file
         LoadYamlFileParamsTest( rospackage_name = "openai_ros",

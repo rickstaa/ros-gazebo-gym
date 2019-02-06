@@ -4,7 +4,7 @@ from openai_ros import robot_gazebo_env
 from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
 from nav_msgs.msg import Odometry
-
+from openai_ros.openai_ros_common import ROSLauncher
 
 class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
     """Superclass for all CubeSingleDisk environments.
@@ -15,6 +15,12 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
         Args:
         """
+        # We launch the ROSlaunch that spawns the robot into the world
+        self.roslauncher_obj = ROSLauncher( rospackage_name = "moving_cube_description",
+                                            launch_file_name = "spawn_moving_cube.launch")
+        
+        
+        
         # Variables that we give through the constructor.
         # None in this case
 
