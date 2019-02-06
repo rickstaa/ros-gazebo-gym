@@ -3,21 +3,17 @@ import numpy
 import math
 from gym import spaces
 from openai_ros.robot_envs import cube_single_disk_env
-from gym.envs.registration import register
 from geometry_msgs.msg import Point
 from tf.transformations import euler_from_quaternion
 
-# The path is __init__.py of openai_ros, where we import the MovingCubeOneDiskWalkEnv directly
-timestep_limit_per_episode = 10000 # Can be any Value
-
-register(
-        id='MovingCubeOneDiskWalk-v0',
-        entry_point='openai_ros:task_envs.moving_cube.one_disk_walk.MovingCubeOneDiskWalkEnv',
-        timestep_limit=timestep_limit_per_episode,
-    )
-
 class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
     def __init__(self):
+        
+        # Load Params from the desired Yaml file
+        LoadYamlFileParamsTest( rospackage_name = "openai_ros",
+                                rel_path_from_package_to_file = "src/openai_ros/task_envs/moving_cube/config",
+                                yaml_file_name = "one_disk_walk.yaml")
+        
         
         # Only variable needed to be set here
         number_actions = rospy.get_param('/moving_cube/n_actions')
