@@ -4,6 +4,7 @@ from task_envs.task_envs_list import RegisterOpenAI_Ros_Env
 import roslaunch
 import rospy
 import rospkg
+import os
 
 def StartOpenAI_ROS_Environment(task_and_robot_environment_name):
     """
@@ -17,10 +18,20 @@ def StartOpenAI_ROS_Environment(task_and_robot_environment_name):
     5) It will import the Gym Env and Make it.
     """
     
-    RegisterOpenAI_Ros_Env( task_env = task_and_robot_environment_name,
+    result = RegisterOpenAI_Ros_Env( task_env = task_and_robot_environment_name,
                             timestep_limit_per_episode = 10000)
     
-    env = gym.make(task_and_robot_environment_name)
+    
+    if result:
+        print("Register of Task Env went OK, lets make the env...")
+        env = gym.make(task_and_robot_environment_name)
+    else:
+        print("Something Went wrong in the register")
+        env = None
+        
+    return env
+    
+    
     
 class ROSLauncher(object):
     def __init__(self, rospackage_name, launch_file_name):
@@ -39,10 +50,5 @@ class ROSLauncher(object):
         self.launch.start()
         
         rospy.loginfo("STARTED Roslaunch-->"+str(self._launch_file_name))
-        
-        
-    def __del__(self):
-        print("Shutting down the roslaunch--->"+str(self._launch_file_name))
-        self.launch.shutdown()
    
     

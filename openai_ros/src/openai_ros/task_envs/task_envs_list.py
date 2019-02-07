@@ -13,18 +13,21 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode = 10000):
     ###########################################################################
     # MovingCube Task-Robot Envs
     
-    result = False
+    result = True
     
     if task_env == 'MovingCubeOneDiskWalk-v0':
+        # We register the Class through the Gym system
         register(
                 id='MovingCubeOneDiskWalk-v0',
                 entry_point='openai_ros:task_envs.moving_cube.one_disk_walk.MovingCubeOneDiskWalkEnv',
                 timestep_limit=timestep_limit_per_episode,
             )
-        result = True
+        # We have to import the Class that we registered so that it can be found afterwards in the Make
+        from openai_ros.task_envs.moving_cube import one_disk_walk
+        
     # Add here your Task Envs to be registered
     else:
-        pass
+        result = False
     
     ###########################################################################
     
@@ -33,7 +36,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode = 10000):
     if result:
         # We check that it was really registered
         supported_gym_envs = GetAllRegisteredGymEnvs()
-        print("REGISTERED GYM ENVS===>"+str(supported_gym_envs))
+        #print("REGISTERED GYM ENVS===>"+str(supported_gym_envs))
         assert (task_env in supported_gym_envs), "The Task_Robot_ENV given is not Registered ==>"+str(task_and_robot_environment_name)
     
     return result
