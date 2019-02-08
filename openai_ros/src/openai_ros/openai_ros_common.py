@@ -90,6 +90,12 @@ class ROSLauncher(object):
         package_git = None
         if package_name == "moving_cube_description":
             package_git = "https://bitbucket.org/theconstructcore/moving_cube.git"
+        
+        if package_name == "rosbot_gazebo" or package_name == "rosbot_description":
+            package_git = "https://github.com/husarion/rosbot_description.git"
+        
+        ### ADD HERE THE GIT To Your Simuation
+        
         else:
             rospy.logerr("Package [ "+package_name+" ] is not supported for autodownload")
             assert False, "The package "++" is not supported, please check the package name and the git support in openai_ros_common.py"
@@ -99,6 +105,7 @@ class ROSLauncher(object):
             try:
                 rospy.logdebug("Lets download git="+package_git+", in ws="+ros_ws_src_abspath_src)
                 git.Git(ros_ws_src_abspath_src).clone(package_git)
+                rospy.logdebug("Download git="+package_git+", in ws="+ros_ws_src_abspath_src+"...DONE")
             except git.exc.GitCommandError:
                 rospy.logwarn("The Git "+package_git+" already exists in "+ros_ws_src_abspath_src+", not downloading")
             
