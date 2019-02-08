@@ -5,6 +5,8 @@ import roslaunch
 import rospy
 import rospkg
 import os
+import git
+import sys
 
 def StartOpenAI_ROS_Environment(task_and_robot_environment_name):
     """
@@ -39,21 +41,27 @@ class ROSLauncher(object):
         self._rospackage_name = rospackage_name
         self._launch_file_name = launch_file_name
         
-        rospack = rospkg.RosPack()
-        pkg_path = rospack.get_path(rospackage_name)
+        self.rospack = rospkg.RosPack()
+        pkg_path = self.rospack.get_path(rospackage_name)
         
         # Check Package Exists
         try:
-            pkg_path = rospack.get_path(rospackage_name)
+            pkg_path = self.rospack.get_path(rospackage_name)
+            rospy.logdebug("Package FOUND...")
         except rospkg.common.ResourceNotFound:
-            print("Package is not found")
-            pkg_path = None
-            
-            DownloadRepo(   package_name=rospackage_name,
-                            ros_ws_abspath=ros_ws_abspath)
-            rospy.logwarn("Please run catkin_make in the ros_ws="+ros_ws_abspath+", source devel/setup.bash and rospack profile before running again.")
-            
+            rospy.logwarn("Package NOT FOUND, lets Download it...")
+            pkg_path = self.DownloadRepo(   package_name=rospackage_name,
+                        ros_ws_abspath=ros_ws_abspath)
         
+        # Now we check that the Package path is inside the ros_ws_abspath
+        # This is to force the system to have the packages in that ws, and not in another.
+        if ros_ws_abspath in pkg_path:
+            rospy.logdebug("Package FOUND in the correct WS!")
+        else:
+            rospy.logwarn("Package FOUND in "+pkg_path+", BUT not in the ws="+ros_ws_abspath+", lets Download it...")
+            pkg_path = self.DownloadRepo(   package_name=rospackage_name,
+                        ros_ws_abspath=ros_ws_abspath)
+            
         # If the package was found then we launch
         if pkg_path:
             rospy.loginfo(">>>>>>>>>>Package found in workspace-->"+str(pkg_path))
@@ -74,13 +82,14 @@ class ROSLauncher(object):
         This has to be installed
         sudo pip install gitpython
         """
+        commands_to_take_effect="\ncd "+ros_ws_abspath+"\ncatkin_make\nsource devel/setup.bash\nrospack profile\n"
     
         ros_ws_src_abspath_src = os.path.join(ros_ws_abspath,"src")
-    
+        pkg_path = None
         # We retrieve the got for the package asked
         package_git = None
         if package_name == "moving_cube_description":
-            package_git = "git clone https://bitbucket.org/theconstructcore/moving_cube.git"
+            package_git = "https://bitbucket.org/theconstructcore/moving_cube.git"
         else:
             rospy.logerr("Package [ "+package_name+" ] is not supported for autodownload")
             assert False, "The package "++" is not supported, please check the package name and the git support in openai_ros_common.py"
@@ -88,12 +97,36 @@ class ROSLauncher(object):
         # If a Git for the package is supported
         if package_git:
             try:
+                rospy.logdebug("Lets download git="+package_git+", in ws="+ros_ws_src_abspath_src)
                 git.Git(ros_ws_src_abspath_src).clone(package_git)
+            except git.exc.GitCommandError:
+                rospy.logwarn("The Git "+package_git+" already exists in "+ros_ws_src_abspath_src+", not downloading")
+            
+            
+            # We check that the package is there
+            try:
+                pkg_path = self.rospack.get_path(package_name)
+                rospy.logwarn("The package "+package_name+" was FOUND by ROS.")
+                
+                if ros_ws_abspath in pkg_path:
+                    rospy.logdebug("Package FOUND in the correct WS!")
+                else:
+                    rospy.logwarn("Package FOUND in="+pkg_path+", BUT not in the ws="+ros_ws_abspath)
+                    rospy.logerr("IMPORTANT!: You need to execute the following commands and rerun to dowloads to take effect.")
+                    rospy.logerr(commands_to_take_effect)
+                    sys.exit()
+                
+                
+            except rospkg.common.ResourceNotFound:
+                rospy.logerr("Package "+package_name+" NOT FOUND by ROS.")
                 # We have to make the user compile and source to make ROS be able to find the new packages
                 # TODO: Make this automatic
-                assert False, "You need to compile, source and rospack profile and rerun to dowloads to take effect."
-            except git.exc.GitCommandError:
-                rospy.logwarn("The Git already exists in that path, not downloading")
+                rospy.logerr("IMPORTANT!: You need to execute the following commands and rerun to dowloads to take effect.")
+                rospy.logerr(commands_to_take_effect)
+                sys.exit()
+                
+        return pkg_path
+                
     
             
             
