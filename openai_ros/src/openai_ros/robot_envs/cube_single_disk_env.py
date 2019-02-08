@@ -10,16 +10,15 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
     """Superclass for all CubeSingleDisk environments.
     """
 
-    def __init__(self):
+    def __init__(self, ros_ws_abspath):
         """Initializes a new CubeSingleDisk environment.
 
         Args:
         """
         # We launch the ROSlaunch that spawns the robot into the world
-        self.roslauncher_obj = ROSLauncher( rospackage_name = "moving_cube_description",
-                                            launch_file_name = "spawn_moving_cube.launch")
-        
-        
+        ROSLauncher( rospackage_name = "moving_cube_description",
+                                            launch_file_name = "put_cube_in_world.launch",
+                                            ros_ws_abspath=ros_ws_abspath)
         
         # Variables that we give through the constructor.
         # None in this case
