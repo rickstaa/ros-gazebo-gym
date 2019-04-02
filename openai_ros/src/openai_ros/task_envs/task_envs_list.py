@@ -49,6 +49,17 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         # We have to import the Class that we registered so that it can be found afterwards in the Make
         from openai_ros.task_envs.fetch import fetch_test_task
 
+    elif task_env == 'CartPoleStayUp-v0':
+
+        register(
+            id=task_env,
+            entry_point='openai_ros:task_envs.cartpole_stay_up.stay_up.CartPoleStayUpEnv',
+            timestep_limit=timestep_limit_per_episode,
+        )
+
+        # import our training environment
+        from openai_ros.task_envs.cartpole_stay_up import stay_up
+
     # Add here your Task Envs to be registered
     else:
         result = False
