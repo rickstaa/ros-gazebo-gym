@@ -18,8 +18,8 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("Entered Fetch Env")
 
         # We launch the ROSlaunch that spawns the robot into the world
-        ROSLauncher(rospackage_name="moving_cube_description",
-                    launch_file_name="put_cube_in_world.launch",
+        ROSLauncher(rospackage_name="fetch_gazebo",
+                    launch_file_name="put_fetch_in_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
         self.controllers_list = []

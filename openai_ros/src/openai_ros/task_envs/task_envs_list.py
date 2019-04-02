@@ -46,6 +46,8 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
             timestep_limit=timestep_limit_per_episode,
         )
         # 50
+        # We have to import the Class that we registered so that it can be found afterwards in the Make
+        from openai_ros.task_envs.fetch import fetch_test_task
 
     # Add here your Task Envs to be registered
     else:
