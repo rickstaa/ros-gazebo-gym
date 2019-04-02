@@ -15,6 +15,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode = 10000):
     
     result = True
     
+    # Cubli Moving Cube
     if task_env == 'MovingCubeOneDiskWalk-v0':
         # We register the Class through the Gym system
         register(
@@ -24,7 +25,19 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode = 10000):
             )
         # We have to import the Class that we registered so that it can be found afterwards in the Make
         from openai_ros.task_envs.moving_cube import one_disk_walk
+    
+    # Husarion Robot
+    if task_env == 'HusarionGetToPosTurtleBotPlayGround-v0':
         
+        register(
+                id='HusarionGetToPosTurtleBotPlayGround-v0',
+                entry_point='openai_ros:task_envs.husarion.husarion_get_to_position_turtlebot_playground.HusarionGetToPosTurtleBotPlayGroundEnv',
+                timestep_limit=timestep_limit_per_episode,
+            )
+        
+        # import our training environment
+        from openai_ros.task_envs.husarion import husarion_get_to_position_turtlebot_playground
+    
     # Add here your Task Envs to be registered
     else:
         result = False

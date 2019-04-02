@@ -12,9 +12,14 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
     def __init__(self):
         
         # Launch the Task Simulated-Environment
+        # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
+        ros_ws_abspath="/home/user/simulation_ws"
         
-        self.roslauncher_obj = ROSLauncher( rospackage_name = "moving_cube_description",
-                                            launch_file_name = "start_world.launch")
+        ROSLauncher(rospackage_name = "moving_cube_description",
+                    launch_file_name = "start_world.launch",
+                    ros_ws_abspath=ros_ws_abspath)
+        
+        
         
         # Load Params from the desired Yaml file
         LoadYamlFileParamsTest( rospackage_name = "openai_ros",
@@ -84,7 +89,7 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         self.cumulated_steps = 0.0
 
         # Here we will add any init functions prior to starting the MyRobotEnv
-        super(MovingCubeOneDiskWalkEnv, self).__init__()
+        super(MovingCubeOneDiskWalkEnv, self).__init__(ros_ws_abspath)
 
     def _set_init_pose(self):
         """Sets the Robot in its init pose

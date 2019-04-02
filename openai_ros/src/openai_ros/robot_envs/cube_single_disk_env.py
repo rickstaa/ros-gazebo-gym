@@ -6,21 +6,21 @@ from sensor_msgs.msg import JointState
 from nav_msgs.msg import Odometry
 from openai_ros.openai_ros_common import ROSLauncher
 
+
 class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
     """Superclass for all CubeSingleDisk environments.
     """
 
-    def __init__(self):
+    def __init__(self, ros_ws_abspath):
         """Initializes a new CubeSingleDisk environment.
 
         Args:
         """
         # We launch the ROSlaunch that spawns the robot into the world
-        self.roslauncher_obj = ROSLauncher( rospackage_name = "moving_cube_description",
-                                            launch_file_name = "put_cube_in_world.launch")
-        
-        
-        
+        ROSLauncher(rospackage_name="moving_cube_description",
+                    launch_file_name="put_cube_in_world.launch",
+                    ros_ws_abspath=ros_ws_abspath)
+
         # Variables that we give through the constructor.
         # None in this case
 
@@ -36,8 +36,6 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
                                                 robot_name_space=self.robot_name_space,
                                                 reset_controls=True)
 
-
-
         """
         To check any topic we need to have the simulations running, we need to do two things:
         1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
@@ -51,7 +49,8 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         self._check_all_sensors_ready()
 
         # We Start all the ROS related Subscribers and publishers
-        rospy.Subscriber("/moving_cube/joint_states", JointState, self._joints_callback)
+        rospy.Subscriber("/moving_cube/joint_states",
+                         JointState, self._joints_callback)
         rospy.Subscriber("/moving_cube/odom", Odometry, self._odom_callback)
 
         self._roll_vel_pub = rospy.Publisher('/moving_cube/inertia_wheel_roll_joint_velocity_controller/command',
@@ -63,7 +62,6 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
     # Methods needed by the RobotGazeboEnv
     # ----------------------------
-    
 
     def _check_all_systems_ready(self):
         """
@@ -72,7 +70,6 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         self._check_all_sensors_ready()
         return True
-
 
     # CubeSingleDiskEnv virtual methods
     # ----------------------------
@@ -86,31 +83,37 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         self.joints = None
         while self.joints is None and not rospy.is_shutdown():
             try:
-                self.joints = rospy.wait_for_message("/moving_cube/joint_states", JointState, timeout=1.0)
-                rospy.logdebug("Current moving_cube/joint_states READY=>" + str(self.joints))
+                self.joints = rospy.wait_for_message(
+                    "/moving_cube/joint_states", JointState, timeout=1.0)
+                rospy.logdebug(
+                    "Current moving_cube/joint_states READY=>" + str(self.joints))
 
             except:
-                rospy.logerr("Current moving_cube/joint_states not ready yet, retrying for getting joint_states")
+                rospy.logerr(
+                    "Current moving_cube/joint_states not ready yet, retrying for getting joint_states")
         return self.joints
 
     def _check_odom_ready(self):
         self.odom = None
         while self.odom is None and not rospy.is_shutdown():
             try:
-                self.odom = rospy.wait_for_message("/moving_cube/odom", Odometry, timeout=1.0)
-                rospy.logdebug("Current /moving_cube/odom READY=>" + str(self.odom))
+                self.odom = rospy.wait_for_message(
+                    "/moving_cube/odom", Odometry, timeout=1.0)
+                rospy.logdebug(
+                    "Current /moving_cube/odom READY=>" + str(self.odom))
 
             except:
-                rospy.logerr("Current /moving_cube/odom not ready yet, retrying for getting odom")
+                rospy.logerr(
+                    "Current /moving_cube/odom not ready yet, retrying for getting odom")
 
         return self.odom
-        
+
     def _joints_callback(self, data):
         self.joints = data
-    
+
     def _odom_callback(self, data):
         self.odom = data
-        
+
     def _check_publishers_connection(self):
         """
         Checks that all the publishers are working
@@ -118,7 +121,8 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         rate = rospy.Rate(10)  # 10hz
         while self._roll_vel_pub.get_num_connections() == 0 and not rospy.is_shutdown():
-            rospy.logdebug("No susbribers to _roll_vel_pub yet so we wait and try again")
+            rospy.logdebug(
+                "No susbribers to _roll_vel_pub yet so we wait and try again")
             try:
                 rate.sleep()
             except rospy.ROSInterruptException:
@@ -127,7 +131,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("_roll_vel_pub Publisher Connected")
 
         rospy.logdebug("All Publishers READY")
-    
+
     # Methods that the TrainingEnvironment will need to define here as virtual
     # because they will be used in RobotGazeboEnv GrandParentClass and defined in the
     # TrainingEnvironment.
@@ -136,7 +140,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         """Sets the Robot in its init pose
         """
         raise NotImplementedError()
-    
+
     def _init_env_variables(self):
         """Inits variables needed to be initialised each time we reset at the start
         of an episode.
@@ -160,7 +164,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         """Checks if episode done based on observations given.
         """
         raise NotImplementedError()
-        
+
     # Methods that the TrainingEnvironment will need.
     # ----------------------------
     def move_joints(self, roll_speed):
@@ -169,9 +173,9 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("Single Disk Roll Velocity>>" + str(joint_speed_value))
         self._roll_vel_pub.publish(joint_speed_value)
         self.wait_until_roll_is_in_vel(joint_speed_value.data)
-    
+
     def wait_until_roll_is_in_vel(self, velocity):
-    
+
         rate = rospy.Rate(10)
         start_wait_time = rospy.get_rostime().to_sec()
         end_wait_time = 0.0
@@ -181,7 +185,8 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         while not rospy.is_shutdown():
             joint_data = self._check_joint_states_ready()
             roll_vel = joint_data.velocity[0]
-            rospy.logdebug("VEL=" + str(roll_vel) + ", ?RANGE=[" + str(v_minus) + ","+str(v_plus)+"]")
+            rospy.logdebug("VEL=" + str(roll_vel) +
+                           ", ?RANGE=[" + str(v_minus) + ","+str(v_plus)+"]")
             are_close = (roll_vel <= v_plus) and (roll_vel > v_minus)
             if are_close:
                 rospy.logdebug("Reached Velocity!")
@@ -189,13 +194,12 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
                 break
             rospy.logdebug("Not there yet, keep waiting...")
             rate.sleep()
-        delta_time = end_wait_time- start_wait_time
+        delta_time = end_wait_time - start_wait_time
         rospy.logdebug("[Wait Time=" + str(delta_time)+"]")
         return delta_time
-        
 
     def get_joints(self):
         return self.joints
-    
+
     def get_odom(self):
         return self.odom

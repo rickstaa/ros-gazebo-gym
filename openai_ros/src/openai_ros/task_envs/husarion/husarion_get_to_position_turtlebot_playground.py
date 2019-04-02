@@ -2,22 +2,13 @@ import rospy
 import numpy
 from gym import spaces
 from openai_ros.robot_envs import husarion_env
-from gym.envs.registration import register
 from geometry_msgs.msg import Vector3
 from geometry_msgs.msg import Point
 from tf.transformations import euler_from_quaternion
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Header
-
-
-# The path is __init__.py of openai_ros, where we import the SumitXlMazeEnv directly
-timestep_limit_per_episode = 10000 # Can be any Value
-
-register(
-        id='HusarionGetToPosTurtleBotPlayGround-v0',
-        entry_point='openai_ros:task_envs.husarion.husarion_get_to_position_turtlebot_playground.HusarionGetToPosTurtleBotPlayGroundEnv',
-        timestep_limit=timestep_limit_per_episode,
-    )
+from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
+from openai_ros.openai_ros_common import ROSLauncher
 
 class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
     def __init__(self):
@@ -26,6 +17,20 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         closed room with columns.
         It will learn how to move around without crashing.
         """
+        # Launch the Task Simulated-Environment
+        # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
+        ros_ws_abspath="/home/user/simulation_ws"
+        
+        ROSLauncher(rospackage_name = "rosbot_gazebo",
+                    launch_file_name = "rosbot_world.launch",
+                    ros_ws_abspath=ros_ws_abspath)
+        
+        
+        # Load Params from the desired Yaml file
+        LoadYamlFileParamsTest( rospackage_name = "openai_ros",
+                                rel_path_from_package_to_file = "src/openai_ros/task_envs/husarion/config",
+                                yaml_file_name = "husarion_get_to_position_turtlebot_playground.yaml")
+        
         
         # Only variable needed to be set here
         number_actions = rospy.get_param('/husarion/n_actions')
@@ -111,7 +116,7 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         self.laser_filtered_pub = rospy.Publisher('/rosbot/laser/scan_filtered', LaserScan, queue_size=1)
 
         # Here we will add any init functions prior to starting the MyRobotEnv
-        super(HusarionGetToPosTurtleBotPlayGroundEnv, self).__init__()
+        super(HusarionGetToPosTurtleBotPlayGroundEnv, self).__init__(ros_ws_abspath)
 
     def _set_init_pose(self):
         """Sets the Robot in its init pose
