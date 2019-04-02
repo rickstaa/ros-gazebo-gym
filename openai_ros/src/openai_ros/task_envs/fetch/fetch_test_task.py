@@ -24,13 +24,11 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
 
         # Load Params from the desired Yaml file relative to this TaskEnvironment
         LoadYamlFileParamsTest(rospackage_name="openai_ros",
-                               rel_path_from_package_to_file="src/openai_ros/task_envs/moving_cube/config",
-                               yaml_file_name="one_disk_walk.yaml")
+                               rel_path_from_package_to_file="src/openai_ros/task_envs/fetch/config",
+                               yaml_file_name="fetch_test.yaml")
 
         rospy.logdebug("Entered FetchTestEnv Env")
         self.get_params()
-
-        fetch_env.FetchEnv.__init__(self)
 
         self.action_space = spaces.Discrete(self.n_actions)
 
@@ -47,6 +45,10 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         low = np.concatenate([observations_low_range, observations_low_dist])
 
         self.observation_space = spaces.Box(low, high)
+
+        # TODO: Clean up
+        # fetch_env.FetchEnv.__init__(self)
+        super(FetchTestEnv, self).__init__(ros_ws_abspath)
 
     def get_params(self):
         # get configuration parameters
