@@ -41,7 +41,8 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
         """
 
         # Here we will add any init functions prior to starting the MyRobotEnv
-        super(CartPoleStayUpEnv, self).__init__(ros_ws_abspath)
+        super(CartPoleStayUpEnv, self).__init__(control_type=self.control_type,
+                                                ros_ws_abspath=ros_ws_abspath)
 
     def get_params(self):
         # get configuration parameters
