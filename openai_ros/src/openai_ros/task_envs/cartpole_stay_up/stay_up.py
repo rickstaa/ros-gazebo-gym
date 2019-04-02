@@ -8,19 +8,20 @@ import numpy as np
 from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
 from openai_ros.openai_ros_common import ROSLauncher
 
+
 class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
     def __init__(self):
 
         ros_ws_abspath = "/home/user/simulation_ws"
 
-        ROSLauncher(rospackage_name="moving_cube_description",
+        ROSLauncher(rospackage_name="cartpole_description",
                     launch_file_name="start_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
         # Load Params from the desired Yaml file
         LoadYamlFileParamsTest(rospackage_name="openai_ros",
-                               rel_path_from_package_to_file="src/openai_ros/task_envs/moving_cube/config",
-                               yaml_file_name="one_disk_walk.yaml")
+                               rel_path_from_package_to_file="src/openai_ros/task_envs/cartpole_stay_up/config",
+                               yaml_file_name="stay_up.yaml")
 
         self.get_params()
 
@@ -32,9 +33,15 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
             np.finfo(np.float32).max])
         self.observation_space = spaces.Box(-high, high)
 
+        # TODO: Remove when working
+        """
         cartpole_env.CartPoleEnv.__init__(
             self, control_type=self.control_type
         )
+        """
+
+        # Here we will add any init functions prior to starting the MyRobotEnv
+        super(CartPoleStayUpEnv, self).__init__(ros_ws_abspath)
 
     def get_params(self):
         # get configuration parameters

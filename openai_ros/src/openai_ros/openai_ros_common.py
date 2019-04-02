@@ -101,6 +101,9 @@ class ROSLauncher(object):
         if package_name == "fetch_gazebo":
             package_git = "https://bitbucket.org/theconstructcore/fetch_tc.git"
 
+        if package_name == "cartpole_description" or package_name == "cartpole_v0_training":
+            package_git = "https://bitbucket.org/theconstructcore/cart_pole.git"
+
         # ADD HERE THE GIT To Your Simuation
 
         else:
