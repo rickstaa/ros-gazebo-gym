@@ -17,7 +17,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         # We launch the ROSlaunch that spawns the robot into the world
         self.roslauncher_obj = ROSLauncher( rospackage_name = "moving_cube_description",
-                                            launch_file_name = "spawn_moving_cube.launch")
+                                            launch_file_name = "put_cube_in_world.launch")
         
         
         
