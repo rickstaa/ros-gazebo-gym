@@ -99,21 +99,31 @@ class ROSLauncher(object):
         rospy.logdebug("package_name===>"+str(package_name)+"<===")
 
         if package_name == "moving_cube_description":
-            package_git = "https://bitbucket.org/theconstructcore/moving_cube.git"
+            package_git = [
+                "https://bitbucket.org/theconstructcore/moving_cube.git"]
 
         elif package_name == "rosbot_gazebo" or package_name == "rosbot_description":
-            package_git = "https://bitbucket.org/theconstructcore/rosbot_husarion.git"
+            package_git = [
+                "https://bitbucket.org/theconstructcore/rosbot_husarion.git"]
 
         elif package_name == "fetch_gazebo":
-            package_git = "https://bitbucket.org/theconstructcore/fetch_tc.git"
+            package_git = [
+                "https://bitbucket.org/theconstructcore/fetch_tc.git"]
 
         elif package_name == "cartpole_description" or package_name == "cartpole_v0_training":
-            package_git = "https://bitbucket.org/theconstructcore/cart_pole.git"
+            package_git = [
+                "https://bitbucket.org/theconstructcore/cart_pole.git"]
 
         elif package_name == "legged_robots_sims" or package_name == "legged_robots_description" or package_name == "my_legged_robots_description" or package_name == "my_legged_robots_sims" or package_name == "my_hopper_training":
-            package_git = "https://bitbucket.org/theconstructcore/hopper.git"
+            package_git = ["https://bitbucket.org/theconstructcore/hopper.git"]
 
-        # ADD HERE THE GIT To Your Simuation
+        elif package_name == "iri_wam_description" or package_name == "iri_wam_gazebo" or package_name == "iri_wam_reproduce_trajectory" or package_name == "iri_wam_aff_demo":
+            package_git = [
+                "https://bitbucket.org/theconstructcore/iri_wam.git"]
+            package_git.append(
+                "https://bitbucket.org/theconstructcore/hokuyo_model.git")
+
+        # ADD HERE THE GITs List To Your Simuation
 
         else:
             rospy.logerr("Package [ >"+package_name +
@@ -123,15 +133,16 @@ class ROSLauncher(object):
 
         # If a Git for the package is supported
         if package_git:
-            try:
-                rospy.logdebug("Lets download git="+package_git +
-                               ", in ws="+ros_ws_src_abspath_src)
-                git.Git(ros_ws_src_abspath_src).clone(package_git)
-                rospy.logdebug("Download git="+package_git +
-                               ", in ws="+ros_ws_src_abspath_src+"...DONE")
-            except git.exc.GitCommandError:
-                rospy.logwarn("The Git "+package_git+" already exists in " +
-                              ros_ws_src_abspath_src+", not downloading")
+            for git_url in package_git:
+                try:
+                    rospy.logdebug("Lets download git="+git_url +
+                                   ", in ws="+ros_ws_src_abspath_src)
+                    git.Git(ros_ws_src_abspath_src).clone(git_url)
+                    rospy.logdebug("Download git="+git_url +
+                                   ", in ws="+ros_ws_src_abspath_src+"...DONE")
+                except git.exc.GitCommandError:
+                    rospy.logwarn("The Git "+git_url+" already exists in " +
+                                  ros_ws_src_abspath_src+", not downloading")
 
             # We check that the package is there
             try:
