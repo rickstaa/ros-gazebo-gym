@@ -69,13 +69,16 @@ class ROSLauncher(object):
             launch_dir = os.path.join(pkg_path, "launch")
             path_launch_file_name = os.path.join(launch_dir, launch_file_name)
 
+            rospy.logwarn("path_launch_file_name=="+str(path_launch_file_name))
+
             self.uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
             roslaunch.configure_logging(self.uuid)
             self.launch = roslaunch.parent.ROSLaunchParent(
                 self.uuid, [path_launch_file_name])
             self.launch.start()
 
-            rospy.loginfo("STARTED Roslaunch-->"+str(self._launch_file_name))
+            rospy.loginfo(">>>>>>>>>STARTED Roslaunch-->" +
+                          str(self._launch_file_name))
         else:
             assert False, "No Package Path was found for ROS apckage ==>" + \
                 str(rospackage_name)
@@ -92,26 +95,29 @@ class ROSLauncher(object):
         pkg_path = None
         # We retrieve the got for the package asked
         package_git = None
+
+        rospy.logdebug("package_name===>"+str(package_name)+"<===")
+
         if package_name == "moving_cube_description":
             package_git = "https://bitbucket.org/theconstructcore/moving_cube.git"
 
-        if package_name == "rosbot_gazebo" or package_name == "rosbot_description":
+        elif package_name == "rosbot_gazebo" or package_name == "rosbot_description":
             package_git = "https://bitbucket.org/theconstructcore/rosbot_husarion.git"
 
-        if package_name == "fetch_gazebo":
+        elif package_name == "fetch_gazebo":
             package_git = "https://bitbucket.org/theconstructcore/fetch_tc.git"
 
-        if package_name == "cartpole_description" or package_name == "cartpole_v0_training":
+        elif package_name == "cartpole_description" or package_name == "cartpole_v0_training":
             package_git = "https://bitbucket.org/theconstructcore/cart_pole.git"
 
-        if package_name == "legged_robots_sims" or package_name == "legged_robots_description" or package_name == "my_legged_robots_description" or package_name == "my_legged_robots_sims" or package_name == "my_hopper_training":
+        elif package_name == "legged_robots_sims" or package_name == "legged_robots_description" or package_name == "my_legged_robots_description" or package_name == "my_legged_robots_sims" or package_name == "my_hopper_training":
             package_git = "https://bitbucket.org/theconstructcore/hopper.git"
 
         # ADD HERE THE GIT To Your Simuation
 
         else:
-            rospy.logerr("Package [ "+package_name +
-                         " ] is not supported for autodownload, do it manually into >"+str(ros_ws_abspath))
+            rospy.logerr("Package [ >"+package_name +
+                         "< ] is not supported for autodownload, do it manually into >"+str(ros_ws_abspath))
             assert False, "The package "++ \
                 " is not supported, please check the package name and the git support in openai_ros_common.py"
 

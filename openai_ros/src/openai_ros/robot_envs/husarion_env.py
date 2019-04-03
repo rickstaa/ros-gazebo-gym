@@ -41,14 +41,14 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
 
         Args:
         """
-        rospy.logdebug("Start HusarionEnv INIT...")
+        rospy.logerr(">>>>>>>>>>>Start HusarionEnv INIT...")
         # Variables that we give through the constructor.
         # None in this case
         # We launch the ROSlaunch that spawns the robot into the world
         ROSLauncher(rospackage_name="rosbot_gazebo",
                     launch_file_name="put_rosbot_in_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
-
+        rospy.logerr(">>>>>>>>>>>ROSLAUCHER DONE HusarionEnv INIT...")
         # Internal Vars
         # Doesnt have any accesibles
         self.controllers_list = []

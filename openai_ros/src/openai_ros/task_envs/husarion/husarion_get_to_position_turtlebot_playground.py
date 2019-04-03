@@ -72,6 +72,11 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         # We create the arrays for the laser readings
         # We also create the arrays for the odometry readings
         # We join them toeguether.
+
+        # Here we will add any init functions prior to starting the MyRobotEnv
+        super(HusarionGetToPosTurtleBotPlayGroundEnv,
+              self).__init__(ros_ws_abspath)
+
         laser_scan = self._check_laser_scan_ready()
         num_laser_readings = len(laser_scan.ranges)/self.new_ranges
         high_laser = numpy.full((num_laser_readings), self.max_laser_value)
@@ -117,10 +122,6 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
 
         self.laser_filtered_pub = rospy.Publisher(
             '/rosbot/laser/scan_filtered', LaserScan, queue_size=1)
-
-        # Here we will add any init functions prior to starting the MyRobotEnv
-        super(HusarionGetToPosTurtleBotPlayGroundEnv,
-              self).__init__(ros_ws_abspath)
 
     def _set_init_pose(self):
         """Sets the Robot in its init pose
