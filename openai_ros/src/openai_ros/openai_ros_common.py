@@ -96,7 +96,7 @@ class ROSLauncher(object):
             package_git = "https://bitbucket.org/theconstructcore/moving_cube.git"
 
         if package_name == "rosbot_gazebo" or package_name == "rosbot_description":
-            package_git = "https://github.com/husarion/rosbot_description.git"
+            package_git = "https://bitbucket.org/theconstructcore/rosbot_husarion.git"
 
         if package_name == "fetch_gazebo":
             package_git = "https://bitbucket.org/theconstructcore/fetch_tc.git"
