@@ -104,6 +104,9 @@ class ROSLauncher(object):
         if package_name == "cartpole_description" or package_name == "cartpole_v0_training":
             package_git = "https://bitbucket.org/theconstructcore/cart_pole.git"
 
+        if package_name == "legged_robots_sims" or package_name == "legged_robots_description" or package_name == "my_legged_robots_description" or package_name == "my_legged_robots_sims" or package_name == "my_hopper_training":
+            package_git = "https://bitbucket.org/theconstructcore/hopper.git"
+
         # ADD HERE THE GIT To Your Simuation
 
         else:

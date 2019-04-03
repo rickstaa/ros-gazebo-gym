@@ -60,6 +60,17 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         # import our training environment
         from openai_ros.task_envs.cartpole_stay_up import stay_up
 
+    elif task_env == 'HopperStayUp-v0':
+
+        register(
+            id=task_env,
+            entry_point='openai_ros:task_envs.hopper.hopper_stay_up.HopperStayUpEnv',
+            timestep_limit=timestep_limit_per_episode,
+        )
+
+        # import our training environment
+        from openai_ros.task_envs.hopper import hopper_stay_up
+
     # Add here your Task Envs to be registered
     else:
         result = False
