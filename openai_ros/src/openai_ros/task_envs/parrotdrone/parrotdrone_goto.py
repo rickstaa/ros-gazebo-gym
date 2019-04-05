@@ -17,7 +17,7 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         """
         ros_ws_abspath = "/home/user/simulation_ws"
 
-        ROSLauncher(rospackage_name="rosbot_gazebo",
+        ROSLauncher(rospackage_name="drone_construct",
                     launch_file_name="start_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
@@ -109,7 +109,7 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         self.cumulated_steps = 0.0
 
         # Here we will add any init functions prior to starting the MyRobotEnv
-        super(ParrotDroneGotoEnv, self).__init__()
+        super(ParrotDroneGotoEnv, self).__init__(ros_ws_abspath)
 
     def _set_init_pose(self):
         """

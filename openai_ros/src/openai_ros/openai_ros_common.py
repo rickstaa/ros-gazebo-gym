@@ -123,6 +123,10 @@ class ROSLauncher(object):
             package_git.append(
                 "https://bitbucket.org/theconstructcore/hokuyo_model.git")
 
+        elif package_name == "drone_construct" or package_name == "drone_demo" or package_name == "sjtu_drone" or package_name == "custom_teleop" or package_name == "ardrone_as":
+            package_git = [
+                "https://bitbucket.org/theconstructcore/parrot_ardrone.git"]
+
         # ADD HERE THE GITs List To Your Simuation
 
         else:
