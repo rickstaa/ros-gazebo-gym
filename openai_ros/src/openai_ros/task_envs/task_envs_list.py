@@ -82,6 +82,17 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         # import our training environment
         from openai_ros.task_envs.iriwam import tcp_to_bowl
 
+    elif task_env == 'ParrotDroneGoto-v0':
+
+        register(
+            id=task_env,
+            entry_point='openai_ros:task_envs.parrotdrone.parrotdrone_goto.ParrotDroneGotoEnv',
+            timestep_limit=timestep_limit_per_episode,
+        )
+
+        # import our training environment
+        from openai_ros.task_envs.parrotdrone import parrotdrone_goto
+
     # Add here your Task Envs to be registered
     else:
         result = False
