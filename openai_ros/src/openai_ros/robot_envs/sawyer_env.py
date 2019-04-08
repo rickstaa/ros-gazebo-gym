@@ -41,8 +41,8 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         # None in this case
 
         # We launch the ROSlaunch that spawns the robot into the world
-        ROSLauncher(rospackage_name="legged_robots_sims",
-                    launch_file_name="put_hopper_in_world.launch",
+        ROSLauncher(rospackage_name="sawyer_gazebo",
+                    launch_file_name="put_sawyer_in_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
         # Internal Vars

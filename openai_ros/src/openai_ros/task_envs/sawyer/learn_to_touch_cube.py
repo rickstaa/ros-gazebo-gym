@@ -19,7 +19,7 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
         ros_ws_abspath = "/home/user/simulation_ws"
 
-        ROSLauncher(rospackage_name="legged_robots_sims",
+        ROSLauncher(rospackage_name="sawyer_gazebo",
                     launch_file_name="start_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
