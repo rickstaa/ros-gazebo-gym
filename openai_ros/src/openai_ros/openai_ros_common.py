@@ -127,6 +127,11 @@ class ROSLauncher(object):
             package_git = [
                 "https://bitbucket.org/theconstructcore/parrot_ardrone.git"]
 
+        elif package_name == "sawyer_gazebo":
+            package_git = ["https://bitbucket.org/theconstructcore/sawyer_full.git"]
+
+        elif package_name == "shadow_gazebo":
+            package_git = ["https://bitbucket.org/theconstructcore/shadow_robot_smart_grasping_sandbox.git"]
         # ADD HERE THE GITs List To Your Simuation
 
         else:
