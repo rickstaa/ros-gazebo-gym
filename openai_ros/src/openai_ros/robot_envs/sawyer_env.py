@@ -336,13 +336,14 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         end_frame = "/"+end_frame_name
 
         trans, rot = None, None
-
-        try:
-            (trans, rot) = self.listener.lookupTransform(
-                start_frame, end_frame, rospy.Time(0))
-        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-            rospy.logerr("TF start to end not ready YET...")
-            pass
+        while (trans is None or rot is None) and not rospy.is_shutdown():
+            try:
+                (trans, rot) = self.listener.lookupTransform(
+                    start_frame, end_frame, rospy.Time(0))
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                rospy.logerr("TF start to end not ready YET...")
+                duration_obj = rospy.Duration.from_sec(1.0)
+                rospy.sleep(duration_obj)
 
         return trans, rot
 

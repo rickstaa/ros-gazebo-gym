@@ -28,6 +28,9 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
                                rel_path_from_package_to_file="src/openai_ros/task_envs/sawyer/config",
                                yaml_file_name="learn_to_touch_cube.yaml")
 
+        import time
+        time.sleep(15)
+        print("STARTING SPAWN ROBOT")
         # We execute this one before because there are some functions that this
         # TaskEnv uses that use variables from the parent class, like the effort limit fetch.
         super(SawyerTouchCubeEnv, self).__init__(ros_ws_abspath)
