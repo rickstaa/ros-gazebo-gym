@@ -43,7 +43,7 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         # None in this case
 
         # We launch the ROSlaunch that spawns the robot into the world
-        ROSLauncher(rospackage_name="sawyer_gazebo",
+        ROSLauncher(rospackage_name="shadow_gazebo",
                     launch_file_name="put_shadow_in_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
