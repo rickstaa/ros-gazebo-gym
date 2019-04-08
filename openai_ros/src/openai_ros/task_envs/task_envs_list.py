@@ -104,6 +104,17 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         # import our training environment
         from openai_ros.task_envs.sawyer import learn_to_touch_cube
 
+    elif task_env == 'ShadowTcGetBall-v0':
+
+        register(
+            id='ShadowTcGetBall-v0',
+            entry_point='openai_ros:task_envs.shadow_tc.learn_to_pick_ball.ShadowTcGetBallEnv',
+            timestep_limit=timestep_limit_per_episode,
+        )
+
+        # import our training environment
+        from openai_ros.task_envs.shadow_tc import learn_to_pick_ball
+
     # Add here your Task Envs to be registered
     else:
         result = False

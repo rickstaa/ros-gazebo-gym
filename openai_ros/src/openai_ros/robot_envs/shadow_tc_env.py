@@ -7,13 +7,13 @@ from sensor_msgs.msg import Imu
 from sensor_msgs.msg import JointState
 from smart_grasping_sandbox.smart_grasper import SmartGrasper
 from moveit_msgs.msg import PlanningScene
-
+from openai_ros.openai_ros_common import ROSLauncher
 
 class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
     """Superclass for all ShadowTcEnv environments.
     """
 
-    def __init__(self):
+    def __init__(self, ros_ws_abspath):
         """
         Initializes a new ShadowTcEnv environment.
         
@@ -41,6 +41,11 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("Start ShadowTcEnv INIT...")
         # Variables that we give through the constructor.
         # None in this case
+
+        # We launch the ROSlaunch that spawns the robot into the world
+        ROSLauncher(rospackage_name="sawyer_gazebo",
+                    launch_file_name="put_sawyer_in_world.launch",
+                    ros_ws_abspath=ros_ws_abspath)
 
         # Internal Vars
         # Doesnt have any accesibles
