@@ -31,7 +31,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
                                yaml_file_name="sumit_xl_room.yaml")
 
         # Here we will add any init functions prior to starting the MyRobotEnv
-        super(SumitXlRoom, self)..__init__(ros_ws_abspath)
+        super(SumitXlRoom, self).__init__(ros_ws_abspath)
 
         # Only variable needed to be set here
         number_actions = rospy.get_param('/sumit_xl/n_actions')
