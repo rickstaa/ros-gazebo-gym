@@ -132,7 +132,14 @@ class ROSLauncher(object):
 
         elif package_name == "shadow_gazebo":
             package_git = ["https://bitbucket.org/theconstructcore/shadow_robot_smart_grasping_sandbox.git"]
+
+        elif package_name == "summit_xl_gazebo":
+            package_git = ["https://bitbucket.org/theconstructcore/summit_xl.git"]
+
         # ADD HERE THE GITs List To Your Simuation
+
+
+
 
         else:
             rospy.logerr("Package [ >"+package_name +

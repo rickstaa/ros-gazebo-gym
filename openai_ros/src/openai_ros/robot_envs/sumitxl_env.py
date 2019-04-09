@@ -11,13 +11,13 @@ from sensor_msgs.msg import NavSatFix
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Vector3Stamped
-
+from openai_ros.openai_ros_common import ROSLauncher
 
 class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
     """Superclass for all CubeSingleDisk environments.
     """
 
-    def __init__(self):
+    def __init__(self, ros_ws_abspath):
         """
         Initializes a new SumitXlEnv environment.
         
@@ -50,6 +50,11 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("Start SumitXlEnv INIT...")
         # Variables that we give through the constructor.
         # None in this case
+
+        # We launch the ROSlaunch that spawns the robot into the world
+        ROSLauncher(rospackage_name="summit_xl_gazebo",
+                    launch_file_name="put_summit_xl_in_world.launch",
+                    ros_ws_abspath=ros_ws_abspath)
 
         # Internal Vars
         # Doesnt have any accesibles

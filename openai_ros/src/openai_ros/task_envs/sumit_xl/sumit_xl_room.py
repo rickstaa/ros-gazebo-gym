@@ -6,16 +6,9 @@ from gym.envs.registration import register
 from geometry_msgs.msg import Vector3
 from geometry_msgs.msg import Point
 from tf.transformations import euler_from_quaternion
+from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
+from openai_ros.openai_ros_common import ROSLauncher
 
-
-# The path is __init__.py of openai_ros, where we import the SumitXlMazeEnv directly
-timestep_limit_per_episode = 10000 # Can be any Value
-
-register(
-        id='SumitXlRoom-v0',
-        entry_point='openai_ros:task_envs.sumit_xl.sumit_xl_room.SumitXlRoom',
-        timestep_limit=timestep_limit_per_episode,
-    )
 
 class SumitXlRoom(sumitxl_env.SumitXlEnv):
     def __init__(self):
@@ -24,7 +17,22 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         closed room with columns.
         It will learn how to move around without crashing.
         """
-        
+
+        # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
+        ros_ws_abspath = "/home/user/simulation_ws"
+
+        ROSLauncher(rospackage_name="summit_xl_gazebo",
+                    launch_file_name="start_world.launch",
+                    ros_ws_abspath=ros_ws_abspath)
+
+        # Load Params from the desired Yaml file
+        LoadYamlFileParamsTest(rospackage_name="openai_ros",
+                               rel_path_from_package_to_file="src/openai_ros/task_envs/sumit_xl/config",
+                               yaml_file_name="sumit_xl_room.yaml")
+
+        # Here we will add any init functions prior to starting the MyRobotEnv
+        super(SumitXlRoom, self)..__init__(ros_ws_abspath)
+
         # Only variable needed to be set here
         number_actions = rospy.get_param('/sumit_xl/n_actions')
         self.action_space = spaces.Discrete(number_actions)
@@ -86,8 +94,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
 
         self.cumulated_steps = 0.0
 
-        # Here we will add any init functions prior to starting the MyRobotEnv
-        super(SumitXlRoom, self).__init__()
+
 
     def _set_init_pose(self):
         """Sets the Robot in its init pose

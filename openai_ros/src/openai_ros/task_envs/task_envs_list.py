@@ -107,13 +107,24 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
     elif task_env == 'ShadowTcGetBall-v0':
 
         register(
-            id='ShadowTcGetBall-v0',
+            id=task_env,
             entry_point='openai_ros:task_envs.shadow_tc.learn_to_pick_ball.ShadowTcGetBallEnv',
             timestep_limit=timestep_limit_per_episode,
         )
 
         # import our training environment
         from openai_ros.task_envs.shadow_tc import learn_to_pick_ball
+
+    elif task_env == 'SumitXlRoom-v0':
+
+        register(
+            id='SumitXlRoom-v0',
+            entry_point='openai_ros:task_envs.sumit_xl.sumit_xl_room.SumitXlRoom',
+            timestep_limit=timestep_limit_per_episode,
+        )
+
+        # import our training environment
+        from openai_ros.task_envs.sumit_xl import sumit_xl_room
 
     # Add here your Task Envs to be registered
     else:
