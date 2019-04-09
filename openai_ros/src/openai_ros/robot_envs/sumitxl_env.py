@@ -55,7 +55,7 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         ROSLauncher(rospackage_name="summit_xl_gazebo",
                     launch_file_name="put_summit_xl_in_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
-
+        rospy.logdebug("SPAWN DONE SumitXlEnv INIT...")
         # Internal Vars
         # Doesnt have any accesibles
         self.controllers_list = [   "joint_read_state_controller",
@@ -69,15 +69,20 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         self.robot_name_space = "summit_xl"
 
         # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
+        rospy.logdebug("START OpenAIROS CORE SumitXlEnv INIT...")
         super(SumitXlEnv, self).__init__(controllers_list=self.controllers_list,
                                             robot_name_space=self.robot_name_space,
                                             reset_controls=False,
                                             start_init_physics_parameters=False,
                                             reset_world_or_sim="WORLD")
-
+        rospy.logdebug("DONE OpenAIROS CORE SumitXlEnv INIT...")
         self.gazebo.unpauseSim()
         self.controllers_object.reset_controllers()
+
+        rospy.logdebug("START CHECK SENSORS SumitXlEnv INIT...")
         self._check_all_sensors_ready()
+        rospy.logdebug("DONE CHECK SENSORS SumitXlEnv INIT...")
+
 
         # We Start all the ROS related Subscribers and publishers
         rospy.Subscriber("/gps/fix", NavSatFix, self._gps_fix_callback)
@@ -93,7 +98,9 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self._cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
 
+        rospy.logdebug("START CHECK PUBLISHERS SumitXlEnv INIT...")
         self._check_publishers_connection()
+        rospy.logdebug("DONE CHECK PUBLISHERS SumitXlEnv INIT...")
 
         self.gazebo.pauseSim()
         
