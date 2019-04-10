@@ -9,14 +9,14 @@ from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import Imu
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
-
+from openai_ros.openai_ros_common import ROSLauncher
 
 
 class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
     """Superclass for all CubeSingleDisk environments.
     """
 
-    def __init__(self):
+    def __init__(self, ros_ws_abspath):
         """
         Initializes a new TurtleBot3Env environment.
         TurtleBot3 doesnt use controller_manager, therefore we wont reset the 
@@ -43,6 +43,11 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("Start TurtleBot3Env INIT...")
         # Variables that we give through the constructor.
         # None in this case
+
+        # We launch the ROSlaunch that spawns the robot into the world
+        ROSLauncher(rospackage_name="turtlebot3_gazebo",
+                    launch_file_name="put_turtlebot3_in_world.launch",
+                    ros_ws_abspath=ros_ws_abspath)
 
         # Internal Vars
         # Doesnt have any accesibles
