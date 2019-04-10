@@ -9,14 +9,14 @@ from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import PointCloud2
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
-
+from openai_ros.openai_ros_common import ROSLauncher
 
 
 class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
     """Superclass for all CubeSingleDisk environments.
     """
 
-    def __init__(self):
+    def __init__(self, ros_ws_abspath):
         """
         Initializes a new TurtleBot2Env environment.
         Turtlebot2 doesnt use controller_manager, therefore we wont reset the 
@@ -45,6 +45,11 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("Start TurtleBot2Env INIT...")
         # Variables that we give through the constructor.
         # None in this case
+
+        # We launch the ROSlaunch that spawns the robot into the world
+        ROSLauncher(rospackage_name="turtlebot_gazebo",
+                    launch_file_name="put_turtlebot2_in_world.launch",
+                    ros_ws_abspath=ros_ws_abspath)
 
         # Internal Vars
         # Doesnt have any accesibles

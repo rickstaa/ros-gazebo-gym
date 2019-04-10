@@ -4,14 +4,9 @@ from gym import spaces
 from openai_ros.robot_envs import turtlebot2_env
 from gym.envs.registration import register
 from geometry_msgs.msg import Point
+from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
+from openai_ros.openai_ros_common import ROSLauncher
 
-timestep_limit_per_episode = 10000 # Can be any Value
-
-register(
-        id='MyTurtleBot2Wall-v0',
-        entry_point='openai_ros:task_envs.turtlebot2.turtlebot2_wall.TurtleBot2WallEnv',
-        timestep_limit=timestep_limit_per_episode,
-    )
 
 class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
     def __init__(self):
@@ -19,7 +14,22 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
         This Task Env is designed for having the TurtleBot2 in some kind of maze.
         It will learn how to move around the maze without crashing.
         """
-        
+
+        # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
+        ros_ws_abspath = "/home/user/simulation_ws"
+
+        ROSLauncher(rospackage_name="turtlebot_gazebo",
+                    launch_file_name="start_world.launch",
+                    ros_ws_abspath=ros_ws_abspath)
+
+        # Load Params from the desired Yaml file
+        LoadYamlFileParamsTest(rospackage_name="openai_ros",
+                               rel_path_from_package_to_file="src/openai_ros/task_envs/turtlebot2/config",
+                               yaml_file_name="turtlebot2_wall.yaml")
+
+        # Here we will add any init functions prior to starting the MyRobotEnv
+        super(TurtleBot2WallEnv, self).__init__(ros_ws_abspath)
+
         # Only variable needed to be set here
         number_actions = rospy.get_param('/turtlebot2/n_actions')
         self.action_space = spaces.Discrete(number_actions)
@@ -61,7 +71,9 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
         
         # We create two arrays based on the binary values that will be assigned
         # In the discretization method.
-        laser_scan = self._check_laser_scan_ready()
+        laser_scan = self.get_laser_scan()
+        rospy.logdebug("laser_scan len===>" + str(len(laser_scan.ranges)))
+
         num_laser_readings = len(laser_scan.ranges)/self.new_ranges
         high = numpy.full((num_laser_readings), self.max_laser_value)
         low = numpy.full((num_laser_readings), self.min_laser_value)
@@ -79,8 +91,7 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
 
         self.cumulated_steps = 0.0
 
-        # Here we will add any init functions prior to starting the MyRobotEnv
-        super(TurtleBot2WallEnv, self).__init__()
+
 
     def _set_init_pose(self):
         """Sets the Robot in its init pose

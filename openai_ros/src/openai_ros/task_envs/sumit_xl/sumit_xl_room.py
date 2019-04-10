@@ -68,9 +68,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         # We create the arrays for the laser readings
         # We also create the arrays for the odometry readings
         # We join them toeguether.
-        self.gazebo.unpauseSim()
-        laser_scan = self._check_laser_scan_ready()
-        self.gazebo.pauseSim()
+        laser_scan = self.get_laser_scan()
 
         num_laser_readings = len(laser_scan.ranges)/self.new_ranges
         high_laser = numpy.full((num_laser_readings), self.max_laser_value)

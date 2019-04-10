@@ -126,6 +126,28 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         # import our training environment
         from openai_ros.task_envs.sumit_xl import sumit_xl_room
 
+
+    elif task_env == 'MyTurtleBot2Maze-v0':
+
+        register(
+            id=task_env,
+            entry_point='openai_ros:task_envs.turtlebot2.turtlebot2_maze.TurtleBot2MazeEnv',
+            timestep_limit=timestep_limit_per_episode,
+        )
+        # import our training environment
+        from openai_ros.task_envs.turtlebot2 import turtlebot2_maze
+
+
+    elif task_env == 'MyTurtleBot2Wall-v0':
+
+        register(
+            id=task_env,
+            entry_point='openai_ros:task_envs.turtlebot2.turtlebot2_wall.TurtleBot2WallEnv',
+            timestep_limit=timestep_limit_per_episode,
+        )
+        # import our training environment
+        from openai_ros.task_envs.turtlebot2 import turtlebot2_wall
+
     # Add here your Task Envs to be registered
     else:
         result = False
