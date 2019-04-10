@@ -21,7 +21,7 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         ros_ws_abspath = "/home/user/simulation_ws"
 
         ROSLauncher(rospackage_name="gym_construct",
-                    launch_file_name="start_world.launch",
+                    launch_file_name="start_maze_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
         # Load Params from the desired Yaml file
