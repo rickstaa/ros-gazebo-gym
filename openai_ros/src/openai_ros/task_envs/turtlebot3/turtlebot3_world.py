@@ -18,7 +18,7 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
         ros_ws_abspath = "/home/user/simulation_ws"
 
         ROSLauncher(rospackage_name="turtlebot3_gazebo",
-                    launch_file_name="start_wall_world.launch",
+                    launch_file_name="start_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
         # Load Params from the desired Yaml file
