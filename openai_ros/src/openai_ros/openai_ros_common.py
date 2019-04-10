@@ -148,6 +148,9 @@ class ROSLauncher(object):
 
         elif package_name == "robotx_gazebo":
             package_git = ["https://bitbucket.org/theconstructcore/vmrc.git"]
+            package_git.append(
+                "https://bitbucket.org/theconstructcore/spawn_robot_tools.git")
+
 
 
         # ADD HERE THE GITs List To Your Simuation
