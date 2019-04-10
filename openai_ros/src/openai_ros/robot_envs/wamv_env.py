@@ -4,14 +4,14 @@ import time
 from openai_ros import robot_gazebo_env
 from nav_msgs.msg import Odometry
 from robotx_gazebo.msg import UsvDrive
-
+from openai_ros.openai_ros_common import ROSLauncher
 
 
 class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
     """Superclass for all WamvEnv environments.
     """
 
-    def __init__(self):
+    def __init__(self, ros_ws_abspath):
         """
         Initializes a new WamvEnv environment.
         
@@ -35,6 +35,11 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("Start WamvEnv INIT...")
         # Variables that we give through the constructor.
         # None in this case
+
+        # We launch the ROSlaunch that spawns the robot into the world
+        ROSLauncher(rospackage_name="robotx_gazebo",
+                    launch_file_name="put_wamv_in_world.launch",
+                    ros_ws_abspath=ros_ws_abspath)
 
         # Internal Vars
         # Doesnt have any accesibles

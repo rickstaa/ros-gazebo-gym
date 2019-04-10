@@ -144,7 +144,10 @@ class ROSLauncher(object):
             package_git = ["https://bitbucket.org/theconstructcore/turtlebot.git"]
 
         elif package_name == "turtlebot3_gazebo":
-            package_git = ["https://RDaneelOlivaw@bitbucket.org/theconstructcore/turtlebot3.git"]
+            package_git = ["https://bitbucket.org/theconstructcore/turtlebot3.git"]
+
+        elif package_name == "robotx_gazebo":
+            package_git = ["https://bitbucket.org/theconstructcore/vmrc.git"]
 
 
         # ADD HERE THE GITs List To Your Simuation

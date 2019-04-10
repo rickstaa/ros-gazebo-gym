@@ -6,14 +6,9 @@ from gym.envs.registration import register
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Vector3
 from tf.transformations import euler_from_quaternion
+from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
+from openai_ros.openai_ros_common import ROSLauncher
 
-timestep_limit_per_episode = 10000 # Can be any Value
-
-register(
-        id='WamvNavTwoSetsBuoys-v0',
-        entry_point='openai_ros:task_envs.wamv.wamv_nav_twosets_buoys.WamvNavTwoSetsBuoysEnv',
-        timestep_limit=timestep_limit_per_episode,
-    )
 
 class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
     def __init__(self):
@@ -23,7 +18,22 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         http://robotx.org/images/files/RobotX_2018_Task_Summary.pdf
         Demonstrate Navigation Control
         """
-        
+
+        # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
+        ros_ws_abspath = "/home/user/simulation_ws"
+
+        ROSLauncher(rospackage_name="robotx_gazebo",
+                    launch_file_name="start_wall_world.launch",
+                    ros_ws_abspath=ros_ws_abspath)
+
+        # Load Params from the desired Yaml file
+        LoadYamlFileParamsTest(rospackage_name="openai_ros",
+                               rel_path_from_package_to_file="src/openai_ros/task_envs/wamv/config",
+                               yaml_file_name="wamv_nav_twosets_buoys.yaml")
+
+        # Here we will add any init functions prior to starting the MyRobotEnv
+        super(WamvNavTwoSetsBuoysEnv, self).__init__(ros_ws_abspath)
+
         # Only variable needed to be set here
 
         rospy.logdebug("Start WamvNavTwoSetsBuoysEnv INIT...")
@@ -91,9 +101,6 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         self.closer_to_point_reward = rospy.get_param("/wamv/closer_to_point_reward")
 
         self.cumulated_steps = 0.0
-
-        # Here we will add any init functions prior to starting the MyRobotEnv
-        super(WamvNavTwoSetsBuoysEnv, self).__init__()
         
         rospy.logdebug("END WamvNavTwoSetsBuoysEnv INIT...")
 
