@@ -273,7 +273,7 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
 
         has_reached_the_block = self.reached_bowl(
             distance_laser, magnitude_image)
-        too_faraway_bowl_b = self.too_faraway_bowl(magnitude_image)
+        too_faraway_bowl_b = self.too_faraway_bowl(distance_laser, magnitude_image)
 
         done = has_reached_the_block or too_faraway_bowl_b
 
@@ -370,7 +370,7 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         magnitude_image_enough = (
             magnitude_image <= self.min_distance_from_red_bowl)
 
-        reached_bowl_b = laser_close_enough and magnitude_image_enough
+        reached_block_b = laser_close_enough and magnitude_image_enough
 
         rospy.logdebug("###### REACHED BLOCK ? ######")
         rospy.logdebug("laser_close_enough==>"+str(laser_close_enough))
@@ -380,15 +380,16 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
 
         return reached_block_b
 
-    def too_faraway_bowl(self, magnitude_image):
+    def too_faraway_bowl(self, distance_laser, magnitude_image):
         """
         It return True if the distance by image is bigger than maximum
         """
 
+        laser_close_enough = (distance_laser <= self.min_laser_distance)
         magnitude_image_too_big = (
             magnitude_image <= self.max_distance_from_red_bowl)
 
-        too_faraway_b = laser_close_enough and magnitude_image_enough
+        too_faraway_b = laser_close_enough and magnitude_image_too_big
 
         rospy.logdebug("###### REACHED BLOCK ? ######")
         rospy.logdebug("magnitude_image_too_big==>" +
@@ -486,68 +487,72 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
                 data, desired_encoding="bgr8")
         except CvBridgeError as e:
             print(e)
+            cv_image = None
 
-        # We get image dimensions and crop the parts of the image we don't need
-        # Bear in mind that because the first value of the image matrix is start and second value is down limit.
-        # Select the limits so that it gets the line not too close and not too far, and the minimum portion possible
-        # To make process faster.
-        height, width, channels = cv_image.shape
-        descentre = -height/2
-        rows_to_watch = height
-        crop_img = cv_image[(height)/2+descentre:(height) /
-                            2+(descentre+rows_to_watch)][1:width]
+        if cv_image is not None:
+            # We get image dimensions and crop the parts of the image we don't need
+            # Bear in mind that because the first value of the image matrix is start and second value is down limit.
+            # Select the limits so that it gets the line not too close and not too far, and the minimum portion possible
+            # To make process faster.
+            height, width, channels = cv_image.shape
+            descentre = -height/2
+            rows_to_watch = height
+            crop_img = cv_image[(height)/2+descentre:(height) /
+                                2+(descentre+rows_to_watch)][1:width]
 
-        # Convert from RGB to HSV
-        hsv = cv2.cvtColor(crop_img, cv2.COLOR_BGR2HSV)
+            # Convert from RGB to HSV
+            hsv = cv2.cvtColor(crop_img, cv2.COLOR_BGR2HSV)
 
-        # We track two colours, the RedBowl and the Black tip of IriWam Arm ( laser ) which is black.
+            # We track two colours, the RedBowl and the Black tip of IriWam Arm ( laser ) which is black.
 
-        # RED BOWL
+            # RED BOWL
 
-        lower_red = np.array([0, 204, 100])
-        upper_red = np.array([0, 255, 255])
+            lower_red = numpy.array([0, 204, 100])
+            upper_red = numpy.array([0, 255, 255])
 
-        # Threshold the HSV image to get only yellow colors
-        mask = cv2.inRange(hsv, lower_red, upper_red)
+            # Threshold the HSV image to get only yellow colors
+            mask = cv2.inRange(hsv, lower_red, upper_red)
 
-        # Calculate centroid of the blob of binary image using ImageMoments
-        m = cv2.moments(mask, False)
-        try:
-            cx_red, cy_red = m['m10']/m['m00'], m['m01']/m['m00']
-        except ZeroDivisionError:
-            cy_red, cx_red = height/2, width/2
+            # Calculate centroid of the blob of binary image using ImageMoments
+            m = cv2.moments(mask, False)
+            try:
+                cx_red, cy_red = m['m10']/m['m00'], m['m01']/m['m00']
+            except ZeroDivisionError:
+                cy_red, cx_red = height/2, width/2
 
-        # Black Laser
-        lower_black = np.array([0, 0, 0])
-        upper_black = np.array([0, 0, 10])
+            # Black Laser
+            lower_black = numpy.array([0, 0, 0])
+            upper_black = numpy.array([0, 0, 10])
 
-        # Threshold the HSV image to get only yellow colors
-        mask_black = cv2.inRange(hsv, lower_black, upper_black)
+            # Threshold the HSV image to get only yellow colors
+            mask_black = cv2.inRange(hsv, lower_black, upper_black)
 
-        # Calculate centroid of the blob of binary image using ImageMoments
-        m = cv2.moments(mask_black, False)
-        try:
-            cx_black, cy_black = m['m10']/m['m00'], m['m01']/m['m00']
-        except ZeroDivisionError:
-            cy_black, cx_black = height/2, width/2
+            # Calculate centroid of the blob of binary image using ImageMoments
+            m = cv2.moments(mask_black, False)
+            try:
+                cx_black, cy_black = m['m10']/m['m00'], m['m01']/m['m00']
+            except ZeroDivisionError:
+                cy_black, cx_black = height/2, width/2
 
-        # Bitwise-AND mask and original image
-        res_black = cv2.bitwise_and(crop_img, crop_img)
+            # Bitwise-AND mask and original image
+            res_black = cv2.bitwise_and(crop_img, crop_img)
 
-        # Draw the centroid in the resultut image
-        cv2.circle(res_black, (int(cx_red), int(cy_red)), 10, (255, 0, 0), -1)
-        cv2.circle(res_black, (int(cx_black), int(cy_black)),
-                   10, (0, 255, 0), -1)
+            # Draw the centroid in the resultut image
+            cv2.circle(res_black, (int(cx_red), int(cy_red)), 10, (255, 0, 0), -1)
+            cv2.circle(res_black, (int(cx_black), int(cy_black)),
+                       10, (0, 255, 0), -1)
 
-        cv2.imshow("RES BLACK", res_black)
+            cv2.imshow("RES BLACK", res_black)
 
-        cv2.waitKey(1)
+            cv2.waitKey(1)
 
-        error_x = cx_red - cx_black
-        error_y = cy_red - cy_black
-        error_array = np.array([error_x, error_y])
-        magnitude = np.linalg.norm(error_array)
-        rospy.logwarn("Magnitude==>"+str(magnitude))
+            error_x = cx_red - cx_black
+            error_y = cy_red - cy_black
+            error_array = numpy.array([error_x, error_y])
+            magnitude = numpy.linalg.norm(error_array)
+            rospy.logwarn("Magnitude==>"+str(magnitude))
+        else:
+            magnitude = 10.0
 
         return magnitude
 
