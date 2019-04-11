@@ -7,12 +7,16 @@ import math
 import numpy as np
 from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
 from openai_ros.openai_ros_common import ROSLauncher
-
+import os
 
 class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
     def __init__(self):
 
-        ros_ws_abspath = "/home/user/simulation_ws"
+        ros_ws_abspath = rospy.get_param("/cartpole_v0/ros_ws_abspath", None)
+        assert ros_ws_abspath is not None, "You forgot to set ros_ws_abspath in your yaml file of your main RL script. Set ros_ws_abspath: \'YOUR/SIM_WS/PATH\'"
+        assert os.path.exists(ros_ws_abspath), "The Simulation ROS Workspace path " + ros_ws_abspath + \
+                                               " DOESNT exist, execute: mkdir -p " + ros_ws_abspath + \
+                                               "/src;cd " + ros_ws_abspath + ";catkin_make"
 
         ROSLauncher(rospackage_name="cartpole_description",
                     launch_file_name="start_world.launch",

@@ -9,7 +9,7 @@ from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Header
 from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
 from openai_ros.openai_ros_common import ROSLauncher
-
+import os
 
 class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
     def __init__(self):
@@ -20,7 +20,11 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         """
         # Launch the Task Simulated-Environment
         # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
-        ros_ws_abspath = "/home/user/simulation_ws"
+        ros_ws_abspath = rospy.get_param("/husarion/ros_ws_abspath", None)
+        assert ros_ws_abspath is not None, "You forgot to set ros_ws_abspath in your yaml file of your main RL script. Set ros_ws_abspath: \'YOUR/SIM_WS/PATH\'"
+        assert os.path.exists(ros_ws_abspath), "The Simulation ROS Workspace path " + ros_ws_abspath + \
+                                               " DOESNT exist, execute: mkdir -p " + ros_ws_abspath + \
+                                               "/src;cd " + ros_ws_abspath + ";catkin_make"
 
         ROSLauncher(rospackage_name="rosbot_gazebo",
                     launch_file_name="start_world.launch",

@@ -8,7 +8,7 @@ import numpy as np
 from sensor_msgs.msg import JointState
 from openai_ros.openai_ros_common import ROSLauncher
 from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-
+import os
 
 class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
     def __init__(self):
@@ -17,7 +17,12 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         # This is the path where the simulation files are,
         # the Task and the Robot gits will be downloaded if not there
 
-        ros_ws_abspath = "/home/user/simulation_ws"
+        ros_ws_abspath = rospy.get_param("/fetch/ros_ws_abspath", None)
+        assert ros_ws_abspath is not None, "You forgot to set ros_ws_abspath in your yaml file of your main RL script. Set ros_ws_abspath: \'YOUR/SIM_WS/PATH\'"
+        assert os.path.exists(ros_ws_abspath), "The Simulation ROS Workspace path " + ros_ws_abspath + \
+                                               " DOESNT exist, execute: mkdir -p " + ros_ws_abspath + \
+                                               "/src;cd " + ros_ws_abspath + ";catkin_make"
+
         ROSLauncher(rospackage_name="fetch_gazebo",
                     launch_file_name="start_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
