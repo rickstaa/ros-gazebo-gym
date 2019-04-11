@@ -20,7 +20,10 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
 
         # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
         # This parameter HAS to be set up in the MAIN launch of the AI RL script
-        ros_ws_abspath = rospy.get_param("/turtlebot2/ros_ws_abspath", None)
+        if rospy.has_param("/turtlebot2/ros_ws_abspath"):
+            ros_ws_abspath = rospy.get_param("/turtlebot2/ros_ws_abspath")
+        else:
+            ros_ws_abspath = None
         assert ros_ws_abspath is not None, "You forgot to set ros_ws_abspath in your yaml file og your main RL script."
         assert os.path.exists(ros_ws_abspath), "The Simulation ROS Workspace path "+ros_ws_abspath+" DOESNT exist, execute: mkdir -p "+ros_ws_abspath+"/src;cd "+ros_ws_abspath+";catkin_make"
 
