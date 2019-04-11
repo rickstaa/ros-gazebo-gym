@@ -69,6 +69,19 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
                                             self.iri_wam_joint_6,
                                             self.iri_wam_joint_7]
 
+        self.init_joints_x_max = rospy.get_param(
+            "/iriwam/work_space/x_max")
+        self.init_joints_y_max = rospy.get_param(
+            "/iriwam/work_space/y_max")
+        self.init_joints_z_max = rospy.get_param(
+            "/iriwam/work_space/z_max")
+        self.init_joints_x_min = rospy.get_param(
+            "/iriwam/work_space/x_min")
+        self.init_joints_y_min = rospy.get_param(
+            "/iriwam/work_space/y_min")
+        self.init_joints_z_min = rospy.get_param(
+            "/iriwam/work_space/z_min")
+
         self.joint_increment_value = rospy.get_param(
             "/iriwam/joint_increment_value")
 
