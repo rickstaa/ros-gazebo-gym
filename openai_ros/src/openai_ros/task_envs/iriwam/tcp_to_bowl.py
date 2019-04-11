@@ -6,6 +6,9 @@ from gym.envs.registration import register
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Vector3
 from tf.transformations import euler_from_quaternion
+import cv2
+from cv_bridge import CvBridge, CvBridgeError
+from sensor_msgs.msg import Image
 from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
 from openai_ros.openai_ros_common import ROSLauncher
 import os
