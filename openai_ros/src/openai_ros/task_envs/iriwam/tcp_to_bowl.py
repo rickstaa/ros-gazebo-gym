@@ -116,10 +116,7 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
                             self.joint_limits[3].max_position,
                             self.joint_limits[4].max_position,
                             self.joint_limits[5].max_position,
-                            self.joint_limits[6].max_position,
-                            self.joint_limits[7].max_position,
-                            self.joint_limits[8].max_position,
-                            self.joint_limits[9].max_position
+                            self.joint_limits[6].max_position
                             ])
 
         low = numpy.array([self.init_joints_x_min,
@@ -131,10 +128,7 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
                            self.joint_limits[3].min_position,
                            self.joint_limits[4].min_position,
                            self.joint_limits[5].min_position,
-                           self.joint_limits[6].min_position,
-                           self.joint_limits[7].min_position,
-                           self.joint_limits[8].min_position,
-                           self.joint_limits[9].min_position
+                           self.joint_limits[6].min_position
                            ])
 
         self.observation_space = spaces.Box(low, high)
