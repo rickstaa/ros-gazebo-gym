@@ -9,6 +9,7 @@ from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Header
 from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
 from openai_ros.openai_ros_common import ROSLauncher
+import os
 
 class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
     def __init__(self):
@@ -18,7 +19,10 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         """
 
         # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
-        ros_ws_abspath = "/home/user/simulation_ws"
+        # This parameter HAS to be set up in the MAIN launch of the AI RL script
+        ros_ws_abspath = rospy.get_param("/turtlebot2/ros_ws_abspath", None)
+        assert ros_ws_abspath is not None, "You forgot to set ros_ws_abspath in your yaml file og your main RL script."
+        assert os.path.exists(ros_ws_abspath), "The Simulation ROS Workspace path "+ros_ws_abspath+" DOESNT exist, execute: mkdir -p "+ros_ws_abspath+"/src;cd "+ros_ws_abspath+";catkin_make"
 
         ROSLauncher(rospackage_name="gym_construct",
                     launch_file_name="start_maze_world.launch",
