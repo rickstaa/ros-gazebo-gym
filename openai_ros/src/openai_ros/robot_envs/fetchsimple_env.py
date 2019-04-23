@@ -65,6 +65,14 @@ class FetchSimpleEnv(robot_gazebo_env.RobotGazeboEnv):
 
     # ParticularEnv methods
     # ----------------------------
+    def _check_all_systems_ready(self):
+        """
+        Checks that all the sensors, publishers and other simulation systems are
+        operational.
+        """
+        self.move_fetch_object.check_all_systems_ready()
+        return True
+
 
     def _init_env_variables(self):
         """Inits variables needed to be initialised each time we reset at the start
@@ -161,12 +169,14 @@ class FetchSimpleMove(object):
                 rospy.Publisher(topic_name, Float64, queue_size=1))
 
         # Wait for publishers to be ready
-        self.wait_publishers_to_be_ready()
-
-        self._check_joint_states_ready()
+        self.check_all_systems_ready()
 
         rospy.Subscriber("/fetch/joint_states", JointState,
                          self.join_state_callback)
+
+    def check_all_systems_ready(self):
+        self.wait_publishers_to_be_ready()
+        self._check_joint_states_ready()
 
     def _check_joint_states_ready(self):
         self.joints_state = None
