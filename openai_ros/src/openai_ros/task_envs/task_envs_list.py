@@ -49,6 +49,16 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         # We have to import the Class that we registered so that it can be found afterwards in the Make
         from openai_ros.task_envs.fetch import fetch_test_task
 
+
+    elif task_env == 'FetchSimpleTest-v0':
+        register(
+            id=task_env,
+            entry_point='openai_ros:task_envs.fetch.fetchsimple_test_task.FetchSimpleTestEnv',
+            timestep_limit=timestep_limit_per_episode,
+        )
+        # We have to import the Class that we registered so that it can be found afterwards in the Make
+        from openai_ros.task_envs.fetch import fetchsimple_test_task
+
     elif task_env == 'CartPoleStayUp-v0':
 
         register(

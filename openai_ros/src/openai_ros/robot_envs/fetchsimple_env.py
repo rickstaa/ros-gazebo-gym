@@ -2,13 +2,7 @@ import numpy as np
 import rospy
 from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
-from nav_msgs.msg import Odometry
 from openai_ros import robot_gazebo_env
-import sys
-import moveit_commander
-import moveit_msgs.msg
-import geometry_msgs.msg
-import trajectory_msgs.msg
 from openai_ros.openai_ros_common import ROSLauncher
 
 
@@ -48,7 +42,7 @@ class FetchSimpleEnv(robot_gazebo_env.RobotGazeboEnv):
         # Start Move Fetch Object, that checks all systems are ready
         self.move_fetch_object = FetchSimpleMove()
         # Wait until Fetch goes to the init pose
-        self.move_fetch_object.set_travel_arm_pose()
+        self.move_fetch_object.init_position()
 
         # We pause until the next step
         self.gazebo.pauseSim()
@@ -56,75 +50,18 @@ class FetchSimpleEnv(robot_gazebo_env.RobotGazeboEnv):
     # RobotGazeboEnv virtual methods
     # ----------------------------
 
-    def get_joints(self):
-        return self.joints
+    def move_to_init_pose(self):
+        self.move_fetch_object.init_position()
 
-    def get_joint_names(self):
-        return self.joints.name
+    def get_joint_limits(self):
+        return self.move_fetch_object.joint_upper_limits, self.move_fetch_object.joint_lower_limits
 
-    def set_trajectory_joints(self, initial_qpos):
+    def get_joints_position(self):
+        return self.move_fetch_object.get_current_joints_position()
 
-        positions_array = [None] * 7
-        positions_array[0] = initial_qpos["joint0"]
-        positions_array[1] = initial_qpos["joint1"]
-        positions_array[2] = initial_qpos["joint2"]
-        positions_array[3] = initial_qpos["joint3"]
-        positions_array[4] = initial_qpos["joint4"]
-        positions_array[5] = initial_qpos["joint5"]
-        positions_array[6] = initial_qpos["joint6"]
-
-        self.move_fetch_object.joint_traj(positions_array)
-
+    def set_trajectory_joints(self, delta_joints_array):
+        self.move_fetch_object.delta_joints(delta_joints_array)
         return True
-
-    def create_joints_dict(self, joints_positions):
-        """
-        Based on the Order of the positions, they will be assigned to its joint name
-        names_in_order:
-          joint0: 0.0
-          joint1: 0.0
-          joint2: 0.0
-          joint3: -1.5
-          joint4: 0.0
-          joint5: 1.5
-          joint6: 0.0
-        """
-
-        assert len(joints_positions) == len(
-            self.join_names), "Wrong number of joints, there should be "+str(len(self.join_names))
-        joints_dict = dict(zip(self.join_names, joints_positions))
-
-        return joints_dict
-
-    def get_ee_pose(self):
-        """
-        Returns geometry_msgs/PoseStamped
-            std_msgs/Header header
-              uint32 seq
-              time stamp
-              string frame_id
-            geometry_msgs/Pose pose
-              geometry_msgs/Point position
-                float64 x
-                float64 y
-                float64 z
-              geometry_msgs/Quaternion orientation
-                float64 x
-                float64 y
-                float64 z
-                float64 w
-        """
-        self.gazebo.unpauseSim()
-        gripper_pose = self.move_fetch_object.ee_pose()
-        self.gazebo.pauseSim()
-
-        return gripper_pose
-
-    def get_ee_rpy(self):
-
-        gripper_rpy = self.move_fetch_object.ee_rpy()
-
-        return gripper_rpy
 
     # ParticularEnv methods
     # ----------------------------
@@ -247,6 +184,9 @@ class FetchSimpleMove(object):
 
     def join_state_callback(self, msg):
         self.joints_state = msg
+
+    def get_current_joints_position(self):
+        return self.joints_state.position
 
     def init_position(self):
         self.move_all_joints(joints_pos_array=self.joint_array)

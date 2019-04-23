@@ -151,6 +151,11 @@ class ROSLauncher(object):
             package_git.append(
                 "https://bitbucket.org/theconstructcore/spawn_robot_tools.git")
 
+        elif package_name == "fetch_simple_description":
+            package_git = ["https://bitbucket.org/theconstructcore/fetch_simple_simulation.git"]
+            package_git.append(
+                "https://bitbucket.org/theconstructcore/spawn_robot_tools.git")
+
 
 
         # ADD HERE THE GITs List To Your Simuation
