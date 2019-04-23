@@ -23,7 +23,7 @@ class FetchSimpleEnv(robot_gazebo_env.RobotGazeboEnv):
 
         super(FetchSimpleEnv, self).__init__(controllers_list=self.controllers_list,
                                              robot_name_space=self.robot_name_space,
-                                             reset_controls=False,
+                                             reset_controls=True,
                                              start_init_physics_parameters=False,
                                              reset_world_or_sim="WORLD")
 
@@ -199,7 +199,8 @@ class FetchSimpleMove(object):
         return self.joints_state.position
 
     def init_position(self):
-        self.move_all_joints(joints_pos_array=self.joint_array)
+        # We wait what it takes to reset pose
+        self.move_all_joints(joints_pos_array=self.joint_array, time_out=0.0)
 
     def set_travel_arm_pose(self):
         self.move_all_joints(joints_pos_array=self.travel_arm_pose)
@@ -225,7 +226,11 @@ class FetchSimpleMove(object):
             rospy.logdebug(str(current_pos))
 
             rate.sleep()
-            time_waiting += 1.0 / frequency
+            if timeout == 0.0:
+                # We wait what it takes
+                time_waiting += 0.0
+            else:
+                time_waiting += 1.0 / frequency
             is_timeout = time_waiting > timeout
 
         rospy.logwarn(
@@ -248,7 +253,7 @@ class FetchSimpleMove(object):
                            str(self.name_joints[i]))
             i += 1
 
-    def move_all_joints(self, joints_pos_array):
+    def move_all_joints(self, joints_pos_array, time_out=3.0, error=0.2):
 
         assert len(joints_pos_array) == len(
             self.joint_array), "Lengths dont match"
@@ -260,7 +265,7 @@ class FetchSimpleMove(object):
             self.pub_position_array[i].publish(angle_msg)
             i += 1
 
-        self.wait_for_joints_to_get_there(self.joint_array)
+        self.wait_for_joints_to_get_there(self.joint_array, error=error, timeout=time_out)
         self.update_joints(new_joints_pos=joints_pos_array)
 
     def update_joints(self, new_joints_pos):
