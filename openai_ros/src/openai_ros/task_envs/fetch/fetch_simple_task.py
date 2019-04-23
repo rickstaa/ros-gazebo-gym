@@ -44,14 +44,7 @@ class FetchSimpleTestEnv(fetchsimple_env.FetchSimpleEnv, utils.EzPickle):
         observations_low_range = np.array(
             self.lower_array_observations)
 
-        observations_high_dist = np.array([self.max_distance])
-        observations_low_dist = np.array([0.0])
-
-        high = np.concatenate(
-            [observations_high_range, observations_high_dist])
-        low = np.concatenate([observations_low_range, observations_low_dist])
-
-        self.observation_space = spaces.Box(low, high)
+        self.observation_space = spaces.Box(observations_low_range, observations_high_range)
 
 
 
