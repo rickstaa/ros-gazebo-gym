@@ -52,6 +52,7 @@ class FetchSimpleTestEnv(fetchsimple_env.FetchSimpleEnv, utils.EzPickle):
         # get configuration parameters
 
         self.n_actions = rospy.get_param('/fetch/n_actions')
+        self.n_max_iterations = rospy.get_param('/fetch/max_iterations')
 
 
         self.init_pos = rospy.get_param('/fetch/init_pos')
@@ -123,6 +124,7 @@ class FetchSimpleTestEnv(fetchsimple_env.FetchSimpleEnv, utils.EzPickle):
         :return:
         """
         rospy.logdebug("Init Env Variables...")
+        self.interations_done = 0
         rospy.logdebug("Init Env Variables...END")
 
     def _set_action(self, action):
@@ -177,6 +179,11 @@ class FetchSimpleTestEnv(fetchsimple_env.FetchSimpleEnv, utils.EzPickle):
         done = np.allclose(a=observations,
                             b=self.goal_pos,
                             atol=0.2)
+
+        self.interations_done += 1
+
+        if self.interations_done >= self.n_max_iterations:
+            done = True
 
         return done
 

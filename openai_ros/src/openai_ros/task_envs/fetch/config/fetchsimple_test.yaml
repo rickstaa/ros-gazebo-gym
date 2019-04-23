@@ -4,6 +4,8 @@ fetch: #namespace
     n_actions: 6 # elbow_flex_joint+/-,shoulder_lift_joint+/-,shoulder_pan_joint+/-
     n_observations: 3 # XYZ of the TCP and the distance from GOAL
 
+    max_iterations: 20
+
     init_pos: # This has to be validated in the fetch_moveit_test.py in fetch_openai_ros_example or something that tests this pos is possible
       bellows_joint: 0.0
       elbow_flex_joint: 0.0
