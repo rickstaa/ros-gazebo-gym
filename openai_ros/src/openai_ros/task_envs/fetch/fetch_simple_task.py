@@ -186,7 +186,7 @@ class FetchSimpleTestEnv(fetchsimple_env.FetchSimpleEnv, utils.EzPickle):
         Punishes differently if it reached a position that is imposible to move to.
         Rewards getting to a position close to the goal.
         """
-        reward = np.linalg.norm(observations - self.goal_pos)
+        reward = 1.0 / (np.linalg.norm(np.array(observations) - np.array(self.goal_pos)))
         if done:
             reward += self.reached_goal_reward
         rospy.logwarn(">>>REWARD>>>"+str(reward))
