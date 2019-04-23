@@ -32,9 +32,9 @@ class FetchSimpleTestEnv(fetchsimple_env.FetchSimpleEnv, utils.EzPickle):
                                rel_path_from_package_to_file="src/openai_ros/task_envs/fetch/config",
                                yaml_file_name="fetchsimple_test.yaml")
 
-        super(FetchTestEnv, self).__init__(ros_ws_abspath)
+        super(FetchSimpleTestEnv, self).__init__(ros_ws_abspath)
 
-        rospy.logdebug("Entered FetchTestEnv Env")
+        rospy.logdebug("Entered FetchSimpleTestEnv Env")
         self.get_params()
 
         self.action_space = spaces.Discrete(self.n_actions)
