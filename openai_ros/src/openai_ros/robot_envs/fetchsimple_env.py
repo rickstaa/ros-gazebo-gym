@@ -204,12 +204,15 @@ class FetchSimpleMove(object):
     def set_travel_arm_pose(self):
         self.move_all_joints(joints_pos_array=self.travel_arm_pose)
 
-    def wait_for_joints_to_get_there(self, desired_pos_array, error=0.2):
+    def wait_for_joints_to_get_there(self, desired_pos_array, error=0.2, timeout=3.0):
 
+        time_waiting = 0.0
+        frequency = 10.0
         are_equal = False
-        rate = rospy.Rate(10)
+        is_timeout = False
+        rate = rospy.Rate(frequency)
         rospy.logwarn("Waiting for joint to get to the position")
-        while not are_equal and not rospy.is_shutdown():
+        while not are_equal and not is_timeout and not rospy.is_shutdown():
 
             current_pos = [self.joints_state.position]
 
@@ -222,6 +225,8 @@ class FetchSimpleMove(object):
             rospy.logdebug(str(current_pos))
 
             rate.sleep()
+            time_waiting += 1.0 / frequency
+            is_timeout = time_waiting > timeout
 
         rospy.logwarn(
             "Joints are in the desired position with an erro of "+str(error))
