@@ -16,14 +16,27 @@ class FetchSimpleEnv(robot_gazebo_env.RobotGazeboEnv):
                     launch_file_name="put_fetchsimple_in_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
-        self.controllers_list = []
+        self.controllers_list = ["joint_state_controller",
+                              "torso_lift_joint_position_controller",
+                              "bellows_joint_position_controller",
+                              "head_pan_joint_position_controller",
+                              "head_tilt_joint_position_controller",
+                              "shoulder_pan_joint_position_controller",
+                              "shoulder_lift_joint_position_controller",
+                              "upperarm_roll_joint_position_controller",
+                              "elbow_flex_joint_position_controller",
+                              "forearm_roll_joint_position_controller",
+                              "wrist_flex_joint_position_controller",
+                              "wrist_roll_joint_position_controller",
+                              "r_gripper_finger_joint_position_controller",
+                              "l_gripper_finger_joint_position_controller"]
 
-        self.robot_name_space = ""
-        self.reset_controls = False
+        self.robot_name_space = "fetch"
+        self.reset_controls = True
 
         super(FetchSimpleEnv, self).__init__(controllers_list=self.controllers_list,
                                              robot_name_space=self.robot_name_space,
-                                             reset_controls=True,
+                                             reset_controls=self.reset_controls,
                                              start_init_physics_parameters=False,
                                              reset_world_or_sim="WORLD")
 
