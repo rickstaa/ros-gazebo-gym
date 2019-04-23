@@ -53,7 +53,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
     elif task_env == 'FetchSimpleTest-v0':
         register(
             id=task_env,
-            entry_point='openai_ros:task_envs.fetch.fetchsimple_test_task.FetchSimpleTestEnv',
+            entry_point='openai_ros:task_envs.fetch.fetch_simple_task.FetchSimpleTestEnv',
             timestep_limit=timestep_limit_per_episode,
         )
         # We have to import the Class that we registered so that it can be found afterwards in the Make
