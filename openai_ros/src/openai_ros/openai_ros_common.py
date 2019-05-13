@@ -25,7 +25,7 @@ def StartOpenAI_ROS_Environment(task_and_robot_environment_name):
                                     timestep_limit_per_episode=10000)
 
     if result:
-        print("Register of Task Env went OK, lets make the env...")
+        print("Register of Task Env went OK, lets make the env..."+str(task_and_robot_environment_name))
         env = gym.make(task_and_robot_environment_name)
     else:
         print("Something Went wrong in the register")
@@ -41,7 +41,6 @@ class ROSLauncher(object):
         self._launch_file_name = launch_file_name
 
         self.rospack = rospkg.RosPack()
-        pkg_path = self.rospack.get_path(rospackage_name)
 
         # Check Package Exists
         try:
