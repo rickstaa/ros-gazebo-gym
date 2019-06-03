@@ -1,8 +1,7 @@
 import numpy as np
 import rospy
-from std_msgs.msg import Float64
+from gazebo_msgs.srv import GetWorldProperties, GetModelState
 from sensor_msgs.msg import JointState
-from nav_msgs.msg import Odometry
 from openai_ros import robot_gazebo_env
 import sys
 import moveit_commander
@@ -15,12 +14,15 @@ from openai_ros.openai_ros_common import ROSLauncher
 class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def __init__(self, ros_ws_abspath):
-        rospy.logdebug("Entered Fetch Env")
+        rospy.logdebug("========= In Fetch Env")
 
         # We launch the ROSlaunch that spawns the robot into the world
         ROSLauncher(rospackage_name="fetch_gazebo",
-                    launch_file_name="put_fetch_in_world.launch",
+                    launch_file_name="put_robot_in_world_HER.launch",
                     ros_ws_abspath=ros_ws_abspath)
+
+        # this object contains all object's positions!!
+        self.obj_positions = Obj_Pos()
 
         self.controllers_list = []
 
@@ -59,6 +61,8 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self.gazebo.pauseSim()
         # Variables that we give through the constructor.
+
+        rospy.logdebug("========= Out Fetch Env")
 
     # RobotGazeboEnv virtual methods
     # ----------------------------
@@ -115,11 +119,15 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         ee_target.position.y = action[1]
         ee_target.position.z = action[2]
 
-        rospy.logdebug("Set Trajectory EE...START...POSITION=" +
-                       str(ee_target.position))
-        result = self.move_fetch_object.ee_traj(ee_target)
-        rospy.logdebug("Set Trajectory EE...END...RESULT="+str(result))
+        # ee_target.position.x = 1.
+        # ee_target.position.y = 1.
+        # ee_target.position.z = 1.
+        # ee_target.orientation.x = 0.0
+        # ee_target.orientation.y = 0.0
+        # ee_target.orientation.z = 0.0
+        # ee_target.orientation.w = 1.0
 
+        result = self.move_fetch_object.ee_traj(ee_target)
         return result
 
     def set_trajectory_joints(self, initial_qpos):
@@ -189,13 +197,10 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         self.gazebo.unpauseSim()
         gripper_pose = self.move_fetch_object.ee_pose()
         self.gazebo.pauseSim()
-
         return gripper_pose
 
     def get_ee_rpy(self):
-
         gripper_rpy = self.move_fetch_object.ee_rpy()
-
         return gripper_rpy
 
     def wait_fetch_ready(self):
@@ -221,10 +226,8 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         import time
         for i in range(20):
-            current_joints = self.get_joints()
-            joint_pos = current_joints.position
-            #print("JOINTS POS NOW="+str(joint_pos))
             print("WAITING..."+str(i))
+            sys.stdout.flush()
             time.sleep(1.0)
 
         print("WAITING...DONE")
@@ -257,37 +260,55 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         raise NotImplementedError()
 
 
-class MoveFetch(object):
+class Obj_Pos(object):
+    """
+    This object maintains the pose and rotation of the cube in a simulation through Gazebo Service
+
+    """
 
     def __init__(self):
-        rospy.logdebug("In Move Fetch Calss init...")
+        world_specs = rospy.ServiceProxy(
+            '/gazebo/get_world_properties', GetWorldProperties)()
+        self.time = 0
+        self.model_names = world_specs.model_names
+        self.get_model_state = rospy.ServiceProxy(
+            '/gazebo/get_model_state', GetModelState)
+
+    def get_states(self):
+        """
+        Returns the ndarray of pose&rotation of the cube
+        """
+        for model_name in self.model_names:
+            if model_name == "cube":
+                data = self.get_model_state(
+                    model_name, "world")  # gazebo service client
+                return np.array([
+                    data.pose.position.x,
+                    data.pose.position.y,
+                    data.pose.position.z,
+                    data.pose.orientation.x,
+                    data.pose.orientation.y,
+                    data.pose.orientation.z
+                ])
+
+
+class MoveFetch(object):
+    def __init__(self):
+        rospy.logdebug("===== In MoveFetch")
         moveit_commander.roscpp_initialize(sys.argv)
-        rospy.logdebug("moveit_commander initialised...")
-
-        rospy.logdebug("Starting Robot Commander...")
         self.robot = moveit_commander.RobotCommander()
-        rospy.logdebug("Starting Robot Commander...DONE")
-
         self.scene = moveit_commander.PlanningSceneInterface()
-        rospy.logdebug("PlanningSceneInterface initialised...DONE")
         self.group = moveit_commander.MoveGroupCommander("arm")
-        rospy.logdebug("MoveGroupCommander for arm initialised...DONE")
+        rospy.logdebug("===== Out MoveFetch")
 
     def ee_traj(self, pose):
-
         self.group.set_pose_target(pose)
-
         result = self.execute_trajectory()
-
         return result
 
     def joint_traj(self, positions_array):
 
         self.group_variable_values = self.group.get_current_joint_values()
-        rospy.logdebug("Group Vars:")
-        rospy.logdebug(self.group_variable_values)
-        rospy.logdebug("Point:")
-        rospy.logdebug(positions_array)
         self.group_variable_values[0] = positions_array[0]
         self.group_variable_values[1] = positions_array[1]
         self.group_variable_values[2] = positions_array[2]
@@ -301,22 +322,19 @@ class MoveFetch(object):
         return result
 
     def execute_trajectory(self):
-
+        """
+        Assuming that the trajecties has been set to the self objects appropriately
+        Make a plan to the destination in Homogeneous Space(x,y,z,yaw,pitch,roll)
+        and returns the result of execution
+        """
         self.plan = self.group.plan()
         result = self.group.go(wait=True)
-
         return result
 
     def ee_pose(self):
-
         gripper_pose = self.group.get_current_pose()
-
-        rospy.logdebug("EE POSE==>"+str(gripper_pose))
-
         return gripper_pose
 
     def ee_rpy(self, request):
-
         gripper_rpy = self.group.get_current_rpy()
-
         return gripper_rpy

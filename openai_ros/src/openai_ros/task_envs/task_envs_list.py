@@ -49,18 +49,38 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         # We have to import the Class that we registered so that it can be found afterwards in the Make
         from openai_ros.task_envs.fetch import fetch_test_task
 
-
     elif task_env == 'FetchSimpleTest-v0':
         register(
             id=task_env,
-            entry_point='openai_ros:task_envs.fetch.fetch_simple_task.FetchSimpleTestEnv',
+            # entry_point='openai_ros:task_envs.fetch.fetch_simple_task.FetchSimpleTestEnv',
+            entry_point='openai_ros.task_envs.fetch.fetch_simple_task:FetchSimpleTestEnv',
             timestep_limit=timestep_limit_per_episode,
         )
         # We have to import the Class that we registered so that it can be found afterwards in the Make
         from openai_ros.task_envs.fetch import fetch_simple_task
 
-    elif task_env == 'CartPoleStayUp-v0':
+    elif task_env == 'FetchPickAndPlace-v0':
+        register(
+            id=task_env,
+            # entry_point='openai_ros:task_envs.fetch.fetch_pick_and_place_task.FetchPickAndPlaceEnv',
+            entry_point='openai_ros:task_envs.fetch.fetch_pick_and_place_task.FetchPickAndPlaceEnv',
+            timestep_limit=timestep_limit_per_episode,
+        )
+        # We have to import the Class that we registered so that it can be found afterwards in the Make
+        from openai_ros.task_envs.fetch import fetch_pick_and_place_task
 
+    elif task_env == 'FetchPush-v0':
+        register(
+            id=task_env,
+            # entry_point='openai_ros:task_envs.fetch.fetch_pick_and_place_task.FetchPushEnv',
+            # entry_point='openai_ros:task_envs.fetch.fetch_push.FetchPushEnv',
+            entry_point='openai_ros.task_envs.fetch.fetch_push:FetchPushEnv',
+            timestep_limit=timestep_limit_per_episode,
+        )
+        # We have to import the Class that we registered so that it can be found afterwards in the Make
+        from openai_ros.task_envs.fetch import fetch_push
+
+    elif task_env == 'CartPoleStayUp-v0':
         register(
             id=task_env,
             entry_point='openai_ros:task_envs.cartpole_stay_up.stay_up.CartPoleStayUpEnv',
@@ -136,7 +156,6 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         # import our training environment
         from openai_ros.task_envs.sumit_xl import sumit_xl_room
 
-
     elif task_env == 'MyTurtleBot2Maze-v0':
 
         register(
@@ -146,7 +165,6 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         )
         # import our training environment
         from openai_ros.task_envs.turtlebot2 import turtlebot2_maze
-
 
     elif task_env == 'MyTurtleBot2Wall-v0':
 
@@ -158,7 +176,6 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         # import our training environment
         from openai_ros.task_envs.turtlebot2 import turtlebot2_wall
 
-
     elif task_env == 'TurtleBot3World-v0':
 
         register(
@@ -169,7 +186,6 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
 
         # import our training environment
         from openai_ros.task_envs.turtlebot3 import turtlebot3_world
-
 
     elif task_env == 'WamvNavTwoSetsBuoys-v0':
 

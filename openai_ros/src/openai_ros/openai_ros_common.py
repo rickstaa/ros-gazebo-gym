@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import gym
-from task_envs.task_envs_list import RegisterOpenAI_Ros_Env
+from .task_envs.task_envs_list import RegisterOpenAI_Ros_Env
 import roslaunch
 import rospy
 import rospkg
@@ -20,15 +20,16 @@ def StartOpenAI_ROS_Environment(task_and_robot_environment_name):
     4) Launches the world launch and the robot spawn.
     5) It will import the Gym Env and Make it.
     """
-
+    rospy.logwarn("Env: {} will be imported".format(
+        task_and_robot_environment_name))
     result = RegisterOpenAI_Ros_Env(task_env=task_and_robot_environment_name,
                                     timestep_limit_per_episode=10000)
 
     if result:
-        print("Register of Task Env went OK, lets make the env...")
+        rospy.logwarn("Register of Task Env went OK, lets make the env...")
         env = gym.make(task_and_robot_environment_name)
     else:
-        print("Something Went wrong in the register")
+        rospy.logwarn("Something Went wrong in the register")
         env = None
 
     return env
@@ -128,23 +129,28 @@ class ROSLauncher(object):
                 "https://bitbucket.org/theconstructcore/parrot_ardrone.git"]
 
         elif package_name == "sawyer_gazebo":
-            package_git = ["https://bitbucket.org/theconstructcore/sawyer_full.git"]
+            package_git = [
+                "https://bitbucket.org/theconstructcore/sawyer_full.git"]
 
         elif package_name == "shadow_gazebo":
-            package_git = ["https://bitbucket.org/theconstructcore/shadow_robot_smart_grasping_sandbox.git"]
+            package_git = [
+                "https://bitbucket.org/theconstructcore/shadow_robot_smart_grasping_sandbox.git"]
 
         elif package_name == "summit_xl_gazebo":
-            package_git = ["https://bitbucket.org/theconstructcore/summit_xl.git"]
-
+            package_git = [
+                "https://bitbucket.org/theconstructcore/summit_xl.git"]
 
         elif package_name == "gym_construct":
-            package_git = ["https://bitbucket.org/theconstructcore/open_ai_gym_construct.git"]
+            package_git = [
+                "https://bitbucket.org/theconstructcore/open_ai_gym_construct.git"]
 
         elif package_name == "turtlebot_gazebo":
-            package_git = ["https://bitbucket.org/theconstructcore/turtlebot.git"]
+            package_git = [
+                "https://bitbucket.org/theconstructcore/turtlebot.git"]
 
         elif package_name == "turtlebot3_gazebo":
-            package_git = ["https://bitbucket.org/theconstructcore/turtlebot3.git"]
+            package_git = [
+                "https://bitbucket.org/theconstructcore/turtlebot3.git"]
 
         elif package_name == "robotx_gazebo":
             package_git = ["https://bitbucket.org/theconstructcore/vmrc.git"]
@@ -152,16 +158,12 @@ class ROSLauncher(object):
                 "https://bitbucket.org/theconstructcore/spawn_robot_tools.git")
 
         elif package_name == "fetch_simple_description":
-            package_git = ["https://bitbucket.org/theconstructcore/fetch_simple_simulation.git"]
+            package_git = [
+                "https://bitbucket.org/theconstructcore/fetch_simple_simulation.git"]
             package_git.append(
                 "https://bitbucket.org/theconstructcore/spawn_robot_tools.git")
 
-
-
         # ADD HERE THE GITs List To Your Simuation
-
-
-
 
         else:
             rospy.logerr("Package [ >"+package_name +
