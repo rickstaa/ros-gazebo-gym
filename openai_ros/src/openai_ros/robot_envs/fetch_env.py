@@ -114,18 +114,15 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         # Set up a trajectory message to publish.
         ee_target = geometry_msgs.msg.Pose()
-        ee_target.orientation.w = 1.0
+
+        ee_target.orientation.x = -0.707
+        ee_target.orientation.y = 0.0
+        ee_target.orientation.z = 0.707
+        ee_target.orientation.w = 0.001
+
         ee_target.position.x = action[0]
         ee_target.position.y = action[1]
         ee_target.position.z = action[2]
-
-        # ee_target.position.x = 1.
-        # ee_target.position.y = 1.
-        # ee_target.position.z = 1.
-        # ee_target.orientation.x = 0.0
-        # ee_target.orientation.y = 0.0
-        # ee_target.orientation.z = 0.0
-        # ee_target.orientation.w = 1.0
 
         result = self.move_fetch_object.ee_traj(ee_target)
         return result
