@@ -3,7 +3,7 @@ from gym.envs.registration import register
 from gym import envs
 
 
-def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
+def RegisterOpenAI_Ros_Env(task_env, max_episode_steps=10000):
     """
     Registers all the ENVS supported in OpenAI ROS. This way we can load them
     with variable limits.
@@ -18,14 +18,20 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
 
     # Cubli Moving Cube
     if task_env == 'MovingCubeOneDiskWalk-v0':
+        print("Import module")
+
+        # We have to import the Class that we registered so that it can be found afterwards in the Make
+        from openai_ros.task_envs.moving_cube import one_disk_walk
+
+        print("Importing register env")
         # We register the Class through the Gym system
         register(
             id=task_env,
-            entry_point='openai_ros:task_envs.moving_cube.one_disk_walk.MovingCubeOneDiskWalkEnv',
-            timestep_limit=timestep_limit_per_episode,
+            #entry_point='openai_ros:task_envs.moving_cube.one_disk_walk.MovingCubeOneDiskWalkEnv',
+            entry_point='openai_ros.task_envs.moving_cube.one_disk_walk:MovingCubeOneDiskWalkEnv',
+            max_episode_steps=max_episode_steps,
         )
-        # We have to import the Class that we registered so that it can be found afterwards in the Make
-        from openai_ros.task_envs.moving_cube import one_disk_walk
+
 
     # Husarion Robot
     elif task_env == 'HusarionGetToPosTurtleBotPlayGround-v0':
@@ -33,7 +39,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         register(
             id=task_env,
             entry_point='openai_ros:task_envs.husarion.husarion_get_to_position_turtlebot_playground.HusarionGetToPosTurtleBotPlayGroundEnv',
-            timestep_limit=timestep_limit_per_episode,
+            max_episode_steps=max_episode_steps,
         )
 
         # import our training environment
@@ -43,7 +49,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         register(
             id=task_env,
             entry_point='openai_ros:task_envs.fetch.fetch_test_task.FetchTestEnv',
-            timestep_limit=timestep_limit_per_episode,
+            max_episode_steps=max_episode_steps,
         )
         # 50
         # We have to import the Class that we registered so that it can be found afterwards in the Make
@@ -54,7 +60,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
             id=task_env,
             # entry_point='openai_ros:task_envs.fetch.fetch_simple_task.FetchSimpleTestEnv',
             entry_point='openai_ros.task_envs.fetch.fetch_simple_task:FetchSimpleTestEnv',
-            timestep_limit=timestep_limit_per_episode,
+            max_episode_steps=max_episode_steps,
         )
         # We have to import the Class that we registered so that it can be found afterwards in the Make
         from openai_ros.task_envs.fetch import fetch_simple_task
@@ -64,7 +70,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
             id=task_env,
             # entry_point='openai_ros:task_envs.fetch.fetch_pick_and_place_task.FetchPickAndPlaceEnv',
             entry_point='openai_ros:task_envs.fetch.fetch_pick_and_place_task.FetchPickAndPlaceEnv',
-            timestep_limit=timestep_limit_per_episode,
+            max_episode_steps=max_episode_steps,
         )
         # We have to import the Class that we registered so that it can be found afterwards in the Make
         from openai_ros.task_envs.fetch import fetch_pick_and_place_task
@@ -75,7 +81,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
             # entry_point='openai_ros:task_envs.fetch.fetch_pick_and_place_task.FetchPushEnv',
             # entry_point='openai_ros:task_envs.fetch.fetch_push.FetchPushEnv',
             entry_point='openai_ros.task_envs.fetch.fetch_push:FetchPushEnv',
-            timestep_limit=timestep_limit_per_episode,
+            max_episode_steps=max_episode_steps,
         )
         # We have to import the Class that we registered so that it can be found afterwards in the Make
         from openai_ros.task_envs.fetch import fetch_push
@@ -84,7 +90,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         register(
             id=task_env,
             entry_point='openai_ros:task_envs.cartpole_stay_up.stay_up.CartPoleStayUpEnv',
-            timestep_limit=timestep_limit_per_episode,
+            max_episode_steps=max_episode_steps,
         )
 
         # import our training environment
@@ -95,7 +101,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         register(
             id=task_env,
             entry_point='openai_ros:task_envs.hopper.hopper_stay_up.HopperStayUpEnv',
-            timestep_limit=timestep_limit_per_episode,
+            max_episode_steps=max_episode_steps,
         )
 
         # import our training environment
@@ -106,7 +112,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         register(
             id=task_env,
             entry_point='openai_ros:task_envs.iriwam.tcp_to_bowl.IriWamTcpToBowlEnv',
-            timestep_limit=timestep_limit_per_episode,
+            max_episode_steps=max_episode_steps,
         )
 
         # import our training environment
@@ -117,7 +123,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         register(
             id=task_env,
             entry_point='openai_ros:task_envs.parrotdrone.parrotdrone_goto.ParrotDroneGotoEnv',
-            timestep_limit=timestep_limit_per_episode,
+            max_episode_steps=max_episode_steps,
         )
 
         # import our training environment
@@ -128,7 +134,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         register(
             id=task_env,
             entry_point='openai_ros:task_envs.sawyer.learn_to_touch_cube.SawyerTouchCubeEnv',
-            timestep_limit=timestep_limit_per_episode,
+            max_episode_steps=max_episode_steps,
         )
 
         # import our training environment
@@ -139,7 +145,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         register(
             id=task_env,
             entry_point='openai_ros:task_envs.shadow_tc.learn_to_pick_ball.ShadowTcGetBallEnv',
-            timestep_limit=timestep_limit_per_episode,
+            max_episode_steps=max_episode_steps,
         )
 
         # import our training environment
@@ -150,7 +156,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         register(
             id='SumitXlRoom-v0',
             entry_point='openai_ros:task_envs.sumit_xl.sumit_xl_room.SumitXlRoom',
-            timestep_limit=timestep_limit_per_episode,
+            max_episode_steps=max_episode_steps,
         )
 
         # import our training environment
@@ -161,7 +167,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         register(
             id=task_env,
             entry_point='openai_ros:task_envs.turtlebot2.turtlebot2_maze.TurtleBot2MazeEnv',
-            timestep_limit=timestep_limit_per_episode,
+            max_episode_steps=max_episode_steps,
         )
         # import our training environment
         from openai_ros.task_envs.turtlebot2 import turtlebot2_maze
@@ -171,7 +177,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         register(
             id=task_env,
             entry_point='openai_ros:task_envs.turtlebot2.turtlebot2_wall.TurtleBot2WallEnv',
-            timestep_limit=timestep_limit_per_episode,
+            max_episode_steps=max_episode_steps,
         )
         # import our training environment
         from openai_ros.task_envs.turtlebot2 import turtlebot2_wall
@@ -181,7 +187,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         register(
             id=task_env,
             entry_point='openai_ros:task_envs.turtlebot3.turtlebot3_world.TurtleBot3WorldEnv',
-            timestep_limit=timestep_limit_per_episode,
+            max_episode_steps=max_episode_steps,
         )
 
         # import our training environment
@@ -192,7 +198,7 @@ def RegisterOpenAI_Ros_Env(task_env, timestep_limit_per_episode=10000):
         register(
             id=task_env,
             entry_point='openai_ros:task_envs.wamv.wamv_nav_twosets_buoys.WamvNavTwoSetsBuoysEnv',
-            timestep_limit=timestep_limit_per_episode,
+            max_episode_steps=max_episode_steps,
         )
 
         # import our training environment

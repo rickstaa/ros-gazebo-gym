@@ -23,7 +23,7 @@ def StartOpenAI_ROS_Environment(task_and_robot_environment_name):
     rospy.logwarn("Env: {} will be imported".format(
         task_and_robot_environment_name))
     result = RegisterOpenAI_Ros_Env(task_env=task_and_robot_environment_name,
-                                    timestep_limit_per_episode=10000)
+                                    max_episode_steps=10000)
 
     if result:
         rospy.logwarn("Register of Task Env went OK, lets make the env..."+str(task_and_robot_environment_name))
