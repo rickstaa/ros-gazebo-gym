@@ -124,38 +124,6 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
         rospy.logdebug("All Publishers READY")
 
-    # Methods that the TrainingEnvironment will need to define here as virtual
-    # because they will be used in RobotGazeboEnv GrandParentClass and defined in the
-    # TrainingEnvironment.
-    # ----------------------------
-    def _set_init_pose(self):
-        """Sets the Robot in its init pose
-        """
-        raise NotImplementedError()
-
-    def _init_env_variables(self):
-        """Inits variables needed to be initialised each time we reset at the start
-        of an episode.
-        """
-        raise NotImplementedError()
-
-    def _compute_reward(self, observations, done):
-        """Calculates the reward to give based on the observations given.
-        """
-        raise NotImplementedError()
-
-    def _set_action(self, action):
-        """Applies the given action to the simulation.
-        """
-        raise NotImplementedError()
-
-    def _get_obs(self):
-        raise NotImplementedError()
-
-    def _is_done(self, observations):
-        """Checks if episode done based on observations given.
-        """
-        raise NotImplementedError()
 
     # Methods that the TrainingEnvironment will need.
     # ----------------------------
