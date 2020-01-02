@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 import numpy
 import rospy
 from openai_ros import robot_gazebo_env
@@ -18,7 +20,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         # We launch the ROSlaunch that spawns the robot into the world
         ROSLauncher(rospackage_name="moving_cube_description",
-                    launch_file_name="put_cube_in_world.launch",
+                    launch_file_name="put_robot_in_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
         # Variables that we give through the constructor.
@@ -36,28 +38,17 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
                                                 robot_name_space=self.robot_name_space,
                                                 reset_controls=True)
 
-        """
-        To check any topic we need to have the simulations running, we need to do two things:
-        1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
-        that are pause for whatever the reason
-        2) If the simulation was running already for some reason, we need to reset the controlers.
-        This has to do with the fact that some plugins with tf, dont understand the reset of the simulation
-        and need to be reseted to work properly.
-        """
-        self.gazebo.unpauseSim()
-        self.controllers_object.reset_controllers()
-        self._check_all_sensors_ready()
 
         # We Start all the ROS related Subscribers and publishers
-        rospy.Subscriber("/moving_cube/joint_states",
-                         JointState, self._joints_callback)
+        rospy.Subscriber("/moving_cube/joint_states", JointState, self._joints_callback)
         rospy.Subscriber("/moving_cube/odom", Odometry, self._odom_callback)
 
         self._roll_vel_pub = rospy.Publisher('/moving_cube/inertia_wheel_roll_joint_velocity_controller/command',
                                              Float64, queue_size=1)
 
-        self._check_publishers_connection()
+        self._check_all_systems_ready()
 
+        # We pause the simulation once everything is ready
         self.gazebo.pauseSim()
 
     # Methods needed by the RobotGazeboEnv
@@ -69,6 +60,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         operational.
         """
         self._check_all_sensors_ready()
+        self._check_publishers_connection()
         return True
 
     # CubeSingleDiskEnv virtual methods
