@@ -7,6 +7,7 @@ import rospkg
 import os
 import git
 import sys
+import subprocess
 
 
 def StartOpenAI_ROS_Environment(task_and_robot_environment_name):
@@ -71,11 +72,28 @@ class ROSLauncher(object):
 
             rospy.logwarn("path_launch_file_name=="+str(path_launch_file_name))
 
+            source_env_command = "source "+ros_ws_abspath+"/devel/setup.bash;"
+            roslaunch_command = "roslaunch  {0} {1}".format(rospackage_name, launch_file_name)
+            command = source_env_command+roslaunch_command
+            rospy.logwarn("Launching command="+str(command))
+
+            p = subprocess.Popen(command, shell=True)
+
+            state = p.poll()
+            if state is None:
+                rospy.loginfo("process is running fine")
+            elif state < 0:
+                rospy.loginfo("Process terminated with error")
+            elif state > 0:
+                rospy.loginfo("Process terminated without error")
+            """
             self.uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
             roslaunch.configure_logging(self.uuid)
             self.launch = roslaunch.parent.ROSLaunchParent(
                 self.uuid, [path_launch_file_name])
             self.launch.start()
+            """
+
 
             rospy.loginfo(">>>>>>>>>STARTED Roslaunch-->" +
                           str(self._launch_file_name))
@@ -101,6 +119,8 @@ class ROSLauncher(object):
         if package_name == "moving_cube_description":
             package_git = [
                 "https://bitbucket.org/theconstructcore/moving_cube.git"]
+            package_git.append(
+                "https://bitbucket.org/theconstructcore/spawn_robot_tools.git")
 
         elif package_name == "rosbot_gazebo" or package_name == "rosbot_description":
             package_git = [
