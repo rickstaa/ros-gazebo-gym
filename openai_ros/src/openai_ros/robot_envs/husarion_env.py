@@ -35,7 +35,7 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
         * /camera/depth/image_raw: 2d Depth image of the depth sensor.
         * /camera/depth/points: Pointcloud sensor readings
         * /camera/rgb/image_raw: RGB camera
-        * /rosbot/laser/scan: Laser Readings
+        * /scan: Laser Readings
 
         Actuators Topic List: /cmd_vel,
 
@@ -46,7 +46,7 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
         # None in this case
         # We launch the ROSlaunch that spawns the robot into the world
         ROSLauncher(rospackage_name="rosbot_gazebo",
-                    launch_file_name="put_rosbot_in_world.launch",
+                    launch_file_name="put_robot_in_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
         rospy.logerr(">>>>>>>>>>>ROSLAUCHER DONE HusarionEnv INIT...")
         # Internal Vars
@@ -75,7 +75,7 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
                          self._camera_depth_points_callback)
         rospy.Subscriber("/camera/rgb/image_raw", Image,
                          self._camera_rgb_image_raw_callback)
-        rospy.Subscriber("/rosbot/laser/scan", LaserScan,
+        rospy.Subscriber("/scan", LaserScan,
                          self._laser_scan_callback)
 
         self._cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
@@ -169,16 +169,16 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _check_laser_scan_ready(self):
         self.laser_scan = None
-        rospy.logdebug("Waiting for /rosbot/laser/scan to be READY...")
+        rospy.logdebug("Waiting for /scan to be READY...")
         while self.laser_scan is None and not rospy.is_shutdown():
             try:
                 self.laser_scan = rospy.wait_for_message(
-                    "/rosbot/laser/scan", LaserScan, timeout=1.0)
-                rospy.logdebug("Current /rosbot/laser/scan READY=>")
+                    "/scan", LaserScan, timeout=1.0)
+                rospy.logdebug("Current /scan READY=>")
 
             except:
                 rospy.logerr(
-                    "Current /rosbot/laser/scan not ready yet, retrying for getting laser_scan")
+                    "Current /scan not ready yet, retrying for getting laser_scan")
         return self.laser_scan
 
     def _odom_callback(self, data):

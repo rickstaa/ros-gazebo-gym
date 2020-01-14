@@ -31,7 +31,7 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
 
         # We launch the ROSlaunch that spawns the robot into the world
         ROSLauncher(rospackage_name="cartpole_description",
-                    launch_file_name="put_cartpole_in_world.launch",
+                    launch_file_name="put_robot_in_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
         self.publishers_array = []

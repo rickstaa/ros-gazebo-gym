@@ -38,7 +38,7 @@ def RegisterOpenAI_Ros_Env(task_env, max_episode_steps=10000):
 
         register(
             id=task_env,
-            entry_point='openai_ros:task_envs.husarion.husarion_get_to_position_turtlebot_playground.HusarionGetToPosTurtleBotPlayGroundEnv',
+            entry_point='openai_ros.task_envs.husarion.husarion_get_to_position_turtlebot_playground:HusarionGetToPosTurtleBotPlayGroundEnv',
             max_episode_steps=max_episode_steps,
         )
 
@@ -48,7 +48,7 @@ def RegisterOpenAI_Ros_Env(task_env, max_episode_steps=10000):
     elif task_env == 'FetchTest-v0':
         register(
             id=task_env,
-            entry_point='openai_ros:task_envs.fetch.fetch_test_task.FetchTestEnv',
+            entry_point='openai_ros.task_envs.fetch.fetch_test_task:FetchTestEnv',
             max_episode_steps=max_episode_steps,
         )
         # 50
@@ -69,7 +69,7 @@ def RegisterOpenAI_Ros_Env(task_env, max_episode_steps=10000):
         register(
             id=task_env,
             # entry_point='openai_ros:task_envs.fetch.fetch_pick_and_place_task.FetchPickAndPlaceEnv',
-            entry_point='openai_ros:task_envs.fetch.fetch_pick_and_place_task.FetchPickAndPlaceEnv',
+            entry_point='openai_ros.task_envs.fetch.fetch_pick_and_place_task:FetchPickAndPlaceEnv',
             max_episode_steps=max_episode_steps,
         )
         # We have to import the Class that we registered so that it can be found afterwards in the Make
@@ -89,7 +89,7 @@ def RegisterOpenAI_Ros_Env(task_env, max_episode_steps=10000):
     elif task_env == 'CartPoleStayUp-v0':
         register(
             id=task_env,
-            entry_point='openai_ros:task_envs.cartpole_stay_up.stay_up.CartPoleStayUpEnv',
+            entry_point='openai_ros.task_envs.cartpole_stay_up.stay_up:CartPoleStayUpEnv',
             max_episode_steps=max_episode_steps,
         )
 
@@ -100,7 +100,7 @@ def RegisterOpenAI_Ros_Env(task_env, max_episode_steps=10000):
 
         register(
             id=task_env,
-            entry_point='openai_ros:task_envs.hopper.hopper_stay_up.HopperStayUpEnv',
+            entry_point='openai_ros.task_envs.hopper.hopper_stay_up:HopperStayUpEnv',
             max_episode_steps=max_episode_steps,
         )
 
@@ -111,7 +111,7 @@ def RegisterOpenAI_Ros_Env(task_env, max_episode_steps=10000):
 
         register(
             id=task_env,
-            entry_point='openai_ros:task_envs.iriwam.tcp_to_bowl.IriWamTcpToBowlEnv',
+            entry_point='openai_ros.task_envs.iriwam.tcp_to_bowl:IriWamTcpToBowlEnv',
             max_episode_steps=max_episode_steps,
         )
 
@@ -122,7 +122,7 @@ def RegisterOpenAI_Ros_Env(task_env, max_episode_steps=10000):
 
         register(
             id=task_env,
-            entry_point='openai_ros:task_envs.parrotdrone.parrotdrone_goto.ParrotDroneGotoEnv',
+            entry_point='openai_ros.task_envs.parrotdrone.parrotdrone_goto:ParrotDroneGotoEnv',
             max_episode_steps=max_episode_steps,
         )
 
@@ -133,7 +133,7 @@ def RegisterOpenAI_Ros_Env(task_env, max_episode_steps=10000):
 
         register(
             id=task_env,
-            entry_point='openai_ros:task_envs.sawyer.learn_to_touch_cube.SawyerTouchCubeEnv',
+            entry_point='openai_ros.task_envs.sawyer.learn_to_touch_cube:SawyerTouchCubeEnv',
             max_episode_steps=max_episode_steps,
         )
 
@@ -144,7 +144,7 @@ def RegisterOpenAI_Ros_Env(task_env, max_episode_steps=10000):
 
         register(
             id=task_env,
-            entry_point='openai_ros:task_envs.shadow_tc.learn_to_pick_ball.ShadowTcGetBallEnv',
+            entry_point='openai_ros.task_envs.shadow_tc.learn_to_pick_ball:ShadowTcGetBallEnv',
             max_episode_steps=max_episode_steps,
         )
 
@@ -155,7 +155,7 @@ def RegisterOpenAI_Ros_Env(task_env, max_episode_steps=10000):
 
         register(
             id='SumitXlRoom-v0',
-            entry_point='openai_ros:task_envs.sumit_xl.sumit_xl_room.SumitXlRoom',
+            entry_point='openai_ros.task_envs.sumit_xl.sumit_xl_room:SumitXlRoom',
             max_episode_steps=max_episode_steps,
         )
 
@@ -166,7 +166,7 @@ def RegisterOpenAI_Ros_Env(task_env, max_episode_steps=10000):
 
         register(
             id=task_env,
-            entry_point='openai_ros:task_envs.turtlebot2.turtlebot2_maze.TurtleBot2MazeEnv',
+            entry_point='openai_ros.task_envs.turtlebot2.turtlebot2_maze:TurtleBot2MazeEnv',
             max_episode_steps=max_episode_steps,
         )
         # import our training environment
@@ -176,7 +176,7 @@ def RegisterOpenAI_Ros_Env(task_env, max_episode_steps=10000):
 
         register(
             id=task_env,
-            entry_point='openai_ros:task_envs.turtlebot2.turtlebot2_wall.TurtleBot2WallEnv',
+            entry_point='openai_ros.task_envs.turtlebot2.turtlebot2_wall:TurtleBot2WallEnv',
             max_episode_steps=max_episode_steps,
         )
         # import our training environment
@@ -186,7 +186,7 @@ def RegisterOpenAI_Ros_Env(task_env, max_episode_steps=10000):
 
         register(
             id=task_env,
-            entry_point='openai_ros:task_envs.turtlebot3.turtlebot3_world.TurtleBot3WorldEnv',
+            entry_point='openai_ros.task_envs.turtlebot3.turtlebot3_world:TurtleBot3WorldEnv',
             max_episode_steps=max_episode_steps,
         )
 
@@ -197,7 +197,7 @@ def RegisterOpenAI_Ros_Env(task_env, max_episode_steps=10000):
 
         register(
             id=task_env,
-            entry_point='openai_ros:task_envs.wamv.wamv_nav_twosets_buoys.WamvNavTwoSetsBuoysEnv',
+            entry_point='openai_ros.task_envs.wamv.wamv_nav_twosets_buoys:WamvNavTwoSetsBuoysEnv',
             max_episode_steps=max_episode_steps,
         )
 

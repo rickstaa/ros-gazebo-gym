@@ -27,7 +27,7 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
                                                "/src;cd " + ros_ws_abspath + ";catkin_make"
 
         ROSLauncher(rospackage_name="rosbot_gazebo",
-                    launch_file_name="start_world.launch",
+                    launch_file_name="start_world_maze.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
         # Load Params from the desired Yaml file

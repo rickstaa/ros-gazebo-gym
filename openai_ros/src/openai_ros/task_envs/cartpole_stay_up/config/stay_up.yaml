@@ -3,8 +3,8 @@ cartpole_v0: #namespace
     # Cartpole3D environment variables
     n_actions: 2 # Number of actions used by algorithm and task
 
-    min_pole_angle: -0.7 #-23°
-    max_pole_angle: 0.7 #23°
+    min_pole_angle: -0.7 #-23
+    max_pole_angle: 0.7 #23
     max_base_velocity: 50
     min_base_pose_x: -1.0
     max_base_pose_x: 1.0
