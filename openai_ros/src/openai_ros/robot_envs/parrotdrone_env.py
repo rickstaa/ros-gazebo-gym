@@ -70,7 +70,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         self.gazebo.unpauseSim()
 
         ROSLauncher(rospackage_name="drone_construct",
-                    launch_file_name="put_drone_in_world.launch",
+                    launch_file_name="put_robot_in_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
         # self.controllers_object.reset_controllers()

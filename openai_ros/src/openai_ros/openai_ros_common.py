@@ -113,14 +113,20 @@ class ROSLauncher(object):
         pkg_path = None
         # We retrieve the got for the package asked
         package_git = None
+        package_to_branch_dict = {}
 
         rospy.logdebug("package_name===>"+str(package_name)+"<===")
 
         if package_name == "moving_cube_description":
-            package_git = [
-                "https://bitbucket.org/theconstructcore/moving_cube.git"]
-            package_git.append(
-                "https://bitbucket.org/theconstructcore/spawn_robot_tools.git")
+
+            url_git_1 = "https://bitbucket.org/theconstructcore/moving_cube.git"
+            package_git = [url_git_1]
+            package_to_branch_dict[url_git_1] = "master"
+
+            url_git_2 = "https://bitbucket.org/theconstructcore/spawn_robot_tools.git"
+            package_git.append(url_git_2)
+            package_git = [url_git_2]
+            package_to_branch_dict[url_git_2] = "master"
 
         elif package_name == "rosbot_gazebo" or package_name == "rosbot_description":
             package_git = [
@@ -146,8 +152,9 @@ class ROSLauncher(object):
                 "https://bitbucket.org/theconstructcore/hokuyo_model.git")
 
         elif package_name == "drone_construct" or package_name == "drone_demo" or package_name == "sjtu_drone" or package_name == "custom_teleop" or package_name == "ardrone_as":
-            package_git = [
-                "https://bitbucket.org/theconstructcore/parrot_ardrone.git"]
+            url_git_1 = "https://bitbucket.org/theconstructcore/parrot_ardrone.git"
+            package_git = [url_git_1]
+            package_to_branch_dict[url_git_1] = "kinetic-gazebo9"
 
         elif package_name == "sawyer_gazebo":
             package_git = [
@@ -198,10 +205,16 @@ class ROSLauncher(object):
                 try:
                     rospy.logdebug("Lets download git="+git_url +
                                    ", in ws="+ros_ws_src_abspath_src)
-                    git.Git(ros_ws_src_abspath_src).clone(git_url)
+                    if git_url in package_to_branch_dict:
+                        branch_repo_name = package_to_branch_dict[git_url]
+                        git.Git(ros_ws_src_abspath_src).clone(git_url,branch=branch_repo_name)
+                    else:
+                        git.Git(ros_ws_src_abspath_src).clone(git_url)
+
                     rospy.logdebug("Download git="+git_url +
                                    ", in ws="+ros_ws_src_abspath_src+"...DONE")
-                except git.exc.GitCommandError:
+                except git.exc.GitCommandError as e:
+                    rospy.logwarn(str(e))
                     rospy.logwarn("The Git "+git_url+" already exists in " +
                                   ros_ws_src_abspath_src+", not downloading")
 
