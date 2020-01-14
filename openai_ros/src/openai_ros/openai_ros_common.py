@@ -125,6 +125,8 @@ class ROSLauncher(object):
         elif package_name == "rosbot_gazebo" or package_name == "rosbot_description":
             package_git = [
                 "https://bitbucket.org/theconstructcore/rosbot_husarion.git"]
+            package_git.append(
+                "https://github.com/paulbovbel/frontier_exploration.git")
 
         elif package_name == "fetch_gazebo":
             package_git = [

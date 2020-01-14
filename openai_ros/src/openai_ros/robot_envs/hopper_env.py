@@ -47,7 +47,7 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
 
         # We launch the ROSlaunch that spawns the robot into the world
         ROSLauncher(rospackage_name="legged_robots_sims",
-                    launch_file_name="put_hopper_in_world.launch",
+                    launch_file_name="put_robot_in_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
         # Variables that we give through the constructor.
