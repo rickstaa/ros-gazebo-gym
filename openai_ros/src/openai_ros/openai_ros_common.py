@@ -184,12 +184,17 @@ class ROSLauncher(object):
                 "https://bitbucket.org/theconstructcore/open_ai_gym_construct.git"]
 
         elif package_name == "turtlebot_gazebo":
-            package_git = [
-                "https://bitbucket.org/theconstructcore/turtlebot.git"]
+
+            url_git_1 = "https://bitbucket.org/theconstructcore/turtlebot.git"
+            package_git = [url_git_1]
+            package_to_branch_dict[url_git_1] = "kinetic-gazebo9"
+
 
         elif package_name == "turtlebot3_gazebo":
-            package_git = [
-                "https://bitbucket.org/theconstructcore/turtlebot3.git"]
+
+            url_git_1 = "https://bitbucket.org/theconstructcore/turtlebot3.git"
+            package_git = [url_git_1]
+            package_to_branch_dict[url_git_1] = "kinetic-gazebo9"
 
         elif package_name == "robotx_gazebo":
             package_git = ["https://bitbucket.org/theconstructcore/vmrc.git"]

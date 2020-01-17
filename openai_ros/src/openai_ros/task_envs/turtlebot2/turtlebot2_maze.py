@@ -27,8 +27,8 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
             " DOESNT exist, execute: mkdir -p "+ros_ws_abspath + \
             "/src;cd "+ros_ws_abspath+";catkin_make"
 
-        ROSLauncher(rospackage_name="gym_construct",
-                    launch_file_name="start_maze_world.launch",
+        ROSLauncher(rospackage_name="turtlebot_gazebo",
+                    launch_file_name="start_world_maze_loop_brick.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
         # Load Params from the desired Yaml file

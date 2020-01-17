@@ -23,7 +23,7 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
                                                "/src;cd " + ros_ws_abspath + ";catkin_make"
 
         ROSLauncher(rospackage_name="turtlebot_gazebo",
-                    launch_file_name="start_wall_world.launch",
+                    launch_file_name="start_world_wall.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
         # Load Params from the desired Yaml file
@@ -37,11 +37,11 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
         # Only variable needed to be set here
         number_actions = rospy.get_param('/turtlebot2/n_actions')
         self.action_space = spaces.Discrete(number_actions)
-        
+
         # We set the reward range, which is not compulsory but here we do it.
         self.reward_range = (-numpy.inf, numpy.inf)
-        
-        
+
+
         #number_observations = rospy.get_param('/turtlebot2/n_observations')
         """
         We set the Observation space for the 6 observations
@@ -54,40 +54,40 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
             round(yaw, 1),
         ]
         """
-        
+
         # Actions and Observations
         self.linear_forward_speed = rospy.get_param('/turtlebot2/linear_forward_speed')
         self.linear_turn_speed = rospy.get_param('/turtlebot2/linear_turn_speed')
         self.angular_speed = rospy.get_param('/turtlebot2/angular_speed')
         self.init_linear_forward_speed = rospy.get_param('/turtlebot2/init_linear_forward_speed')
         self.init_linear_turn_speed = rospy.get_param('/turtlebot2/init_linear_turn_speed')
-        
+
         self.new_ranges = rospy.get_param('/turtlebot2/new_ranges')
         self.min_range = rospy.get_param('/turtlebot2/min_range')
         self.max_laser_value = rospy.get_param('/turtlebot2/max_laser_value')
         self.min_laser_value = rospy.get_param('/turtlebot2/min_laser_value')
-        
+
         # Get Desired Point to Get
         self.desired_point = Point()
         self.desired_point.x = rospy.get_param("/turtlebot2/desired_pose/x")
         self.desired_point.y = rospy.get_param("/turtlebot2/desired_pose/y")
         self.desired_point.z = rospy.get_param("/turtlebot2/desired_pose/z")
-        
+
         # We create two arrays based on the binary values that will be assigned
         # In the discretization method.
         laser_scan = self.get_laser_scan()
         rospy.logdebug("laser_scan len===>" + str(len(laser_scan.ranges)))
 
-        num_laser_readings = len(laser_scan.ranges)/self.new_ranges
+        num_laser_readings = int(len(laser_scan.ranges)/self.new_ranges)
         high = numpy.full((num_laser_readings), self.max_laser_value)
         low = numpy.full((num_laser_readings), self.min_laser_value)
-        
+
         # We only use two integers
         self.observation_space = spaces.Box(low, high)
-        
+
         rospy.logdebug("ACTION SPACES TYPE===>"+str(self.action_space))
         rospy.logdebug("OBSERVATION SPACES TYPE===>"+str(self.observation_space))
-        
+
         # Rewards
         self.forwards_reward = rospy.get_param("/turtlebot2/forwards_reward")
         self.turn_reward = rospy.get_param("/turtlebot2/turn_reward")
@@ -118,7 +118,7 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
         self.cumulated_reward = 0.0
         # Set to false Done, because its calculated asyncronously
         self._episode_done = False
-        
+
         odometry = self.get_odom()
         self.previous_distance_from_des_point = self.get_distance_from_desired_point(odometry.pose.pose.position)
 
@@ -129,7 +129,7 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
         based on the action number given.
         :param action: The action integer that set s what movement to do next.
         """
-        
+
         rospy.logdebug("Start Set Action ==>"+str(action))
         # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
         if action == 0: #FORWARD
@@ -145,10 +145,10 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
             angular_speed = -1*self.angular_speed
             self.last_action = "TURN_RIGHT"
 
-        
+
         # We tell TurtleBot2 the linear and angular speed to set to execute
         self.move_base(linear_speed, angular_speed, epsilon=0.05, update_rate=10)
-        
+
         rospy.logdebug("END Set Action ==>"+str(action))
 
     def _get_obs(self):
@@ -161,12 +161,12 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
         rospy.logdebug("Start Get Observation ==>")
         # We get the laser scan data
         laser_scan = self.get_laser_scan()
-        
+
         discretized_laser_scan = self.discretize_observation( laser_scan,
                                                                 self.new_ranges
                                                                 )
-                                                                
-                                                                
+
+
         # We get the odometry so that SumitXL knows where it is.
         odometry = self.get_odom()
         x_position = odometry.pose.pose.position.x
@@ -182,46 +182,46 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
         rospy.logdebug("Observations==>"+str(observations))
         rospy.logdebug("END Get Observation ==>")
         return observations
-        
+
 
     def _is_done(self, observations):
-        
+
         if self._episode_done:
             rospy.logerr("TurtleBot2 is Too Close to wall==>")
         else:
             rospy.logerr("TurtleBot2 didnt crash at least ==>")
-       
-       
+
+
             current_position = Point()
             current_position.x = observations[-2]
             current_position.y = observations[-1]
             current_position.z = 0.0
-            
+
             MAX_X = 6.0
             MIN_X = -1.0
             MAX_Y = 3.0
             MIN_Y = -3.0
-            
+
             # We see if we are outside the Learning Space
-            
+
             if current_position.x <= MAX_X and current_position.x > MIN_X:
                 if current_position.y <= MAX_Y and current_position.y > MIN_Y:
                     rospy.logdebug("TurtleBot Position is OK ==>["+str(current_position.x)+","+str(current_position.y)+"]")
-                    
+
                     # We see if it got to the desired point
                     if self.is_in_desired_position(current_position):
                         self._episode_done = True
-                    
-                    
+
+
                 else:
                     rospy.logerr("TurtleBot to Far in Y Pos ==>"+str(current_position.x))
                     self._episode_done = True
             else:
                 rospy.logerr("TurtleBot to Far in X Pos ==>"+str(current_position.x))
                 self._episode_done = True
-            
-            
-            
+
+
+
 
         return self._episode_done
 
@@ -237,12 +237,12 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
 
 
         if not done:
-            
+
             if self.last_action == "FORWARDS":
                 reward = self.forwards_reward
             else:
                 reward = self.turn_reward
-                
+
             # If there has been a decrease in the distance to the desired point, we reward it
             if distance_difference < 0.0:
                 rospy.logwarn("DECREASE IN DISTANCE GOOD")
@@ -250,9 +250,9 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
             else:
                 rospy.logerr("ENCREASE IN DISTANCE BAD")
                 reward += 0
-                
+
         else:
-            
+
             if self.is_in_desired_position(current_position):
                 reward = self.end_episode_points
             else:
@@ -267,26 +267,26 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
         rospy.logdebug("Cumulated_reward=" + str(self.cumulated_reward))
         self.cumulated_steps += 1
         rospy.logdebug("Cumulated_steps=" + str(self.cumulated_steps))
-        
+
         return reward
 
 
     # Internal TaskEnv Methods
-    
+
     def discretize_observation(self,data,new_ranges):
         """
         Discards all the laser readings that are not multiple in index of new_ranges
         value.
         """
         self._episode_done = False
-        
+
         discretized_ranges = []
         mod = len(data.ranges)/new_ranges
-        
+
         rospy.logdebug("data=" + str(data))
         rospy.logwarn("new_ranges=" + str(new_ranges))
         rospy.logwarn("mod=" + str(mod))
-        
+
         for i, item in enumerate(data.ranges):
             if (i%mod==0):
                 if item == float ('Inf') or numpy.isinf(item):
@@ -295,41 +295,41 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
                     discretized_ranges.append(self.min_laser_value)
                 else:
                     discretized_ranges.append(int(item))
-                    
+
                 if (self.min_range > item > 0):
                     rospy.logerr("done Validation >>> item=" + str(item)+"< "+str(self.min_range))
                     self._episode_done = True
                 else:
                     rospy.logwarn("NOT done Validation >>> item=" + str(item)+"< "+str(self.min_range))
-                    
+
 
         return discretized_ranges
-        
-        
+
+
     def is_in_desired_position(self,current_position, epsilon=0.05):
         """
         It return True if the current position is similar to the desired poistion
         """
-        
+
         is_in_desired_pos = False
-        
-        
+
+
         x_pos_plus = self.desired_point.x + epsilon
         x_pos_minus = self.desired_point.x - epsilon
         y_pos_plus = self.desired_point.y + epsilon
         y_pos_minus = self.desired_point.y - epsilon
-        
+
         x_current = current_position.x
         y_current = current_position.y
-        
+
         x_pos_are_close = (x_current <= x_pos_plus) and (x_current > x_pos_minus)
         y_pos_are_close = (y_current <= y_pos_plus) and (y_current > y_pos_minus)
-        
+
         is_in_desired_pos = x_pos_are_close and y_pos_are_close
-        
+
         return is_in_desired_pos
-        
-        
+
+
     def get_distance_from_desired_point(self, current_position):
         """
         Calculates the distance from the current position to the desired point
@@ -338,9 +338,9 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
         """
         distance = self.get_distance_from_point(current_position,
                                                 self.desired_point)
-    
+
         return distance
-    
+
     def get_distance_from_point(self, pstart, p_end):
         """
         Given a Vector3 Object, get distance from current position
@@ -349,8 +349,8 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
         """
         a = numpy.array((pstart.x, pstart.y, pstart.z))
         b = numpy.array((p_end.x, p_end.y, p_end.z))
-    
+
         distance = numpy.linalg.norm(a - b)
-    
+
         return distance
 

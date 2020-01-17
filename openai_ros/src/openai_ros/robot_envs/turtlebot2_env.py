@@ -19,27 +19,27 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
     def __init__(self, ros_ws_abspath):
         """
         Initializes a new TurtleBot2Env environment.
-        Turtlebot2 doesnt use controller_manager, therefore we wont reset the 
+        Turtlebot2 doesnt use controller_manager, therefore we wont reset the
         controllers in the standard fashion. For the moment we wont reset them.
-        
+
         To check any topic we need to have the simulations running, we need to do two things:
         1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
         that are pause for whatever the reason
         2) If the simulation was running already for some reason, we need to reset the controlers.
         This has to do with the fact that some plugins with tf, dont understand the reset of the simulation
         and need to be reseted to work properly.
-        
+
         The Sensors: The sensors accesible are the ones considered usefull for AI learning.
-        
+
         Sensor Topic List:
         * /odom : Odometry readings of the Base of the Robot
         * /camera/depth/image_raw: 2d Depth image of the depth sensor.
         * /camera/depth/points: Pointcloud sensor readings
         * /camera/rgb/image_raw: RGB camera
         * /kobuki/laser/scan: Laser Readings
-        
-        Actuators Topic List: /cmd_vel, 
-        
+
+        Actuators Topic List: /cmd_vel,
+
         Args:
         """
         rospy.logdebug("Start TurtleBot2Env INIT...")
@@ -48,7 +48,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
 
         # We launch the ROSlaunch that spawns the robot into the world
         ROSLauncher(rospackage_name="turtlebot_gazebo",
-                    launch_file_name="put_turtlebot2_in_world.launch",
+                    launch_file_name="put_robot_in_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
 
         # Internal Vars
@@ -84,12 +84,12 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         self._check_publishers_connection()
 
         self.gazebo.pauseSim()
-        
+
         rospy.logdebug("Finished TurtleBot2Env INIT...")
 
     # Methods needed by the RobotGazeboEnv
     # ----------------------------
-    
+
 
     def _check_all_systems_ready(self):
         """
@@ -125,8 +125,8 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
                 rospy.logerr("Current /odom not ready yet, retrying for getting odom")
 
         return self.odom
-        
-        
+
+
     def _check_camera_depth_image_raw_ready(self):
         self.camera_depth_image_raw = None
         rospy.logdebug("Waiting for /camera/depth/image_raw to be READY...")
@@ -138,8 +138,8 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
             except:
                 rospy.logerr("Current /camera/depth/image_raw not ready yet, retrying for getting camera_depth_image_raw")
         return self.camera_depth_image_raw
-        
-        
+
+
     def _check_camera_depth_points_ready(self):
         self.camera_depth_points = None
         rospy.logdebug("Waiting for /camera/depth/points to be READY...")
@@ -151,8 +151,8 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
             except:
                 rospy.logerr("Current /camera/depth/points not ready yet, retrying for getting camera_depth_points")
         return self.camera_depth_points
-        
-        
+
+
     def _check_camera_rgb_image_raw_ready(self):
         self.camera_rgb_image_raw = None
         rospy.logdebug("Waiting for /camera/rgb/image_raw to be READY...")
@@ -164,7 +164,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
             except:
                 rospy.logerr("Current /camera/rgb/image_raw not ready yet, retrying for getting camera_rgb_image_raw")
         return self.camera_rgb_image_raw
-        
+
 
     def _check_laser_scan_ready(self):
         self.laser_scan = None
@@ -177,24 +177,24 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
             except:
                 rospy.logerr("Current /kobuki/laser/scan not ready yet, retrying for getting laser_scan")
         return self.laser_scan
-        
+
 
     def _odom_callback(self, data):
         self.odom = data
-    
+
     def _camera_depth_image_raw_callback(self, data):
         self.camera_depth_image_raw = data
-        
+
     def _camera_depth_points_callback(self, data):
         self.camera_depth_points = data
-        
+
     def _camera_rgb_image_raw_callback(self, data):
         self.camera_rgb_image_raw = data
-        
+
     def _laser_scan_callback(self, data):
         self.laser_scan = data
 
-        
+
     def _check_publishers_connection(self):
         """
         Checks that all the publishers are working
@@ -211,7 +211,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("_cmd_vel_pub Publisher Connected")
 
         rospy.logdebug("All Publishers READY")
-    
+
     # Methods that the TrainingEnvironment will need to define here as virtual
     # because they will be used in RobotGazeboEnv GrandParentClass and defined in the
     # TrainingEnvironment.
@@ -220,7 +220,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         """Sets the Robot in its init pose
         """
         raise NotImplementedError()
-    
+
     def _init_env_variables(self):
         """Inits variables needed to be initialised each time we reset at the start
         of an episode.
@@ -244,7 +244,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         """Checks if episode done based on observations given.
         """
         raise NotImplementedError()
-        
+
     # Methods that the TrainingEnvironment will need.
     # ----------------------------
     def move_base(self, linear_speed, angular_speed, epsilon=0.05, update_rate=10, min_laser_distance=-1):
@@ -255,7 +255,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         :param angular_speed: Speed of the angular turning of the robot base frame
         :param epsilon: Acceptable difference between the speed asked and the odometry readings
         :param update_rate: Rate at which we check the odometry.
-        :return: 
+        :return:
         """
         cmd_vel_value = Twist()
         cmd_vel_value.linear.x = linear_speed
@@ -271,8 +271,8 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
                                         update_rate,
                                         min_laser_distance)
         """
-                        
-    
+
+
     def wait_until_twist_achieved(self, cmd_vel_value, epsilon, update_rate, min_laser_distance=-1):
         """
         We wait for the cmd_vel twist given to be reached by the robot reading
@@ -283,55 +283,55 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         :return:
         """
         rospy.logwarn("START wait_until_twist_achieved...")
-        
+
         rate = rospy.Rate(update_rate)
         start_wait_time = rospy.get_rostime().to_sec()
         end_wait_time = 0.0
         epsilon = 0.05
-        
+
         rospy.logdebug("Desired Twist Cmd>>" + str(cmd_vel_value))
         rospy.logdebug("epsilon>>" + str(epsilon))
-        
+
         linear_speed = cmd_vel_value.linear.x
         angular_speed = cmd_vel_value.angular.z
-        
+
         linear_speed_plus = linear_speed + epsilon
         linear_speed_minus = linear_speed - epsilon
         angular_speed_plus = angular_speed + epsilon
         angular_speed_minus = angular_speed - epsilon
-        
+
         while not rospy.is_shutdown():
-            
+
             crashed_into_something = self.has_crashed(min_laser_distance)
-            
+
             current_odometry = self._check_odom_ready()
             odom_linear_vel = current_odometry.twist.twist.linear.x
             odom_angular_vel = current_odometry.twist.twist.angular.z
-            
+
             rospy.logdebug("Linear VEL=" + str(odom_linear_vel) + ", ?RANGE=[" + str(linear_speed_minus) + ","+str(linear_speed_plus)+"]")
             rospy.logdebug("Angular VEL=" + str(odom_angular_vel) + ", ?RANGE=[" + str(angular_speed_minus) + ","+str(angular_speed_plus)+"]")
-            
+
             linear_vel_are_close = (odom_linear_vel <= linear_speed_plus) and (odom_linear_vel > linear_speed_minus)
             angular_vel_are_close = (odom_angular_vel <= angular_speed_plus) and (odom_angular_vel > angular_speed_minus)
-            
+
             if linear_vel_are_close and angular_vel_are_close:
                 rospy.logwarn("Reached Velocity!")
                 end_wait_time = rospy.get_rostime().to_sec()
                 break
-            
+
             if crashed_into_something:
                 rospy.logerr("TurtleBot has crashed, stopping movement!")
                 break
-            
+
             rospy.logwarn("Not there yet, keep waiting...")
             rate.sleep()
         delta_time = end_wait_time- start_wait_time
         rospy.logdebug("[Wait Time=" + str(delta_time)+"]")
-        
+
         rospy.logwarn("END wait_until_twist_achieved...")
-        
+
         return delta_time
-        
+
     def has_crashed(self, min_laser_distance):
         """
         It states based on the laser scan if the robot has crashed or not.
@@ -341,7 +341,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         to deactivate this check.
         """
         robot_has_crashed = False
-        
+
         if min_laser_distance != -1:
             laser_data = self.get_laser_scan()
             for i, item in enumerate(laser_data.ranges):
@@ -356,27 +356,27 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
                         robot_has_crashed = True
                         break
         return robot_has_crashed
-        
+
 
     def get_odom(self):
         return self.odom
-        
+
     def get_camera_depth_image_raw(self):
         return self.camera_depth_image_raw
-        
+
     def get_camera_depth_points(self):
         return self.camera_depth_points
-        
+
     def get_camera_rgb_image_raw(self):
         return self.camera_rgb_image_raw
-        
+
     def get_laser_scan(self):
         return self.laser_scan
-        
+
     def reinit_sensors(self):
         """
         This method is for the tasks so that when reseting the episode
-        the sensors values are forced to be updated with the real data and 
-        
+        the sensors values are forced to be updated with the real data and
+
         """
-        
+
