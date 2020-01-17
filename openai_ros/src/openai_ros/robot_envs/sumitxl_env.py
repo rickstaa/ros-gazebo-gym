@@ -43,7 +43,7 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         * /orbbec_astra/depth/image_raw
         * /orbbec_astra/depth/points
         * /orbbec_astra/rgb/image_raw
-        * /odom: Odometry
+        * /summit_xl/odom: Odometry
 
         Actuators Topic List: /cmd_vel,
 
@@ -55,7 +55,7 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
 
         # We launch the ROSlaunch that spawns the robot into the world
         ROSLauncher(rospackage_name="summit_xl_gazebo",
-                    launch_file_name="put_summit_xl_in_world.launch",
+                    launch_file_name="put_robot_in_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
         print("SPAWN DONE SumitXlEnv INIT...")
         # Internal Vars
@@ -101,7 +101,7 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.Subscriber("/hokuyo_base/scan", LaserScan,
                          self._laser_scan_callback)
         rospy.Subscriber("/imu/data", Imu, self._imu_callback)
-        rospy.Subscriber("/odom", Odometry, self._odom_callback)
+        rospy.Subscriber("/summit_xl/odom", Odometry, self._odom_callback)
 
         self._cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
 
@@ -213,16 +213,16 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _check_odom_ready(self):
         self.odom = None
-        print("Waiting for /odom to be READY...")
+        print("Waiting for /summit_xl/odom to be READY...")
         while self.odom is None and not rospy.is_shutdown():
             try:
                 self.odom = rospy.wait_for_message(
-                    "/odom", Odometry, timeout=0.5)
-                print("Current /odom READY=>")
+                    "/summit_xl/odom", Odometry, timeout=0.5)
+                print("Current /summit_xl/odom READY=>")
 
             except:
                 rospy.logerr(
-                    "Current /odom not ready yet, retrying for getting odom")
+                    "Current /summit_xl/odom not ready yet, retrying for getting odom")
 
         return self.odom
 

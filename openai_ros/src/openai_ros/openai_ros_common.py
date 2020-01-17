@@ -106,8 +106,9 @@ class ROSLauncher(object):
         This has to be installed
         sudo pip install gitpython
         """
-        commands_to_take_effect = "\ncd "+ros_ws_abspath + \
+        commands_to_take_effect = "\nIn a new Shell:::>\ncd "+ros_ws_abspath + \
             "\ncatkin_make\nsource devel/setup.bash\nrospack profile\n"
+        commands_to_take_effect2 = "\nIn your deeplearning program execute shell catkin_ws:::>\ncd /home/user/catkin_ws\nsource devel/setup.bash\nrospack profile\n"
 
         ros_ws_src_abspath_src = os.path.join(ros_ws_abspath, "src")
         pkg_path = None
@@ -125,7 +126,6 @@ class ROSLauncher(object):
 
             url_git_2 = "https://bitbucket.org/theconstructcore/spawn_robot_tools.git"
             package_git.append(url_git_2)
-            package_git = [url_git_2]
             package_to_branch_dict[url_git_2] = "master"
 
         elif package_name == "rosbot_gazebo" or package_name == "rosbot_description":
@@ -157,16 +157,27 @@ class ROSLauncher(object):
             package_to_branch_dict[url_git_1] = "kinetic-gazebo9"
 
         elif package_name == "sawyer_gazebo":
-            package_git = [
-                "https://bitbucket.org/theconstructcore/sawyer_full.git"]
+            url_git_1 = "https://bitbucket.org/theconstructcore/sawyer_full.git"
+            package_git = [url_git_1]
+            package_to_branch_dict[url_git_1] = "update2019"
 
         elif package_name == "shadow_gazebo":
             package_git = [
                 "https://bitbucket.org/theconstructcore/shadow_robot_smart_grasping_sandbox.git"]
 
         elif package_name == "summit_xl_gazebo":
-            package_git = [
-                "https://bitbucket.org/theconstructcore/summit_xl.git"]
+
+            url_git_1 = "https://bitbucket.org/theconstructcore/summit_xl.git"
+            package_git = [url_git_1]
+            package_to_branch_dict[url_git_1] = "melodic-gazebo9"
+
+            url_git_2 = "https://github.com/RobotnikAutomation/robotnik_msgs.git"
+            package_git.append(url_git_2)
+            package_to_branch_dict[url_git_2] = "master"
+
+            url_git_3 = "https://github.com/tu-darmstadt-ros-pkg/hector_gazebo.git"
+            package_git.append(url_git_3)
+            package_to_branch_dict[url_git_3] = "melodic-devel"
 
         elif package_name == "gym_construct":
             package_git = [
@@ -231,6 +242,7 @@ class ROSLauncher(object):
                     rospy.logerr(
                         "IMPORTANT!: You need to execute the following commands and rerun to dowloads to take effect.")
                     rospy.logerr(commands_to_take_effect)
+                    rospy.logerr(commands_to_take_effect2)
                     sys.exit()
 
             except rospkg.common.ResourceNotFound:
@@ -240,6 +252,7 @@ class ROSLauncher(object):
                 rospy.logerr(
                     "IMPORTANT!: You need to execute the following commands and rerun to dowloads to take effect.")
                 rospy.logerr(commands_to_take_effect)
+                rospy.logerr(commands_to_take_effect2)
                 sys.exit()
 
         return pkg_path
