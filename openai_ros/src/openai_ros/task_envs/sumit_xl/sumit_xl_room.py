@@ -74,7 +74,8 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         # We join them toeguether.
         laser_scan = self.get_laser_scan()
 
-        num_laser_readings = len(laser_scan.ranges)/self.new_ranges
+        num_laser_readings = int(len(laser_scan.ranges)/self.new_ranges)
+
         high_laser = numpy.full((num_laser_readings), self.max_laser_value)
         low_laser = numpy.full((num_laser_readings), self.min_laser_value)
 

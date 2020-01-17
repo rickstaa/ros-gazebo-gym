@@ -82,7 +82,7 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
               self).__init__(ros_ws_abspath)
 
         laser_scan = self._check_laser_scan_ready()
-        num_laser_readings = len(laser_scan.ranges)/self.new_ranges
+        num_laser_readings = int(len(laser_scan.ranges)/self.new_ranges)
         high_laser = numpy.full((num_laser_readings), self.max_laser_value)
         low_laser = numpy.full((num_laser_readings), self.min_laser_value)
 
