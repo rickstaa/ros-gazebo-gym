@@ -43,32 +43,32 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         rospy.logdebug("Start WamvNavTwoSetsBuoysEnv INIT...")
         number_actions = rospy.get_param('/wamv/n_actions')
         self.action_space = spaces.Discrete(number_actions)
-        
+
         # We set the reward range, which is not compulsory but here we do it.
         self.reward_range = (-numpy.inf, numpy.inf)
-        
-        
+
+
         # Actions and Observations
         self.propeller_high_speed = rospy.get_param('/wamv/propeller_high_speed')
         self.propeller_low_speed = rospy.get_param('/wamv/propeller_low_speed')
         self.max_angular_speed = rospy.get_param('/wamv/max_angular_speed')
         self.max_distance_from_des_point = rospy.get_param('/wamv/max_distance_from_des_point')
-        
+
         # Get Desired Point to Get
         self.desired_point = Point()
         self.desired_point.x = rospy.get_param("/wamv/desired_point/x")
         self.desired_point.y = rospy.get_param("/wamv/desired_point/y")
         self.desired_point.z = rospy.get_param("/wamv/desired_point/z")
         self.desired_point_epsilon = rospy.get_param("/wamv/desired_point_epsilon")
-        
+
         self.work_space_x_max = rospy.get_param("/wamv/work_space/x_max")
         self.work_space_x_min = rospy.get_param("/wamv/work_space/x_min")
         self.work_space_y_max = rospy.get_param("/wamv/work_space/y_max")
         self.work_space_y_min = rospy.get_param("/wamv/work_space/y_min")
-        
+
         self.dec_obs = rospy.get_param("/wamv/number_decimals_precision_obs")
-        
-        
+
+
         # We place the Maximum and minimum values of observations
 
         high = numpy.array([self.work_space_x_max,
@@ -81,7 +81,7 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
                             self.max_angular_speed,
                             self.max_distance_from_des_point
                             ])
-                                        
+
         low = numpy.array([ self.work_space_x_min,
                             self.work_space_y_min,
                             -1*1.57,
@@ -93,19 +93,19 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
                             0.0
                             ])
 
-        
+
         self.observation_space = spaces.Box(low, high)
-        
+
         rospy.logdebug("ACTION SPACES TYPE===>"+str(self.action_space))
         rospy.logdebug("OBSERVATION SPACES TYPE===>"+str(self.observation_space))
-        
+
         # Rewards
-        
+
         self.done_reward =rospy.get_param("/wamv/done_reward")
         self.closer_to_point_reward = rospy.get_param("/wamv/closer_to_point_reward")
 
         self.cumulated_steps = 0.0
-        
+
         rospy.logdebug("END WamvNavTwoSetsBuoysEnv INIT...")
 
     def _set_init_pose(self):
@@ -139,7 +139,7 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         current_position.y = odom.pose.pose.position.y
         self.previous_distance_from_des_point = self.get_distance_from_desired_point(current_position)
 
-        
+
 
     def _set_action(self, action):
         """
@@ -147,13 +147,13 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         based on the action number given.
         :param action: The action integer that sets what movement to do next.
         """
-        
+
         rospy.logdebug("Start Set Action ==>"+str(action))
-       
-        
+
+
         right_propeller_speed = 0.0
         left_propeller_speed = 0.0
-        
+
         if action == 0: # Go Forwards
             right_propeller_speed = self.propeller_high_speed
             left_propeller_speed = self.propeller_high_speed
@@ -167,12 +167,12 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
             right_propeller_speed = -1*self.propeller_high_speed
             left_propeller_speed = self.propeller_high_speed
 
-        
+
         # We tell wamv the propeller speeds
         self.set_propellers_speed(  right_propeller_speed,
                                     left_propeller_speed,
                                     time_sleep=1.0)
-        
+
         rospy.logdebug("END Set Action ==>"+str(action))
 
     def _get_obs(self):
@@ -190,26 +190,26 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         base_roll, base_pitch, base_yaw = self.get_orientation_euler(base_orientation_quat)
         base_speed_linear = odom.twist.twist.linear
         base_speed_angular_yaw = odom.twist.twist.angular.z
-        
+
         distance_from_desired_point = self.get_distance_from_desired_point(base_position)
 
         observation = []
         observation.append(round(base_position.x,self.dec_obs))
         observation.append(round(base_position.y,self.dec_obs))
-        
+
         observation.append(round(base_roll,self.dec_obs))
         observation.append(round(base_pitch,self.dec_obs))
         observation.append(round(base_yaw,self.dec_obs))
-        
+
         observation.append(round(base_speed_linear.x,self.dec_obs))
         observation.append(round(base_speed_linear.y,self.dec_obs))
-        
+
         observation.append(round(base_speed_angular_yaw,self.dec_obs))
-        
+
         observation.append(round(distance_from_desired_point,self.dec_obs))
 
         return observation
-        
+
 
     def _is_done(self, observations):
         """
@@ -222,12 +222,12 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         current_position = Vector3()
         current_position.x = observations[0]
         current_position.y = observations[1]
-        
+
         is_inside_corridor = self.is_inside_workspace(current_position)
         has_reached_des_point = self.is_in_desired_position(current_position, self.desired_point_epsilon)
-        
+
         done = not(is_inside_corridor) or has_reached_des_point
-        
+
         return done
 
     def _compute_reward(self, observations, done):
@@ -241,13 +241,13 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         current_position = Point()
         current_position.x = observations[0]
         current_position.y = observations[1]
-        
+
         distance_from_des_point = self.get_distance_from_desired_point(current_position)
         distance_difference =  distance_from_des_point - self.previous_distance_from_des_point
 
 
         if not done:
-            
+
             # If there has been a decrease in the distance to the desired point, we reward it
             if distance_difference < 0.0:
                 rospy.logwarn("DECREASE IN DISTANCE GOOD")
@@ -257,7 +257,7 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
                 reward = -1*self.closer_to_point_reward
 
         else:
-            
+
             if self.is_in_desired_position(current_position, self.desired_point_epsilon):
                 reward = self.done_reward
             else:
@@ -277,28 +277,28 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
 
 
     # Internal TaskEnv Methods
-    
+
     def is_in_desired_position(self,current_position, epsilon=0.05):
         """
         It return True if the current position is similar to the desired poistion
         """
-        
+
         is_in_desired_pos = False
-        
-        
+
+
         x_pos_plus = self.desired_point.x + epsilon
         x_pos_minus = self.desired_point.x - epsilon
         y_pos_plus = self.desired_point.y + epsilon
         y_pos_minus = self.desired_point.y - epsilon
-        
+
         x_current = current_position.x
         y_current = current_position.y
-        
+
         x_pos_are_close = (x_current <= x_pos_plus) and (x_current > x_pos_minus)
         y_pos_are_close = (y_current <= y_pos_plus) and (y_current > y_pos_minus)
-        
+
         is_in_desired_pos = x_pos_are_close and y_pos_are_close
-        
+
         rospy.logdebug("###### IS DESIRED POS ? ######")
         rospy.logdebug("current_position"+str(current_position))
         rospy.logdebug("x_pos_plus"+str(x_pos_plus)+",x_pos_minus="+str(x_pos_minus))
@@ -307,9 +307,9 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         rospy.logdebug("y_pos_are_close"+str(y_pos_are_close))
         rospy.logdebug("is_in_desired_pos"+str(is_in_desired_pos))
         rospy.logdebug("############")
-        
+
         return is_in_desired_pos
-    
+
     def get_distance_from_desired_point(self, current_position):
         """
         Calculates the distance from the current position to the desired point
@@ -318,9 +318,9 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         """
         distance = self.get_distance_from_point(current_position,
                                                 self.desired_point)
-    
+
         return distance
-    
+
     def get_distance_from_point(self, pstart, p_end):
         """
         Given a Vector3 Object, get distance from current position
@@ -329,21 +329,21 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         """
         a = numpy.array((pstart.x, pstart.y, pstart.z))
         b = numpy.array((p_end.x, p_end.y, p_end.z))
-    
+
         distance = numpy.linalg.norm(a - b)
-    
+
         return distance
-        
+
     def get_orientation_euler(self, quaternion_vector):
         # We convert from quaternions to euler
         orientation_list = [quaternion_vector.x,
                             quaternion_vector.y,
                             quaternion_vector.z,
                             quaternion_vector.w]
-    
+
         roll, pitch, yaw = euler_from_quaternion(orientation_list)
         return roll, pitch, yaw
-        
+
     def is_inside_workspace(self,current_position):
         """
         Check if the Wamv is inside the Workspace defined
@@ -359,8 +359,8 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         if current_position.x > self.work_space_x_min and current_position.x <= self.work_space_x_max:
             if current_position.y > self.work_space_y_min and current_position.y <= self.work_space_y_max:
                     is_inside = True
-        
+
         return is_inside
-        
-    
+
+
 

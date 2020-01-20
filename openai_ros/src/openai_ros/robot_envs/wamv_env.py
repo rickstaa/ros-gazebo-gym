@@ -3,7 +3,6 @@ import rospy
 import time
 from openai_ros import robot_gazebo_env
 from nav_msgs.msg import Odometry
-from robotx_gazebo.msg import UsvDrive
 from openai_ros.openai_ros_common import ROSLauncher
 
 
@@ -14,22 +13,22 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
     def __init__(self, ros_ws_abspath):
         """
         Initializes a new WamvEnv environment.
-        
+
         To check any topic we need to have the simulations running, we need to do two things:
         1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
         that are pause for whatever the reason
         2) If the simulation was running already for some reason, we need to reset the controlers.
         This has to do with the fact that some plugins with tf, dont understand the reset of the simulation
         and need to be reseted to work properly.
-        
+
         The Sensors: The sensors accesible are the ones considered usefull for AI learning.
-        
+
         Sensor Topic List:
         * /wamv/odom: Odometry of the Base of Wamv
-        
-        Actuators Topic List: 
+
+        Actuators Topic List:
         * /cmd_drive: You publish the speed of the left and right propellers.
-        
+
         Args:
         """
         rospy.logdebug("Start WamvEnv INIT...")
@@ -40,6 +39,8 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         ROSLauncher(rospackage_name="robotx_gazebo",
                     launch_file_name="put_wamv_in_world.launch",
                     ros_ws_abspath=ros_ws_abspath)
+
+        from robotx_gazebo.msg import UsvDrive
 
         # Internal Vars
         # Doesnt have any accesibles
@@ -60,28 +61,28 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("WamvEnv unpause1...")
         self.gazebo.unpauseSim()
         #self.controllers_object.reset_controllers()
-        
+
         self._check_all_systems_ready()
 
 
         # We Start all the ROS related Subscribers and publishers
         rospy.Subscriber("/wamv/odom", Odometry, self._odom_callback)
-        
+
 
         self.publishers_array = []
         self._cmd_drive_pub = rospy.Publisher('/cmd_drive', UsvDrive, queue_size=1)
-        
+
         self.publishers_array.append(self._cmd_drive_pub)
 
         self._check_all_publishers_ready()
 
         self.gazebo.pauseSim()
-        
+
         rospy.logdebug("Finished WamvEnv INIT...")
 
     # Methods needed by the RobotGazeboEnv
     # ----------------------------
-    
+
 
     def _check_all_systems_ready(self):
         """
@@ -102,7 +103,7 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         self._check_odom_ready()
         rospy.logdebug("ALL SENSORS READY")
 
-        
+
     def _check_odom_ready(self):
         self.odom = None
         rospy.logdebug("Waiting for /wamv/odom to be READY...")
@@ -114,13 +115,13 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
             except:
                 rospy.logerr("Current /wamv/odom not ready yet, retrying for getting odom")
         return self.odom
-        
-        
-    
+
+
+
     def _odom_callback(self, data):
         self.odom = data
-    
-    
+
+
     def _check_all_publishers_ready(self):
         """
         Checks that all the publishers are working
@@ -144,8 +145,8 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("publisher_object Publisher Connected")
 
         rospy.logdebug("All Publishers READY")
-        
-    
+
+
     # Methods that the TrainingEnvironment will need to define here as virtual
     # because they will be used in RobotGazeboEnv GrandParentClass and defined in the
     # TrainingEnvironment.
@@ -154,7 +155,7 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         """Sets the Robot in its init pose
         """
         raise NotImplementedError()
-    
+
     def _init_env_variables(self):
         """Inits variables needed to be initialised each time we reset at the start
         of an episode.
@@ -178,7 +179,7 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         """Checks if episode done based on observations given.
         """
         raise NotImplementedError()
-        
+
     # Methods that the TrainingEnvironment will need.
     # ----------------------------
     def set_propellers_speed(self, right_propeller_speed, left_propeller_speed, time_sleep=1.0):
@@ -187,15 +188,16 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         i = 0
         for publisher_object in self.publishers_array:
-          usv_drive_obj = UsvDrive()
-          usv_drive_obj.right = right_propeller_speed
-          usv_drive_obj.left = left_propeller_speed
-          
-          rospy.logdebug("usv_drive_obj>>"+str(usv_drive_obj))
-          publisher_object.publish(usv_drive_obj)
-          i += 1
+            from robotx_gazebo.msg import UsvDrive
+            usv_drive_obj = UsvDrive()
+            usv_drive_obj.right = right_propeller_speed
+            usv_drive_obj.left = left_propeller_speed
+
+            rospy.logdebug("usv_drive_obj>>"+str(usv_drive_obj))
+            publisher_object.publish(usv_drive_obj)
+            i += 1
         self.wait_time_for_execute_movement(time_sleep)
-    
+
     def wait_time_for_execute_movement(self, time_sleep):
         """
         Because this Wamv position is global, we really dont have
@@ -203,7 +205,7 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         to evaluate the diference in position and speed on the local reference.
         """
         time.sleep(time_sleep)
-    
+
     def get_odom(self):
         return self.odom
 

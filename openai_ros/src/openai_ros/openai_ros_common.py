@@ -162,8 +162,15 @@ class ROSLauncher(object):
             package_to_branch_dict[url_git_1] = "update2019"
 
         elif package_name == "shadow_gazebo":
-            package_git = [
-                "https://bitbucket.org/theconstructcore/shadow_robot_smart_grasping_sandbox.git"]
+
+            url_git_1 = "https://bitbucket.org/theconstructcore/shadow_robot_smart_grasping_sandbox.git"
+            package_git = [url_git_1]
+            package_to_branch_dict[url_git_1] = "melodic-gazebo9"
+
+
+            url_git_2 = "https://github.com/ros-industrial/universal_robot.git"
+            package_git.append(url_git_2)
+            package_to_branch_dict[url_git_2] = "melodic-devel"
 
         elif package_name == "summit_xl_gazebo":
 
@@ -197,9 +204,13 @@ class ROSLauncher(object):
             package_to_branch_dict[url_git_1] = "master"
 
         elif package_name == "robotx_gazebo":
-            package_git = ["https://bitbucket.org/theconstructcore/vmrc.git"]
-            package_git.append(
-                "https://bitbucket.org/theconstructcore/spawn_robot_tools.git")
+            url_git_1 = "https://bitbucket.org/theconstructcore/vmrc.git"
+            package_git = [url_git_1]
+            package_to_branch_dict[url_git_1] = "master"
+
+            url_git_2 = "https://bitbucket.org/theconstructcore/spawn_robot_tools.git"
+            package_git.append(url_git_2)
+            package_to_branch_dict[url_git_2] = "master"
 
         elif package_name == "fetch_simple_description":
             package_git = [
