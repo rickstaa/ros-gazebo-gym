@@ -194,7 +194,7 @@ class ROSLauncher(object):
 
             url_git_1 = "https://bitbucket.org/theconstructcore/turtlebot3.git"
             package_git = [url_git_1]
-            package_to_branch_dict[url_git_1] = "kinetic-gazebo9"
+            package_to_branch_dict[url_git_1] = "master"
 
         elif package_name == "robotx_gazebo":
             package_git = ["https://bitbucket.org/theconstructcore/vmrc.git"]

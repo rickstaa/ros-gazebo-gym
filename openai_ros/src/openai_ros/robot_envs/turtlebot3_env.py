@@ -1,5 +1,6 @@
 import numpy
 import rospy
+import time
 from openai_ros import robot_gazebo_env
 from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
@@ -51,7 +52,7 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
 
         # Internal Vars
         # Doesnt have any accesibles
-        self.controllers_list = []
+        self.controllers_list = ["imu"]
 
         # It doesnt use namespace
         self.robot_name_space = ""
@@ -224,9 +225,9 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("TurtleBot3 Base Twist Cmd>>" + str(cmd_vel_value))
         self._check_publishers_connection()
         self._cmd_vel_pub.publish(cmd_vel_value)
-        self.wait_until_twist_achieved(cmd_vel_value,
-                                        epsilon,
-                                        update_rate)
+        #self.wait_until_twist_achieved(cmd_vel_value,epsilon,update_rate)
+        # Weplace a waitof certain amiunt of time, because this twist achived doesnt work properly
+        time.sleep(0.2)
 
     def wait_until_twist_achieved(self, cmd_vel_value, epsilon, update_rate):
         """
