@@ -18,6 +18,9 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         """
         Make iriwam learn how pick up a cube
         """
+        # We set an initial value imposible to ach to reward at least the first time
+        self.previous_distance_from_block = 100.0
+
         # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
         ros_ws_abspath = rospy.get_param("/iriwam/ros_ws_abspath", None)
         assert ros_ws_abspath is not None, "You forgot to set ros_ws_abspath in your yaml file of your main RL script. Set ros_ws_abspath: \'YOUR/SIM_WS/PATH\'"
@@ -219,10 +222,8 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
             self.joints[6] += self.joint_increment_value
         elif action == 13:  # Decrease joint_6
             self.joints[6] -= self.joint_increment_value
-        elif action == 14:  # Increase joint_7
-            self.joints[7] += self.joint_increment_value
-        elif action == 15:  # Decrease joint_7
-            self.joints[7] -= self.joint_increment_value
+        else:
+            rospy.logdebug("Action not supported="+str(action))
 
         # We tell iriwam the action to perform
         self.move_joints_to_angle_blocking(self.joints)
@@ -278,7 +279,7 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         done = has_reached_the_block or too_faraway_bowl_b
 
         rospy.logdebug("#### IS DONE ? ####")
-        rospy.logdebug("done ?="+str(done))
+        rospy.logwarn("done ?="+str(done)+",has_reached_the_block="+str(has_reached_the_block)+",too_faraway_bowl_b="+str(too_faraway_bowl_b))
         rospy.logdebug("#### #### ####")
 
         return done
@@ -311,8 +312,11 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
                 reward = 0.0
 
         else:
+            distance_laser = observations[-2]
+            magnitude_image = observations[-1]
 
-            if self.reached_block(tf_tcp_to_block_vector, self.acceptable_distance_to_cube, self.translation_tcp_world[2], self.tcp_z_position_min):
+            reached_the_bowl = self.reached_bowl(distance_laser, magnitude_image)
+            if reached_the_bowl:
                 reward = self.done_reward
             else:
                 reward = -1*self.done_reward
@@ -369,11 +373,13 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         laser_close_enough = (distance_laser <= self.min_laser_distance)
         magnitude_image_enough = (
             magnitude_image <= self.min_distance_from_red_bowl)
+        rospy.logwarn("reached_bowl condition, magnitude_image==>"+str(magnitude_image)+"<=?"+str(self.min_distance_from_red_bowl))
 
-        reached_block_b = laser_close_enough and magnitude_image_enough
+        # reached_block_b = laser_close_enough and magnitude_image_enough
+        reached_block_b = magnitude_image_enough
 
-        rospy.logdebug("###### REACHED BLOCK ? ######")
-        rospy.logdebug("laser_close_enough==>"+str(laser_close_enough))
+        rospy.logdebug("###### REACHED Bowl ? ######")
+        # rospy.logdebug("laser_close_enough==>"+str(laser_close_enough))
         rospy.logdebug("magnitude_image_enough==>"+str(magnitude_image_enough))
         rospy.logdebug("reached_block_b==>"+str(reached_block_b))
         rospy.logdebug("############")
@@ -391,7 +397,7 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
 
         too_faraway_b = laser_close_enough and magnitude_image_too_big
 
-        rospy.logdebug("###### REACHED BLOCK ? ######")
+        rospy.logdebug("###### Too Faar from bowl ? ######")
         rospy.logdebug("magnitude_image_too_big==>" +
                        str(magnitude_image_too_big))
         rospy.logdebug("too_faraway_b==>"+str(too_faraway_b))
@@ -495,10 +501,12 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
             # Select the limits so that it gets the line not too close and not too far, and the minimum portion possible
             # To make process faster.
             height, width, channels = cv_image.shape
-            descentre = -height/2
-            rows_to_watch = height
-            crop_img = cv_image[(height)/2+descentre:(height) /
-                                2+(descentre+rows_to_watch)][1:width]
+            descentre = int(-height/2)
+            rows_to_watch = int(height)
+            aux1 = int((height)/2+descentre)
+            aux2 = int((height) / 2+(descentre+rows_to_watch))
+            rospy.logdebug("aux1="+str(aux1)+",aux2="+str(aux2)+",width"+str(width))
+            crop_img = cv_image[aux1:aux2][1:width]
 
             # Convert from RGB to HSV
             hsv = cv2.cvtColor(crop_img, cv2.COLOR_BGR2HSV)
@@ -550,7 +558,7 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
             error_y = cy_red - cy_black
             error_array = numpy.array([error_x, error_y])
             magnitude = numpy.linalg.norm(error_array)
-            rospy.logwarn("Magnitude==>"+str(magnitude))
+            rospy.logdebug("Magnitude==>"+str(magnitude))
         else:
             magnitude = 10.0
 

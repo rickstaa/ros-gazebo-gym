@@ -146,10 +146,14 @@ class ROSLauncher(object):
             package_git = ["https://bitbucket.org/theconstructcore/hopper.git"]
 
         elif package_name == "iri_wam_description" or package_name == "iri_wam_gazebo" or package_name == "iri_wam_reproduce_trajectory" or package_name == "iri_wam_aff_demo":
-            package_git = [
-                "https://bitbucket.org/theconstructcore/iri_wam.git"]
-            package_git.append(
-                "https://bitbucket.org/theconstructcore/hokuyo_model.git")
+            url_git_1 = "https://bitbucket.org/theconstructcore/iri_wam.git"
+            package_git = [url_git_1]
+            package_to_branch_dict[url_git_1] = "noetic"
+            
+            url_git_2 = "https://bitbucket.org/theconstructcore/hokuyo_model.git"
+            package_git.append(url_git_2)
+            package_to_branch_dict[url_git_2] = "master"
+
 
         elif package_name == "drone_construct" or package_name == "drone_demo" or package_name == "sjtu_drone" or package_name == "custom_teleop" or package_name == "ardrone_as":
             url_git_1 = "https://bitbucket.org/theconstructcore/parrot_ardrone.git"

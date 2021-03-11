@@ -434,7 +434,7 @@ class IriWamExecTrajectory(object):
         rospy.loginfo("##### ###### ######")
 
     def send_joints_positions(self, joints_positions_array, seconds_duration=0.05):
-
+        rospy.logdebug("send_joints_positions: "+str(joints_positions_array))
         my_goal = self.get_goal()
 
         my_goal.trajectory.header.stamp = rospy.Time.now()
@@ -461,21 +461,21 @@ class IriWamExecTrajectory(object):
         # Uncomment these lines to test goal preemption:
         # self.client.cancel_goal()  # would cancel the goal 3 seconds after starting
 
-        state_result = self.client.get_state()
+        # state_result = self.client.get_state()
 
-        rate = rospy.Rate(10)
+        # rate = rospy.Rate(10)
 
-        rospy.loginfo("state_result: "+str(state_result))
+        # rospy.loginfo("state_result: "+str(state_result))
 
-        while state_result < self.DONE:
-            rospy.loginfo(
-                "Doing Stuff while waiting for the Server to give a result....")
-            rate.sleep()
-            state_result = self.client.get_state()
-            rospy.loginfo("state_result: "+str(state_result))
+        # while state_result < self.DONE:
+        #     rospy.loginfo(
+        #         "Doing Stuff while waiting for the Server to give a result....")
+        #     rate.sleep()
+        #     state_result = self.client.get_state()
+        #     rospy.loginfo("state_result: "+str(state_result))
 
-        rospy.loginfo("[Result] State: "+str(state_result))
-        if state_result == self.ERROR:
-            rospy.logerr("Something went wrong in the Server Side")
-        if state_result == self.WARN:
-            rospy.logwarn("There is a warning in the Server Side")
+        # rospy.loginfo("[Result] State: "+str(state_result))
+        # if state_result == self.ERROR:
+        #     rospy.logerr("Something went wrong in the Server Side")
+        # if state_result == self.WARN:
+        #     rospy.logdebug("There is a warning in the Server Side")

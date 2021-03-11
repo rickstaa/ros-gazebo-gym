@@ -1,6 +1,6 @@
 iriwam: #namespace
 
-    n_actions: 16 # Increase and decrease 8 joints.
+    n_actions: 13 # Increase and decrease 7 joints.
 
     init_joints: # Init pose so that camera can see the laser element .["iri_wam_joint_1","iri_wam_joint_2","iri_wam_joint_3","iri_wam_joint_4","iri_wam_joint_5","iri_wam_joint_6","iri_wam_joint_7"]
       iri_wam_joint_1: 0.0
