@@ -7,8 +7,7 @@ from openai_ros.openai_ros_common import ROSLauncher
 
 
 class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
-    """Superclass for all WamvEnv environments.
-    """
+    """Superclass for all WamvEnv environments."""
 
     def __init__(self, ros_ws_abspath):
         """
@@ -36,9 +35,11 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         # None in this case
 
         # We launch the ROSlaunch that spawns the robot into the world
-        ROSLauncher(rospackage_name="robotx_gazebo",
-                    launch_file_name="put_wamv_in_world.launch",
-                    ros_ws_abspath=ros_ws_abspath)
+        ROSLauncher(
+            rospackage_name="robotx_gazebo",
+            launch_file_name="put_wamv_in_world.launch",
+            ros_ws_abspath=ros_ws_abspath,
+        )
 
         from robotx_gazebo.msg import UsvDrive
 
@@ -50,27 +51,25 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         self.robot_name_space = ""
 
         # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
-        super(WamvEnv, self).__init__(controllers_list=self.controllers_list,
-                                            robot_name_space=self.robot_name_space,
-                                            reset_controls=False,
-                                            start_init_physics_parameters=False,
-                                            reset_world_or_sim="WORLD")
-
-
+        super(WamvEnv, self).__init__(
+            controllers_list=self.controllers_list,
+            robot_name_space=self.robot_name_space,
+            reset_controls=False,
+            start_init_physics_parameters=False,
+            reset_world_or_sim="WORLD",
+        )
 
         rospy.logdebug("WamvEnv unpause1...")
         self.gazebo.unpauseSim()
-        #self.controllers_object.reset_controllers()
+        # self.controllers_object.reset_controllers()
 
         self._check_all_systems_ready()
-
 
         # We Start all the ROS related Subscribers and publishers
         rospy.Subscriber("/wamv/odom", Odometry, self._odom_callback)
 
-
         self.publishers_array = []
-        self._cmd_drive_pub = rospy.Publisher('/cmd_drive', UsvDrive, queue_size=1)
+        self._cmd_drive_pub = rospy.Publisher("/cmd_drive", UsvDrive, queue_size=1)
 
         self.publishers_array.append(self._cmd_drive_pub)
 
@@ -83,7 +82,6 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
     # Methods needed by the RobotGazeboEnv
     # ----------------------------
 
-
     def _check_all_systems_ready(self):
         """
         Checks that all the sensors, publishers and other simulation systems are
@@ -94,7 +92,6 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("END WamvEnv _check_all_systems_ready...")
         return True
 
-
     # CubeSingleDiskEnv virtual methods
     # ----------------------------
 
@@ -102,7 +99,6 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("START ALL SENSORS READY")
         self._check_odom_ready()
         rospy.logdebug("ALL SENSORS READY")
-
 
     def _check_odom_ready(self):
         self.odom = None
@@ -113,14 +109,13 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
                 rospy.logdebug("Current /wamv/odom READY=>")
 
             except:
-                rospy.logerr("Current /wamv/odom not ready yet, retrying for getting odom")
+                rospy.logerr(
+                    "Current /wamv/odom not ready yet, retrying for getting odom"
+                )
         return self.odom
-
-
 
     def _odom_callback(self, data):
         self.odom = data
-
 
     def _check_all_publishers_ready(self):
         """
@@ -136,7 +131,9 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
 
         rate = rospy.Rate(10)  # 10hz
         while publisher_object.get_num_connections() == 0 and not rospy.is_shutdown():
-            rospy.logdebug("No susbribers to publisher_object yet so we wait and try again")
+            rospy.logdebug(
+                "No susbribers to publisher_object yet so we wait and try again"
+            )
             try:
                 rate.sleep()
             except rospy.ROSInterruptException:
@@ -146,14 +143,12 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
 
         rospy.logdebug("All Publishers READY")
 
-
     # Methods that the TrainingEnvironment will need to define here as virtual
     # because they will be used in RobotGazeboEnv GrandParentClass and defined in the
     # TrainingEnvironment.
     # ----------------------------
     def _set_init_pose(self):
-        """Sets the Robot in its init pose
-        """
+        """Sets the Robot in its init pose"""
         raise NotImplementedError()
 
     def _init_env_variables(self):
@@ -163,37 +158,37 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         raise NotImplementedError()
 
     def _compute_reward(self, observations, done):
-        """Calculates the reward to give based on the observations given.
-        """
+        """Calculates the reward to give based on the observations given."""
         raise NotImplementedError()
 
     def _set_action(self, action):
-        """Applies the given action to the simulation.
-        """
+        """Applies the given action to the simulation."""
         raise NotImplementedError()
 
     def _get_obs(self):
         raise NotImplementedError()
 
     def _is_done(self, observations):
-        """Checks if episode done based on observations given.
-        """
+        """Checks if episode done based on observations given."""
         raise NotImplementedError()
 
     # Methods that the TrainingEnvironment will need.
     # ----------------------------
-    def set_propellers_speed(self, right_propeller_speed, left_propeller_speed, time_sleep=1.0):
+    def set_propellers_speed(
+        self, right_propeller_speed, left_propeller_speed, time_sleep=1.0
+    ):
         """
         It will set the speed of each of the two proppelers of wamv.
         """
         i = 0
         for publisher_object in self.publishers_array:
             from robotx_gazebo.msg import UsvDrive
+
             usv_drive_obj = UsvDrive()
             usv_drive_obj.right = right_propeller_speed
             usv_drive_obj.left = left_propeller_speed
 
-            rospy.logdebug("usv_drive_obj>>"+str(usv_drive_obj))
+            rospy.logdebug("usv_drive_obj>>" + str(usv_drive_obj))
             publisher_object.publish(usv_drive_obj)
             i += 1
         self.wait_time_for_execute_movement(time_sleep)
@@ -208,4 +203,3 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def get_odom(self):
         return self.odom
-

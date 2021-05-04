@@ -13,8 +13,7 @@ from openai_ros.openai_ros_common import ROSLauncher
 
 
 class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
-    """Superclass for all CubeSingleDisk environments.
-    """
+    """Superclass for all CubeSingleDisk environments."""
 
     def __init__(self, ros_ws_abspath):
         """
@@ -47,9 +46,11 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         # None in this case
 
         # We launch the ROSlaunch that spawns the robot into the world
-        ROSLauncher(rospackage_name="turtlebot_gazebo",
-                    launch_file_name="put_robot_in_world.launch",
-                    ros_ws_abspath=ros_ws_abspath)
+        ROSLauncher(
+            rospackage_name="turtlebot_gazebo",
+            launch_file_name="put_robot_in_world.launch",
+            ros_ws_abspath=ros_ws_abspath,
+        )
 
         # Internal Vars
         # Doesnt have any accesibles
@@ -59,27 +60,26 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         self.robot_name_space = ""
 
         # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
-        super(TurtleBot2Env, self).__init__(controllers_list=self.controllers_list,
-                                            robot_name_space=self.robot_name_space,
-                                            reset_controls=False,
-                                            start_init_physics_parameters=False,
-                                            reset_world_or_sim="WORLD")
-
-
-
+        super(TurtleBot2Env, self).__init__(
+            controllers_list=self.controllers_list,
+            robot_name_space=self.robot_name_space,
+            reset_controls=False,
+            start_init_physics_parameters=False,
+            reset_world_or_sim="WORLD",
+        )
 
         self.gazebo.unpauseSim()
-        #self.controllers_object.reset_controllers()
+        # self.controllers_object.reset_controllers()
         self._check_all_sensors_ready()
 
         # We Start all the ROS related Subscribers and publishers
         rospy.Subscriber("/odom", Odometry, self._odom_callback)
-        #rospy.Subscriber("/camera/depth/image_raw", Image, self._camera_depth_image_raw_callback)
-        #rospy.Subscriber("/camera/depth/points", PointCloud2, self._camera_depth_points_callback)
-        #rospy.Subscriber("/camera/rgb/image_raw", Image, self._camera_rgb_image_raw_callback)
+        # rospy.Subscriber("/camera/depth/image_raw", Image, self._camera_depth_image_raw_callback)
+        # rospy.Subscriber("/camera/depth/points", PointCloud2, self._camera_depth_points_callback)
+        # rospy.Subscriber("/camera/rgb/image_raw", Image, self._camera_rgb_image_raw_callback)
         rospy.Subscriber("/kobuki/laser/scan", LaserScan, self._laser_scan_callback)
 
-        self._cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        self._cmd_vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
 
         self._check_publishers_connection()
 
@@ -90,7 +90,6 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
     # Methods needed by the RobotGazeboEnv
     # ----------------------------
 
-
     def _check_all_systems_ready(self):
         """
         Checks that all the sensors, publishers and other simulation systems are
@@ -99,7 +98,6 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         self._check_all_sensors_ready()
         return True
 
-
     # CubeSingleDiskEnv virtual methods
     # ----------------------------
 
@@ -107,9 +105,9 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("START ALL SENSORS READY")
         self._check_odom_ready()
         # We dont need to check for the moment, takes too long
-        #self._check_camera_depth_image_raw_ready()
-        #self._check_camera_depth_points_ready()
-        #self._check_camera_rgb_image_raw_ready()
+        # self._check_camera_depth_image_raw_ready()
+        # self._check_camera_depth_points_ready()
+        # self._check_camera_rgb_image_raw_ready()
         self._check_laser_scan_ready()
         rospy.logdebug("ALL SENSORS READY")
 
@@ -126,58 +124,69 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
 
         return self.odom
 
-
     def _check_camera_depth_image_raw_ready(self):
         self.camera_depth_image_raw = None
         rospy.logdebug("Waiting for /camera/depth/image_raw to be READY...")
         while self.camera_depth_image_raw is None and not rospy.is_shutdown():
             try:
-                self.camera_depth_image_raw = rospy.wait_for_message("/camera/depth/image_raw", Image, timeout=5.0)
+                self.camera_depth_image_raw = rospy.wait_for_message(
+                    "/camera/depth/image_raw", Image, timeout=5.0
+                )
                 rospy.logdebug("Current /camera/depth/image_raw READY=>")
 
             except:
-                rospy.logerr("Current /camera/depth/image_raw not ready yet, retrying for getting camera_depth_image_raw")
+                rospy.logerr(
+                    "Current /camera/depth/image_raw not ready yet, retrying for getting camera_depth_image_raw"
+                )
         return self.camera_depth_image_raw
-
 
     def _check_camera_depth_points_ready(self):
         self.camera_depth_points = None
         rospy.logdebug("Waiting for /camera/depth/points to be READY...")
         while self.camera_depth_points is None and not rospy.is_shutdown():
             try:
-                self.camera_depth_points = rospy.wait_for_message("/camera/depth/points", PointCloud2, timeout=10.0)
+                self.camera_depth_points = rospy.wait_for_message(
+                    "/camera/depth/points", PointCloud2, timeout=10.0
+                )
                 rospy.logdebug("Current /camera/depth/points READY=>")
 
             except:
-                rospy.logerr("Current /camera/depth/points not ready yet, retrying for getting camera_depth_points")
+                rospy.logerr(
+                    "Current /camera/depth/points not ready yet, retrying for getting camera_depth_points"
+                )
         return self.camera_depth_points
-
 
     def _check_camera_rgb_image_raw_ready(self):
         self.camera_rgb_image_raw = None
         rospy.logdebug("Waiting for /camera/rgb/image_raw to be READY...")
         while self.camera_rgb_image_raw is None and not rospy.is_shutdown():
             try:
-                self.camera_rgb_image_raw = rospy.wait_for_message("/camera/rgb/image_raw", Image, timeout=5.0)
+                self.camera_rgb_image_raw = rospy.wait_for_message(
+                    "/camera/rgb/image_raw", Image, timeout=5.0
+                )
                 rospy.logdebug("Current /camera/rgb/image_raw READY=>")
 
             except:
-                rospy.logerr("Current /camera/rgb/image_raw not ready yet, retrying for getting camera_rgb_image_raw")
+                rospy.logerr(
+                    "Current /camera/rgb/image_raw not ready yet, retrying for getting camera_rgb_image_raw"
+                )
         return self.camera_rgb_image_raw
-
 
     def _check_laser_scan_ready(self):
         self.laser_scan = None
         rospy.logdebug("Waiting for /kobuki/laser/scan to be READY...")
         while self.laser_scan is None and not rospy.is_shutdown():
             try:
-                self.laser_scan = rospy.wait_for_message("/kobuki/laser/scan", LaserScan, timeout=5.0)
+                self.laser_scan = rospy.wait_for_message(
+                    "/kobuki/laser/scan", LaserScan, timeout=5.0
+                )
                 rospy.logdebug("Current /kobuki/laser/scan READY=>")
 
             except:
-                rospy.logerr("Current /kobuki/laser/scan not ready yet, retrying for getting laser_scan")
+                rospy.logerr(
+                    "Current /kobuki/laser/scan not ready yet, retrying for getting laser_scan"
+                )
         return self.laser_scan
-
 
     def _odom_callback(self, data):
         self.odom = data
@@ -193,7 +202,6 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
 
     def _laser_scan_callback(self, data):
         self.laser_scan = data
-
 
     def _check_publishers_connection(self):
         """
@@ -217,8 +225,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
     # TrainingEnvironment.
     # ----------------------------
     def _set_init_pose(self):
-        """Sets the Robot in its init pose
-        """
+        """Sets the Robot in its init pose"""
         raise NotImplementedError()
 
     def _init_env_variables(self):
@@ -228,26 +235,30 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         raise NotImplementedError()
 
     def _compute_reward(self, observations, done):
-        """Calculates the reward to give based on the observations given.
-        """
+        """Calculates the reward to give based on the observations given."""
         raise NotImplementedError()
 
     def _set_action(self, action):
-        """Applies the given action to the simulation.
-        """
+        """Applies the given action to the simulation."""
         raise NotImplementedError()
 
     def _get_obs(self):
         raise NotImplementedError()
 
     def _is_done(self, observations):
-        """Checks if episode done based on observations given.
-        """
+        """Checks if episode done based on observations given."""
         raise NotImplementedError()
 
     # Methods that the TrainingEnvironment will need.
     # ----------------------------
-    def move_base(self, linear_speed, angular_speed, epsilon=0.05, update_rate=10, min_laser_distance=-1):
+    def move_base(
+        self,
+        linear_speed,
+        angular_speed,
+        epsilon=0.05,
+        update_rate=10,
+        min_laser_distance=-1,
+    ):
         """
         It will move the base based on the linear and angular speeds given.
         It will wait untill those twists are achived reading from the odometry topic.
@@ -264,7 +275,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         self._check_publishers_connection()
         self._cmd_vel_pub.publish(cmd_vel_value)
         time.sleep(0.2)
-        #time.sleep(0.02)
+        # time.sleep(0.02)
         """
         self.wait_until_twist_achieved(cmd_vel_value,
                                         epsilon,
@@ -272,8 +283,9 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
                                         min_laser_distance)
         """
 
-
-    def wait_until_twist_achieved(self, cmd_vel_value, epsilon, update_rate, min_laser_distance=-1):
+    def wait_until_twist_achieved(
+        self, cmd_vel_value, epsilon, update_rate, min_laser_distance=-1
+    ):
         """
         We wait for the cmd_vel twist given to be reached by the robot reading
         from the odometry.
@@ -308,11 +320,31 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
             odom_linear_vel = current_odometry.twist.twist.linear.x
             odom_angular_vel = current_odometry.twist.twist.angular.z
 
-            rospy.logdebug("Linear VEL=" + str(odom_linear_vel) + ", ?RANGE=[" + str(linear_speed_minus) + ","+str(linear_speed_plus)+"]")
-            rospy.logdebug("Angular VEL=" + str(odom_angular_vel) + ", ?RANGE=[" + str(angular_speed_minus) + ","+str(angular_speed_plus)+"]")
+            rospy.logdebug(
+                "Linear VEL="
+                + str(odom_linear_vel)
+                + ", ?RANGE=["
+                + str(linear_speed_minus)
+                + ","
+                + str(linear_speed_plus)
+                + "]"
+            )
+            rospy.logdebug(
+                "Angular VEL="
+                + str(odom_angular_vel)
+                + ", ?RANGE=["
+                + str(angular_speed_minus)
+                + ","
+                + str(angular_speed_plus)
+                + "]"
+            )
 
-            linear_vel_are_close = (odom_linear_vel <= linear_speed_plus) and (odom_linear_vel > linear_speed_minus)
-            angular_vel_are_close = (odom_angular_vel <= angular_speed_plus) and (odom_angular_vel > angular_speed_minus)
+            linear_vel_are_close = (odom_linear_vel <= linear_speed_plus) and (
+                odom_linear_vel > linear_speed_minus
+            )
+            angular_vel_are_close = (odom_angular_vel <= angular_speed_plus) and (
+                odom_angular_vel > angular_speed_minus
+            )
 
             if linear_vel_are_close and angular_vel_are_close:
                 rospy.logwarn("Reached Velocity!")
@@ -325,8 +357,8 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
 
             rospy.logwarn("Not there yet, keep waiting...")
             rate.sleep()
-        delta_time = end_wait_time- start_wait_time
-        rospy.logdebug("[Wait Time=" + str(delta_time)+"]")
+        delta_time = end_wait_time - start_wait_time
+        rospy.logdebug("[Wait Time=" + str(delta_time) + "]")
 
         rospy.logwarn("END wait_until_twist_achieved...")
 
@@ -345,18 +377,22 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         if min_laser_distance != -1:
             laser_data = self.get_laser_scan()
             for i, item in enumerate(laser_data.ranges):
-                if item == float ('Inf') or numpy.isinf(item):
+                if item == float("Inf") or numpy.isinf(item):
                     pass
                 elif numpy.isnan(item):
-                   pass
+                    pass
                 else:
                     # Has a Non Infinite or Nan Value
-                    if (item < min_laser_distance):
-                        rospy.logerr("TurtleBot HAS CRASHED >>> item=" + str(item)+"< "+str(min_laser_distance))
+                    if item < min_laser_distance:
+                        rospy.logerr(
+                            "TurtleBot HAS CRASHED >>> item="
+                            + str(item)
+                            + "< "
+                            + str(min_laser_distance)
+                        )
                         robot_has_crashed = True
                         break
         return robot_has_crashed
-
 
     def get_odom(self):
         return self.odom
@@ -379,4 +415,3 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         the sensors values are forced to be updated with the real data and
 
         """
-

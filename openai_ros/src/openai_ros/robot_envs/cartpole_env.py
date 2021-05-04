@@ -25,44 +25,48 @@ from openai_ros.openai_ros_common import ROSLauncher
 
 
 class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
-    def __init__(
-        self, control_type, ros_ws_abspath
-    ):
+    def __init__(self, control_type, ros_ws_abspath):
 
         # We launch the ROSlaunch that spawns the robot into the world
-        ROSLauncher(rospackage_name="cartpole_description",
-                    launch_file_name="put_robot_in_world.launch",
-                    ros_ws_abspath=ros_ws_abspath)
+        ROSLauncher(
+            rospackage_name="cartpole_description",
+            launch_file_name="put_robot_in_world.launch",
+            ros_ws_abspath=ros_ws_abspath,
+        )
 
         self.publishers_array = []
         self._base_pub = rospy.Publisher(
-            '/cartpole_v0/foot_joint_velocity_controller/command', Float64, queue_size=1)
+            "/cartpole_v0/foot_joint_velocity_controller/command", Float64, queue_size=1
+        )
         self._pole_pub = rospy.Publisher(
-            '/cartpole_v0/pole_joint_velocity_controller/command', Float64, queue_size=1)
+            "/cartpole_v0/pole_joint_velocity_controller/command", Float64, queue_size=1
+        )
         self.publishers_array.append(self._base_pub)
         self.publishers_array.append(self._pole_pub)
 
-        rospy.Subscriber("/cartpole_v0/joint_states",
-                         JointState, self.joints_callback)
+        rospy.Subscriber("/cartpole_v0/joint_states", JointState, self.joints_callback)
 
         self.control_type = control_type
         if self.control_type == "velocity":
-            self.controllers_list = ['joint_state_controller',
-                                     'pole_joint_velocity_controller',
-                                     'foot_joint_velocity_controller',
-                                     ]
+            self.controllers_list = [
+                "joint_state_controller",
+                "pole_joint_velocity_controller",
+                "foot_joint_velocity_controller",
+            ]
 
         elif self.control_type == "position":
-            self.controllers_list = ['joint_state_controller',
-                                     'pole_joint_position_controller',
-                                     'foot_joint_position_controller',
-                                     ]
+            self.controllers_list = [
+                "joint_state_controller",
+                "pole_joint_position_controller",
+                "foot_joint_position_controller",
+            ]
 
         elif self.control_type == "effort":
-            self.controllers_list = ['joint_state_controller',
-                                     'pole_joint_effort_controller',
-                                     'foot_joint_effort_controller',
-                                     ]
+            self.controllers_list = [
+                "joint_state_controller",
+                "pole_joint_effort_controller",
+                "foot_joint_effort_controller",
+            ]
 
         self.robot_name_space = "cartpole_v0"
         self.reset_controls = True
@@ -74,7 +78,7 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
         super(CartPoleEnv, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,
-            reset_controls=self.reset_controls
+            reset_controls=self.reset_controls,
         )
 
     def joints_callback(self, data):
@@ -102,9 +106,8 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
         :return:
         """
         rate = rospy.Rate(10)  # 10hz
-        while (self._base_pub.get_num_connections() == 0 and not rospy.is_shutdown()):
-            rospy.logdebug(
-                "No susbribers to _base_pub yet so we wait and try again")
+        while self._base_pub.get_num_connections() == 0 and not rospy.is_shutdown():
+            rospy.logdebug("No susbribers to _base_pub yet so we wait and try again")
             try:
                 rate.sleep()
             except rospy.ROSInterruptException:
@@ -112,9 +115,8 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
                 pass
         rospy.logdebug("_base_pub Publisher Connected")
 
-        while (self._pole_pub.get_num_connections() == 0 and not rospy.is_shutdown()):
-            rospy.logdebug(
-                "No susbribers to _pole_pub yet so we wait and try again")
+        while self._pole_pub.get_num_connections() == 0 and not rospy.is_shutdown():
+            rospy.logdebug("No susbribers to _pole_pub yet so we wait and try again")
             try:
                 rate.sleep()
             except rospy.ROSInterruptException:
@@ -129,40 +131,44 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
         while self.base_position is None and not rospy.is_shutdown():
             try:
                 self.base_position = rospy.wait_for_message(
-                    "/cartpole_v0/joint_states", JointState, timeout=1.0)
+                    "/cartpole_v0/joint_states", JointState, timeout=1.0
+                )
                 rospy.logdebug(
-                    "Current cartpole_v0/joint_states READY=>"+str(self.base_position))
+                    "Current cartpole_v0/joint_states READY=>" + str(self.base_position)
+                )
                 if init:
                     # We Check all the sensors are in their initial values
                     positions_ok = all(
-                        abs(i) <= 1.0e-02 for i in self.base_position.position)
+                        abs(i) <= 1.0e-02 for i in self.base_position.position
+                    )
                     velocity_ok = all(
-                        abs(i) <= 1.0e-02 for i in self.base_position.velocity)
+                        abs(i) <= 1.0e-02 for i in self.base_position.velocity
+                    )
                     efforts_ok = all(
-                        abs(i) <= 1.0e-01 for i in self.base_position.effort)
+                        abs(i) <= 1.0e-01 for i in self.base_position.effort
+                    )
                     base_data_ok = positions_ok and velocity_ok and efforts_ok
-                    rospy.logdebug(
-                        "Checking Init Values Ok=>" + str(base_data_ok))
+                    rospy.logdebug("Checking Init Values Ok=>" + str(base_data_ok))
             except:
                 rospy.logerr(
-                    "Current cartpole_v0/joint_states not ready yet, retrying for getting joint_states")
+                    "Current cartpole_v0/joint_states not ready yet, retrying for getting joint_states"
+                )
         rospy.logdebug("ALL SYSTEMS READY")
 
     def move_joints(self, joints_array):
         joint_value = Float64()
         joint_value.data = joints_array[0]
-        rospy.logdebug("Single Base JointsPos>>"+str(joint_value))
+        rospy.logdebug("Single Base JointsPos>>" + str(joint_value))
         self._base_pub.publish(joint_value)
 
     def get_clock_time(self):
         self.clock_time = None
         while self.clock_time is None and not rospy.is_shutdown():
             try:
-                self.clock_time = rospy.wait_for_message(
-                    "/clock", Clock, timeout=1.0)
-                rospy.logdebug("Current clock_time READY=>" +
-                               str(self.clock_time))
+                self.clock_time = rospy.wait_for_message("/clock", Clock, timeout=1.0)
+                rospy.logdebug("Current clock_time READY=>" + str(self.clock_time))
             except:
                 rospy.logdebug(
-                    "Current clock_time not ready yet, retrying for getting Current clock_time")
+                    "Current clock_time not ready yet, retrying for getting Current clock_time"
+                )
         return self.clock_time

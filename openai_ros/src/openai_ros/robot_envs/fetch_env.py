@@ -12,14 +12,15 @@ from openai_ros.openai_ros_common import ROSLauncher
 
 
 class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
-
     def __init__(self, ros_ws_abspath):
         rospy.logdebug("========= In Fetch Env")
 
         # We launch the ROSlaunch that spawns the robot into the world
-        ROSLauncher(rospackage_name="fetch_gazebo",
-                    launch_file_name="put_robot_in_world_HER.launch",
-                    ros_ws_abspath=ros_ws_abspath)
+        ROSLauncher(
+            rospackage_name="fetch_gazebo",
+            launch_file_name="put_robot_in_world_HER.launch",
+            ros_ws_abspath=ros_ws_abspath,
+        )
 
         # this object contains all object's positions!!
         self.obj_positions = Obj_Pos()
@@ -29,28 +30,33 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         self.robot_name_space = ""
         self.reset_controls = False
 
-        super(FetchEnv, self).__init__(controllers_list=self.controllers_list,
-                                       robot_name_space=self.robot_name_space,
-                                       reset_controls=False,
-                                       start_init_physics_parameters=False,
-                                       reset_world_or_sim="WORLD")
+        super(FetchEnv, self).__init__(
+            controllers_list=self.controllers_list,
+            robot_name_space=self.robot_name_space,
+            reset_controls=False,
+            start_init_physics_parameters=False,
+            reset_world_or_sim="WORLD",
+        )
 
         # We Start all the ROS related Subscribers and publishers
 
-        self.JOINT_STATES_SUBSCRIBER = '/joint_states'
-        self.join_names = ["joint0",
-                           "joint1",
-                           "joint2",
-                           "joint3",
-                           "joint4",
-                           "joint5",
-                           "joint6"]
+        self.JOINT_STATES_SUBSCRIBER = "/joint_states"
+        self.join_names = [
+            "joint0",
+            "joint1",
+            "joint2",
+            "joint3",
+            "joint4",
+            "joint5",
+            "joint6",
+        ]
 
         self.gazebo.unpauseSim()
         self._check_all_systems_ready()
 
         self.joint_states_sub = rospy.Subscriber(
-            self.JOINT_STATES_SUBSCRIBER, JointState, self.joints_callback)
+            self.JOINT_STATES_SUBSCRIBER, JointState, self.joints_callback
+        )
         self.joints = JointState()
 
         # Start Services
@@ -88,13 +94,21 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         while self.joints is None and not rospy.is_shutdown():
             try:
                 self.joints = rospy.wait_for_message(
-                    self.JOINT_STATES_SUBSCRIBER, JointState, timeout=1.0)
+                    self.JOINT_STATES_SUBSCRIBER, JointState, timeout=1.0
+                )
                 rospy.logdebug(
-                    "Current "+str(self.JOINT_STATES_SUBSCRIBER)+" READY=>" + str(self.joints))
+                    "Current "
+                    + str(self.JOINT_STATES_SUBSCRIBER)
+                    + " READY=>"
+                    + str(self.joints)
+                )
 
             except:
                 rospy.logerr(
-                    "Current "+str(self.JOINT_STATES_SUBSCRIBER)+" not ready yet, retrying....")
+                    "Current "
+                    + str(self.JOINT_STATES_SUBSCRIBER)
+                    + " not ready yet, retrying...."
+                )
         return self.joints
 
     def joints_callback(self, data):
@@ -168,7 +182,8 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         """
 
         assert len(joints_positions) == len(
-            self.join_names), "Wrong number of joints, there should be "+str(len(self.join_names))
+            self.join_names
+        ), "Wrong number of joints, there should be " + str(len(self.join_names))
         joints_dict = dict(zip(self.join_names, joints_positions))
 
         return joints_dict
@@ -222,8 +237,9 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         0.050051597253287436)
         """
         import time
+
         for i in range(20):
-            print("WAITING..."+str(i))
+            print("WAITING..." + str(i))
             sys.stdout.flush()
             time.sleep(1.0)
 
@@ -239,21 +255,18 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         raise NotImplementedError()
 
     def _compute_reward(self, observations, done):
-        """Calculates the reward to give based on the observations given.
-        """
+        """Calculates the reward to give based on the observations given."""
         raise NotImplementedError()
 
     def _set_action(self, action):
-        """Applies the given action to the simulation.
-        """
+        """Applies the given action to the simulation."""
         raise NotImplementedError()
 
     def _get_obs(self):
         raise NotImplementedError()
 
     def _is_done(self, observations):
-        """Checks if episode done based on observations given.
-        """
+        """Checks if episode done based on observations given."""
         raise NotImplementedError()
 
 
@@ -265,11 +278,13 @@ class Obj_Pos(object):
 
     def __init__(self):
         world_specs = rospy.ServiceProxy(
-            '/gazebo/get_world_properties', GetWorldProperties)()
+            "/gazebo/get_world_properties", GetWorldProperties
+        )()
         self.time = 0
         self.model_names = world_specs.model_names
         self.get_model_state = rospy.ServiceProxy(
-            '/gazebo/get_model_state', GetModelState)
+            "/gazebo/get_model_state", GetModelState
+        )
 
     def get_states(self):
         """
@@ -278,15 +293,18 @@ class Obj_Pos(object):
         for model_name in self.model_names:
             if model_name == "cube":
                 data = self.get_model_state(
-                    model_name, "world")  # gazebo service client
-                return np.array([
-                    data.pose.position.x,
-                    data.pose.position.y,
-                    data.pose.position.z,
-                    data.pose.orientation.x,
-                    data.pose.orientation.y,
-                    data.pose.orientation.z
-                ])
+                    model_name, "world"
+                )  # gazebo service client
+                return np.array(
+                    [
+                        data.pose.position.x,
+                        data.pose.position.y,
+                        data.pose.position.z,
+                        data.pose.orientation.x,
+                        data.pose.orientation.y,
+                        data.pose.orientation.z,
+                    ]
+                )
 
 
 class MoveFetch(object):

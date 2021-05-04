@@ -14,8 +14,7 @@ from openai_ros.openai_ros_common import ROSLauncher
 
 
 class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
-    """Superclass for all CubeSingleDisk environments.
-    """
+    """Superclass for all CubeSingleDisk environments."""
 
     def __init__(self, ros_ws_abspath):
         """
@@ -46,9 +45,11 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         # None in this case
 
         # We launch the ROSlaunch that spawns the robot into the world
-        ROSLauncher(rospackage_name="turtlebot3_gazebo",
-                    launch_file_name="put_robot_in_world.launch",
-                    ros_ws_abspath=ros_ws_abspath)
+        ROSLauncher(
+            rospackage_name="turtlebot3_gazebo",
+            launch_file_name="put_robot_in_world.launch",
+            ros_ws_abspath=ros_ws_abspath,
+        )
 
         # Internal Vars
         # Doesnt have any accesibles
@@ -58,16 +59,15 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         self.robot_name_space = ""
 
         # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
-        super(TurtleBot3Env, self).__init__(controllers_list=self.controllers_list,
-                                            robot_name_space=self.robot_name_space,
-                                            reset_controls=False,
-                                            start_init_physics_parameters=False)
-
-
-
+        super(TurtleBot3Env, self).__init__(
+            controllers_list=self.controllers_list,
+            robot_name_space=self.robot_name_space,
+            reset_controls=False,
+            start_init_physics_parameters=False,
+        )
 
         self.gazebo.unpauseSim()
-        #self.controllers_object.reset_controllers()
+        # self.controllers_object.reset_controllers()
         self._check_all_sensors_ready()
 
         # We Start all the ROS related Subscribers and publishers
@@ -75,7 +75,7 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         rospy.Subscriber("/imu", Imu, self._imu_callback)
         rospy.Subscriber("/scan", LaserScan, self._laser_scan_callback)
 
-        self._cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        self._cmd_vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
 
         self._check_publishers_connection()
 
@@ -86,7 +86,6 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
     # Methods needed by the RobotGazeboEnv
     # ----------------------------
 
-
     def _check_all_systems_ready(self):
         """
         Checks that all the sensors, publishers and other simulation systems are
@@ -94,7 +93,6 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         """
         self._check_all_sensors_ready()
         return True
-
 
     # CubeSingleDiskEnv virtual methods
     # ----------------------------
@@ -119,7 +117,6 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
 
         return self.odom
 
-
     def _check_imu_ready(self):
         self.imu = None
         rospy.logdebug("Waiting for /imu to be READY...")
@@ -133,19 +130,21 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
 
         return self.imu
 
-
     def _check_laser_scan_ready(self):
         self.laser_scan = None
         rospy.logdebug("Waiting for /scan to be READY...")
         while self.laser_scan is None and not rospy.is_shutdown():
             try:
-                self.laser_scan = rospy.wait_for_message("/scan", LaserScan, timeout=1.0)
+                self.laser_scan = rospy.wait_for_message(
+                    "/scan", LaserScan, timeout=1.0
+                )
                 rospy.logdebug("Current /scan READY=>")
 
             except:
-                rospy.logerr("Current /scan not ready yet, retrying for getting laser_scan")
+                rospy.logerr(
+                    "Current /scan not ready yet, retrying for getting laser_scan"
+                )
         return self.laser_scan
-
 
     def _odom_callback(self, data):
         self.odom = data
@@ -155,7 +154,6 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
 
     def _laser_scan_callback(self, data):
         self.laser_scan = data
-
 
     def _check_publishers_connection(self):
         """
@@ -179,8 +177,7 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
     # TrainingEnvironment.
     # ----------------------------
     def _set_init_pose(self):
-        """Sets the Robot in its init pose
-        """
+        """Sets the Robot in its init pose"""
         raise NotImplementedError()
 
     def _init_env_variables(self):
@@ -190,21 +187,18 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         raise NotImplementedError()
 
     def _compute_reward(self, observations, done):
-        """Calculates the reward to give based on the observations given.
-        """
+        """Calculates the reward to give based on the observations given."""
         raise NotImplementedError()
 
     def _set_action(self, action):
-        """Applies the given action to the simulation.
-        """
+        """Applies the given action to the simulation."""
         raise NotImplementedError()
 
     def _get_obs(self):
         raise NotImplementedError()
 
     def _is_done(self, observations):
-        """Checks if episode done based on observations given.
-        """
+        """Checks if episode done based on observations given."""
         raise NotImplementedError()
 
     # Methods that the TrainingEnvironment will need.
@@ -225,7 +219,7 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("TurtleBot3 Base Twist Cmd>>" + str(cmd_vel_value))
         self._check_publishers_connection()
         self._cmd_vel_pub.publish(cmd_vel_value)
-        #self.wait_until_twist_achieved(cmd_vel_value,epsilon,update_rate)
+        # self.wait_until_twist_achieved(cmd_vel_value,epsilon,update_rate)
         # Weplace a waitof certain amiunt of time, because this twist achived doesnt work properly
         time.sleep(0.2)
 
@@ -260,13 +254,33 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
             current_odometry = self._check_odom_ready()
             # IN turtlebot3 the odometry angular readings are inverted, so we have to invert the sign.
             odom_linear_vel = current_odometry.twist.twist.linear.x
-            odom_angular_vel = -1*current_odometry.twist.twist.angular.z
+            odom_angular_vel = -1 * current_odometry.twist.twist.angular.z
 
-            rospy.logdebug("Linear VEL=" + str(odom_linear_vel) + ", ?RANGE=[" + str(linear_speed_minus) + ","+str(linear_speed_plus)+"]")
-            rospy.logdebug("Angular VEL=" + str(odom_angular_vel) + ", ?RANGE=[" + str(angular_speed_minus) + ","+str(angular_speed_plus)+"]")
+            rospy.logdebug(
+                "Linear VEL="
+                + str(odom_linear_vel)
+                + ", ?RANGE=["
+                + str(linear_speed_minus)
+                + ","
+                + str(linear_speed_plus)
+                + "]"
+            )
+            rospy.logdebug(
+                "Angular VEL="
+                + str(odom_angular_vel)
+                + ", ?RANGE=["
+                + str(angular_speed_minus)
+                + ","
+                + str(angular_speed_plus)
+                + "]"
+            )
 
-            linear_vel_are_close = (odom_linear_vel <= linear_speed_plus) and (odom_linear_vel > linear_speed_minus)
-            angular_vel_are_close = (odom_angular_vel <= angular_speed_plus) and (odom_angular_vel > angular_speed_minus)
+            linear_vel_are_close = (odom_linear_vel <= linear_speed_plus) and (
+                odom_linear_vel > linear_speed_minus
+            )
+            angular_vel_are_close = (odom_angular_vel <= angular_speed_plus) and (
+                odom_angular_vel > angular_speed_minus
+            )
 
             if linear_vel_are_close and angular_vel_are_close:
                 rospy.logdebug("Reached Velocity!")
@@ -274,13 +288,12 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
                 break
             rospy.logdebug("Not there yet, keep waiting...")
             rate.sleep()
-        delta_time = end_wait_time- start_wait_time
-        rospy.logdebug("[Wait Time=" + str(delta_time)+"]")
+        delta_time = end_wait_time - start_wait_time
+        rospy.logdebug("[Wait Time=" + str(delta_time) + "]")
 
         rospy.logdebug("END wait_until_twist_achieved...")
 
         return delta_time
-
 
     def get_odom(self):
         return self.odom

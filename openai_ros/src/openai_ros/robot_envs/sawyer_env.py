@@ -12,8 +12,7 @@ from openai_ros.openai_ros_common import ROSLauncher
 
 
 class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
-    """Superclass for all SawyerEnv environments.
-    """
+    """Superclass for all SawyerEnv environments."""
 
     def __init__(self, ros_ws_abspath):
         """
@@ -41,9 +40,11 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         # None in this case
 
         # We launch the ROSlaunch that spawns the robot into the world
-        ROSLauncher(rospackage_name="sawyer_gazebo",
-                    launch_file_name="put_sawyer_in_world.launch",
-                    ros_ws_abspath=ros_ws_abspath)
+        ROSLauncher(
+            rospackage_name="sawyer_gazebo",
+            launch_file_name="put_sawyer_in_world.launch",
+            ros_ws_abspath=ros_ws_abspath,
+        )
 
         # Internal Vars
         # Doesnt have any accesibles
@@ -53,11 +54,13 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         self.robot_name_space = ""
 
         # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
-        super(SawyerEnv, self).__init__(controllers_list=self.controllers_list,
-                                        robot_name_space=self.robot_name_space,
-                                        reset_controls=False,
-                                        start_init_physics_parameters=False,
-                                        reset_world_or_sim="WORLD")
+        super(SawyerEnv, self).__init__(
+            controllers_list=self.controllers_list,
+            robot_name_space=self.robot_name_space,
+            reset_controls=False,
+            start_init_physics_parameters=False,
+            reset_world_or_sim="WORLD",
+        )
 
         rospy.logdebug("SawyerEnv unpause...")
         self.gazebo.unpauseSim()
@@ -66,10 +69,16 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         # TODO: Fill it with the sensors
         self._check_all_systems_ready()
 
-        rospy.Subscriber("/io/internal_camera/head_camera/image_raw",
-                         Image, self._head_camera_image_raw_callback)
-        rospy.Subscriber("/io/internal_camera/right_hand_camera/image_raw",
-                         Image, self._right_hand_camera_image_raw_callback)
+        rospy.Subscriber(
+            "/io/internal_camera/head_camera/image_raw",
+            Image,
+            self._head_camera_image_raw_callback,
+        )
+        rospy.Subscriber(
+            "/io/internal_camera/right_hand_camera/image_raw",
+            Image,
+            self._right_hand_camera_image_raw_callback,
+        )
 
         self._setup_tf_listener()
         self._setup_movement_system()
@@ -104,33 +113,43 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
     def _check_head_camera_image_raw_ready(self):
         self.head_camera_image_raw = None
         rospy.logdebug(
-            "Waiting for /io/internal_camera/head_camera/image_raw to be READY...")
+            "Waiting for /io/internal_camera/head_camera/image_raw to be READY..."
+        )
         while self.head_camera_image_raw is None and not rospy.is_shutdown():
             try:
                 self.head_camera_image_raw = rospy.wait_for_message(
-                    "/io/internal_camera/head_camera/image_raw", Image, timeout=5.0)
+                    "/io/internal_camera/head_camera/image_raw", Image, timeout=5.0
+                )
                 rospy.logdebug(
-                    "Current /io/internal_camera/head_camera/image_raw READY=>")
+                    "Current /io/internal_camera/head_camera/image_raw READY=>"
+                )
 
             except:
                 rospy.logerr(
-                    "Current /io/internal_camera/head_camera/image_raw not ready yet, retrying for getting head_camera_image_raw")
+                    "Current /io/internal_camera/head_camera/image_raw not ready yet, retrying for getting head_camera_image_raw"
+                )
         return self.head_camera_image_raw
 
     def _check_right_hand_camera_image_raw_ready(self):
         self.right_hand_camera_image_raw = None
         rospy.logdebug(
-            "Waiting for /io/internal_camera/right_hand_camera/image_raw to be READY...")
+            "Waiting for /io/internal_camera/right_hand_camera/image_raw to be READY..."
+        )
         while self.right_hand_camera_image_raw is None and not rospy.is_shutdown():
             try:
                 self.right_hand_camera_image_raw = rospy.wait_for_message(
-                    "/io/internal_camera/right_hand_camera/image_raw", Image, timeout=5.0)
+                    "/io/internal_camera/right_hand_camera/image_raw",
+                    Image,
+                    timeout=5.0,
+                )
                 rospy.logdebug(
-                    "Current /io/internal_camera/right_hand_camera/image_raw READY=>")
+                    "Current /io/internal_camera/right_hand_camera/image_raw READY=>"
+                )
 
             except:
                 rospy.logerr(
-                    "Current /io/internal_camera/right_hand_camera/image_raw not ready yet, retrying for getting right_hand_camera_image_raw")
+                    "Current /io/internal_camera/right_hand_camera/image_raw not ready yet, retrying for getting right_hand_camera_image_raw"
+                )
         return self.right_hand_camera_image_raw
 
     def _head_camera_image_raw_callback(self, data):
@@ -153,11 +172,13 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         rp = intera_interface.RobotParams()
         valid_limbs = rp.get_limb_names()
         if not valid_limbs:
-            rp.log_message(("Cannot detect any limb parameters on this robot. "
-                            "Exiting."), "ERROR")
+            rp.log_message(
+                ("Cannot detect any limb parameters on this robot. " "Exiting."),
+                "ERROR",
+            )
             return
 
-        rospy.loginfo("Valid Sawyer Limbs==>"+str(valid_limbs))
+        rospy.loginfo("Valid Sawyer Limbs==>" + str(valid_limbs))
 
         print("Getting robot state... ")
         rs = intera_interface.RobotEnable(CHECK_VERSION)
@@ -172,7 +193,7 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         self.limb = intera_interface.Limb(side)
 
         try:
-            self.gripper = intera_interface.Gripper(side + '_gripper')
+            self.gripper = intera_interface.Gripper(side + "_gripper")
         except:
             self.has_gripper = False
             rospy.loginfo("The electric gripper is not detected on the robot.")
@@ -182,27 +203,99 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         self.joints = self.limb.joint_names()
 
         self.bindings = {
-            self.joints[0]+"_increase": (self.set_j, [self.joints[0], joint_delta], self.joints[0]+" increase"),
-            self.joints[0]+"_decrease": (self.set_j, [self.joints[0], -joint_delta], self.joints[0]+" decrease"),
-            self.joints[1]+"_increase": (self.set_j, [self.joints[1], joint_delta], self.joints[1]+" increase"),
-            self.joints[1]+"_decrease": (self.set_j, [self.joints[1], -joint_delta], self.joints[1]+" decrease"),
-            self.joints[2]+"_increase": (self.set_j, [self.joints[2], joint_delta], self.joints[2]+" increase"),
-            self.joints[2]+"_decrease": (self.set_j, [self.joints[2], -joint_delta], self.joints[2]+" decrease"),
-            self.joints[3]+"_increase": (self.set_j, [self.joints[3], joint_delta], self.joints[3]+" increase"),
-            self.joints[3]+"_decrease": (self.set_j, [self.joints[3], -joint_delta], self.joints[3]+" decrease"),
-            self.joints[4]+"_increase": (self.set_j, [self.joints[4], joint_delta], self.joints[4]+" increase"),
-            self.joints[4]+"_decrease": (self.set_j, [self.joints[4], -joint_delta], self.joints[4]+" decrease"),
-            self.joints[5]+"_increase": (self.set_j, [self.joints[5], joint_delta], self.joints[5]+" increase"),
-            self.joints[5]+"_decrease": (self.set_j, [self.joints[5], -joint_delta], self.joints[5]+" decrease"),
-            self.joints[6]+"_increase": (self.set_j, [self.joints[6], joint_delta], self.joints[6]+" increase"),
-            self.joints[6]+"_decrease": (self.set_j, [self.joints[6], -joint_delta], self.joints[6]+" decrease")
+            self.joints[0]
+            + "_increase": (
+                self.set_j,
+                [self.joints[0], joint_delta],
+                self.joints[0] + " increase",
+            ),
+            self.joints[0]
+            + "_decrease": (
+                self.set_j,
+                [self.joints[0], -joint_delta],
+                self.joints[0] + " decrease",
+            ),
+            self.joints[1]
+            + "_increase": (
+                self.set_j,
+                [self.joints[1], joint_delta],
+                self.joints[1] + " increase",
+            ),
+            self.joints[1]
+            + "_decrease": (
+                self.set_j,
+                [self.joints[1], -joint_delta],
+                self.joints[1] + " decrease",
+            ),
+            self.joints[2]
+            + "_increase": (
+                self.set_j,
+                [self.joints[2], joint_delta],
+                self.joints[2] + " increase",
+            ),
+            self.joints[2]
+            + "_decrease": (
+                self.set_j,
+                [self.joints[2], -joint_delta],
+                self.joints[2] + " decrease",
+            ),
+            self.joints[3]
+            + "_increase": (
+                self.set_j,
+                [self.joints[3], joint_delta],
+                self.joints[3] + " increase",
+            ),
+            self.joints[3]
+            + "_decrease": (
+                self.set_j,
+                [self.joints[3], -joint_delta],
+                self.joints[3] + " decrease",
+            ),
+            self.joints[4]
+            + "_increase": (
+                self.set_j,
+                [self.joints[4], joint_delta],
+                self.joints[4] + " increase",
+            ),
+            self.joints[4]
+            + "_decrease": (
+                self.set_j,
+                [self.joints[4], -joint_delta],
+                self.joints[4] + " decrease",
+            ),
+            self.joints[5]
+            + "_increase": (
+                self.set_j,
+                [self.joints[5], joint_delta],
+                self.joints[5] + " increase",
+            ),
+            self.joints[5]
+            + "_decrease": (
+                self.set_j,
+                [self.joints[5], -joint_delta],
+                self.joints[5] + " decrease",
+            ),
+            self.joints[6]
+            + "_increase": (
+                self.set_j,
+                [self.joints[6], joint_delta],
+                self.joints[6] + " increase",
+            ),
+            self.joints[6]
+            + "_decrease": (
+                self.set_j,
+                [self.joints[6], -joint_delta],
+                self.joints[6] + " decrease",
+            ),
         }
         if self.has_gripper:
-            self.bindings.update({
-                "close": (self.set_g, "close", side+" gripper close"),
-                "open": (self.set_g, "open", side+" gripper open"),
-                "calibrate": (self.set_g, "calibrate", side+" gripper calibrate")
-            })
+            self.bindings.update(
+                {
+                    "close": (self.set_g, "close", side + " gripper close"),
+                    "open": (self.set_g, "open", side + " gripper open"),
+                    "calibrate": (self.set_g, "calibrate", side + " gripper calibrate"),
+                }
+            )
 
         rospy.loginfo("Controlling joints...")
 
@@ -212,8 +305,7 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
     # ----------------------------
 
     def _set_init_pose(self):
-        """Sets the Robot in its init pose
-        """
+        """Sets the Robot in its init pose"""
         raise NotImplementedError()
 
     def _init_env_variables(self):
@@ -223,21 +315,18 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         raise NotImplementedError()
 
     def _compute_reward(self, observations, done):
-        """Calculates the reward to give based on the observations given.
-        """
+        """Calculates the reward to give based on the observations given."""
         raise NotImplementedError()
 
     def _set_action(self, action):
-        """Applies the given action to the simulation.
-        """
+        """Applies the given action to the simulation."""
         raise NotImplementedError()
 
     def _get_obs(self):
         raise NotImplementedError()
 
     def _is_done(self, observations):
-        """Checks if episode done based on observations given.
-        """
+        """Checks if episode done based on observations given."""
         raise NotImplementedError()
 
     # Methods that the TrainingEnvironment will need.
@@ -269,7 +358,11 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
 
         if action_id in self.bindings:
             cmd = self.bindings[action_id]
-            if action_id == "gripper_close" or action_id == "gripper_open" or action_id == "gripper_calibrate":
+            if (
+                action_id == "gripper_close"
+                or action_id == "gripper_open"
+                or action_id == "gripper_calibrate"
+            ):
                 cmd[0](cmd[1])
                 rospy.loginfo("command: %s" % (cmd[2],))
             else:
@@ -278,8 +371,7 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
                 rospy.loginfo("command: %s" % (cmd[2],))
         else:
             rospy.logerr("NOT VALID key binding, it should be one of these: ")
-            for key, val in sorted(self.bindings.items(),
-                                   key=lambda x: x[1][2]):
+            for key, val in sorted(self.bindings.items(), key=lambda x: x[1][2]):
                 rospy.logerr("  %s: %s" % (key, val[2]))
 
     def set_j(self, joint_name, delta):
@@ -296,14 +388,18 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
             elif action == "calibrate":
                 self.gripper.calibrate()
 
-    def move_joints_to_angle_blocking(self, joint_positions_dict, timeout=15.0, threshold=0.008726646):
+    def move_joints_to_angle_blocking(
+        self, joint_positions_dict, timeout=15.0, threshold=0.008726646
+    ):
         """
         It moves all the joints to the given position and doesnt exit until it reaches that position
         """
-        self.limb.move_to_joint_positions(positions=joint_positions_dict,
-                                          timeout=15.0,
-                                          threshold=0.008726646,
-                                          test=None)
+        self.limb.move_to_joint_positions(
+            positions=joint_positions_dict,
+            timeout=15.0,
+            threshold=0.008726646,
+            test=None,
+        )
 
     def get_limb_joint_names_array(self):
         """
@@ -332,15 +428,20 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
                 end_frame_name: End Frame of the TF transform
         :return: trans,rot of the transform between the start and end frames.
         """
-        start_frame = "/"+start_frame_name
-        end_frame = "/"+end_frame_name
+        start_frame = "/" + start_frame_name
+        end_frame = "/" + end_frame_name
 
         trans, rot = None, None
         while (trans is None or rot is None) and not rospy.is_shutdown():
             try:
                 (trans, rot) = self.listener.lookupTransform(
-                    start_frame, end_frame, rospy.Time(0))
-            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                    start_frame, end_frame, rospy.Time(0)
+                )
+            except (
+                tf.LookupException,
+                tf.ConnectivityException,
+                tf.ExtrapolationException,
+            ):
                 rospy.logerr("TF start to end not ready YET...")
                 duration_obj = rospy.Duration.from_sec(1.0)
                 rospy.sleep(duration_obj)
@@ -353,12 +454,14 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         while self.joint_limits is None and not rospy.is_shutdown():
             try:
                 self.joint_limits = rospy.wait_for_message(
-                    "/robot/joint_limits", JointLimits, timeout=3.0)
+                    "/robot/joint_limits", JointLimits, timeout=3.0
+                )
                 rospy.logdebug("Current /robot/joint_limits READY=>")
 
             except:
                 rospy.logerr(
-                    "Current /robot/joint_limits not ready yet, retrying for getting joint_limits")
+                    "Current /robot/joint_limits not ready yet, retrying for getting joint_limits"
+                )
         return self.joint_limits
 
     def get_joint_limits(self):

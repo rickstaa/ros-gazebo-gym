@@ -16,8 +16,7 @@ from openai_ros.openai_ros_common import ROSLauncher
 
 
 class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
-    """Superclass for all CubeSingleDisk environments.
-    """
+    """Superclass for all CubeSingleDisk environments."""
 
     def __init__(self, ros_ws_abspath):
         """
@@ -54,29 +53,34 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         # None in this case
 
         # We launch the ROSlaunch that spawns the robot into the world
-        ROSLauncher(rospackage_name="summit_xl_gazebo",
-                    launch_file_name="put_robot_in_world.launch",
-                    ros_ws_abspath=ros_ws_abspath)
+        ROSLauncher(
+            rospackage_name="summit_xl_gazebo",
+            launch_file_name="put_robot_in_world.launch",
+            ros_ws_abspath=ros_ws_abspath,
+        )
         print("SPAWN DONE SumitXlEnv INIT...")
         # Internal Vars
         # Doesnt have any accesibles
-        self.controllers_list = ["joint_read_state_controller",
-                                 "joint_blw_velocity_controller",
-                                 "joint_brw_velocity_controller",
-                                 "joint_flw_velocity_controller",
-                                 "joint_frw_velocity_controller"
-                                 ]
+        self.controllers_list = [
+            "joint_read_state_controller",
+            "joint_blw_velocity_controller",
+            "joint_brw_velocity_controller",
+            "joint_flw_velocity_controller",
+            "joint_frw_velocity_controller",
+        ]
 
         # It doesnt use namespace
         self.robot_name_space = "summit_xl"
 
         # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
         print("START OpenAIROS CORE SumitXlEnv INIT...")
-        super(SumitXlEnv, self).__init__(controllers_list=self.controllers_list,
-                                         robot_name_space=self.robot_name_space,
-                                         reset_controls=False,
-                                         start_init_physics_parameters=False,
-                                         reset_world_or_sim="WORLD")
+        super(SumitXlEnv, self).__init__(
+            controllers_list=self.controllers_list,
+            robot_name_space=self.robot_name_space,
+            reset_controls=False,
+            start_init_physics_parameters=False,
+            reset_world_or_sim="WORLD",
+        )
         print("DONE OpenAIROS CORE SumitXlEnv INIT...")
         self.gazebo.unpauseSim()
         # TODO: See why this doesnt work in Summit XL
@@ -88,22 +92,29 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
 
         # We Start all the ROS related Subscribers and publishers
         rospy.Subscriber("/gps/fix", NavSatFix, self._gps_fix_callback)
-        rospy.Subscriber("/gps/fix_velocity", Vector3Stamped,
-                         self._gps_fix_velocity_callback)
+        rospy.Subscriber(
+            "/gps/fix_velocity", Vector3Stamped, self._gps_fix_velocity_callback
+        )
 
-        rospy.Subscriber("/orbbec_astra/depth/image_raw", Image,
-                         self._camera_depth_image_raw_callback)
-        rospy.Subscriber("/orbbec_astra/depth/points",
-                         PointCloud2, self._camera_depth_points_callback)
-        rospy.Subscriber("/orbbec_astra/rgb/image_raw", Image,
-                         self._camera_rgb_image_raw_callback)
+        rospy.Subscriber(
+            "/orbbec_astra/depth/image_raw",
+            Image,
+            self._camera_depth_image_raw_callback,
+        )
+        rospy.Subscriber(
+            "/orbbec_astra/depth/points",
+            PointCloud2,
+            self._camera_depth_points_callback,
+        )
+        rospy.Subscriber(
+            "/orbbec_astra/rgb/image_raw", Image, self._camera_rgb_image_raw_callback
+        )
 
-        rospy.Subscriber("/hokuyo_base/scan", LaserScan,
-                         self._laser_scan_callback)
+        rospy.Subscriber("/hokuyo_base/scan", LaserScan, self._laser_scan_callback)
         rospy.Subscriber("/imu/data", Imu, self._imu_callback)
         rospy.Subscriber("/summit_xl/odom", Odometry, self._odom_callback)
 
-        self._cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        self._cmd_vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
 
         print("START CHECK PUBLISHERS SumitXlEnv INIT...")
         self._check_publishers_connection()
@@ -145,12 +156,14 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         while self.gps_fix is None and not rospy.is_shutdown():
             try:
                 self.gps_fix = rospy.wait_for_message(
-                    "/gps/fix", NavSatFix, timeout=5.0)
+                    "/gps/fix", NavSatFix, timeout=5.0
+                )
                 print("Current /gps/fix READY=>")
 
             except:
                 rospy.logerr(
-                    "Current /gps/fix not ready yet, retrying for getting odom")
+                    "Current /gps/fix not ready yet, retrying for getting odom"
+                )
 
         return self.gps_fix
 
@@ -160,12 +173,14 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         while self.gps_fix_velocity is None and not rospy.is_shutdown():
             try:
                 self.gps_fix_velocity = rospy.wait_for_message(
-                    "/gps/fix_velocity", Vector3Stamped, timeout=5.0)
+                    "/gps/fix_velocity", Vector3Stamped, timeout=5.0
+                )
                 print("Current /gps/fix_velocity READY=>")
 
             except:
                 rospy.logerr(
-                    "Current /gps/fix_velocity not ready yet, retrying for getting odom")
+                    "Current /gps/fix_velocity not ready yet, retrying for getting odom"
+                )
 
         return self.gps_fix_velocity
 
@@ -175,12 +190,14 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         while self.camera_depth_image_raw is None and not rospy.is_shutdown():
             try:
                 self.camera_depth_image_raw = rospy.wait_for_message(
-                    "/orbbec_astra/depth/image_raw", Image, timeout=5.0)
+                    "/orbbec_astra/depth/image_raw", Image, timeout=5.0
+                )
                 print("Current /orbbec_astra/depth/image_raw READY=>")
 
             except:
                 rospy.logerr(
-                    "Current /orbbec_astra/depth/image_raw not ready yet, retrying for getting camera_depth_image_raw")
+                    "Current /orbbec_astra/depth/image_raw not ready yet, retrying for getting camera_depth_image_raw"
+                )
         return self.camera_depth_image_raw
 
     def _check_camera_depth_points_ready(self):
@@ -189,12 +206,14 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         while self.camera_depth_points is None and not rospy.is_shutdown():
             try:
                 self.camera_depth_points = rospy.wait_for_message(
-                    "/orbbec_astra/depth/points", PointCloud2, timeout=10.0)
+                    "/orbbec_astra/depth/points", PointCloud2, timeout=10.0
+                )
                 print("Current /orbbec_astra/depth/points READY=>")
 
             except:
                 rospy.logerr(
-                    "Current /orbbec_astra/depth/points not ready yet, retrying for getting camera_depth_points")
+                    "Current /orbbec_astra/depth/points not ready yet, retrying for getting camera_depth_points"
+                )
         return self.camera_depth_points
 
     def _check_camera_rgb_image_raw_ready(self):
@@ -203,12 +222,14 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         while self.camera_rgb_image_raw is None and not rospy.is_shutdown():
             try:
                 self.camera_rgb_image_raw = rospy.wait_for_message(
-                    "/orbbec_astra/rgb/image_raw", Image, timeout=5.0)
+                    "/orbbec_astra/rgb/image_raw", Image, timeout=5.0
+                )
                 print("Current /orbbec_astra/rgb/image_raw READY=>")
 
             except:
                 rospy.logerr(
-                    "Current /orbbec_astra/rgb/image_raw not ready yet, retrying for getting camera_rgb_image_raw")
+                    "Current /orbbec_astra/rgb/image_raw not ready yet, retrying for getting camera_rgb_image_raw"
+                )
         return self.camera_rgb_image_raw
 
     def _check_odom_ready(self):
@@ -217,12 +238,14 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         while self.odom is None and not rospy.is_shutdown():
             try:
                 self.odom = rospy.wait_for_message(
-                    "/summit_xl/odom", Odometry, timeout=0.5)
+                    "/summit_xl/odom", Odometry, timeout=0.5
+                )
                 print("Current /summit_xl/odom READY=>")
 
             except:
                 rospy.logerr(
-                    "Current /summit_xl/odom not ready yet, retrying for getting odom")
+                    "Current /summit_xl/odom not ready yet, retrying for getting odom"
+                )
 
         return self.odom
 
@@ -231,13 +254,13 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         print("Waiting for /imu/data to be READY...")
         while self.imu is None and not rospy.is_shutdown():
             try:
-                self.imu = rospy.wait_for_message(
-                    "/imu/data", Imu, timeout=5.0)
+                self.imu = rospy.wait_for_message("/imu/data", Imu, timeout=5.0)
                 print("Current /imu/data READY=>")
 
             except:
                 rospy.logerr(
-                    "Current /imu/data not ready yet, retrying for getting imu")
+                    "Current /imu/data not ready yet, retrying for getting imu"
+                )
 
         return self.imu
 
@@ -247,12 +270,14 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         while self.laser_scan is None and not rospy.is_shutdown():
             try:
                 self.laser_scan = rospy.wait_for_message(
-                    "/hokuyo_base/scan", LaserScan, timeout=1.0)
+                    "/hokuyo_base/scan", LaserScan, timeout=1.0
+                )
                 print("Current /hokuyo_base/scan READY=>")
 
             except:
                 rospy.logerr(
-                    "Current /hokuyo_base/scan not ready yet, retrying for getting laser_scan")
+                    "Current /hokuyo_base/scan not ready yet, retrying for getting laser_scan"
+                )
         return self.laser_scan
 
     def _gps_fix_callback(self, data):
@@ -301,8 +326,7 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
     # TrainingEnvironment.
     # ----------------------------
     def _set_init_pose(self):
-        """Sets the Robot in its init pose
-        """
+        """Sets the Robot in its init pose"""
         raise NotImplementedError()
 
     def _init_env_variables(self):
@@ -312,21 +336,18 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         raise NotImplementedError()
 
     def _compute_reward(self, observations, done):
-        """Calculates the reward to give based on the observations given.
-        """
+        """Calculates the reward to give based on the observations given."""
         raise NotImplementedError()
 
     def _set_action(self, action):
-        """Applies the given action to the simulation.
-        """
+        """Applies the given action to the simulation."""
         raise NotImplementedError()
 
     def _get_obs(self):
         raise NotImplementedError()
 
     def _is_done(self, observations):
-        """Checks if episode done based on observations given.
-        """
+        """Checks if episode done based on observations given."""
         raise NotImplementedError()
 
     # Methods that the TrainingEnvironment will need.
@@ -380,10 +401,12 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         # Correcting factor for angular based on observations
         angular_factor = 2.0
         epsilon_angular_factor = 6.0
-        angular_speed_plus = (angular_factor * angular_speed) + \
-            (epsilon * epsilon_angular_factor)
-        angular_speed_minus = (angular_factor * angular_speed) - \
-            (epsilon * epsilon_angular_factor)
+        angular_speed_plus = (angular_factor * angular_speed) + (
+            epsilon * epsilon_angular_factor
+        )
+        angular_speed_minus = (angular_factor * angular_speed) - (
+            epsilon * epsilon_angular_factor
+        )
 
         while not rospy.is_shutdown():
             current_odometry = self._check_odom_ready()
@@ -397,15 +420,31 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
             """
             odom_angular_vel = current_odometry.twist.twist.angular.z
 
-            print("Linear VEL=" + str(odom_linear_vel) +
-                  ", ?RANGE=[" + str(linear_speed_minus) + ","+str(linear_speed_plus)+"]")
-            print("Angular VEL=" + str(odom_angular_vel) +
-                  ", ?RANGE=[" + str(angular_speed_minus) + ","+str(angular_speed_plus)+"]")
+            print(
+                "Linear VEL="
+                + str(odom_linear_vel)
+                + ", ?RANGE=["
+                + str(linear_speed_minus)
+                + ","
+                + str(linear_speed_plus)
+                + "]"
+            )
+            print(
+                "Angular VEL="
+                + str(odom_angular_vel)
+                + ", ?RANGE=["
+                + str(angular_speed_minus)
+                + ","
+                + str(angular_speed_plus)
+                + "]"
+            )
 
             linear_vel_are_close = (odom_linear_vel <= linear_speed_plus) and (
-                odom_linear_vel > linear_speed_minus)
+                odom_linear_vel > linear_speed_minus
+            )
             angular_vel_are_close = (odom_angular_vel <= angular_speed_plus) and (
-                odom_angular_vel > angular_speed_minus)
+                odom_angular_vel > angular_speed_minus
+            )
 
             if linear_vel_are_close and angular_vel_are_close:
                 print("Reached Velocity!")
@@ -414,7 +453,7 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
             print("Not there yet, keep waiting...")
             rate.sleep()
         delta_time = end_wait_time - start_wait_time
-        print("[Wait Time=" + str(delta_time)+"]")
+        print("[Wait Time=" + str(delta_time) + "]")
 
         print("END wait_until_twist_achieved...")
 

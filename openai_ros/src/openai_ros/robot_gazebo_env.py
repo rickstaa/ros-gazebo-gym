@@ -3,25 +3,38 @@ import gym
 from gym.utils import seeding
 from .gazebo_connection import GazeboConnection
 from .controllers_connection import ControllersConnection
-#https://bitbucket.org/theconstructcore/theconstruct_msgs/src/master/msg/RLExperimentInfo.msg
+
+# https://bitbucket.org/theconstructcore/theconstruct_msgs/src/master/msg/RLExperimentInfo.msg
 from openai_ros.msg import RLExperimentInfo
 
 # https://github.com/openai/gym/blob/master/gym/core.py
 class RobotGazeboEnv(gym.Env):
-
-    def __init__(self, robot_name_space, controllers_list, reset_controls, start_init_physics_parameters=True, reset_world_or_sim="SIMULATION"):
+    def __init__(
+        self,
+        robot_name_space,
+        controllers_list,
+        reset_controls,
+        start_init_physics_parameters=True,
+        reset_world_or_sim="SIMULATION",
+    ):
 
         # To reset Simulations
         rospy.logdebug("START init RobotGazeboEnv")
-        self.gazebo = GazeboConnection(start_init_physics_parameters,reset_world_or_sim)
-        self.controllers_object = ControllersConnection(namespace=robot_name_space, controllers_list=controllers_list)
+        self.gazebo = GazeboConnection(
+            start_init_physics_parameters, reset_world_or_sim
+        )
+        self.controllers_object = ControllersConnection(
+            namespace=robot_name_space, controllers_list=controllers_list
+        )
         self.reset_controls = reset_controls
         self.seed()
 
         # Set up ROS related variables
         self.episode_num = 0
         self.cumulated_episode_reward = 0
-        self.reward_pub = rospy.Publisher('/openai/reward', RLExperimentInfo, queue_size=1)
+        self.reward_pub = rospy.Publisher(
+            "/openai/reward", RLExperimentInfo, queue_size=1
+        )
 
         # We Unpause the simulation and reset the controllers if needed
         """
@@ -96,15 +109,16 @@ class RobotGazeboEnv(gym.Env):
         :return:
         """
         rospy.logwarn("PUBLISHING REWARD...")
-        self._publish_reward_topic(
-                                    self.cumulated_episode_reward,
-                                    self.episode_num
-                                    )
-        rospy.logwarn("PUBLISHING REWARD...DONE="+str(self.cumulated_episode_reward)+",EP="+str(self.episode_num))
+        self._publish_reward_topic(self.cumulated_episode_reward, self.episode_num)
+        rospy.logwarn(
+            "PUBLISHING REWARD...DONE="
+            + str(self.cumulated_episode_reward)
+            + ",EP="
+            + str(self.episode_num)
+        )
 
         self.episode_num += 1
         self.cumulated_episode_reward = 0
-
 
     def _publish_reward_topic(self, reward, episode_number=1):
         """
@@ -123,10 +137,9 @@ class RobotGazeboEnv(gym.Env):
     # ----------------------------
 
     def _reset_sim(self):
-        """Resets a simulation
-        """
+        """Resets a simulation"""
         rospy.logdebug("RESET SIM START")
-        if self.reset_controls :
+        if self.reset_controls:
             rospy.logdebug("RESET CONTROLLERS")
             self.gazebo.unpauseSim()
             self.controllers_object.reset_controllers()
@@ -154,8 +167,7 @@ class RobotGazeboEnv(gym.Env):
         return True
 
     def _set_init_pose(self):
-        """Sets the Robot in its init pose
-        """
+        """Sets the Robot in its init pose"""
         raise NotImplementedError()
 
     def _check_all_systems_ready(self):
@@ -166,8 +178,7 @@ class RobotGazeboEnv(gym.Env):
         raise NotImplementedError()
 
     def _get_obs(self):
-        """Returns the observation.
-        """
+        """Returns the observation."""
         raise NotImplementedError()
 
     def _init_env_variables(self):
@@ -177,18 +188,15 @@ class RobotGazeboEnv(gym.Env):
         raise NotImplementedError()
 
     def _set_action(self, action):
-        """Applies the given action to the simulation.
-        """
+        """Applies the given action to the simulation."""
         raise NotImplementedError()
 
     def _is_done(self, observations):
-        """Indicates whether or not the episode is done ( the robot has fallen for example).
-        """
+        """Indicates whether or not the episode is done ( the robot has fallen for example)."""
         raise NotImplementedError()
 
     def _compute_reward(self, observations, done):
-        """Calculates the reward to give based on the observations given.
-        """
+        """Calculates the reward to give based on the observations given."""
         raise NotImplementedError()
 
     def _env_setup(self, initial_qpos):
@@ -196,4 +204,3 @@ class RobotGazeboEnv(gym.Env):
         and extract information from the simulation.
         """
         raise NotImplementedError()
-

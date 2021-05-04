@@ -10,6 +10,7 @@ from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
 from openai_ros.openai_ros_common import ROSLauncher
 import os
 
+
 class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
     def __init__(self):
         """
@@ -18,21 +19,34 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
 
         # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
         ros_ws_abspath = rospy.get_param("/sawyer/ros_ws_abspath", None)
-        assert ros_ws_abspath is not None, "You forgot to set ros_ws_abspath in your yaml file of your main RL script. Set ros_ws_abspath: \'YOUR/SIM_WS/PATH\'"
-        assert os.path.exists(ros_ws_abspath), "The Simulation ROS Workspace path " + ros_ws_abspath + \
-                                               " DOESNT exist, execute: mkdir -p " + ros_ws_abspath + \
-                                               "/src;cd " + ros_ws_abspath + ";catkin_make"
+        assert (
+            ros_ws_abspath is not None
+        ), "You forgot to set ros_ws_abspath in your yaml file of your main RL script. Set ros_ws_abspath: 'YOUR/SIM_WS/PATH'"
+        assert os.path.exists(ros_ws_abspath), (
+            "The Simulation ROS Workspace path "
+            + ros_ws_abspath
+            + " DOESNT exist, execute: mkdir -p "
+            + ros_ws_abspath
+            + "/src;cd "
+            + ros_ws_abspath
+            + ";catkin_make"
+        )
 
-        ROSLauncher(rospackage_name="sawyer_gazebo",
-                    launch_file_name="start_world.launch",
-                    ros_ws_abspath=ros_ws_abspath)
+        ROSLauncher(
+            rospackage_name="sawyer_gazebo",
+            launch_file_name="start_world.launch",
+            ros_ws_abspath=ros_ws_abspath,
+        )
 
         # Load Params from the desired Yaml file
-        LoadYamlFileParamsTest(rospackage_name="openai_ros",
-                               rel_path_from_package_to_file="src/openai_ros/task_envs/sawyer/config",
-                               yaml_file_name="learn_to_touch_cube.yaml")
+        LoadYamlFileParamsTest(
+            rospackage_name="openai_ros",
+            rel_path_from_package_to_file="src/openai_ros/task_envs/sawyer/config",
+            yaml_file_name="learn_to_touch_cube.yaml",
+        )
 
         import time
+
         time.sleep(15)
         print("STARTING SPAWN ROBOT")
         # We execute this one before because there are some functions that this
@@ -44,7 +58,7 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         # Only variable needed to be set here
 
         rospy.logdebug("Start SawyerTouchCubeEnv INIT...")
-        number_actions = rospy.get_param('/sawyer/n_actions')
+        number_actions = rospy.get_param("/sawyer/n_actions")
         self.action_space = spaces.Discrete(number_actions)
 
         # We set the reward range, which is not compulsory but here we do it.
@@ -62,7 +76,8 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         self.dec_obs = rospy.get_param("/sawyer/number_decimals_precision_obs")
 
         self.acceptable_distance_to_cube = rospy.get_param(
-            "/sawyer/acceptable_distance_to_cube")
+            "/sawyer/acceptable_distance_to_cube"
+        )
 
         self.tcp_z_position_min = rospy.get_param("/sawyer/tcp_z_position_min")
 
@@ -79,47 +94,51 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         # We fetch the limits of the joinst to get the effort and angle limits
         self.joint_limits = self.init_joint_limits()
 
-        high = numpy.array([self.work_space_x_max,
-                            self.work_space_y_max,
-                            self.work_space_z_max,
-                            self.joint_limits.position_upper[0],
-                            self.joint_limits.position_upper[1],
-                            self.joint_limits.position_upper[2],
-                            self.joint_limits.position_upper[3],
-                            self.joint_limits.position_upper[4],
-                            self.joint_limits.position_upper[5],
-                            self.joint_limits.position_upper[6],
-                            self.joint_limits.position_upper[7],
-                            self.joint_limits.position_upper[8],
-                            self.joint_limits.position_upper[9]
-                            ])
+        high = numpy.array(
+            [
+                self.work_space_x_max,
+                self.work_space_y_max,
+                self.work_space_z_max,
+                self.joint_limits.position_upper[0],
+                self.joint_limits.position_upper[1],
+                self.joint_limits.position_upper[2],
+                self.joint_limits.position_upper[3],
+                self.joint_limits.position_upper[4],
+                self.joint_limits.position_upper[5],
+                self.joint_limits.position_upper[6],
+                self.joint_limits.position_upper[7],
+                self.joint_limits.position_upper[8],
+                self.joint_limits.position_upper[9],
+            ]
+        )
 
-        low = numpy.array([self.work_space_x_min,
-                           self.work_space_y_min,
-                           self.work_space_z_min,
-                           self.joint_limits.position_lower[0],
-                           self.joint_limits.position_lower[1],
-                           self.joint_limits.position_lower[2],
-                           self.joint_limits.position_lower[3],
-                           self.joint_limits.position_lower[4],
-                           self.joint_limits.position_lower[5],
-                           self.joint_limits.position_lower[6],
-                           self.joint_limits.position_lower[7],
-                           self.joint_limits.position_lower[8],
-                           self.joint_limits.position_lower[9]
-                           ])
+        low = numpy.array(
+            [
+                self.work_space_x_min,
+                self.work_space_y_min,
+                self.work_space_z_min,
+                self.joint_limits.position_lower[0],
+                self.joint_limits.position_lower[1],
+                self.joint_limits.position_lower[2],
+                self.joint_limits.position_lower[3],
+                self.joint_limits.position_lower[4],
+                self.joint_limits.position_lower[5],
+                self.joint_limits.position_lower[6],
+                self.joint_limits.position_lower[7],
+                self.joint_limits.position_lower[8],
+                self.joint_limits.position_lower[9],
+            ]
+        )
 
         self.observation_space = spaces.Box(low, high)
 
-        rospy.logdebug("ACTION SPACES TYPE===>"+str(self.action_space))
-        rospy.logdebug("OBSERVATION SPACES TYPE===>" +
-                       str(self.observation_space))
+        rospy.logdebug("ACTION SPACES TYPE===>" + str(self.action_space))
+        rospy.logdebug("OBSERVATION SPACES TYPE===>" + str(self.observation_space))
 
         # Rewards
 
         self.done_reward = rospy.get_param("/sawyer/done_reward")
-        self.closer_to_block_reward = rospy.get_param(
-            "/sawyer/closer_to_block_reward")
+        self.closer_to_block_reward = rospy.get_param("/sawyer/closer_to_block_reward")
 
         self.cumulated_steps = 0.0
 
@@ -133,7 +152,7 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
 
         # We set the angles to zero of the limb
         self.joints = self.get_limb_joint_names_array()
-        join_values_array = [0.0]*len(self.joints)
+        join_values_array = [0.0] * len(self.joints)
         joint_positions_dict_zero = dict(zip(self.joints, join_values_array))
 
         actual_joint_angles_dict = self.get_all_limb_joint_angles()
@@ -145,12 +164,16 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
             else:
                 actual_joint_angles_dict["right_j0"] = -1.57
         if "right_j1" in actual_joint_angles_dict:
-            actual_joint_angles_dict["right_j1"] = actual_joint_angles_dict["right_j1"] - 0.3
+            actual_joint_angles_dict["right_j1"] = (
+                actual_joint_angles_dict["right_j1"] - 0.3
+            )
 
         self.move_joints_to_angle_blocking(
-            actual_joint_angles_dict, timeout=15.0, threshold=0.008726646)
+            actual_joint_angles_dict, timeout=15.0, threshold=0.008726646
+        )
         self.move_joints_to_angle_blocking(
-            joint_positions_dict_zero, timeout=15.0, threshold=0.008726646)
+            joint_positions_dict_zero, timeout=15.0, threshold=0.008726646
+        )
 
         # We Open the gripper
         self.set_g(action="open")
@@ -167,18 +190,21 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         # For Info Purposes
         self.cumulated_reward = 0.0
         # We get the initial pose to mesure the distance from the desired point.
-        translation_tcp_block, rotation_tcp_block = self.get_tf_start_to_end_frames(start_frame_name="block",
-                                                                                    end_frame_name="right_electric_gripper_base")
+        translation_tcp_block, rotation_tcp_block = self.get_tf_start_to_end_frames(
+            start_frame_name="block", end_frame_name="right_electric_gripper_base"
+        )
         tf_tcp_to_block_vector = Vector3()
         tf_tcp_to_block_vector.x = translation_tcp_block[0]
         tf_tcp_to_block_vector.y = translation_tcp_block[1]
         tf_tcp_to_block_vector.z = translation_tcp_block[2]
 
         self.previous_distance_from_block = self.get_magnitud_tf_tcp_to_block(
-            tf_tcp_to_block_vector)
+            tf_tcp_to_block_vector
+        )
 
-        self.translation_tcp_world, _ = self.get_tf_start_to_end_frames(start_frame_name="world",
-                                                                        end_frame_name="right_electric_gripper_base")
+        self.translation_tcp_world, _ = self.get_tf_start_to_end_frames(
+            start_frame_name="world", end_frame_name="right_electric_gripper_base"
+        )
 
     def _set_action(self, action):
         """
@@ -187,41 +213,41 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         :param action: The action integer that sets what movement to do next.
         """
 
-        rospy.logdebug("Start Set Action ==>"+str(action))
+        rospy.logdebug("Start Set Action ==>" + str(action))
 
         if action == 0:  # Increase joint_0
-            action_id = self.joints[0]+"_increase"
+            action_id = self.joints[0] + "_increase"
         elif action == 1:  # Decrease joint_0
-            action_id = self.joints[0]+"_decrease"
+            action_id = self.joints[0] + "_decrease"
         elif action == 2:  # Increase joint_1
-            action_id = self.joints[1]+"_increase"
+            action_id = self.joints[1] + "_increase"
         elif action == 3:  # Decrease joint_1
-            action_id = self.joints[1]+"_decrease"
+            action_id = self.joints[1] + "_decrease"
         elif action == 4:  # Increase joint_2
-            action_id = self.joints[2]+"_increase"
+            action_id = self.joints[2] + "_increase"
         elif action == 5:  # Decrease joint_2
-            action_id = self.joints[2]+"_decrease"
+            action_id = self.joints[2] + "_decrease"
         elif action == 6:  # Increase joint_3
-            action_id = self.joints[3]+"_increase"
+            action_id = self.joints[3] + "_increase"
         elif action == 7:  # Decrease joint_3
-            action_id = self.joints[3]+"_decrease"
+            action_id = self.joints[3] + "_decrease"
         elif action == 8:  # Increase joint_4
-            action_id = self.joints[4]+"_increase"
+            action_id = self.joints[4] + "_increase"
         elif action == 9:  # Decrease joint_4
-            action_id = self.joints[4]+"_decrease"
+            action_id = self.joints[4] + "_decrease"
         elif action == 10:  # Increase joint_5
-            action_id = self.joints[5]+"_increase"
+            action_id = self.joints[5] + "_increase"
         elif action == 11:  # Decrease joint_5
-            action_id = self.joints[5]+"_decrease"
+            action_id = self.joints[5] + "_decrease"
         elif action == 12:  # Increase joint_6
-            action_id = self.joints[6]+"_increase"
+            action_id = self.joints[6] + "_increase"
         elif action == 13:  # Decrease joint_6
-            action_id = self.joints[6]+"_decrease"
+            action_id = self.joints[6] + "_decrease"
 
         # We tell sawyer the action to perform
         self.execute_movement(action_id)
 
-        rospy.logdebug("END Set Action ==>"+str(action)+","+str(action_id))
+        rospy.logdebug("END Set Action ==>" + str(action) + "," + str(action_id))
 
     def _get_obs(self):
         """
@@ -233,21 +259,25 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         rospy.logdebug("Start Get Observation ==>")
 
         # We get the translation of the base of the gripper to the block
-        translation_tcp_block, _ = self.get_tf_start_to_end_frames(start_frame_name="block",
-                                                                                    end_frame_name="right_electric_gripper_base")
+        translation_tcp_block, _ = self.get_tf_start_to_end_frames(
+            start_frame_name="block", end_frame_name="right_electric_gripper_base"
+        )
 
         translation_tcp_block_round = numpy.around(
-            translation_tcp_block, decimals=self.dec_obs)
+            translation_tcp_block, decimals=self.dec_obs
+        )
 
         # We get this data but we dont put it in the observations because its somthing internal for evaluation.
         # The order is cucial, get it upside down and it make no sense.
-        self.translation_tcp_world, _ = self.get_tf_start_to_end_frames(start_frame_name="world",
-                                                                        end_frame_name="right_electric_gripper_base")
+        self.translation_tcp_world, _ = self.get_tf_start_to_end_frames(
+            start_frame_name="world", end_frame_name="right_electric_gripper_base"
+        )
 
         # Same here, the values are used internally for knowing if done, they wont define the state ( although these are left out for performance)
         self.joints_efforts_dict = self.get_all_limb_joint_efforts()
-        rospy.logdebug("JOINTS EFFORTS DICT OBSERVATION METHOD==>" +
-                       str(self.joints_efforts_dict))
+        rospy.logdebug(
+            "JOINTS EFFORTS DICT OBSERVATION METHOD==>" + str(self.joints_efforts_dict)
+        )
         """
         We supose that its all these:
         head_pan, right_gripper_l_finger_joint, right_gripper_r_finger_joint, right_j0, right_j1,
@@ -256,11 +286,13 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
 
         joints_angles_array = self.get_all_limb_joint_angles().values()
         joints_angles_array_round = numpy.around(
-            joints_angles_array, decimals=self.dec_obs)
+            joints_angles_array, decimals=self.dec_obs
+        )
 
         # We concatenate the two rounded arrays and convert them to standard Python list
         observation = numpy.concatenate(
-            (translation_tcp_block_round, joints_angles_array_round), axis=0).tolist()
+            (translation_tcp_block_round, joints_angles_array_round), axis=0
+        ).tolist()
 
         return observation
 
@@ -286,19 +318,20 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         tcp_to_block_pos.y = observations[1]
         tcp_to_block_pos.z = observations[2]
 
-        has_reached_the_block = self.reached_block(tcp_to_block_pos,
-                                                   self.acceptable_distance_to_cube,
-                                                   self.translation_tcp_world[2],
-                                                   self.tcp_z_position_min)
+        has_reached_the_block = self.reached_block(
+            tcp_to_block_pos,
+            self.acceptable_distance_to_cube,
+            self.translation_tcp_world[2],
+            self.tcp_z_position_min,
+        )
 
-        done = is_stuck or not(is_inside_workspace) or has_reached_the_block
+        done = is_stuck or not (is_inside_workspace) or has_reached_the_block
 
         rospy.logdebug("#### IS DONE ? ####")
-        rospy.logdebug("is_stuck ?="+str(is_stuck))
-        rospy.logdebug("Not is_inside_workspace ?=" +
-                       str(not(is_inside_workspace)))
-        rospy.logdebug("has_reached_the_block ?="+str(has_reached_the_block))
-        rospy.logdebug("done ?="+str(done))
+        rospy.logdebug("is_stuck ?=" + str(is_stuck))
+        rospy.logdebug("Not is_inside_workspace ?=" + str(not (is_inside_workspace)))
+        rospy.logdebug("has_reached_the_block ?=" + str(has_reached_the_block))
+        rospy.logdebug("done ?=" + str(done))
         rospy.logdebug("#### #### ####")
 
         return done
@@ -316,7 +349,8 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         tf_tcp_to_block_vector.z = observations[2]
 
         distance_block_to_tcp = self.get_magnitud_tf_tcp_to_block(
-            tf_tcp_to_block_vector)
+            tf_tcp_to_block_vector
+        )
         distance_difference = distance_block_to_tcp - self.previous_distance_from_block
 
         if not done:
@@ -327,15 +361,20 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
                 reward = self.closer_to_block_reward
             else:
                 rospy.logerr("ENCREASE IN DISTANCE BAD")
-                #reward = -1*self.closer_to_block_reward
+                # reward = -1*self.closer_to_block_reward
                 reward = 0.0
 
         else:
 
-            if self.reached_block(tf_tcp_to_block_vector, self.acceptable_distance_to_cube, self.translation_tcp_world[2], self.tcp_z_position_min):
+            if self.reached_block(
+                tf_tcp_to_block_vector,
+                self.acceptable_distance_to_cube,
+                self.translation_tcp_world[2],
+                self.tcp_z_position_min,
+            ):
                 reward = self.done_reward
             else:
-                reward = -1*self.done_reward
+                reward = -1 * self.done_reward
 
         self.previous_distance_from_block = distance_block_to_tcp
 
@@ -363,24 +402,41 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
                 index = self.joint_limits.joint_names.index(joint_name)
                 effort_limit = self.joint_limits.effort[index]
 
-                rospy.logdebug("Joint Effort ==>Name="+str(joint_name) +
-                               ",Effort="+str(effort_value)+",Limit="+str(effort_limit))
+                rospy.logdebug(
+                    "Joint Effort ==>Name="
+                    + str(joint_name)
+                    + ",Effort="
+                    + str(effort_value)
+                    + ",Limit="
+                    + str(effort_limit)
+                )
 
                 if abs(effort_value) > effort_limit:
                     is_arm_stuck = True
-                    rospy.logerr("Joint Effort TOO MUCH ==>" +
-                                 str(joint_name)+","+str(effort_value))
+                    rospy.logerr(
+                        "Joint Effort TOO MUCH ==>"
+                        + str(joint_name)
+                        + ","
+                        + str(effort_value)
+                    )
                     break
                 else:
-                    rospy.logdebug("Joint Effort is ok==>" +
-                                   str(joint_name)+","+str(effort_value))
+                    rospy.logdebug(
+                        "Joint Effort is ok==>"
+                        + str(joint_name)
+                        + ","
+                        + str(effort_value)
+                    )
             else:
                 rospy.logdebug(
-                    "Joint Name is not in the effort dict==>"+str(joint_name))
+                    "Joint Name is not in the effort dict==>" + str(joint_name)
+                )
 
         return is_arm_stuck
 
-    def reached_block(self, block_to_tcp_vector, minimum_distance, tcp_z_position, tcp_z_position_min):
+    def reached_block(
+        self, block_to_tcp_vector, minimum_distance, tcp_z_position, tcp_z_position_min
+    ):
         """
         It return True if the transform TCP to block vector magnitude is smaller than
         the minimum_distance.
@@ -389,17 +445,16 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
 
         reached_block_b = False
 
-        distance_to_block = self.get_magnitud_tf_tcp_to_block(
-            block_to_tcp_vector)
+        distance_to_block = self.get_magnitud_tf_tcp_to_block(block_to_tcp_vector)
 
         tcp_z_pos_ok = tcp_z_position >= tcp_z_position_min
         distance_ok = distance_to_block <= minimum_distance
         reached_block_b = distance_ok and tcp_z_pos_ok
 
         rospy.logdebug("###### REACHED BLOCK ? ######")
-        rospy.logdebug("tcp_z_pos_ok==>"+str(tcp_z_pos_ok))
-        rospy.logdebug("distance_ok==>"+str(distance_ok))
-        rospy.logdebug("reached_block_b==>"+str(reached_block_b))
+        rospy.logdebug("tcp_z_pos_ok==>" + str(tcp_z_pos_ok))
+        rospy.logdebug("distance_ok==>" + str(distance_ok))
+        rospy.logdebug("reached_block_b==>" + str(reached_block_b))
         rospy.logdebug("############")
 
         return reached_block_b
@@ -410,8 +465,7 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         :param start_point:
         :return:
         """
-        distance = self.get_distance_from_point(current_position,
-                                                self.desired_point)
+        distance = self.get_distance_from_point(current_position, self.desired_point)
 
         return distance
 
@@ -434,9 +488,9 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         :param p_end:
         :return:
         """
-        a = numpy.array((translation_vector.x,
-                         translation_vector.y,
-                         translation_vector.z))
+        a = numpy.array(
+            (translation_vector.x, translation_vector.y, translation_vector.z)
+        )
 
         distance = numpy.linalg.norm(a)
 
@@ -444,10 +498,12 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
 
     def get_orientation_euler(self, quaternion_vector):
         # We convert from quaternions to euler
-        orientation_list = [quaternion_vector.x,
-                            quaternion_vector.y,
-                            quaternion_vector.z,
-                            quaternion_vector.w]
+        orientation_list = [
+            quaternion_vector.x,
+            quaternion_vector.y,
+            quaternion_vector.z,
+            quaternion_vector.w,
+        ]
 
         roll, pitch, yaw = euler_from_quaternion(orientation_list)
         return roll, pitch, yaw
@@ -459,18 +515,39 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         is_inside = False
 
         rospy.logdebug("##### INSIDE WORK SPACE? #######")
-        rospy.logdebug("XYZ current_position"+str(current_position))
-        rospy.logdebug("work_space_x_max"+str(self.work_space_x_max) +
-                       ",work_space_x_min="+str(self.work_space_x_min))
-        rospy.logdebug("work_space_y_max"+str(self.work_space_y_max) +
-                       ",work_space_y_min="+str(self.work_space_y_min))
-        rospy.logdebug("work_space_z_max"+str(self.work_space_z_max) +
-                       ",work_space_z_min="+str(self.work_space_z_min))
+        rospy.logdebug("XYZ current_position" + str(current_position))
+        rospy.logdebug(
+            "work_space_x_max"
+            + str(self.work_space_x_max)
+            + ",work_space_x_min="
+            + str(self.work_space_x_min)
+        )
+        rospy.logdebug(
+            "work_space_y_max"
+            + str(self.work_space_y_max)
+            + ",work_space_y_min="
+            + str(self.work_space_y_min)
+        )
+        rospy.logdebug(
+            "work_space_z_max"
+            + str(self.work_space_z_max)
+            + ",work_space_z_min="
+            + str(self.work_space_z_min)
+        )
         rospy.logdebug("############")
 
-        if current_position.x > self.work_space_x_min and current_position.x <= self.work_space_x_max:
-            if current_position.y > self.work_space_y_min and current_position.y <= self.work_space_y_max:
-                if current_position.z > self.work_space_z_min and current_position.z <= self.work_space_z_max:
+        if (
+            current_position.x > self.work_space_x_min
+            and current_position.x <= self.work_space_x_max
+        ):
+            if (
+                current_position.y > self.work_space_y_min
+                and current_position.y <= self.work_space_y_max
+            ):
+                if (
+                    current_position.z > self.work_space_z_min
+                    and current_position.z <= self.work_space_z_max
+                ):
                     is_inside = True
 
         return is_inside

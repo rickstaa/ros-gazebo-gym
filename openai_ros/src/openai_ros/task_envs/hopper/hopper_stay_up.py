@@ -10,6 +10,7 @@ from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
 from openai_ros.openai_ros_common import ROSLauncher
 import os
 
+
 class HopperStayUpEnv(hopper_env.HopperEnv):
     def __init__(self):
         """
@@ -27,21 +28,33 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
 
         # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
         ros_ws_abspath = rospy.get_param("/monoped/ros_ws_abspath", None)
-        assert ros_ws_abspath is not None, "You forgot to set ros_ws_abspath in your yaml file of your main RL script. Set ros_ws_abspath: \'YOUR/SIM_WS/PATH\'"
-        assert os.path.exists(ros_ws_abspath), "The Simulation ROS Workspace path " + ros_ws_abspath + \
-                                               " DOESNT exist, execute: mkdir -p " + ros_ws_abspath + \
-                                               "/src;cd " + ros_ws_abspath + ";catkin_make"
+        assert (
+            ros_ws_abspath is not None
+        ), "You forgot to set ros_ws_abspath in your yaml file of your main RL script. Set ros_ws_abspath: 'YOUR/SIM_WS/PATH'"
+        assert os.path.exists(ros_ws_abspath), (
+            "The Simulation ROS Workspace path "
+            + ros_ws_abspath
+            + " DOESNT exist, execute: mkdir -p "
+            + ros_ws_abspath
+            + "/src;cd "
+            + ros_ws_abspath
+            + ";catkin_make"
+        )
 
-        ROSLauncher(rospackage_name="legged_robots_sims",
-                    launch_file_name="start_world.launch",
-                    ros_ws_abspath=ros_ws_abspath)
+        ROSLauncher(
+            rospackage_name="legged_robots_sims",
+            launch_file_name="start_world.launch",
+            ros_ws_abspath=ros_ws_abspath,
+        )
 
         # Load Params from the desired Yaml file
-        LoadYamlFileParamsTest(rospackage_name="openai_ros",
-                               rel_path_from_package_to_file="src/openai_ros/task_envs/hopper/config",
-                               yaml_file_name="hopper_stay_up.yaml")
+        LoadYamlFileParamsTest(
+            rospackage_name="openai_ros",
+            rel_path_from_package_to_file="src/openai_ros/task_envs/hopper/config",
+            yaml_file_name="hopper_stay_up.yaml",
+        )
 
-        number_actions = rospy.get_param('/monoped/n_actions')
+        number_actions = rospy.get_param("/monoped/n_actions")
         self.action_space = spaces.Discrete(number_actions)
 
         # We set the reward range, which is not compulsory but here we do it.
@@ -51,11 +64,14 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
 
         self.init_joint_states = Vector3()
         self.init_joint_states.x = rospy.get_param(
-            '/monoped/init_joint_states/haa_joint')
+            "/monoped/init_joint_states/haa_joint"
+        )
         self.init_joint_states.y = rospy.get_param(
-            '/monoped/init_joint_states/hfe_joint')
+            "/monoped/init_joint_states/hfe_joint"
+        )
         self.init_joint_states.z = rospy.get_param(
-            '/monoped/init_joint_states/kfe_joint')
+            "/monoped/init_joint_states/kfe_joint"
+        )
 
         # Get Desired Point to Get
         self.desired_point = Point()
@@ -63,22 +79,20 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         self.desired_point.y = rospy.get_param("/monoped/desired_point/y")
         self.desired_point.z = rospy.get_param("/monoped/desired_point/z")
         self.accepted_error_in_des_pos = rospy.get_param(
-            "/monoped/accepted_error_in_des_pos")
+            "/monoped/accepted_error_in_des_pos"
+        )
 
         self.desired_yaw = rospy.get_param("/monoped/desired_yaw")
 
-        self.joint_increment_value = rospy.get_param(
-            "/monoped/joint_increment_value")
+        self.joint_increment_value = rospy.get_param("/monoped/joint_increment_value")
         self.init_move_time = rospy.get_param("/monoped/init_move_time", 1.0)
         self.move_time = rospy.get_param("/monoped/move_time", 0.05)
         self.check_position = rospy.get_param("/monoped/check_position", True)
 
-        self.accepted_joint_error = rospy.get_param(
-            "/monoped/accepted_joint_error")
+        self.accepted_joint_error = rospy.get_param("/monoped/accepted_joint_error")
         self.update_rate = rospy.get_param("/monoped/update_rate")
 
-        self.dec_obs = rospy.get_param(
-            "/monoped/number_decimals_precision_obs")
+        self.dec_obs = rospy.get_param("/monoped/number_decimals_precision_obs")
 
         self.desired_force = rospy.get_param("/monoped/desired_force")
 
@@ -89,7 +103,8 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         self.max_height = rospy.get_param("/monoped/max_height")
 
         self.distance_from_desired_point_max = rospy.get_param(
-            "/monoped/distance_from_desired_point_max")
+            "/monoped/distance_from_desired_point_max"
+        )
 
         self.max_incl_roll = rospy.get_param("/monoped/max_incl")
         self.max_incl_pitch = rospy.get_param("/monoped/max_incl")
@@ -101,55 +116,65 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         self.min_kfe_joint = rospy.get_param("/monoped/min_kfe_joint")
 
         # We place the Maximum and minimum values of observations
-        self.joint_ranges_array = {"maximum_haa": self.maximum_haa_joint,
-                                   "minimum_haa_joint": -self.maximum_haa_joint,
-                                   "maximum_hfe_joint": self.maximum_hfe_joint,
-                                   "minimum_hfe_joint": self.maximum_hfe_joint,
-                                   "maximum_kfe_joint": self.maximum_kfe_joint,
-                                   "min_kfe_joint": self.min_kfe_joint
-                                   }
+        self.joint_ranges_array = {
+            "maximum_haa": self.maximum_haa_joint,
+            "minimum_haa_joint": -self.maximum_haa_joint,
+            "maximum_hfe_joint": self.maximum_hfe_joint,
+            "minimum_hfe_joint": self.maximum_hfe_joint,
+            "maximum_kfe_joint": self.maximum_kfe_joint,
+            "min_kfe_joint": self.min_kfe_joint,
+        }
 
-        high = numpy.array([self.distance_from_desired_point_max,
-                            self.max_incl_roll,
-                            self.max_incl_pitch,
-                            3.14,
-                            self.max_contact_force,
-                            self.maximum_haa_joint,
-                            self.maximum_hfe_joint,
-                            self.maximum_kfe_joint,
-                            self.max_x_pos,
-                            self.max_y_pos,
-                            self.max_height
-                            ])
+        high = numpy.array(
+            [
+                self.distance_from_desired_point_max,
+                self.max_incl_roll,
+                self.max_incl_pitch,
+                3.14,
+                self.max_contact_force,
+                self.maximum_haa_joint,
+                self.maximum_hfe_joint,
+                self.maximum_kfe_joint,
+                self.max_x_pos,
+                self.max_y_pos,
+                self.max_height,
+            ]
+        )
 
-        low = numpy.array([0.0,
-                           -1*self.max_incl_roll,
-                           -1*self.max_incl_pitch,
-                           -1*3.14,
-                           0.0,
-                           -1*self.maximum_haa_joint,
-                           -1*self.maximum_hfe_joint,
-                           self.min_kfe_joint,
-                           -1*self.max_x_pos,
-                           -1*self.max_y_pos,
-                           self.min_height
-                           ])
+        low = numpy.array(
+            [
+                0.0,
+                -1 * self.max_incl_roll,
+                -1 * self.max_incl_pitch,
+                -1 * 3.14,
+                0.0,
+                -1 * self.maximum_haa_joint,
+                -1 * self.maximum_hfe_joint,
+                self.min_kfe_joint,
+                -1 * self.max_x_pos,
+                -1 * self.max_y_pos,
+                self.min_height,
+            ]
+        )
 
         self.observation_space = spaces.Box(low, high)
 
-        rospy.logdebug("ACTION SPACES TYPE===>"+str(self.action_space))
-        rospy.logdebug("OBSERVATION SPACES TYPE===>" +
-                       str(self.observation_space))
+        rospy.logdebug("ACTION SPACES TYPE===>" + str(self.action_space))
+        rospy.logdebug("OBSERVATION SPACES TYPE===>" + str(self.observation_space))
 
         # Rewards
         self.weight_joint_position = rospy.get_param(
-            "/monoped/rewards_weight/weight_joint_position")
+            "/monoped/rewards_weight/weight_joint_position"
+        )
         self.weight_contact_force = rospy.get_param(
-            "/monoped/rewards_weight/weight_contact_force")
+            "/monoped/rewards_weight/weight_contact_force"
+        )
         self.weight_orientation = rospy.get_param(
-            "/monoped/rewards_weight/weight_orientation")
+            "/monoped/rewards_weight/weight_orientation"
+        )
         self.weight_distance_from_des_point = rospy.get_param(
-            "/monoped/rewards_weight/weight_distance_from_des_point")
+            "/monoped/rewards_weight/weight_distance_from_des_point"
+        )
 
         self.alive_reward = rospy.get_param("/monoped/alive_reward")
         self.done_reward = rospy.get_param("/monoped/done_reward")
@@ -165,15 +190,19 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         and lands the robot. Its preparing it to be reseted in the world.
         """
 
-        joints_array = [self.init_joint_states.x,
-                        self.init_joint_states.y,
-                        self.init_joint_states.z]
+        joints_array = [
+            self.init_joint_states.x,
+            self.init_joint_states.y,
+            self.init_joint_states.z,
+        ]
 
-        self.move_joints(joints_array,
-                         epsilon=self.accepted_joint_error,
-                         update_rate=self.update_rate,
-                         time_sleep=self.init_move_time,
-                         check_position=self.check_position)
+        self.move_joints(
+            joints_array,
+            epsilon=self.accepted_joint_error,
+            update_rate=self.update_rate,
+            time_sleep=self.init_move_time,
+            check_position=self.check_position,
+        )
 
         return True
 
@@ -189,7 +218,8 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         # We get the initial pose to mesure the distance from the desired point.
         odom = self.get_odom()
         self.previous_distance_from_des_point = self.get_distance_from_desired_point(
-            odom.pose.pose.position)
+            odom.pose.pose.position
+        )
 
     def _set_action(self, action):
         """
@@ -198,68 +228,63 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         :param action: The action integer that sets what movement to do next.
         """
 
-        rospy.logdebug("Start Set Action ==>"+str(action))
+        rospy.logdebug("Start Set Action ==>" + str(action))
 
         # We get current Joints values
         joint_states = self.get_joint_states()
         joint_states_position = joint_states.position
-        rospy.logdebug("get_action_to_position>>>"+str(joint_states_position))
+        rospy.logdebug("get_action_to_position>>>" + str(joint_states_position))
 
         action_position = [0.0, 0.0, 0.0]
 
-        rospy.logdebug(
-            "OLD-JOINT-STATE [haa,hfa,kfe]>>>"+str(joint_states_position))
+        rospy.logdebug("OLD-JOINT-STATE [haa,hfa,kfe]>>>" + str(joint_states_position))
 
         if action == 0:  # Increment haa_joint
             rospy.logdebug("Increment haa_joint")
-            action_position[0] = joint_states_position[0] + \
-                self.joint_increment_value
+            action_position[0] = joint_states_position[0] + self.joint_increment_value
             action_position[1] = joint_states_position[1]
             action_position[2] = joint_states_position[2]
         elif action == 1:  # Decrement haa_joint
             rospy.logdebug("Decrement haa_joint")
-            action_position[0] = joint_states_position[0] - \
-                self.joint_increment_value
+            action_position[0] = joint_states_position[0] - self.joint_increment_value
             action_position[1] = joint_states_position[1]
             action_position[2] = joint_states_position[2]
         elif action == 2:  # Increment hfe_joint
             rospy.logdebug("Increment hfe_joint")
             action_position[0] = joint_states_position[0]
-            action_position[1] = joint_states_position[1] + \
-                self.joint_increment_value
+            action_position[1] = joint_states_position[1] + self.joint_increment_value
             action_position[2] = joint_states_position[2]
         elif action == 3:  # Decrement hfe_joint
             rospy.logdebug("Decrement hfe_joint")
             action_position[0] = joint_states_position[0]
-            action_position[1] = joint_states_position[1] - \
-                self.joint_increment_value
+            action_position[1] = joint_states_position[1] - self.joint_increment_value
             action_position[2] = joint_states_position[2]
         elif action == 4:  # Increment kfe_joint
             rospy.logdebug("Increment kfe_joint")
             action_position[0] = joint_states_position[0]
             action_position[1] = joint_states_position[1]
-            action_position[2] = joint_states_position[2] + \
-                self.joint_increment_value
+            action_position[2] = joint_states_position[2] + self.joint_increment_value
         elif action == 5:  # Decrement kfe_joint
             rospy.logdebug("Decrement kfe_joint")
             action_position[0] = joint_states_position[0]
             action_position[1] = joint_states_position[1]
-            action_position[2] = joint_states_position[2] - \
-                self.joint_increment_value
+            action_position[2] = joint_states_position[2] - self.joint_increment_value
 
-        rospy.logdebug("NEW-JOINT-STATE [haa,hfa,kfe]>>>"+str(action_position))
-        rospy.logdebug("JOINT-RANGES>>>"+str(self.joint_ranges_array))
+        rospy.logdebug("NEW-JOINT-STATE [haa,hfa,kfe]>>>" + str(action_position))
+        rospy.logdebug("JOINT-RANGES>>>" + str(self.joint_ranges_array))
 
-        rospy.logdebug("START ACTION EXECUTE>>>"+str(action))
+        rospy.logdebug("START ACTION EXECUTE>>>" + str(action))
         # We tell monoped where to place its joints next
-        self.move_joints(action_position,
-                         epsilon=self.accepted_joint_error,
-                         update_rate=self.update_rate,
-                         time_sleep=self.move_time,
-                         check_position=self.check_position)
-        rospy.logdebug("END ACTION EXECUTE>>>"+str(action))
+        self.move_joints(
+            action_position,
+            epsilon=self.accepted_joint_error,
+            update_rate=self.update_rate,
+            time_sleep=self.move_time,
+            check_position=self.check_position,
+        )
+        rospy.logdebug("END ACTION EXECUTE>>>" + str(action))
 
-        rospy.logdebug("END Set Action ==>"+str(action))
+        rospy.logdebug("END Set Action ==>" + str(action))
 
     def _get_obs(self):
         """
@@ -290,7 +315,8 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         rospy.logdebug("Start Get Observation ==>")
 
         distance_from_desired_point = self.get_distance_from_desired_point(
-            self.desired_point)
+            self.desired_point
+        )
 
         base_orientation = self.get_base_rpy()
         base_roll = base_orientation.x
@@ -335,7 +361,7 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         monoped_height_ok = self.monoped_height_ok(height_base)
         monoped_orientation_ok = self.monoped_orientation_ok()
 
-        done = not(monoped_height_ok and monoped_orientation_ok)
+        done = not (monoped_height_ok and monoped_orientation_ok)
 
         return done
 
@@ -348,23 +374,25 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
 
         joints_state_array = observations[5:8]
         r1 = self.calculate_reward_joint_position(
-            joints_state_array, self.weight_joint_position)
+            joints_state_array, self.weight_joint_position
+        )
         # Desired Force in Newtons, taken form idle contact with 9.81 gravity.
 
         force_magnitude = observations[4]
         r2 = self.calculate_reward_contact_force(
-            force_magnitude, self.weight_contact_force)
+            force_magnitude, self.weight_contact_force
+        )
 
         rpy_array = observations[1:4]
-        r3 = self.calculate_reward_orientation(
-            rpy_array, self.weight_orientation)
+        r3 = self.calculate_reward_orientation(rpy_array, self.weight_orientation)
 
         current_position = Point()
         current_position.x = observations[8]
         current_position.y = observations[9]
         current_position.z = observations[10]
         r4 = self.calculate_reward_distance_from_des_point(
-            current_position, self.weight_distance_from_des_point)
+            current_position, self.weight_distance_from_des_point
+        )
 
         # The sign depend on its function.
         total_reward = self.alive_reward - r1 - r2 - r3 - r4
@@ -397,22 +425,22 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         x_current = current_position.x
         y_current = current_position.y
 
-        x_pos_are_close = (x_current <= x_pos_plus) and (
-            x_current > x_pos_minus)
-        y_pos_are_close = (y_current <= y_pos_plus) and (
-            y_current > y_pos_minus)
+        x_pos_are_close = (x_current <= x_pos_plus) and (x_current > x_pos_minus)
+        y_pos_are_close = (y_current <= y_pos_plus) and (y_current > y_pos_minus)
 
         is_in_desired_pos = x_pos_are_close and y_pos_are_close
 
         rospy.logdebug("###### IS DESIRED POS ? ######")
-        rospy.logdebug("current_position"+str(current_position))
-        rospy.logdebug("x_pos_plus"+str(x_pos_plus) +
-                       ",x_pos_minus="+str(x_pos_minus))
-        rospy.logdebug("y_pos_plus"+str(y_pos_plus) +
-                       ",y_pos_minus="+str(y_pos_minus))
-        rospy.logdebug("x_pos_are_close"+str(x_pos_are_close))
-        rospy.logdebug("y_pos_are_close"+str(y_pos_are_close))
-        rospy.logdebug("is_in_desired_pos"+str(is_in_desired_pos))
+        rospy.logdebug("current_position" + str(current_position))
+        rospy.logdebug(
+            "x_pos_plus" + str(x_pos_plus) + ",x_pos_minus=" + str(x_pos_minus)
+        )
+        rospy.logdebug(
+            "y_pos_plus" + str(y_pos_plus) + ",y_pos_minus=" + str(y_pos_minus)
+        )
+        rospy.logdebug("x_pos_are_close" + str(x_pos_are_close))
+        rospy.logdebug("y_pos_are_close" + str(y_pos_are_close))
+        rospy.logdebug("is_in_desired_pos" + str(is_in_desired_pos))
         rospy.logdebug("############")
 
         return is_in_desired_pos
@@ -424,18 +452,39 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         is_inside = False
 
         rospy.logdebug("##### INSIDE WORK SPACE? #######")
-        rospy.logdebug("XYZ current_position"+str(current_position))
-        rospy.logdebug("work_space_x_max"+str(self.work_space_x_max) +
-                       ",work_space_x_min="+str(self.work_space_x_min))
-        rospy.logdebug("work_space_y_max"+str(self.work_space_y_max) +
-                       ",work_space_y_min="+str(self.work_space_y_min))
-        rospy.logdebug("work_space_z_max"+str(self.work_space_z_max) +
-                       ",work_space_z_min="+str(self.work_space_z_min))
+        rospy.logdebug("XYZ current_position" + str(current_position))
+        rospy.logdebug(
+            "work_space_x_max"
+            + str(self.work_space_x_max)
+            + ",work_space_x_min="
+            + str(self.work_space_x_min)
+        )
+        rospy.logdebug(
+            "work_space_y_max"
+            + str(self.work_space_y_max)
+            + ",work_space_y_min="
+            + str(self.work_space_y_min)
+        )
+        rospy.logdebug(
+            "work_space_z_max"
+            + str(self.work_space_z_max)
+            + ",work_space_z_min="
+            + str(self.work_space_z_min)
+        )
         rospy.logdebug("############")
 
-        if current_position.x > self.work_space_x_min and current_position.x <= self.work_space_x_max:
-            if current_position.y > self.work_space_y_min and current_position.y <= self.work_space_y_max:
-                if current_position.z > self.work_space_z_min and current_position.z <= self.work_space_z_max:
+        if (
+            current_position.x > self.work_space_x_min
+            and current_position.x <= self.work_space_x_max
+        ):
+            if (
+                current_position.y > self.work_space_y_min
+                and current_position.y <= self.work_space_y_max
+            ):
+                if (
+                    current_position.z > self.work_space_z_min
+                    and current_position.z <= self.work_space_z_max
+                ):
                     is_inside = True
 
         return is_inside
@@ -445,8 +494,12 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         Detects if there is something too close to the monoped front
         """
         rospy.logdebug("##### SONAR TOO CLOSE? #######")
-        rospy.logdebug("sonar_value"+str(sonar_value) +
-                       ",min_sonar_value="+str(self.min_sonar_value))
+        rospy.logdebug(
+            "sonar_value"
+            + str(sonar_value)
+            + ",min_sonar_value="
+            + str(self.min_sonar_value)
+        )
         rospy.logdebug("############")
 
         too_close = sonar_value < self.min_sonar_value
@@ -463,15 +516,23 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         self.max_pitch = rospy.get_param("/monoped/max_pitch")
 
         rospy.logdebug("#### HAS FLIPPED? ########")
-        rospy.logdebug("RPY current_orientation"+str(current_orientation))
-        rospy.logdebug("max_roll"+str(self.max_roll) +
-                       ",min_roll="+str(-1*self.max_roll))
-        rospy.logdebug("max_pitch"+str(self.max_pitch) +
-                       ",min_pitch="+str(-1*self.max_pitch))
+        rospy.logdebug("RPY current_orientation" + str(current_orientation))
+        rospy.logdebug(
+            "max_roll" + str(self.max_roll) + ",min_roll=" + str(-1 * self.max_roll)
+        )
+        rospy.logdebug(
+            "max_pitch" + str(self.max_pitch) + ",min_pitch=" + str(-1 * self.max_pitch)
+        )
         rospy.logdebug("############")
 
-        if current_orientation.x > -1*self.max_roll and current_orientation.x <= self.max_roll:
-            if current_orientation.y > -1*self.max_pitch and current_orientation.y <= self.max_pitch:
+        if (
+            current_orientation.x > -1 * self.max_roll
+            and current_orientation.x <= self.max_roll
+        ):
+            if (
+                current_orientation.y > -1 * self.max_pitch
+                and current_orientation.y <= self.max_pitch
+            ):
                 has_flipped = False
 
         return has_flipped
@@ -482,8 +543,7 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         :param start_point:
         :return:
         """
-        distance = self.get_distance_from_point(current_position,
-                                                self.desired_point)
+        distance = self.get_distance_from_point(current_position, self.desired_point)
 
         return distance
 
@@ -502,10 +562,12 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
 
     def get_orientation_euler(self, quaternion_vector):
         # We convert from quaternions to euler
-        orientation_list = [quaternion_vector.x,
-                            quaternion_vector.y,
-                            quaternion_vector.z,
-                            quaternion_vector.w]
+        orientation_list = [
+            quaternion_vector.x,
+            quaternion_vector.y,
+            quaternion_vector.z,
+            quaternion_vector.w,
+        ]
 
         roll, pitch, yaw = euler_from_quaternion(orientation_list)
         return roll, pitch, yaw
@@ -516,11 +578,14 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         base_orientation = imu.orientation
 
         euler_rpy = Vector3()
-        euler = euler_from_quaternion([base_orientation.x,
-                                       base_orientation.y,
-                                       base_orientation.z,
-                                       base_orientation.w]
-                                      )
+        euler = euler_from_quaternion(
+            [
+                base_orientation.x,
+                base_orientation.y,
+                base_orientation.z,
+                base_orientation.w,
+            ]
+        )
         euler_rpy.x = euler[0]
         euler_rpy.y = euler[1]
         euler_rpy.z = euler[2]
@@ -542,7 +607,8 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         contact_force = self.get_contact_force(lowerleg_contactsensor_state)
         # We create an array with each component XYZ
         contact_force_np = numpy.array(
-            (contact_force.x, contact_force.y, contact_force.z))
+            (contact_force.x, contact_force.y, contact_force.z)
+        )
         # We calculate the magnitude of the Force Vector, array.
         force_magnitude = numpy.linalg.norm(contact_force_np)
 
@@ -590,10 +656,11 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
             # Abs to remove sign influence, it doesnt matter the direction of turn.
             acumulated_joint_pos += abs(joint_pos)
             rospy.logdebug(
-                "calculate_reward_joint_position>>acumulated_joint_pos=" + str(acumulated_joint_pos))
+                "calculate_reward_joint_position>>acumulated_joint_pos="
+                + str(acumulated_joint_pos)
+            )
         reward = weight * acumulated_joint_pos
-        rospy.logdebug(
-            "calculate_reward_joint_position>>reward=" + str(reward))
+        rospy.logdebug("calculate_reward_joint_position>>reward=" + str(reward))
         return reward
 
     def calculate_reward_contact_force(self, force_magnitude, weight=1.0):
@@ -608,9 +675,12 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         force_displacement = force_magnitude - self.desired_force
 
         rospy.logdebug(
-            "calculate_reward_contact_force>>force_magnitude=" + str(force_magnitude))
+            "calculate_reward_contact_force>>force_magnitude=" + str(force_magnitude)
+        )
         rospy.logdebug(
-            "calculate_reward_contact_force>>force_displacement=" + str(force_displacement))
+            "calculate_reward_contact_force>>force_displacement="
+            + str(force_displacement)
+        )
         # Abs to remove sign
         reward = weight * abs(force_displacement)
         rospy.logdebug("calculate_reward_contact_force>>reward=" + str(reward))
@@ -627,8 +697,9 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         """
 
         yaw_displacement = rpy_array[2] - self.desired_yaw
-        acumulated_orientation_displacement = abs(
-            rpy_array[0]) + abs(rpy_array[1]) + abs(yaw_displacement)
+        acumulated_orientation_displacement = (
+            abs(rpy_array[0]) + abs(rpy_array[1]) + abs(yaw_displacement)
+        )
         reward = weight * acumulated_orientation_displacement
         rospy.logdebug("calculate_reward_orientation>>reward=" + str(reward))
         return reward

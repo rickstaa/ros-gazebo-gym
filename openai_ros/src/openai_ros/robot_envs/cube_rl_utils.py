@@ -20,8 +20,11 @@ class CubeRLUtils(object):
         rospy.Subscriber("/moving_cube/joint_states", JointState, self.joints_callback)
         rospy.Subscriber("/moving_cube/odom", Odometry, self.odom_callback)
 
-        self._roll_vel_pub = rospy.Publisher('/moving_cube/inertia_wheel_roll_joint_velocity_controller/command',
-                                             Float64, queue_size=1)
+        self._roll_vel_pub = rospy.Publisher(
+            "/moving_cube/inertia_wheel_roll_joint_velocity_controller/command",
+            Float64,
+            queue_size=1,
+        )
 
         self.check_publishers_connection()
 
@@ -29,20 +32,33 @@ class CubeRLUtils(object):
         self.disk_joints_data = None
         while self.disk_joints_data is None and not rospy.is_shutdown():
             try:
-                self.disk_joints_data = rospy.wait_for_message("/moving_cube/joint_states", JointState, timeout=1.0)
-                rospy.loginfo("Current moving_cube/joint_states READY=>" + str(self.disk_joints_data))
+                self.disk_joints_data = rospy.wait_for_message(
+                    "/moving_cube/joint_states", JointState, timeout=1.0
+                )
+                rospy.loginfo(
+                    "Current moving_cube/joint_states READY=>"
+                    + str(self.disk_joints_data)
+                )
 
             except:
-                rospy.logerr("Current moving_cube/joint_states not ready yet, retrying for getting joint_states")
+                rospy.logerr(
+                    "Current moving_cube/joint_states not ready yet, retrying for getting joint_states"
+                )
 
         self.cube_odom_data = None
         while self.disk_joints_data is None and not rospy.is_shutdown():
             try:
-                self.cube_odom_data = rospy.wait_for_message("/moving_cube/odom", Odometry, timeout=1.0)
-                rospy.loginfo("Current /moving_cube/odom READY=>" + str(self.cube_odom_data))
+                self.cube_odom_data = rospy.wait_for_message(
+                    "/moving_cube/odom", Odometry, timeout=1.0
+                )
+                rospy.loginfo(
+                    "Current /moving_cube/odom READY=>" + str(self.cube_odom_data)
+                )
 
             except:
-                rospy.logerr("Current /moving_cube/odom not ready yet, retrying for getting odom")
+                rospy.logerr(
+                    "Current /moving_cube/odom not ready yet, retrying for getting odom"
+                )
         rospy.loginfo("ALL SENSORS READY")
 
     def check_publishers_connection(self):
@@ -51,7 +67,7 @@ class CubeRLUtils(object):
         :return:
         """
         rate = rospy.Rate(10)  # 10hz
-        while (self._roll_vel_pub.get_num_connections() == 0 and not rospy.is_shutdown()):
+        while self._roll_vel_pub.get_num_connections() == 0 and not rospy.is_shutdown():
             rospy.loginfo("No susbribers to _roll_vel_pub yet so we wait and try again")
             try:
                 rate.sleep()
@@ -79,10 +95,12 @@ class CubeRLUtils(object):
     def get_cube_state(self):
 
         # We convert from quaternions to euler
-        orientation_list = [self.odom.pose.pose.orientation.x,
-                            self.odom.pose.pose.orientation.y,
-                            self.odom.pose.pose.orientation.z,
-                            self.odom.pose.pose.orientation.w]
+        orientation_list = [
+            self.odom.pose.pose.orientation.x,
+            self.odom.pose.pose.orientation.y,
+            self.odom.pose.pose.orientation.z,
+            self.odom.pose.pose.orientation.w,
+        ]
 
         roll, pitch, yaw = euler_from_quaternion(orientation_list)
 
@@ -92,15 +110,16 @@ class CubeRLUtils(object):
         start_position.y = 0.0
         start_position.z = 0.0
 
-        distance = self.get_distance_from_point(start_position,
-                                                self.odom.pose.pose.position)
+        distance = self.get_distance_from_point(
+            start_position, self.odom.pose.pose.position
+        )
 
         cube_state = [
             round(self.joints.velocity[0], 1),
             round(distance, 1),
             round(roll, 1),
             round(pitch, 1),
-            round(yaw, 1)
+            round(yaw, 1),
         ]
 
         return cube_state
@@ -110,7 +129,7 @@ class CubeRLUtils(object):
         # MAximum distance to travel permited in meters from origin
         max_distance = 2.0
 
-        if (cube_state[1] > max_distance):
+        if cube_state[1] > max_distance:
             rospy.logerr("Cube Too Far==>" + str(cube_state[1]))
             done = True
         else:
@@ -147,13 +166,15 @@ class CubeRLUtils(object):
         reward = reward_distance + reward_for_efective_movement
 
         rospy.loginfo("Reward_distance=" + str(reward_distance))
-        rospy.loginfo("Reward_for_efective_movement= " + str(reward_for_efective_movement))
+        rospy.loginfo(
+            "Reward_for_efective_movement= " + str(reward_for_efective_movement)
+        )
 
         return reward
 
 
 def cube_rl_systems_test():
-    rospy.init_node('cube_rl_systems_test_node', anonymous=True, log_level=rospy.INFO)
+    rospy.init_node("cube_rl_systems_test_node", anonymous=True, log_level=rospy.INFO)
     cube_rl_utils_object = CubeRLUtils()
 
     rospy.loginfo("Moving to Speed==>80")
@@ -176,4 +197,3 @@ def cube_rl_systems_test():
 
 if __name__ == "__main__":
     cube_rl_systems_test()
-

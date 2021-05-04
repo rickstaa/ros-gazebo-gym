@@ -10,6 +10,7 @@ from openai_ros.openai_ros_common import ROSLauncher
 from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
 import os
 
+
 class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
     def __init__(self):
 
@@ -18,35 +19,44 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         # the Task and the Robot gits will be downloaded if not there
 
         ros_ws_abspath = rospy.get_param("/fetch/ros_ws_abspath", None)
-        assert ros_ws_abspath is not None, "You forgot to set ros_ws_abspath in your yaml file of your main RL script. Set ros_ws_abspath: \'YOUR/SIM_WS/PATH\'"
-        assert os.path.exists(ros_ws_abspath), "The Simulation ROS Workspace path " + ros_ws_abspath + \
-                                               " DOESNT exist, execute: mkdir -p " + ros_ws_abspath + \
-                                               "/src;cd " + ros_ws_abspath + ";catkin_make"
+        assert (
+            ros_ws_abspath is not None
+        ), "You forgot to set ros_ws_abspath in your yaml file of your main RL script. Set ros_ws_abspath: 'YOUR/SIM_WS/PATH'"
+        assert os.path.exists(ros_ws_abspath), (
+            "The Simulation ROS Workspace path "
+            + ros_ws_abspath
+            + " DOESNT exist, execute: mkdir -p "
+            + ros_ws_abspath
+            + "/src;cd "
+            + ros_ws_abspath
+            + ";catkin_make"
+        )
 
-        ROSLauncher(rospackage_name="fetch_gazebo",
-                    launch_file_name="start_world.launch",
-                    ros_ws_abspath=ros_ws_abspath)
+        ROSLauncher(
+            rospackage_name="fetch_gazebo",
+            launch_file_name="start_world.launch",
+            ros_ws_abspath=ros_ws_abspath,
+        )
 
         # Load Params from the desired Yaml file relative to this TaskEnvironment
-        LoadYamlFileParamsTest(rospackage_name="openai_ros",
-                               rel_path_from_package_to_file="src/openai_ros/task_envs/fetch/config",
-                               yaml_file_name="fetch_test.yaml")
+        LoadYamlFileParamsTest(
+            rospackage_name="openai_ros",
+            rel_path_from_package_to_file="src/openai_ros/task_envs/fetch/config",
+            yaml_file_name="fetch_test.yaml",
+        )
 
         rospy.logdebug("Entered FetchTestEnv Env")
         self.get_params()
 
         self.action_space = spaces.Discrete(self.n_actions)
 
-        observations_high_range = np.array(
-            [self.position_ee_max]*self.n_observations)
-        observations_low_range = np.array(
-            [self.position_ee_min]*self.n_observations)
+        observations_high_range = np.array([self.position_ee_max] * self.n_observations)
+        observations_low_range = np.array([self.position_ee_min] * self.n_observations)
 
         observations_high_dist = np.array([self.max_distance])
         observations_low_dist = np.array([0.0])
 
-        high = np.concatenate(
-            [observations_high_range, observations_high_dist])
+        high = np.concatenate([observations_high_range, observations_high_dist])
         low = np.concatenate([observations_low_range, observations_low_dist])
 
         self.observation_space = spaces.Box(low, high)
@@ -58,28 +68,31 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
     def get_params(self):
         # get configuration parameters
 
-        self.n_actions = rospy.get_param('/fetch/n_actions')
-        self.n_observations = rospy.get_param('/fetch/n_observations')
-        self.position_ee_max = rospy.get_param('/fetch/position_ee_max')
-        self.position_ee_min = rospy.get_param('/fetch/position_ee_min')
+        self.n_actions = rospy.get_param("/fetch/n_actions")
+        self.n_observations = rospy.get_param("/fetch/n_observations")
+        self.position_ee_max = rospy.get_param("/fetch/position_ee_max")
+        self.position_ee_min = rospy.get_param("/fetch/position_ee_min")
 
-        self.init_pos = rospy.get_param('/fetch/init_pos')
-        self.setup_ee_pos = rospy.get_param('/fetch/setup_ee_pos')
-        self.goal_ee_pos = rospy.get_param('/fetch/goal_ee_pos')
+        self.init_pos = rospy.get_param("/fetch/init_pos")
+        self.setup_ee_pos = rospy.get_param("/fetch/setup_ee_pos")
+        self.goal_ee_pos = rospy.get_param("/fetch/goal_ee_pos")
 
-        self.position_delta = rospy.get_param('/fetch/position_delta')
-        self.step_punishment = rospy.get_param('/fetch/step_punishment')
-        self.closer_reward = rospy.get_param('/fetch/closer_reward')
+        self.position_delta = rospy.get_param("/fetch/position_delta")
+        self.step_punishment = rospy.get_param("/fetch/step_punishment")
+        self.closer_reward = rospy.get_param("/fetch/closer_reward")
         self.impossible_movement_punishement = rospy.get_param(
-            '/fetch/impossible_movement_punishement')
-        self.reached_goal_reward = rospy.get_param(
-            '/fetch/reached_goal_reward')
+            "/fetch/impossible_movement_punishement"
+        )
+        self.reached_goal_reward = rospy.get_param("/fetch/reached_goal_reward")
 
-        self.max_distance = rospy.get_param('/fetch/max_distance')
+        self.max_distance = rospy.get_param("/fetch/max_distance")
 
-        self.desired_position = [self.goal_ee_pos["x"],
-                                 self.goal_ee_pos["y"], self.goal_ee_pos["z"]]
-        self.gripper_rotation = [1., 0., 1., 0.]
+        self.desired_position = [
+            self.goal_ee_pos["x"],
+            self.goal_ee_pos["y"],
+            self.goal_ee_pos["z"],
+        ]
+        self.gripper_rotation = [1.0, 0.0, 1.0, 0.0]
 
     def _set_init_pose(self):
         """Sets the Robot in its init pose
@@ -99,29 +112,32 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
 
         # INIT POSE
         rospy.logdebug("Moving To TEST DESIRED GOAL Position ")
-        action = self.create_action(
-            self.desired_position, self.gripper_rotation)
+        action = self.create_action(self.desired_position, self.gripper_rotation)
         self.movement_result = self.set_trajectory_ee(action)
 
         if self.movement_result:
             # INIT POSE
             rospy.logdebug("Moving To SETUP Position ")
             self.last_gripper_target = [
-                self.setup_ee_pos["x"], self.setup_ee_pos["y"], self.setup_ee_pos["z"]]
-            action = self.create_action(
-                self.last_gripper_target, self.gripper_rotation)
+                self.setup_ee_pos["x"],
+                self.setup_ee_pos["y"],
+                self.setup_ee_pos["z"],
+            ]
+            action = self.create_action(self.last_gripper_target, self.gripper_rotation)
             self.movement_result = self.set_trajectory_ee(action)
 
             self.current_dist_from_des_pos_ee = self.calculate_distance_between(
-                self.desired_position, self.last_gripper_target)
-            rospy.logdebug("INIT DISTANCE FROM GOAL==>" +
-                           str(self.current_dist_from_des_pos_ee))
+                self.desired_position, self.last_gripper_target
+            )
+            rospy.logdebug(
+                "INIT DISTANCE FROM GOAL==>" + str(self.current_dist_from_des_pos_ee)
+            )
         else:
             assert False, "Desired GOAL EE is not possible"
 
         self.last_action = "INIT"
 
-        rospy.logdebug("Init Pose Results ==>"+str(self.movement_result))
+        rospy.logdebug("Init Pose Results ==>" + str(self.movement_result))
 
         return self.movement_result
 
@@ -139,7 +155,7 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
 
     def _set_action(self, action):
 
-        delta_gripper_target = [0.0]*len(self.last_gripper_target)
+        delta_gripper_target = [0.0] * len(self.last_gripper_target)
 
         # We convert action ints in increments/decrements of one of the axis XYZ
         if action == 0:  # X+
@@ -167,18 +183,17 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         gripper_target[2] += delta_gripper_target[2]
 
         # Apply action to simulation.
-        action_end_effector = self.create_action(
-            gripper_target, self.gripper_rotation)
+        action_end_effector = self.create_action(gripper_target, self.gripper_rotation)
         self.movement_result = self.set_trajectory_ee(action_end_effector)
         if self.movement_result:
             # If the End Effector Positioning was succesfull, we replace the last one with the new one.
             self.last_gripper_target = copy.deepcopy(gripper_target)
         else:
-            rospy.logerr("Impossible End Effector Position...." +
-                         str(gripper_target))
+            rospy.logerr("Impossible End Effector Position...." + str(gripper_target))
 
-        rospy.logwarn("END Set Action ==>"+str(action) +
-                      ", NAME="+str(self.last_action))
+        rospy.logwarn(
+            "END Set Action ==>" + str(action) + ", NAME=" + str(self.last_action)
+        )
 
     def _get_obs(self):
         """
@@ -188,16 +203,20 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         """
 
         grip_pos = self.get_ee_pose()
-        grip_pos_array = [grip_pos.pose.position.x,
-                          grip_pos.pose.position.y, grip_pos.pose.position.z]
+        grip_pos_array = [
+            grip_pos.pose.position.x,
+            grip_pos.pose.position.y,
+            grip_pos.pose.position.z,
+        ]
         obs = grip_pos_array
 
         new_dist_from_des_pos_ee = self.calculate_distance_between(
-            self.desired_position, grip_pos_array)
+            self.desired_position, grip_pos_array
+        )
 
         obs.append(new_dist_from_des_pos_ee)
 
-        rospy.logdebug("OBSERVATIONS====>>>>>>>"+str(obs))
+        rospy.logdebug("OBSERVATIONS====>>>>>>>" + str(obs))
 
         return obs
 
@@ -210,7 +229,8 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         current_pos = observations[:3]
 
         done = self.calculate_if_done(
-            self.movement_result, self.desired_position, current_pos)
+            self.movement_result, self.desired_position, current_pos
+        )
 
         return done
 
@@ -224,8 +244,12 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         new_dist_from_des_pos_ee = observations[-1]
 
         reward = self.calculate_reward(
-            self.movement_result, self.desired_position, current_pos, new_dist_from_des_pos_ee)
-        rospy.logwarn(">>>REWARD>>>"+str(reward))
+            self.movement_result,
+            self.desired_position,
+            current_pos,
+            new_dist_from_des_pos_ee,
+        )
+        rospy.logwarn(">>>REWARD>>>" + str(reward))
 
         return reward
 
@@ -237,8 +261,9 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
 
         if movement_result:
 
-            position_similar = np.all(np.isclose(
-                desired_position, current_pos, atol=1e-02))
+            position_similar = np.all(
+                np.isclose(desired_position, current_pos, atol=1e-02)
+            )
 
             if position_similar:
                 done = True
@@ -249,22 +274,26 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
 
         return done
 
-    def calculate_reward(self, movement_result, desired_position, current_pos, new_dist_from_des_pos_ee):
+    def calculate_reward(
+        self, movement_result, desired_position, current_pos, new_dist_from_des_pos_ee
+    ):
         """
         It calculated whather it has finished or nota and how much reward to give
         """
 
         if movement_result:
-            position_similar = np.all(np.isclose(
-                desired_position, current_pos, atol=1e-02))
+            position_similar = np.all(
+                np.isclose(desired_position, current_pos, atol=1e-02)
+            )
 
             # Calculating Distance
-            rospy.logwarn("desired_position="+str(desired_position))
-            rospy.logwarn("current_pos="+str(current_pos))
-            rospy.logwarn("self.current_dist_from_des_pos_ee=" +
-                          str(self.current_dist_from_des_pos_ee))
-            rospy.logwarn("new_dist_from_des_pos_ee=" +
-                          str(new_dist_from_des_pos_ee))
+            rospy.logwarn("desired_position=" + str(desired_position))
+            rospy.logwarn("current_pos=" + str(current_pos))
+            rospy.logwarn(
+                "self.current_dist_from_des_pos_ee="
+                + str(self.current_dist_from_des_pos_ee)
+            )
+            rospy.logwarn("new_dist_from_des_pos_ee=" + str(new_dist_from_des_pos_ee))
 
             delta_dist = new_dist_from_des_pos_ee - self.current_dist_from_des_pos_ee
             if position_similar:
@@ -273,12 +302,10 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
             else:
                 if delta_dist < 0:
                     reward = self.closer_reward
-                    rospy.logwarn(
-                        "CLOSER To Desired Position!="+str(delta_dist))
+                    rospy.logwarn("CLOSER To Desired Position!=" + str(delta_dist))
                 else:
                     reward = self.step_punishment
-                    rospy.logwarn(
-                        "FURTHER FROM Desired Position!"+str(delta_dist))
+                    rospy.logwarn("FURTHER FROM Desired Position!" + str(delta_dist))
 
         else:
             reward = self.impossible_movement_punishement
@@ -286,8 +313,9 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
 
         # We update the distance
         self.current_dist_from_des_pos_ee = new_dist_from_des_pos_ee
-        rospy.logdebug("Updated Distance from GOAL==" +
-                       str(self.current_dist_from_des_pos_ee))
+        rospy.logdebug(
+            "Updated Distance from GOAL==" + str(self.current_dist_from_des_pos_ee)
+        )
 
         return reward
 
@@ -295,5 +323,5 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         """
         Calculated the Euclidian distance between two vectors given as python lists.
         """
-        dist = np.linalg.norm(np.array(v1)-np.array(v2))
+        dist = np.linalg.norm(np.array(v1) - np.array(v2))
         return dist
