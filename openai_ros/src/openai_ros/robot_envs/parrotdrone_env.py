@@ -13,13 +13,13 @@ from sensor_msgs.msg import Range
 from sensor_msgs.msg import Imu
 from geometry_msgs.msg import Pose
 from std_msgs.msg import Empty
-from openai_ros.openai_ros_common import ROSLauncher
+from openai_ros.common import ROSLauncher
 
 
 class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
     """Superclass for all CubeSingleDisk environments."""
 
-    def __init__(self, ros_ws_abspath):
+    def __init__(self, workspace_path):
         """
         Initializes a new ParrotDroneEnv environment.
 
@@ -71,9 +71,9 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         self.gazebo.unpauseSim()
 
         ROSLauncher(
-            rospackage_name="drone_construct",
+            package_name="drone_construct",
             launch_file_name="put_robot_in_world.launch",
-            ros_ws_abspath=ros_ws_abspath,
+            workspace_path=workspace_path,
         )
 
         # self.controllers_object.reset_controllers()
@@ -423,7 +423,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         cmd_vel_value.linear.y = linear_speed_vector.y
         cmd_vel_value.linear.z = linear_speed_vector.z
         cmd_vel_value.angular.z = angular_speed
-        rospy.logdebug("TurtleBot2 Base Twist Cmd>>" + str(cmd_vel_value))
+        rospy.logdebug("Parrot Base Twist Cmd>>" + str(cmd_vel_value))
         self._check_cmd_vel_pub_connection()
         self._cmd_vel_pub.publish(cmd_vel_value)
         """

@@ -8,7 +8,7 @@ from tf.transformations import euler_from_quaternion
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Header
 from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.openai_ros_common import ROSLauncher
+from openai_ros.common import ROSLauncher
 import os
 
 
@@ -21,29 +21,29 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         """
         # Launch the Task Simulated-Environment
         # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
-        ros_ws_abspath = rospy.get_param("/husarion/ros_ws_abspath", None)
+        workspace_path = rospy.get_param("/husarion/workspace_path", None)
         assert (
-            ros_ws_abspath is not None
-        ), "You forgot to set ros_ws_abspath in your yaml file of your main RL script. Set ros_ws_abspath: 'YOUR/SIM_WS/PATH'"
-        assert os.path.exists(ros_ws_abspath), (
+            workspace_path is not None
+        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
+        assert os.path.exists(workspace_path), (
             "The Simulation ROS Workspace path "
-            + ros_ws_abspath
+            + workspace_path
             + " DOESNT exist, execute: mkdir -p "
-            + ros_ws_abspath
+            + workspace_path
             + "/src;cd "
-            + ros_ws_abspath
+            + workspace_path
             + ";catkin_make"
         )
 
         ROSLauncher(
-            rospackage_name="rosbot_gazebo",
+            package_name="rosbot_gazebo",
             launch_file_name="start_world_maze.launch",
-            ros_ws_abspath=ros_ws_abspath,
+            workspace_path=workspace_path,
         )
 
         # Load Params from the desired Yaml file
         LoadYamlFileParamsTest(
-            rospackage_name="openai_ros",
+            package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/husarion/config",
             yaml_file_name="husarion_get_to_position_turtlebot_playground.yaml",
         )
@@ -91,7 +91,7 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         # We join them toeguether.
 
         # Here we will add any init functions prior to starting the MyRobotEnv
-        super(HusarionGetToPosTurtleBotPlayGroundEnv, self).__init__(ros_ws_abspath)
+        super(HusarionGetToPosTurtleBotPlayGroundEnv, self).__init__(workspace_path)
 
         laser_scan = self._check_laser_scan_ready()
         num_laser_readings = int(len(laser_scan.ranges) / self.new_ranges)

@@ -1,0 +1,211 @@
+# Archive with git urls the ROS dependencies that are used in the openai_ros environments
+# Moving Cube env
+# NOTE: Here you add information about the dependencies of a new openai_ros environment.
+# NOTE: Use din the ROSLauncher class
+moving_cube_description:
+  binary: False # Whether the binary can be used
+  git: https://bitbucket.org/theconstructcore/moving_cube.git
+  branch: master
+  deps:
+    spawn_robot_tools_pkg:
+      binary: False
+      git: https://bitbucket.org/theconstructcore/spawn_robot_tools.git
+      branch: master
+# Rosbot env
+rosbot_gazebo:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/rosbot_husarion.git
+  branch: noetic
+  deps:
+    frontier_exploration:
+      git: https://github.com/paulbovbel/frontier_exploration.git
+      branch: melodic-devel
+rosbot_description:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/rosbot_husarion.git
+  branch: noetic
+  deps:
+    frontier_exploration:
+      binary: False
+      git: https://github.com/paulbovbel/frontier_exploration.git
+      branch: melodic-devel
+# Fetch env
+fetch_gazebo:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/fetch_tc.git
+  branch: noetic
+fetch_simple_description:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/fetch_simple_simulation.git
+  branch: master
+  deps:
+    spawn_robot_tools_pkg:
+      binary: False
+      git: https://bitbucket.org/theconstructcore/spawn_robot_tools.git
+# CartPole env
+cartpole_description:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/cart_pole.git
+  branch: master
+cartpole_v0_training:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/cart_pole.git
+  branch: master
+# Hopper env
+legged_robots_sims:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/hopper.git
+  branch: master
+  deps:
+    spawn_robot_tools_pkg:
+      binary: False
+      git: https://bitbucket.org/theconstructcore/spawn_robot_tools.git
+      branch: master
+legged_robots_description:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/hopper.git
+  branch: master
+  deps:
+    spawn_robot_tools_pkg:
+      binary: False
+      git: https://bitbucket.org/theconstructcore/spawn_robot_tools.git
+      branch: master
+my_legged_robots_description:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/hopper.git
+  branch: master
+  deps:
+    spawn_robot_tools_pkg:
+      binary: False
+      git: https://bitbucket.org/theconstructcore/spawn_robot_tools.git
+      branch: master
+my_legged_robots_sims:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/hopper.git
+  branch: master
+  deps:
+    spawn_robot_tools_pkg:
+      binary: False
+      git: https://bitbucket.org/theconstructcore/spawn_robot_tools.git
+      branch: master
+my_hopper_training:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/hopper.git
+  branch: master
+  deps:
+    spawn_robot_tools_pkg:
+      binary: False
+      git: https://bitbucket.org/theconstructcore/spawn_robot_tools.git
+      branch: master
+# Wam env
+iri_wam_description:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/iri_wam.git
+  branch: noetic
+  deps:
+    hokuyo_model:
+      binary: False
+      git: https://bitbucket.org/theconstructcore/spawn_robot_tools.git
+      branch: master
+iri_wam_gazebo:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/iri_wam.git
+  branch: noetic
+  deps:
+    hokuyo_model:
+      binary: False
+      git: https://bitbucket.org/theconstructcore/spawn_robot_tools.git
+      branch: master
+iri_wam_reproduce_trajectory:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/iri_wam.git
+  branch: noetic
+  deps:
+    hokuyo_model:
+      binary: False
+      git: https://bitbucket.org/theconstructcore/spawn_robot_tools.git
+      branch: master
+iri_wam_aff_demo:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/iri_wam.git
+  branch: noetic
+  deps:
+    hokuyo_model:
+      binary: False
+      git: https://bitbucket.org/theconstructcore/spawn_robot_tools.git
+      branch: master
+# Parrot drone env
+drone_construct:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/parrot_ardrone.git
+  branch: noetic
+drone_demo:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/parrot_ardrone.git
+  branch: noetic
+sjtu_drone:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/parrot_ardrone.git
+  branch: noetic
+custom_teleop:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/parrot_ardrone.git
+  branch: noetic
+ardrone_as:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/parrot_ardrone.git
+  branch: noetic
+# Sawyer env
+sawyer_gazebo:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/sawyer_full.git
+  branch: update2019
+# Shadow hand env
+shadow_gazebo:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/shadow_robot_smart_grasping_sandbox.git
+  branch: noetic
+  deps:
+    universal_robot:
+      binary: False # Here we can also use the binary if it is installed
+      git: https://github.com/ros-industrial/universal_robot.git
+      branch: melodic-devel
+# Summit xl env
+summit_xl_gazebo:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/summit_xl.git
+  branch: noetic
+  deps:
+    robotnik_msgs:
+      binary: False
+      git: https://github.com/RobotnikAutomation/robotnik_msgs.git
+      branch: master
+    hector_gazebo:
+      binary: True # Here we can also use the binary if it is installed
+      git: https://github.com/tu-darmstadt-ros-pkg/hector_gazebo.git
+      branch: melodic-devel
+# Construct openai gym env
+gym_construct:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/open_ai_gym_construct.git
+  branch: master
+# Turtlebot env
+turtlebot_gazebo:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/turtlebot.git
+  branch: noetic
+# Turtlebot3 env
+turtlebot3_gazebo:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/turtlebot3.git
+  branch: noetic
+# Robotx env
+robotx_gazebo:
+  binary: False
+  git: https://bitbucket.org/theconstructcore/vmrc.git
+  branch: master
+  deps:
+    spawn_robot_tools_pkg:
+      binary: False
+      git: https://bitbucket.org/theconstructcore/spawn_robot_tools.git
+      branch: master

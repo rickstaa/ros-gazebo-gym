@@ -10,7 +10,7 @@ import cv2
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.openai_ros_common import ROSLauncher
+from openai_ros.common import ROSLauncher
 import os
 
 
@@ -23,36 +23,36 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         self.previous_distance_from_block = 100.0
 
         # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
-        ros_ws_abspath = rospy.get_param("/iriwam/ros_ws_abspath", None)
+        workspace_path = rospy.get_param("/iriwam/workspace_path", None)
         assert (
-            ros_ws_abspath is not None
-        ), "You forgot to set ros_ws_abspath in your yaml file of your main RL script. Set ros_ws_abspath: 'YOUR/SIM_WS/PATH'"
-        assert os.path.exists(ros_ws_abspath), (
+            workspace_path is not None
+        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
+        assert os.path.exists(workspace_path), (
             "The Simulation ROS Workspace path "
-            + ros_ws_abspath
+            + workspace_path
             + " DOESNT exist, execute: mkdir -p "
-            + ros_ws_abspath
+            + workspace_path
             + "/src;cd "
-            + ros_ws_abspath
+            + workspace_path
             + ";catkin_make"
         )
 
         ROSLauncher(
-            rospackage_name="iri_wam_gazebo",
+            package_name="iri_wam_gazebo",
             launch_file_name="start_world.launch",
-            ros_ws_abspath=ros_ws_abspath,
+            workspace_path=workspace_path,
         )
 
         # Load Params from the desired Yaml file
         LoadYamlFileParamsTest(
-            rospackage_name="openai_ros",
+            package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/iriwam/config",
             yaml_file_name="tcp_to_bowl.yaml",
         )
 
         # We execute this one before because there are some functions that this
         # TaskEnv uses that use variables from the parent class, like the effort limit fetch.
-        super(IriWamTcpToBowlEnv, self).__init__(ros_ws_abspath)
+        super(IriWamTcpToBowlEnv, self).__init__(workspace_path)
 
         # Here we will add any init functions prior to starting the MyRobotEnv
 

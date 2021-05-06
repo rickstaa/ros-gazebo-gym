@@ -8,18 +8,18 @@ import moveit_commander
 import moveit_msgs.msg
 import geometry_msgs.msg
 import trajectory_msgs.msg
-from openai_ros.openai_ros_common import ROSLauncher
+from openai_ros.common import ROSLauncher
 
 
 class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
-    def __init__(self, ros_ws_abspath):
+    def __init__(self, workspace_path):
         rospy.logdebug("========= In Fetch Env")
 
         # We launch the ROSlaunch that spawns the robot into the world
         ROSLauncher(
-            rospackage_name="fetch_gazebo",
+            package_name="fetch_gazebo",
             launch_file_name="put_robot_in_world_HER.launch",
-            ros_ws_abspath=ros_ws_abspath,
+            workspace_path=workspace_path,
         )
 
         # this object contains all object's positions!!

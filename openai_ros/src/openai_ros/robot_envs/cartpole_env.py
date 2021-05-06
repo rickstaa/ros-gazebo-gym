@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import gym
 import rospy
@@ -21,17 +21,17 @@ from gazebo_msgs.srv import SetLinkState
 from gazebo_msgs.msg import LinkState
 from rosgraph_msgs.msg import Clock
 from openai_ros import robot_gazebo_env
-from openai_ros.openai_ros_common import ROSLauncher
+from openai_ros.common import ROSLauncher
 
 
 class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
-    def __init__(self, control_type, ros_ws_abspath):
+    def __init__(self, control_type, workspace_path):
 
         # We launch the ROSlaunch that spawns the robot into the world
         ROSLauncher(
-            rospackage_name="cartpole_description",
+            package_name="cartpole_description",
             launch_file_name="put_robot_in_world.launch",
-            ros_ws_abspath=ros_ws_abspath,
+            workspace_path=workspace_path,
         )
 
         self.publishers_array = []

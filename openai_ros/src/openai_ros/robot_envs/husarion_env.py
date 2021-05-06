@@ -8,13 +8,13 @@ from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import PointCloud2
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
-from openai_ros.openai_ros_common import ROSLauncher
+from openai_ros.common import ROSLauncher
 
 
 class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
     """Superclass for all CubeSingleDisk environments."""
 
-    def __init__(self, ros_ws_abspath):
+    def __init__(self, workspace_path):
         """
         Initializes a new HusarionEnv environment.
         Husarion doesnt use controller_manager, therefore we wont reset the
@@ -45,9 +45,9 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
         # None in this case
         # We launch the ROSlaunch that spawns the robot into the world
         ROSLauncher(
-            rospackage_name="rosbot_gazebo",
+            package_name="rosbot_gazebo",
             launch_file_name="put_robot_in_world.launch",
-            ros_ws_abspath=ros_ws_abspath,
+            workspace_path=workspace_path,
         )
         rospy.logerr(">>>>>>>>>>>ROSLAUCHER DONE HusarionEnv INIT...")
         # Internal Vars

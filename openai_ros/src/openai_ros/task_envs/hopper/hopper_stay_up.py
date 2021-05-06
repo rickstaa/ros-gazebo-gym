@@ -7,7 +7,7 @@ from geometry_msgs.msg import Point
 from geometry_msgs.msg import Vector3
 from tf.transformations import euler_from_quaternion
 from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.openai_ros_common import ROSLauncher
+from openai_ros.common import ROSLauncher
 import os
 
 
@@ -27,29 +27,29 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         rospy.logdebug("Start HopperStayUpEnv INIT...")
 
         # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
-        ros_ws_abspath = rospy.get_param("/monoped/ros_ws_abspath", None)
+        workspace_path = rospy.get_param("/monoped/workspace_path", None)
         assert (
-            ros_ws_abspath is not None
-        ), "You forgot to set ros_ws_abspath in your yaml file of your main RL script. Set ros_ws_abspath: 'YOUR/SIM_WS/PATH'"
-        assert os.path.exists(ros_ws_abspath), (
+            workspace_path is not None
+        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
+        assert os.path.exists(workspace_path), (
             "The Simulation ROS Workspace path "
-            + ros_ws_abspath
+            + workspace_path
             + " DOESNT exist, execute: mkdir -p "
-            + ros_ws_abspath
+            + workspace_path
             + "/src;cd "
-            + ros_ws_abspath
+            + workspace_path
             + ";catkin_make"
         )
 
         ROSLauncher(
-            rospackage_name="legged_robots_sims",
+            package_name="legged_robots_sims",
             launch_file_name="start_world.launch",
-            ros_ws_abspath=ros_ws_abspath,
+            workspace_path=workspace_path,
         )
 
         # Load Params from the desired Yaml file
         LoadYamlFileParamsTest(
-            rospackage_name="openai_ros",
+            package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/hopper/config",
             yaml_file_name="hopper_stay_up.yaml",
         )
@@ -180,7 +180,7 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         self.done_reward = rospy.get_param("/monoped/done_reward")
 
         # Here we will add any init functions prior to starting the MyRobotEnv
-        super(HopperStayUpEnv, self).__init__(ros_ws_abspath)
+        super(HopperStayUpEnv, self).__init__(workspace_path)
 
         rospy.logdebug("END HopperStayUpEnv INIT...")
 

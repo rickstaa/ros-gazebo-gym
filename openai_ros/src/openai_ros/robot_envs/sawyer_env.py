@@ -8,13 +8,13 @@ import intera_external_devices
 from intera_interface import CHECK_VERSION
 from intera_core_msgs.msg import JointLimits
 from sensor_msgs.msg import Image
-from openai_ros.openai_ros_common import ROSLauncher
+from openai_ros.common import ROSLauncher
 
 
 class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
     """Superclass for all SawyerEnv environments."""
 
-    def __init__(self, ros_ws_abspath):
+    def __init__(self, workspace_path):
         """
         Initializes a new SawyerEnv environment.
 
@@ -41,9 +41,9 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
 
         # We launch the ROSlaunch that spawns the robot into the world
         ROSLauncher(
-            rospackage_name="sawyer_gazebo",
+            package_name="sawyer_gazebo",
             launch_file_name="put_sawyer_in_world.launch",
-            ros_ws_abspath=ros_ws_abspath,
+            workspace_path=workspace_path,
         )
 
         # Internal Vars

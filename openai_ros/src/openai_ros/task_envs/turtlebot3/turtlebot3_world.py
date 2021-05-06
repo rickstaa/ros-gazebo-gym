@@ -5,7 +5,7 @@ from openai_ros.robot_envs import turtlebot3_env
 from gym.envs.registration import register
 from geometry_msgs.msg import Vector3
 from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.openai_ros_common import ROSLauncher
+from openai_ros.common import ROSLauncher
 import os
 
 
@@ -17,35 +17,36 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
         It will learn how to move around without crashing.
         """
         # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
-        ros_ws_abspath = rospy.get_param("/turtlebot3/ros_ws_abspath", None)
-        assert (
-            ros_ws_abspath is not None
-        ), "You forgot to set ros_ws_abspath in your yaml file of your main RL script. Set ros_ws_abspath: 'YOUR/SIM_WS/PATH'"
-        assert os.path.exists(ros_ws_abspath), (
-            "The Simulation ROS Workspace path "
-            + ros_ws_abspath
-            + " DOESNT exist, execute: mkdir -p "
-            + ros_ws_abspath
-            + "/src;cd "
-            + ros_ws_abspath
-            + ";catkin_make"
-        )
+        # workspace_path = rospy.get_param("/turtlebot3/workspace_path", None)
+        # assert (
+        #     workspace_path is not None
+        # ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
+        # assert os.path.exists(workspace_path), (
+        #     "The Simulation ROS Workspace path "
+        #     + workspace_path
+        #     + " DOESNT exist, execute: mkdir -p "
+        #     + workspace_path
+        #     + "/src;cd "
+        #     + workspace_path
+        #     + ";catkin_make"
+        # )
 
-        ROSLauncher(
-            rospackage_name="turtlebot3_gazebo",
+        ROSLauncher.launch(
+            package_name="turtlebot3_gazebo",
             launch_file_name="start_world.launch",
-            ros_ws_abspath=ros_ws_abspath,
+            # workspace_path=workspace_path,
         )
 
         # Load Params from the desired Yaml file
         LoadYamlFileParamsTest(
-            rospackage_name="openai_ros",
+            package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/turtlebot3/config",
             yaml_file_name="turtlebot3_world.yaml",
         )
 
         # Here we will add any init functions prior to starting the MyRobotEnv
-        super(TurtleBot3WorldEnv, self).__init__(ros_ws_abspath)
+        super(TurtleBot3WorldEnv, self).__init__()
+        # super(TurtleBot3WorldEnv, self).__init__(workspace_path)
 
         # Only variable needed to be set here
         number_actions = rospy.get_param("/turtlebot3/n_actions")
@@ -87,7 +88,7 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
         )
 
         # We create two arrays based on the binary values that will be assigned
-        # In the discretization method.
+        # In the discrimination method.
         laser_scan = self.get_laser_scan()
         num_laser_readings = int(len(laser_scan.ranges) / self.new_ranges)
         high = numpy.full((num_laser_readings), self.max_laser_value)
@@ -130,7 +131,7 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
 
     def _set_action(self, action):
         """
-        This set action will Set the linear and angular speed of the turtlebot2
+        This set action will Set the linear and angular speed of the turtlebot3
         based on the action number given.
         :param action: The action integer that set s what movement to do next.
         """
@@ -150,7 +151,7 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
             angular_speed = -1 * self.angular_speed
             self.last_action = "TURN_RIGHT"
 
-        # We tell TurtleBot2 the linear and angular speed to set to execute
+        # We tell TurtleBot3 the linear and angular speed to set to execute
         self.move_base(linear_speed, angular_speed, epsilon=0.05, update_rate=10)
 
         rospy.logdebug("END Set Action ==>" + str(action))
@@ -159,7 +160,7 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
         """
         Here we define what sensor data defines our robots observations
         To know which Variables we have acces to, we need to read the
-        TurtleBot2Env API DOCS
+        TurtleBot3Env API DOCS
         :return:
         """
         rospy.logdebug("Start Get Observation ==>")
@@ -177,9 +178,9 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
     def _is_done(self, observations):
 
         if self._episode_done:
-            rospy.logerr("TurtleBot2 is Too Close to wall==>")
+            rospy.logerr("TurtleBot3 is Too Close to wall==>")
         else:
-            rospy.logwarn("TurtleBot2 is NOT close to a wall ==>")
+            rospy.logwarn("TurtleBot3 is NOT close to a wall ==>")
 
         # Now we check if it has crashed based on the imu
         imu_data = self.get_imu()
@@ -188,7 +189,7 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
         )
         if linear_acceleration_magnitude > self.max_linear_aceleration:
             rospy.logerr(
-                "TurtleBot2 Crashed==>"
+                "TurtleBot3 Crashed==>"
                 + str(linear_acceleration_magnitude)
                 + ">"
                 + str(self.max_linear_aceleration)
@@ -196,7 +197,7 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
             self._episode_done = True
         else:
             rospy.logerr(
-                "DIDNT crash TurtleBot2 ==>"
+                "DIDNT crash TurtleBot3 ==>"
                 + str(linear_acceleration_magnitude)
                 + ">"
                 + str(self.max_linear_aceleration)

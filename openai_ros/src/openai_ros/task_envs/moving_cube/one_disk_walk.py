@@ -6,7 +6,7 @@ from openai_ros.robot_envs import cube_single_disk_env
 from geometry_msgs.msg import Point
 from tf.transformations import euler_from_quaternion
 from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.openai_ros_common import ROSLauncher
+from openai_ros.common import ROSLauncher
 import os
 
 
@@ -15,29 +15,29 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
 
         # Launch the Task Simulated-Environment
         # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
-        ros_ws_abspath = rospy.get_param("/moving_cube/ros_ws_abspath", None)
+        workspace_path = rospy.get_param("/moving_cube/workspace_path", None)
         assert (
-            ros_ws_abspath is not None
-        ), "You forgot to set ros_ws_abspath in your yaml file of your main RL script. Set ros_ws_abspath: 'YOUR/SIM_WS/PATH'"
-        assert os.path.exists(ros_ws_abspath), (
+            workspace_path is not None
+        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
+        assert os.path.exists(workspace_path), (
             "The Simulation ROS Workspace path "
-            + ros_ws_abspath
+            + workspace_path
             + " DOESNT exist, execute: mkdir -p "
-            + ros_ws_abspath
+            + workspace_path
             + "/src;cd "
-            + ros_ws_abspath
+            + workspace_path
             + ";catkin_make"
         )
 
         ROSLauncher(
-            rospackage_name="moving_cube_description",
+            package_name="moving_cube_description",
             launch_file_name="start_world.launch",
-            ros_ws_abspath=ros_ws_abspath,
+            workspace_path=workspace_path,
         )
 
         # Load Params from the desired Yaml file
         LoadYamlFileParamsTest(
-            rospackage_name="openai_ros",
+            package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/moving_cube/config",
             yaml_file_name="one_disk_walk.yaml",
         )
@@ -113,7 +113,7 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         self.cumulated_steps = 0.0
 
         # Here we will add any init functions prior to starting the MyRobotEnv
-        super(MovingCubeOneDiskWalkEnv, self).__init__(ros_ws_abspath)
+        super(MovingCubeOneDiskWalkEnv, self).__init__(workspace_path)
 
     def _set_init_pose(self):
         """Sets the Robot in its init pose"""

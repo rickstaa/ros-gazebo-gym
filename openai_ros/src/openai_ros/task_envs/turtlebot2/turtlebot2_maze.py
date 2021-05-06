@@ -8,7 +8,7 @@ from gym.envs.registration import register
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Header
 from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.openai_ros_common import ROSLauncher
+from openai_ros.common import ROSLauncher
 import os
 
 
@@ -21,35 +21,35 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
 
         # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
         # This parameter HAS to be set up in the MAIN launch of the AI RL script
-        ros_ws_abspath = rospy.get_param("/turtlebot2/ros_ws_abspath", None)
+        workspace_path = rospy.get_param("/turtlebot2/workspace_path", None)
         assert (
-            ros_ws_abspath is not None
-        ), "You forgot to set ros_ws_abspath in your yaml file of your main RL script. Set ros_ws_abspath: 'YOUR/SIM_WS/PATH'"
-        assert os.path.exists(ros_ws_abspath), (
+            workspace_path is not None
+        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
+        assert os.path.exists(workspace_path), (
             "The Simulation ROS Workspace path "
-            + ros_ws_abspath
+            + workspace_path
             + " DOESNT exist, execute: mkdir -p "
-            + ros_ws_abspath
+            + workspace_path
             + "/src;cd "
-            + ros_ws_abspath
+            + workspace_path
             + ";catkin_make"
         )
 
         ROSLauncher(
-            rospackage_name="turtlebot_gazebo",
+            package_name="turtlebot_gazebo",
             launch_file_name="start_world_maze_loop_brick.launch",
-            ros_ws_abspath=ros_ws_abspath,
+            workspace_path=workspace_path,
         )
 
         # Load Params from the desired Yaml file
         LoadYamlFileParamsTest(
-            rospackage_name="openai_ros",
+            package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/turtlebot2/config",
             yaml_file_name="turtlebot2_maze.yaml",
         )
 
         # Here we will add any init functions prior to starting the MyRobotEnv
-        super(TurtleBot2MazeEnv, self).__init__(ros_ws_abspath)
+        super(TurtleBot2MazeEnv, self).__init__(workspace_path)
 
         # Only variable needed to be set here
         number_actions = rospy.get_param("/turtlebot2/n_actions")

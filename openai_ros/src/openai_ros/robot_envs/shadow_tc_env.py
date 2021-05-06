@@ -6,13 +6,13 @@ from openai_ros import robot_gazebo_env
 from sensor_msgs.msg import Imu
 from sensor_msgs.msg import JointState
 from moveit_msgs.msg import PlanningScene
-from openai_ros.openai_ros_common import ROSLauncher
+from openai_ros.common import ROSLauncher
 
 
 class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
     """Superclass for all ShadowTcEnv environments."""
 
-    def __init__(self, ros_ws_abspath):
+    def __init__(self, workspace_path):
         """
         Initializes a new ShadowTcEnv environment.
 
@@ -43,9 +43,9 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
 
         # We launch the ROSlaunch that spawns the robot into the world
         ROSLauncher(
-            rospackage_name="shadow_gazebo",
+            package_name="shadow_gazebo",
             launch_file_name="put_shadow_in_world.launch",
-            ros_ws_abspath=ros_ws_abspath,
+            workspace_path=workspace_path,
         )
 
         # Internal Vars
