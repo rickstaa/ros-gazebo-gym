@@ -15,21 +15,19 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
         This Task Env is designed for having the TurtleBot2 in some kind of maze.
         It will learn how to move around the maze without crashing.
         """
-
-        # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
+        # This is the path where the simulation files, the Task and the Robot gits will
+        # be downloaded if not there
         workspace_path = rospy.get_param("/turtlebot2/workspace_path", None)
-        assert (
-            workspace_path is not None
-        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
-        assert os.path.exists(workspace_path), (
-            "The Simulation ROS Workspace path "
-            + workspace_path
-            + " DOESNT exist, execute: mkdir -p "
-            + workspace_path
-            + "/src;cd "
-            + workspace_path
-            + ";catkin_make"
-        )
+        if workspace_path:
+            assert os.path.exists(workspace_path), (
+                "The Simulation ROS Workspace path "
+                + workspace_path
+                + " DOESNT exist, execute: mkdir -p "
+                + workspace_path
+                + "/src;cd "
+                + workspace_path
+                + ";catkin_make"
+            )
 
         ROSLauncher(
             package_name="turtlebot_gazebo",

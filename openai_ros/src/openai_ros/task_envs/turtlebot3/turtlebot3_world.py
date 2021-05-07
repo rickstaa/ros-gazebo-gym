@@ -17,24 +17,22 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
         It will learn how to move around without crashing.
         """
         # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
-        # workspace_path = rospy.get_param("/turtlebot3/workspace_path", None)
-        # assert (
-        #     workspace_path is not None
-        # ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
-        # assert os.path.exists(workspace_path), (
-        #     "The Simulation ROS Workspace path "
-        #     + workspace_path
-        #     + " DOESNT exist, execute: mkdir -p "
-        #     + workspace_path
-        #     + "/src;cd "
-        #     + workspace_path
-        #     + ";catkin_make"
-        # )
+        workspace_path = rospy.get_param("/turtlebot3/workspace_path", None)
+        if workspace_path:
+            assert os.path.exists(workspace_path), (
+                "The Simulation ROS Workspace path "
+                + workspace_path
+                + " DOESNT exist, execute: mkdir -p "
+                + workspace_path
+                + "/src;cd "
+                + workspace_path
+                + ";catkin_make"
+            )
 
         ROSLauncher.launch(
             package_name="turtlebot3_gazebo",
             launch_file_name="start_world.launch",
-            # workspace_path=workspace_path,
+            workspace_path=workspace_path,
         )
 
         # Load Params from the desired Yaml file

@@ -76,7 +76,7 @@ openai_ros.robot_envs.sumitxl_env module
     :undoc-members:
     :show-inheritance:
 
-    openai_ros.robot_envs.turtlebot2_env module
+openai_ros.robot_envs.turtlebot2_env module
 -------------------------------------------
 
 .. automodule:: openai_ros.robot_envs.turtlebot2_env
