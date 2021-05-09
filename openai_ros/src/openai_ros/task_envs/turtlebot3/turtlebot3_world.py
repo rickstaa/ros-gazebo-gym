@@ -16,7 +16,8 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
         closed room with columns.
         It will learn how to move around without crashing.
         """
-        # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
+        # This is the path where the simulation files, the Task and the Robot gits will
+        # be downloaded if not there
         workspace_path = rospy.get_param("/turtlebot3/workspace_path", None)
         if workspace_path:
             assert os.path.exists(workspace_path), (

@@ -25,10 +25,10 @@ from openai_ros.common import ROSLauncher
 
 
 class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
-    def __init__(self, control_type, workspace_path):
+    def __init__(self, control_type, workspace_path=None):
 
         # We launch the ROSlaunch that spawns the robot into the world
-        ROSLauncher(
+        ROSLauncher.launch(
             package_name="cartpole_description",
             launch_file_name="put_robot_in_world.launch",
             workspace_path=workspace_path,

@@ -13,21 +13,21 @@ import os
 class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
     def __init__(self):
 
+        # This is the path where the simulation files, the Task and the Robot gits will
+        # be downloaded if not there
         workspace_path = rospy.get_param("/cartpole_v0/workspace_path", None)
-        assert (
-            workspace_path is not None
-        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
-        assert os.path.exists(workspace_path), (
-            "The Simulation ROS Workspace path "
-            + workspace_path
-            + " DOESNT exist, execute: mkdir -p "
-            + workspace_path
-            + "/src;cd "
-            + workspace_path
-            + ";catkin_make"
-        )
+        if workspace_path:
+            assert os.path.exists(workspace_path), (
+                "The Simulation ROS Workspace path "
+                + workspace_path
+                + " DOESNT exist, execute: mkdir -p "
+                + workspace_path
+                + "/src;cd "
+                + workspace_path
+                + ";catkin_make"
+            )
 
-        ROSLauncher(
+        ROSLauncher.launch(
             package_name="cartpole_description",
             launch_file_name="start_world.launch",
             workspace_path=workspace_path,
