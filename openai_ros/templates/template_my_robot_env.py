@@ -11,12 +11,10 @@ from openai_ros import robot_gazebo_env
 
 
 class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
-    """Superclass for all Robot environments.
-    """
+    """Superclass for all Robot environments."""
 
     def __init__(self):
-        """Initializes a new Robot environment.
-        """
+        """Initializes a new Robot environment."""
 
         # Initialize the Gazebo parent environment
         # TODO: Change the controller list and robot namespace
@@ -40,50 +38,98 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
     # NOTE: Methods that need to be implemented as they are called by the Gazebo
     # parent environment.
     def _check_all_systems_ready(self):
-        """
-        Checks that all the sensors, publishers and other simulation systems are
+        """Checks that all the sensors, publishers and other simulation systems are
         operational.
+
+        Raises:
+            NotImplementedError: Thrown when not overloaded by the robot environment.
         """
         # TODO
         return True
 
-    #############################################
-    # Robot env main methods ####################
-    #############################################
-    # NOTE: Here you should implement methods
+    def _env_setup(self, initial_qpos):
+        """Initial configuration of the environment. Can be used to configure initial state
+        and extract information from the simulation.
 
-    # Methods that the TrainingEnvironment will need to define here as virtual
-    # because they will be used in RobotGazeboEnv GrandParentClass and defined in the
-    # TrainingEnvironment.
-    # ----------------------------
+        Args:
+            initial_qpos (np.ndarray): The initial agent pose (generalized coordinates).
+
+        Raises:
+            NotImplementedError: Thrown when not overloaded by the robot environment.
+        """
+        # TODO: OPTIONAL
+        return True
+
+    #############################################
+    # Robot environment internal methods ########
+    #############################################
+    # NOTE: Here you can add additional helper methods that are used in the robot env
+
+    #############################################
+    # Robot env virtual methods #################
+    #############################################
+    # NOTE: Below are methods that the TrainingEnvironment will need to define here as
+    # virtual because they will be used in RobotGazeboEnv. These methods need to be
+    # overloaded in the TrainingEnvironment.
     def _set_init_pose(self):
-        """Sets the Robot in its init pose
+        """Sets the Robot in its init pose.
+
+        Raises:
+            NotImplementedError: Thrown when not overloaded by the task environment.
+        """
+        raise NotImplementedError()
+
+    def _get_obs(self):
+        """Returns the observation.
+
+        Raises:
+            NotImplementedError: Thrown when not overloaded by the task environment.
         """
         raise NotImplementedError()
 
     def _init_env_variables(self):
-        """Inits variables needed to be initialized each time we reset at the start
+        """Inits variables needed to be initialised each time we reset at the start
         of an episode.
-        """
-        raise NotImplementedError()
 
-    def _compute_reward(self, observations, done):
-        """Calculates the reward to give based on the observations given.
+        Raises:
+            NotImplementedError: Thrown when not overloaded by the task environment.
         """
         raise NotImplementedError()
 
     def _set_action(self, action):
         """Applies the given action to the simulation.
-        """
-        raise NotImplementedError()
 
-    def _get_obs(self):
+        Args:
+            action (np.ndarray): The action you want to set.
+
+        Raises:
+            NotImplementedError: Thrown When the method was not overloaded by the task
+                environment.
+        """
         raise NotImplementedError()
 
     def _is_done(self, observations):
-        """Checks if episode done based on observations given.
+        """Indicates whether or not the episode is done (the robot has fallen for
+        example).
+
+        Args:
+            observations (np.ndarray): The observations.
+
+        Raises:
+            NotImplementedError: Thrown When the method was not overloaded by the task
+                environment.
         """
         raise NotImplementedError()
 
-    # Methods that the TrainingEnvironment will need.
-    # ----------------------------
+    def _compute_reward(self, observations, done):
+        """Calculates the reward to give based on the observations given.
+
+        Args:
+            observations (np.ndarray): The observations.
+            done (function): Whether the episode was done.
+
+        Raises:
+            NotImplementedError: Thrown When the method was not overloaded by the task
+                environment.
+        """
+        raise NotImplementedError()

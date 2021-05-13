@@ -16,11 +16,15 @@ class GazeboConnection:
     simulation.
 
     Attributes:
-        pause_proxy (function): ROS service that pauses the gazebo simulator.
-        unpause_proxy (function): ROS service that un-pauses the gazebo simulator.
-        reset_simulation_proxy (function): ROS service that resets the gazebo simulator.
-        reset_world_proxy (function): ROS service that resets the gazebo world.
-    """  # TODO: Set right type
+        pause_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS service that
+            pauses the gazebo simulator.
+        unpause_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS service that
+            un-pauses the gazebo simulator.
+        reset_simulation_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS
+            service that resets the gazebo simulator.
+        reset_world_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS service
+            that resets the gazebo world.
+    """
 
     def __init__(self, start_init_physics_parameters, reset_world_or_sim, max_retry=20):
         """Initiate the GazeboConnection instance.
@@ -56,8 +60,7 @@ class GazeboConnection:
         self.pause_sim()
 
     def pause_sim(self):
-        """Pause the simulation.
-        """
+        """Pause the simulation."""
         rospy.logdebug("PAUSING service found...")
         paused_done = False
         counter = 0
@@ -83,8 +86,7 @@ class GazeboConnection:
         rospy.logdebug("PAUSING finished")
 
     def unpause_sim(self):
-        """Unpauses the simulation.
-        """
+        """Unpauses the simulation."""
         rospy.logdebug("UNPAUSING service found...")
         unpaused_done = False
         counter = 0
@@ -113,8 +115,7 @@ class GazeboConnection:
         rospy.logdebug("UNPAUSING finished")
 
     def _reset_simulation(self):
-        """Calls the ROS reset simulation service.
-        """
+        """Calls the ROS reset simulation service."""
         rospy.wait_for_service("/gazebo/reset_simulation")
         try:
             self.reset_simulation_proxy()
@@ -122,8 +123,7 @@ class GazeboConnection:
             print("/gazebo/reset_simulation service call failed")
 
     def _reset_world(self):
-        """Resets the world (NOT THE WHOLE SIMULATION).
-        """
+        """Resets the world (NOT THE WHOLE SIMULATION)."""
         rospy.wait_for_service("/gazebo/reset_world")
         try:
             self.reset_world_proxy()
@@ -176,8 +176,7 @@ class GazeboConnection:
         self._update_gravity_call()
 
     def init_values(self):
-        """Sets the initial simulator parameter values.
-        """
+        """Sets the initial simulator parameter values."""
         self.reset_sim()
         if self.start_init_physics_parameters:
             rospy.logdebug("Initialising simulation Physics Parameters")
@@ -186,8 +185,7 @@ class GazeboConnection:
             rospy.logerr("NOT Initialising simulation Physics Parameters")
 
     def _update_gravity_call(self):
-        """Updates the simulator gravity property.
-        """
+        """Updates the simulator gravity property."""
         self.pause_sim()
 
         # Create physic change message

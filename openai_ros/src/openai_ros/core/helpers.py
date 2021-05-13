@@ -16,8 +16,6 @@ import rospy
 import ruamel.yaml as yaml
 from gym import envs
 from gym.envs.registration import register
-
-# Import a list with the available openai_ros environments
 from openai_ros.task_envs.task_envs_list import ENVS
 from tqdm import tqdm
 
@@ -171,10 +169,13 @@ def clone_dependency_repo(package_name, workspace_path, git_src, branch=None):
         git_src (str): The git repository url.
         branch(str, optional): The branch to checkout. Defaults to ``None``.
     """
-    pathstr = Path(workspace_path).joinpath("src", "rosdeps", package_name)
+    pathstr = str(Path(workspace_path).joinpath("src", "rosdeps", package_name))
     try:
         pygit2.clone_repository(
-            git_src, pathstr, checkout_branch=branch, callbacks=GitProgressCallback(),
+            git_src,
+            pathstr,
+            checkout_branch=branch,
+            callbacks=GitProgressCallback(),
         )
     except Exception as e:
         rospy.logwarn(
@@ -183,16 +184,29 @@ def clone_dependency_repo(package_name, workspace_path, git_src, branch=None):
         raise e
 
 
-def build_catkin_ws(workspace_path):
-    """Re-builds a catkin workspace.
+def build_catkin_ws(workspace_path, install_ros_deps=False):
+    """Installs the system dependencies and re-builds a catkin workspace.
 
     Args:
         workspace_path (str): The path of the catkin workspace.
+        install_ros_deps (bool): Whether you also want to installt he system
+            using rosdep.
 
     Raises:
         Exception: When something goes wrong while re-building the workspace.
     """
     catkin_make_used = os.path.exists(workspace_path + "/.catkin_workspace")
+
+    # Install system dependencies using rosdep
+    if install_ros_deps:
+        rospy.logwarn(
+            "Installing ROS system dependencies. Please ask your root password if the "
+            "system asks for it."
+        )
+        rosdep_command = (
+            f"rosdep install --from-paths {workspace_path}/src --ignore-src -r -y"
+        )
+        p = subprocess.call(rosdep_command, shell=True)
 
     # Build workspace
     if catkin_make_used:  # Use catkin_make
@@ -200,6 +214,7 @@ def build_catkin_ws(workspace_path):
     else:  # Use catkin build
         rosbuild_command = "catkin build"
     rosbuild_command = "catkin build"
+    rospy.logwarn("Re-building catkin workspace.")
     p = subprocess.call(rosbuild_command, shell=True)
 
     # Catch result
@@ -249,6 +264,14 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
         if workspace_path
         else catkin.workspace.get_workspaces()[0].replace("/devel", "")
     )
+    if not workspace_path:
+        rospy.logerr(
+            "Workspace path could not be found. Please make sure that you source "
+            "the workspace before calling the package_installer function or supply the "
+            "function with a workspace_path."
+        )
+        rospy.signal_shutdown("Workspace path could not be found.")
+        sys.exit(0)
 
     # Retrieve package paths
     global_pkg_path = get_global_pkg_path(package_name)
@@ -263,7 +286,7 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
             or (
                 global_pkg_path
                 and (
-                    not global_pkg_path != local_pkg_path
+                    global_pkg_path != local_pkg_path
                     and not ROSDEP_INDEX[package_name]["binary"]
                 )
             )
@@ -305,7 +328,7 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
                         or (
                             global_dep_pkg_path
                             and (
-                                not global_dep_pkg_path != local_dep_pkg_path
+                                global_dep_pkg_path != local_dep_pkg_path
                                 and not dep_index_info["binary"]
                             )
                         )
@@ -355,7 +378,7 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
 
     # Build the catkin workspace
     if deps_cloned:
-        rospy.loginfo("Re-building catkin workspace since new packages were added.")
+        rospy.logwarn("Re-building catkin workspace since new packages were added.")
         try:
             build_catkin_ws(workspace_path)
         except Exception:
@@ -376,10 +399,11 @@ def load_ros_params_from_yaml(
     """Loads ros parameters from yaml file.
 
     Args:
-        package_name (str): [description]
-        rel_path_from_package_to_file (str): [description]
-        yaml_file_name (str): [description]
-    """  # TODO: Docstring
+        package_name (str): The package name that contains the configuration file.
+        rel_path_from_package_to_file (str): The relative path from this package to the
+            configuration file.
+        yaml_file_name (str): The configuration file name.
+    """
     rospack = rospkg.RosPack()
     pkg_path = rospack.get_path(package_name)
     config_dir = os.path.join(pkg_path, rel_path_from_package_to_file)

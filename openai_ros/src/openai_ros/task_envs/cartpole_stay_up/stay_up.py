@@ -1,3 +1,9 @@
+"""Environment for the 3D CartPole stay up task. In this task environment the agent has
+to learn to keep the pole upright. This task was based on the
+CartPole-v1 environment found in the
+`OpenAi gym package<https://gym.openai.com/envs/CartPole-v1/>`_import os
+"""
+
 import os
 
 import numpy as np
@@ -9,8 +15,12 @@ from openai_ros.robot_envs import cartpole_env
 
 
 class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
-    def __init__(self):
+    """3D task environment in which the agent has to keep the CartPole upright.
+    """
 
+    def __init__(self):
+        """Initiate CartPoleStayUp task environment instance.
+        """
         # This is the path where the simulation files, the Task and the Robot gits will
         # be downloaded if not there
         workspace_path = rospy.get_param("/cartpole_v0/workspace_path", None)
@@ -45,13 +55,6 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
             [2.5 * 2, np.finfo(np.float32).max, 0.7 * 2, np.finfo(np.float32).max]
         )
         self.observation_space = spaces.Box(-high, high)
-
-        # TODO: Remove when working
-        """
-        cartpole_env.CartPoleEnv.__init__(
-            self, control_type=self.control_type
-        )
-        """
 
         # Here we will add any init functions prior to starting the MyRobotEnv
         super(CartPoleStayUpEnv, self).__init__(

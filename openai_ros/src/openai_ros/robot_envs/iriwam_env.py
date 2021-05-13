@@ -2,11 +2,9 @@ import actionlib
 import numpy
 import rospy
 import tf
-from control_msgs.msg import (
-    FollowJointTrajectoryAction,
-    FollowJointTrajectoryGoal,
-    JointTrajectoryControllerState,
-)
+from control_msgs.msg import (FollowJointTrajectoryAction,
+                              FollowJointTrajectoryGoal,
+                              JointTrajectoryControllerState)
 from moveit_msgs.msg import JointLimits
 from openai_ros import robot_gazebo_env
 from openai_ros.core import ROSLauncher
@@ -425,8 +423,6 @@ class IriWamExecTrajectory(object):
 
         self.goal.trajectory.points = []
         joint_traj_point = JointTrajectoryPoint()
-
-        # TODO
         joint_traj_point.positions = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         joint_traj_point.velocities = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         joint_traj_point.accelerations = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]

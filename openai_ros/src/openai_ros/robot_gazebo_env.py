@@ -158,8 +158,7 @@ class RobotGazeboEnv(gym.Env):
         self.cumulated_episode_reward = 0
 
     def reset(self):
-        """Function executed when resetting the environment.
-        """
+        """Function executed when resetting the environment."""
         rospy.logdebug("Reseting RobotGazeboEnvironment")
         self._reset_sim()
         self._init_env_variables()
@@ -176,8 +175,7 @@ class RobotGazeboEnv(gym.Env):
         rospy.signal_shutdown("Closing RobotGazeboEnvironment")
 
     def _reset_sim(self):
-        """Resets a simulation.
-        """
+        """Resets a simulation."""
         rospy.logdebug("RESET SIM START")
         if self.reset_controls:
             rospy.logdebug("RESET CONTROLLERS")
@@ -271,7 +269,6 @@ class RobotGazeboEnv(gym.Env):
         Raises:
             NotImplementedError: Thrown When the method was not overloaded by the task
                 environment.
-
         """
         raise NotImplementedError()
 

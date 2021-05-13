@@ -5,7 +5,7 @@ robot has to learn. For more information see the
 `openai_ros <https://wiki.ros.org/openai_ros>`_ documentation.
 """
 
-import numpy
+import numpy as np
 import rospy
 from gym import spaces
 from gym.envs.registration import register
@@ -23,20 +23,19 @@ register(
 
 
 class MyTaskEnv(MyRobotEnv):
-    """
-
-    Args:
-        MyRobotEnv ([type]): [description]
+    """Environment used to define the task the robot has to learn (i.e. observations
+    you want to use, rewards etc).
     """
 
     def __init__(self):
+        """Initializes a new Task environment."""
 
         # TODO: Implement the action and observation space
         number_actions = rospy.get_param("/my_robot_namespace/n_actions")
         self.action_space = spaces.Discrete(number_actions)
 
         # TODO: Implement the observation space
-        high = numpy.array(
+        high = np.array(
             [
                 # Observation 1 max value,
                 # Observation 2 max value,
@@ -46,27 +45,20 @@ class MyTaskEnv(MyRobotEnv):
         )
         self.observation_space = spaces.Box(-high, high)
 
-        # TODO: Retrieve required robot variables through the param server, loaded with
-        # the ROS launch file.
+        # TODO: Retrieve required robot variables through the param server
 
-        # Initiate the robot environment
+        # Initiate the Robot environment
         super(MyTaskEnv, self).__init__()
 
+    #############################################
+    # Overload Robot env virtual methods ########
+    #############################################
+    # NOTE: Methods that need to be implemented as they are called by the Gazebo
+    # and task environments.
     def _set_init_pose(self):
-        """Sets the Robot in its init pose.
-        """
+        """Sets the Robot in its init pose."""
         # TODO: Implement the logic that sets the robot to it's initial position
-
-    def _init_env_variables(self):
-        """Inits variables needed to be initialized each time we reset at the start
-        of an episode.
-        """
-        # TODO: Reset variables that need to be reset at the start of each episode.
-
-    def _set_action(self, action):
-        """Move the robot based on the given action.
-        """
-        # TODO: Implement logic that moves the robot based on a given action
+        return True
 
     def _get_obs(self):
         """Here we define what sensor data of our robots observations
@@ -74,23 +66,35 @@ class MyTaskEnv(MyRobotEnv):
         MyRobotEnv API DOCS
         :return: observations
         """
-        # TODO: Implement the logic that retrieves the observation data from the robot
-        # sensors.
+        # TODO: Implement the logic that retrieves the observation needed for the reward
+        observations = np.array([0.0, 0.0, 0.0])
+        return observations
 
-        # return observations
+    def _init_env_variables(self):
+        """Inits variables needed to be initialised each time we reset at the start
+        of an episode.
+        """
+        # TODO: Reset variables that need to be reset at the start of each episode.
+        return True
+
+    def _set_action(self, action):
+        """Applies the given action to the simulation."""
+        # TODO: Implement logic that moves the robot based on a given action
 
     def _is_done(self, observations):
-        """Checks if episode is done based on the given observations.
-        """
+        """Indicates whether or not the episode is done (the robot has fallen for
+        example)."""
         # TODO: Implement logic used to check whether a episode is done.
-
-        # return done
+        done = True
+        return done
 
     def _compute_reward(self, observations, done):
-        """Computes the reward based on the given observations.
-        """
+        """Calculates the reward to give based on the observations given."""
         # TODO: Implement logic that is used to calculate th reward.
+        reward = 1e6
+        return reward
 
-        # return reward
-
-    # Internal TaskEnv Methods
+    #############################################
+    # Task environment internal methods #########
+    #############################################
+    # NOTE: Here you can add additional helper methods that are used in the task env

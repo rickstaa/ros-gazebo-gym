@@ -3,11 +3,12 @@
 """
 import atexit
 import subprocess
+import sys
 from pathlib import Path
 
 import catkin
 import rospy
-from openai_ros.common.helpers import get_global_pkg_path, package_installer
+from openai_ros.core.helpers import get_global_pkg_path, package_installer
 
 
 class ROSLauncher(object):
@@ -35,6 +36,21 @@ class ROSLauncher(object):
         Raises:
             Exception: When something went wrong when launching the launchfile.
         """
+        # Retrieve workspace path
+        workspace_path = (
+            workspace_path
+            if workspace_path
+            else catkin.workspace.get_workspaces()[0].replace("/devel", "")
+        )
+        if not workspace_path:
+            rospy.logerr(
+                "Workspace path could not be found. Please make sure that you source "
+                "the workspace before calling the ROSLauncher or supply it with a "
+                "workspace_path."
+            )
+            rospy.signal_shutdown("Workspace path could not be found.")
+            sys.exit(0)
+
         # Install launch file dependencies if they are not present
         try:
             package_installed = package_installer(
@@ -47,13 +63,6 @@ class ROSLauncher(object):
             )
             package_installed = False
 
-        # Retrieve workspace path
-        workspace_path = (
-            workspace_path
-            if workspace_path
-            else catkin.workspace.get_workspaces()[0].replace("/devel", "")
-        )
-
         # Launch launch file if package was found
         if package_installed:
             rospy.loginfo(
@@ -65,7 +74,7 @@ class ROSLauncher(object):
                 launch_dir = Path(get_global_pkg_path(package_name)).joinpath("launch")
                 path_launch_file_name = Path(launch_dir).joinpath(launch_file_name)
                 rospy.logdebug(f"Launch file path: {path_launch_file_name}")
-            source_command = ". {} {};".format(
+            source_command = ". {}{};".format(
                 workspace_path, Path("/devel/setup.sh").resolve()
             )
             roslaunch_command = "roslaunch {} {}".format(package_name, launch_file_name)

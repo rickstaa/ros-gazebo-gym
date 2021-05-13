@@ -14,8 +14,9 @@ class ControllersConnection:
     Attributes:
         controllers_list (list): List with currently available controllers.
         switch_service_name (str): The name of the controller switch service.
-        switch_service (): The controller switch service.
-    """  # TODO: Set right type
+        switch_service (:obj:`rospy.impl.tcpros_service.ServiceProxy`): The controller
+            switch service.
+    """
 
     def __init__(self, namespace, controllers_list):
         """Initialize the ControllersConnection instance.
@@ -39,44 +40,29 @@ class ControllersConnection:
         """Function used to switch controllers on and off.
 
         Args:
-            controllers_on ([type]): [description]
-            controllers_off ([type]): [description]
-            strictness (int, optional): [description]. Defaults to 1.
+            controllers_on (list): The controllers you want to turn on.
+            controllers_off (list): The controllers you want to turn off.
+            strictness (int, optional): Wether the switching will fail if anything goes
+                wrong. Defaults to 1.
 
         Returns:
-            [type]: [description]
-        """  # TODO: Docstring
+            bool: Boolean specifying whether the switch was successfull.
+        """
         rospy.wait_for_service(self.switch_service_name)
-
         try:
             switch_request_object = SwitchControllerRequest()
             switch_request_object.start_controllers = controllers_on
             switch_request_object.start_controllers = controllers_off
             switch_request_object.strictness = strictness
-
             switch_result = self.switch_service(switch_request_object)
-            """
-            [controller_manager_msgs/SwitchController]
-            int32 BEST_EFFORT=1
-            int32 STRICT=2
-            string[] start_controllers
-            string[] stop_controllers
-            int32 strictness
-            ---
-            bool ok
-            """
             rospy.logdebug("Switch Result==>" + str(switch_result.ok))
-
             return switch_result.ok
-
         except rospy.ServiceException:
             print(self.switch_service_name + " service call failed")
-
             return None
 
     def reset_controllers(self):
-        """Resets the currently used controllers by turning them off and on.
-        """
+        """Resets the currently used controllers by turning them off and on."""
         reset_result = False
         result_off_ok = self.switch_controllers(
             controllers_on=[], controllers_off=self.controllers_list
@@ -97,6 +83,5 @@ class ControllersConnection:
         return reset_result
 
     def update_controllers_list(self, new_controllers_list):
-        """Update the available controllers list.
-        """
+        """Update the available controllers list."""
         self.controllers_list = new_controllers_list

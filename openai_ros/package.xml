@@ -43,8 +43,9 @@
   -->
 
   <!-- Python dependencies -->
-  <exec_depend>python3-git</exec_depend>
+  <exec_depend>python3-pygit2</exec_depend>
   <exec_depend>python3-ruamel.yaml</exec_depend>
+  <exec_depend>python3-tqdm</exec_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>
