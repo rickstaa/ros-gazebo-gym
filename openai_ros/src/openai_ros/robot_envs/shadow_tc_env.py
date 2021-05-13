@@ -230,7 +230,7 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         return: Ball Pose in the World frame
         We unpause and pause the simulation because this calss is a service call.
         This means that if the simulation is NOT
-        running it wont get the Ball information of position.
+        running it won't get the Ball information of position.
         """
         rospy.logdebug("START get_ball_pose ==>")
         self.gazebo.unpause_sim()
@@ -246,7 +246,7 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         Returns the pose of the tip of the TCP
         We unpause and pause the simulation because this calss is a service call.
         This means that if the simulation is NOT
-        running it wont get the TCP information of position.
+        running it won't get the TCP information of position.
         """
         rospy.logdebug("START get_tip_pose ==>")
         self.gazebo.unpause_sim()
@@ -291,7 +291,7 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         It activates or deactivates the finger collisions.
         It also will triguer the publish into the planning_scene the collisions.
         We puase and unpause for the smae exact reason as the get TCP and get ball pos.
-        Being a service, untill the simulation is unpaused it wont get response.
+        Being a service, untill the simulation is unpaused it won't get response.
         """
         rospy.logdebug("START get_fingers_colision")
         self.sgs.check_fingers_collisions(activate)

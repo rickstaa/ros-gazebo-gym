@@ -54,42 +54,72 @@ class MyTaskEnv(MyRobotEnv):
     # Overload Robot env virtual methods ########
     #############################################
     # NOTE: Methods that need to be implemented as they are called by the Gazebo
-    # and task environments.
+    # and robot environments.
     def _set_init_pose(self):
-        """Sets the Robot in its init pose."""
+        """Sets the Robot in its init pose.
+
+        Returns:
+            bool: Whether the pose was set successfully.
+        """
         # TODO: Implement the logic that sets the robot to it's initial position
         return True
-
-    def _get_obs(self):
-        """Here we define what sensor data of our robots observations
-        To know which Variables we have acces to, we need to read the
-        MyRobotEnv API DOCS
-        :return: observations
-        """
-        # TODO: Implement the logic that retrieves the observation needed for the reward
-        observations = np.array([0.0, 0.0, 0.0])
-        return observations
 
     def _init_env_variables(self):
         """Inits variables needed to be initialised each time we reset at the start
         of an episode.
+
+        Returns:
+            bool: Whether the pose was set successfully.
         """
         # TODO: Reset variables that need to be reset at the start of each episode.
         return True
 
     def _set_action(self, action):
-        """Applies the given action to the simulation."""
+        """Applies the given action to the simulation.
+
+        Args:
+            action (numpy.ndarray): The action we want to apply.
+
+        Returns:
+            bool: Whether the pose was set successfully.
+        """
         # TODO: Implement logic that moves the robot based on a given action
+        return True
+
+    def _get_obs(self):
+        """Here we define what sensor data of our robots observations we have access to.
+
+        Returns:
+            numpy.ndarray: The observation data.
+        """
+        # TODO: Implement the logic that retrieves the observation needed for the reward
+        observations = np.array([0.0, 0.0, 0.0])
+        return observations
 
     def _is_done(self, observations):
         """Indicates whether or not the episode is done (the robot has fallen for
-        example)."""
+        example).
+
+        Args:
+            observations (numpy.ndarray): The observation vector.
+
+        Returns:
+            bool: Whether the epside was finished.
+        """
         # TODO: Implement logic used to check whether a episode is done.
         done = True
         return done
 
     def _compute_reward(self, observations, done):
-        """Calculates the reward to give based on the observations given."""
+        """Calculates the reward to give based on the observations given.
+
+        Args:
+            observations (numpy.ndarray): The observation vector.
+            done (bool): Whether the episode has finished.
+
+        Returns:
+            float: The step reward.
+        """
         # TODO: Implement logic that is used to calculate th reward.
         reward = 1e6
         return reward

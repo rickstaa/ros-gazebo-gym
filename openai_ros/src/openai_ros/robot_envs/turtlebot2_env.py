@@ -15,8 +15,8 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
     def __init__(self, workspace_path):
         """
         Initializes a new TurtleBot2Env environment.
-        Turtlebot2 doesn't use controller_manager, therefore we wont reset the
-        controllers in the standard fashion. For the moment we wont reset them.
+        Turtlebot2 doesn't use controller_manager, therefore we won't reset the
+        controllers in the standard fashion. For the moment we won't reset them.
 
         To check any topic we need to have the simulations running, we need to do two
         things:

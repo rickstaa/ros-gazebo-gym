@@ -12,8 +12,8 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
     def __init__(self, workspace_path):
         """
         Initializes a new HusarionEnv environment.
-        Husarion doesn't use controller_manager, therefore we wont reset the
-        controllers in the standard fashion. For the moment we wont reset them.
+        Husarion doesn't use controller_manager, therefore we won't reset the
+        controllers in the standard fashion. For the moment we won't reset them.
 
         To check any topic we need to have the simulations running, we need to do two
         things:
@@ -276,7 +276,7 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
     ):
         """
         We wait for the cmd_vel twist given to be reached by the robot reading
-        Bare in mind that the angular wont be controled , because its too imprecise.
+        Bare in mind that the angular won't be controled , because its too imprecise.
         We will only consider to check if its moving or not inside the
         angular_speed_noise fluctiations it has.
         from the odometry.

@@ -9,6 +9,7 @@ from pathlib import Path
 
 import catkin
 import catkin_pkg
+import numpy as np
 import pygit2
 import rosparam
 import rospkg
@@ -411,3 +412,17 @@ def load_ros_params_from_yaml(
     paramlist = rosparam.load_file(path_config_file)
     for params, ns in paramlist:
         rosparam.upload_params(ns, params)
+
+
+def get_vector_magnitude(vector):
+    """Calculates the force magnitude.
+
+    Args:
+        vector (numpy.ndarray): The input vector. [description]
+
+    Returns:
+        float: The magnitude of the vector.
+    """
+    contact_force_np = np.array((vector.x, vector.y, vector.z))
+    force_magnitude = np.linalg.norm(contact_force_np)
+    return force_magnitude

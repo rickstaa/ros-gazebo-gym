@@ -16,11 +16,7 @@ from openai_ros.msg import RLExperimentInfo
 
 
 class RobotGazeboEnv(gym.Env):
-    """Connects the simulated environment to the gazebo simulator.
-
-    Args:
-        gym (gym.Env): The OpenAi gym environment class.
-    """
+    """Connects the simulated environment to the gazebo simulator."""
 
     def __init__(
         self,
@@ -113,7 +109,6 @@ class RobotGazeboEnv(gym.Env):
             in the simulation and get the observations result of performing that action.
         """
         rospy.logdebug("START STEP OpenAI ROS")
-
         self.gazebo.unpause_sim()
         self._set_action(action)
         self.gazebo.pause_sim()
@@ -122,9 +117,7 @@ class RobotGazeboEnv(gym.Env):
         info = {}
         reward = self._compute_reward(obs, done)
         self.cumulated_episode_reward += reward
-
         rospy.logdebug("END STEP OpenAI ROS")
-
         return obs, reward, done, info
 
     def _publish_reward_topic(self, reward, episode_number=1):
@@ -204,6 +197,10 @@ class RobotGazeboEnv(gym.Env):
         rospy.logdebug("RESET SIM END")
         return True
 
+    def render(self, *args, **kwargs):
+        """Overload render method since rendering is handled in Gazebo."""
+        pass
+
     #############################################
     # Extension methods #########################
     #############################################
@@ -238,7 +235,7 @@ class RobotGazeboEnv(gym.Env):
         """Applies the given action to the simulation.
 
         Args:
-            action (np.ndarray): The action you want to set.
+            action (numpy.ndarray): The action you want to set.
 
         Raises:
             NotImplementedError: Thrown When the method was not overloaded by the task
@@ -251,7 +248,7 @@ class RobotGazeboEnv(gym.Env):
         example).
 
         Args:
-            observations (np.ndarray): The observations.
+            observations (numpy.ndarray): The observations.
 
         Raises:
             NotImplementedError: Thrown When the method was not overloaded by the task
@@ -263,7 +260,7 @@ class RobotGazeboEnv(gym.Env):
         """Calculates the reward to give based on the observations given.
 
         Args:
-            observations (np.ndarray): The observations.
+            observations (numpy.ndarray): The observations.
             done (function): Whether the episode was done.
 
         Raises:
@@ -287,7 +284,7 @@ class RobotGazeboEnv(gym.Env):
         and extract information from the simulation.
 
         Args:
-            initial_qpos (np.ndarray): The initial agent pose (generalized coordinates).
+            initial_qpos (numpy.ndarray): The initial agent pose (generalized coordinates).
 
         Raises:
             NotImplementedError: Thrown when not overloaded by the robot environment.

@@ -17,6 +17,8 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
         """Initializes a new Robot environment."""
 
         # Initialize the Gazebo parent environment
+
+        # Setup internal robot environment variables (controllers, namespace ect.)
         # TODO: Change the controller list and robot namespace
         self.controllers_list = [
             "my_robot_controller1",
@@ -26,6 +28,8 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
         ]
         self.robot_name_space = "my_robot_namespace"
         reset_controls_bool = True or False
+
+        # Initialze the gazebo environment
         super(MyRobotEnv, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,
@@ -52,7 +56,7 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
         and extract information from the simulation.
 
         Args:
-            initial_qpos (np.ndarray): The initial agent pose (generalized coordinates).
+            initial_qpos (numpy.ndarray): The initial agent pose (generalized coordinates).
 
         Raises:
             NotImplementedError: Thrown when not overloaded by the robot environment.
@@ -64,6 +68,11 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
     # Robot environment internal methods ########
     #############################################
     # NOTE: Here you can add additional helper methods that are used in the robot env
+
+    #############################################
+    # Robot env main methods ####################
+    #############################################
+    # NOTE: Contains methods that the TrainingEnvironment will need.
 
     #############################################
     # Robot env virtual methods #################
@@ -100,7 +109,7 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
         """Applies the given action to the simulation.
 
         Args:
-            action (np.ndarray): The action you want to set.
+            action (numpy.ndarray): The action you want to set.
 
         Raises:
             NotImplementedError: Thrown When the method was not overloaded by the task
@@ -113,7 +122,7 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
         example).
 
         Args:
-            observations (np.ndarray): The observations.
+            observations (numpy.ndarray): The observations.
 
         Raises:
             NotImplementedError: Thrown When the method was not overloaded by the task
@@ -125,7 +134,7 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
         """Calculates the reward to give based on the observations given.
 
         Args:
-            observations (np.ndarray): The observations.
+            observations (numpy.ndarray): The observations.
             done (function): Whether the episode was done.
 
         Raises:
