@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Launches all the ROS nodes that are needed for a given openai_sim gym environment.
 """
 import atexit

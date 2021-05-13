@@ -1,17 +1,15 @@
-import rospy
-import numpy
-from gym import spaces
-from openai_ros.robot_envs import iriwam_env
-from gym.envs.registration import register
-from geometry_msgs.msg import Point
-from geometry_msgs.msg import Vector3
-from tf.transformations import euler_from_quaternion
-import cv2
-from cv_bridge import CvBridge, CvBridgeError
-from sensor_msgs.msg import Image
-from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.common import ROSLauncher
 import os
+
+import cv2
+import numpy
+import rospy
+from cv_bridge import CvBridge, CvBridgeError
+from geometry_msgs.msg import Vector3
+from gym import spaces
+from openai_ros.core import ROSLauncher
+from openai_ros.robot_envs import iriwam_env
+from openai_ros.core.helpers import load_ros_params_from_yaml
+from tf.transformations import euler_from_quaternion
 
 
 class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
@@ -19,18 +17,20 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         """
         Make iriwam learn how pick up a cube
         """
-        # We set an initial value imposible to ach to reward at least the first time
+        # We set an initial value impossible to ach to reward at least the first time
         self.previous_distance_from_block = 100.0
 
-        # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
+        # This is the path where the simulation files, the Task and the Robot gits will
+        # be downloaded if not there
         workspace_path = rospy.get_param("/iriwam/workspace_path", None)
-        assert (
-            workspace_path is not None
-        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
+        assert workspace_path is not None, (
+            "You forgot to set workspace_path in your yaml file of your main RL "
+            "script. Set workspace_path: 'YOUR/SIM_WS/PATH'."
+        )
         assert os.path.exists(workspace_path), (
             "The Simulation ROS Workspace path "
             + workspace_path
-            + " DOESNT exist, execute: mkdir -p "
+            + " DOESN'T exist, execute: mkdir -p "
             + workspace_path
             + "/src;cd "
             + workspace_path
@@ -44,14 +44,15 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         )
 
         # Load Params from the desired Yaml file
-        LoadYamlFileParamsTest(
+        load_ros_params_from_yaml(
             package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/iriwam/config",
             yaml_file_name="tcp_to_bowl.yaml",
         )
 
         # We execute this one before because there are some functions that this
-        # TaskEnv uses that use variables from the parent class, like the effort limit fetch.
+        # TaskEnv uses that use variables from the parent class, like the effort limit
+        # fetch.
         super(IriWamTcpToBowlEnv, self).__init__(workspace_path)
 
         # Here we will add any init functions prior to starting the MyRobotEnv
@@ -107,8 +108,8 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         # TODO: Fill when get_observations is done.
         """
         We supose that its all these:
-        head_pan, right_gripper_l_finger_joint, right_gripper_r_finger_joint, right_j0, right_j1,
-  right_j2, right_j3, right_j4, right_j5, right_j6
+        head_pan, right_gripper_l_finger_joint, right_gripper_r_finger_joint, right_j0,
+        right_j1, right_j2, right_j3, right_j4, right_j5, right_j6
 
         Plus the first three are the block_to_tcp vector
         """
@@ -193,7 +194,7 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
             data=image_data
         )
 
-    def _set_action(self, action):
+    def _set_action(self, action):  # noqa: C901
         """
         It sets the joints of iriwam based on the action integer given
         based on the action number given.
@@ -257,7 +258,8 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         center_laser_distance = laser_data.ranges[int(len(laser_data.ranges) / 2)]
         center_laser_distance_array = [round(center_laser_distance, self.dec_obs)]
 
-        # We get the distance laser tip to the red bowl using the image blob detection system
+        # We get the distance laser tip to the red bowl using the image blob detection
+        # system
         image_data = self.get_camera_rgb_image_raw()
         distance_from_bowl = self.get_magnitud_tcp_to_block(data=image_data)
         distance_from_bowl_array = [round(distance_from_bowl, self.dec_obs)]
@@ -278,8 +280,8 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         """
         We consider the episode done if:
         1) The iriwam end effector to bowl distance exceeds the maximum
-        2) The iriwam end effector to bowl distance reaches the minimum and laser distance is lower than minimum
-
+        2) The iriwam end effector to bowl distance reaches the minimum and laser
+           distance is lower than minimum
         """
 
         distance_laser = observations[-2]
@@ -322,7 +324,8 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
 
         if not done:
 
-            # If there has been a decrease in the distance to the desired point, we reward it
+            # If there has been a decrease in the distance to the desired point, we
+            # reward it
             if distance_difference < 0.0:
                 rospy.logdebug("DECREASE IN DISTANCE GOOD")
                 reward = self.closer_to_block_reward
@@ -404,8 +407,7 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         It return True if the distance red by the laser is smaller than minimum and
         the distance by image is smaller than minimum
         """
-
-        laser_close_enough = distance_laser <= self.min_laser_distance
+        # laser_close_enough = distance_laser <= self.min_laser_distance
         magnitude_image_enough = magnitude_image <= self.min_distance_from_red_bowl
         rospy.logwarn(
             "reached_bowl condition, magnitude_image==>"
@@ -541,9 +543,11 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         image data given
 
         :param: data: RGB image data
-        :return: magnitude: Distance in pixels from the center of the black blob ( the laser)
+        :return: magnitude: Distance in pixels from the center of the black blob (the
+        laser)
         To the center of the red blob ( the red bowl)
-        Bear in mind that if the laser tip goes out of the cameras view, it will give a false positive
+        Bear in mind that if the laser tip goes out of the cameras view, it will give a
+        false positive
         """
 
         try:
@@ -555,9 +559,10 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
 
         if cv_image is not None:
             # We get image dimensions and crop the parts of the image we don't need
-            # Bear in mind that because the first value of the image matrix is start and second value is down limit.
-            # Select the limits so that it gets the line not too close and not too far, and the minimum portion possible
-            # To make process faster.
+            # Bear in mind that because the first value of the image matrix is start and
+            # second value is down limit. Select the limits so that it gets the line not
+            # too close and not too far, and the minimum portion possible. To make
+            # process faster.
             height, width, channels = cv_image.shape
             descentre = int(-height / 2)
             rows_to_watch = int(height)
@@ -571,7 +576,8 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
             # Convert from RGB to HSV
             hsv = cv2.cvtColor(crop_img, cv2.COLOR_BGR2HSV)
 
-            # We track two colours, the RedBowl and the Black tip of IriWam Arm ( laser ) which is black.
+            # We track two colours, the RedBowl and the Black tip of IriWam Arm (laser)
+            # which is black.
 
             # RED BOWL
 

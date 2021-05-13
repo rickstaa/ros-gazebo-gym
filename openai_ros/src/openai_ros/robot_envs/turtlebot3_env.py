@@ -1,16 +1,11 @@
-import numpy
-import rospy
 import time
-from openai_ros import robot_gazebo_env
-from std_msgs.msg import Float64
-from sensor_msgs.msg import JointState
-from sensor_msgs.msg import Image
-from sensor_msgs.msg import LaserScan
-from sensor_msgs.msg import PointCloud2
-from sensor_msgs.msg import Imu
-from nav_msgs.msg import Odometry
+
+import rospy
 from geometry_msgs.msg import Twist
-from openai_ros.common import ROSLauncher
+from nav_msgs.msg import Odometry
+from openai_ros import robot_gazebo_env
+from openai_ros.core import ROSLauncher
+from sensor_msgs.msg import Imu, LaserScan
 
 
 class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
@@ -19,21 +14,25 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
     def __init__(self, workspace_path=None):
         """
         Initializes a new TurtleBot3Env environment.
-        TurtleBot3 doesnt use controller_manager, therefore we wont reset the
+        TurtleBot3 doesn't use controller_manager, therefore we wont reset the
         controllers in the standard fashion. For the moment we wont reset them.
 
-        To check any topic we need to have the simulations running, we need to do two things:
-        1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
-        that are pause for whatever the reason
-        2) If the simulation was running already for some reason, we need to reset the controlers.
-        This has to do with the fact that some plugins with tf, dont understand the reset of the simulation
-        and need to be reseted to work properly.
+        To check any topic we need to have the simulations running, we need to do two
+        things:
+        1) Un-pause the simulation: without that th stream of data doesn't flow. This is
+           for simulations that are pause for whatever the reason
+        2) If the simulation was running already for some reason, we need to reset the
+           controllers.
+        This has to do with the fact that some plugins with tf, don't understand the
+        reset of the simulation and need to be reset to work properly.
 
-        The Sensors: The sensors accesible are the ones considered usefull for AI learning.
+        The Sensors: The sensors accessible are the ones considered usefull for AI
+        learning.
 
         Sensor Topic List:
         * /odom : Odometry readings of the Base of the Robot
-        * /imu: Inertial Mesuring Unit that gives relative accelerations and orientations.
+        * /imu: Inertial Mesuring Unit that gives relative accelerations and
+          orientations.
         * /scan: Laser Readings
 
         Actuators Topic List: /cmd_vel,
@@ -52,13 +51,14 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         )
 
         # Internal Vars
-        # Doesnt have any accesibles
+        # Doesn't have any accessibles
         self.controllers_list = ["imu"]
 
-        # It doesnt use namespace
+        # It doesn't use namespace
         self.robot_name_space = ""
 
-        # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
+        # We launch the init function of the parent class
+        # robot_gazebo_env.RobotGazeboEnv
         super(TurtleBot3Env, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,
@@ -66,7 +66,7 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
             start_init_physics_parameters=False,
         )
 
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
         # self.controllers_object.reset_controllers()
         self._check_all_sensors_ready()
 
@@ -79,7 +79,7 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
 
         self._check_publishers_connection()
 
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
 
         rospy.logdebug("Finished TurtleBot3Env INIT...")
 
@@ -111,8 +111,7 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
             try:
                 self.odom = rospy.wait_for_message("/odom", Odometry, timeout=5.0)
                 rospy.logdebug("Current /odom READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr("Current /odom not ready yet, retrying for getting odom")
 
         return self.odom
@@ -124,8 +123,7 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
             try:
                 self.imu = rospy.wait_for_message("/imu", Imu, timeout=5.0)
                 rospy.logdebug("Current /imu READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr("Current /imu not ready yet, retrying for getting imu")
 
         return self.imu
@@ -139,8 +137,7 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
                     "/scan", LaserScan, timeout=1.0
                 )
                 rospy.logdebug("Current /scan READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current /scan not ready yet, retrying for getting laser_scan"
                 )
@@ -209,7 +206,8 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         It will wait untill those twists are achived reading from the odometry topic.
         :param linear_speed: Speed in the X axis of the robot base frame
         :param angular_speed: Speed of the angular turning of the robot base frame
-        :param epsilon: Acceptable difference between the speed asked and the odometry readings
+        :param epsilon: Acceptable difference between the speed asked and the odometry
+            readings
         :param update_rate: Rate at which we check the odometry.
         :return:
         """
@@ -220,7 +218,8 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         self._check_publishers_connection()
         self._cmd_vel_pub.publish(cmd_vel_value)
         # self.wait_until_twist_achieved(cmd_vel_value,epsilon,update_rate)
-        # Weplace a waitof certain amiunt of time, because this twist achived doesnt work properly
+        # Weplace a waitof certain amiunt of time, because this twist achived doesn't
+        # work properly
         time.sleep(0.2)
 
     def wait_until_twist_achieved(self, cmd_vel_value, epsilon, update_rate):
@@ -252,7 +251,8 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
 
         while not rospy.is_shutdown():
             current_odometry = self._check_odom_ready()
-            # IN turtlebot3 the odometry angular readings are inverted, so we have to invert the sign.
+            # IN turtlebot3 the odometry angular readings are inverted, so we have to
+            # invert the sign.
             odom_linear_vel = current_odometry.twist.twist.linear.x
             odom_angular_vel = -1 * current_odometry.twist.twist.angular.z
 

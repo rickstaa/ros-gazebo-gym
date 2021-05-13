@@ -1,17 +1,17 @@
+import actionlib
 import numpy
 import rospy
-import time
 import tf
-from openai_ros import robot_gazebo_env
-from sensor_msgs.msg import Image
-from sensor_msgs.msg import LaserScan
-from sensor_msgs.msg import PointCloud2
-from control_msgs.msg import JointTrajectoryControllerState
-from openai_ros.common import ROSLauncher
-import actionlib
-from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
-from trajectory_msgs.msg import JointTrajectoryPoint
+from control_msgs.msg import (
+    FollowJointTrajectoryAction,
+    FollowJointTrajectoryGoal,
+    JointTrajectoryControllerState,
+)
 from moveit_msgs.msg import JointLimits
+from openai_ros import robot_gazebo_env
+from openai_ros.core import ROSLauncher
+from sensor_msgs.msg import Image, LaserScan, PointCloud2
+from trajectory_msgs.msg import JointTrajectoryPoint
 
 
 class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -21,24 +21,29 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         Initializes a new IriWamEnv environment.
 
-        To check any topic we need to have the simulations running, we need to do two things:
-        1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
-        that are pause for whatever the reason
-        2) If the simulation was running already for some reason, we need to reset the controlers.
-        This has to do with the fact that some plugins with tf, dont understand the reset of the simulation
-        and need to be reseted to work properly.
+        To check any topic we need to have the simulations running, we need to do two
+        things:
+        1) Un-pause the simulation: without that th stream of data doesn't flow. This is
+           for simulations that are pause for whatever the reason
+        2) If the simulation was running already for some reason, we need to reset the
+           controllers.
+        This has to do with the fact that some plugins with tf, don't understand the
+        reset of the simulation and need to be reset to work properly.
 
-        The Sensors: The sensors accesible are the ones considered usefull for AI learning.
+        The Sensors: The sensors accessible are the ones considered usefull for AI
+        learning.
 
         Sensor Topic List:
         * /camera/depth/image_raw
         * /camera/depth/points
         * /camera/rgb/image_raw
         * /laser_scan: Laser scan of the TCP
-        * /iri_wam/iri_wam_controller/state, control_msgs/JointTrajectoryControllerState: Gives desired, actual and error.
+        * /iri_wam/iri_wam_controller/state, control_msgs/
+          JointTrajectoryControllerState: Gives desired, actual and error.
 
         Actuators Topic List:
-        * We publish int the action: /iri_wam/iri_wam_controller/follow_joint_trajectory/goal
+        * We publish int the action: /iri_wam/iri_wam_controller/
+          follow_joint_trajectory/goal
 
         Args:
         """
@@ -54,13 +59,14 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
         )
 
         # Internal Vars
-        # Doesnt have any accesibles
+        # Doesn't have any accessibles
         self.controllers_list = []
 
-        # It doesnt use namespace
+        # It doesn't use namespace
         self.robot_name_space = ""
 
-        # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
+        # We launch the init function of the parent class
+        # robot_gazebo_env.RobotGazeboEnv
         super(IriWamEnv, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,
@@ -70,7 +76,7 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
         )
 
         rospy.logdebug("IriWamEnv unpause...")
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
 
         self._check_all_systems_ready()
 
@@ -93,7 +99,7 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
         self._setup_tf_listener()
         self._setup_movement_system()
 
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
 
         rospy.logdebug("Finished IriWamEnv INIT...")
 
@@ -131,10 +137,10 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/camera/depth/image_raw", Image, timeout=5.0
                 )
                 rospy.logdebug("Current /camera/depth/image_raw READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /camera/depth/image_raw not ready yet, retrying for getting camera_depth_image_raw"
+                    "Current /camera/depth/image_raw not ready yet, retrying for "
+                    "getting camera_depth_image_raw."
                 )
         return self.camera_depth_image_raw
 
@@ -147,10 +153,10 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/camera/depth/points", PointCloud2, timeout=10.0
                 )
                 rospy.logdebug("Current /camera/depth/points READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /camera/depth/points not ready yet, retrying for getting camera_depth_points"
+                    "Current /camera/depth/points not ready yet, retrying for getting "
+                    "camera_depth_points."
                 )
         return self.camera_depth_points
 
@@ -163,10 +169,10 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/camera/rgb/image_raw", Image, timeout=5.0
                 )
                 rospy.logdebug("Current /camera/rgb/image_raw READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /camera/rgb/image_raw not ready yet, retrying for getting camera_rgb_image_raw"
+                    "Current /camera/rgb/image_raw not ready yet, retrying for getting "
+                    "camera_rgb_image_raw."
                 )
         return self.camera_rgb_image_raw
 
@@ -179,8 +185,7 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/laser_scan", LaserScan, timeout=5.0
                 )
                 rospy.logdebug("Current /laser_scan READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current /laser_scan not ready yet, retrying for getting laser_scan"
                 )
@@ -197,10 +202,10 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
                     timeout=5.0,
                 )
                 rospy.logdebug("Current /iri_wam/iri_wam_controller/state READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /iri_wam/iri_wam_controller/state not ready yet, retrying for getting laser_scan"
+                    "Current /iri_wam/iri_wam_controller/state not ready yet, retrying "
+                    "for getting laser_scan."
                 )
         return self.joint_state
 
@@ -266,8 +271,10 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
     # ----------------------------
     def move_joints_to_angle_blocking(self, joints_positions_array):
         """
-        It moves all the joints to the given position and doesnt exit until it reaches that position
-        :param: joints_positions_array: Its an array that ahas the desired joint positions in radians. The order of the
+        It moves all the joints to the given position and doesn't exit until it reaches
+            that position
+        :param: joints_positions_array: Its an array that ahas the desired joint
+            positions in radians. The order of the
         joints is:
             [   "iri_wam_joint_1",
                 "iri_wam_joint_2",
@@ -282,9 +289,9 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def get_tf_start_to_end_frames(self, start_frame_name, end_frame_name):
         """
-        Given two frames, it returns the transform from the start_frame_name to the end_frame_name.
-        It will only return something different to None if the TFs of the Two frames are in TF topic
-        published and are connected through the TF tree.
+        Given two frames, it returns the transform from the start_frame_name to the
+        end_frame_name. It will only return something different to None if the TFs of
+        the Two frames are in TF topic published and are connected through the TF tree.
         :param: start_frame_name: Start Frame of the TF transform
                 end_frame_name: End Frame of the TF transform
         :return: trans,rot of the transform between the start and end frames.
@@ -325,9 +332,12 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def get_joint_limits(self):
         """
-                name: [iri_wam_joint_1, iri_wam_joint_2, iri_wam_joint_3, iri_wam_joint_4, iri_wam_joint_5,
-          iri_wam_joint_6, iri_wam_joint_7]
-        position: [-2.453681702263566e-11, 5.5375411835534294e-05, -2.9760194308892096e-11, -0.0062733383258359865, 1.8740564655672642e-13, 2.6570746959997393e-05, 1.5187850976872141e-13]
+        name: [iri_wam_joint_1, iri_wam_joint_2, iri_wam_joint_3,
+                iri_wam_joint_4, iri_wam_joint_5,
+        iri_wam_joint_6, iri_wam_joint_7]
+        position: [-2.453681702263566e-11, 5.5375411835534294e-05,
+        -2.9760194308892096e-11, -0.0062733383258359865, 1.8740564655672642e-13,
+        2.6570746959997393e-05, 1.5187850976872141e-13]
         """
 
         name_array = [
@@ -355,8 +365,10 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def init_joint_limits(self):
         """
-        Get the Joint Limits, in the init fase where we need to unpause the simulation to get them
-        :return: joint_limits: The Joint Limits Dictionary, with names, angles, vel and effort limits.
+        Get the Joint Limits, in the init fase where we need to unpause the simulation
+        to get them
+        :return: joint_limits: The Joint Limits Dictionary, with names, angles, vel and
+        effort limits.
         """
         joint_limits = self.get_joint_limits()
         return joint_limits
@@ -405,7 +417,8 @@ class IriWamExecTrajectory(object):
             "iri_wam_joint_7",
         ]
 
-        # Some of them dont quite coincide with the URDF limits, just because those limits break the simulation.
+        # Some of them don't quite coincide with the URDF limits, just because those
+        # limits break the simulation.
         self.max_values = [2.6, 2.0, 2.8, 3.0, 1.24, 1.5, 3.0]
 
         self.min_values = [-2.6, -2.0, -2.8, -0.9, -1.24, -1.4, -3.0]
@@ -441,7 +454,8 @@ class IriWamExecTrajectory(object):
         my_goal.trajectory.header.stamp = rospy.Time.now()
         joint_traj_point = JointTrajectoryPoint()
 
-        # We clamp the values to max and min to avoid asking configurations that IriWam cant reach.
+        # We clamp the values to max and min to avoid asking configurations that IriWam
+        # can't reach.
 
         joint_traj_point.positions = numpy.clip(
             joints_positions_array, self.min_values, self.max_values

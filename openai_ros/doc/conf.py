@@ -12,8 +12,9 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
 import os
+import sys
+
 import catkin_pkg.package
 
 catkin_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,7 +32,14 @@ sys.path.insert(
 
 
 # -- General configuration ------------------------------------------------
-# autodoc_default_flags = ['members', 'undoc-members', 'private-members', 'special-members', 'inherited-members', 'show-inheritance']
+# autodoc_default_flags = [
+#     "members",
+#     "undoc-members",
+#     "private-members",
+#     "special-members",
+#     "inherited-members",
+#     "show-inheritance",
+# ]
 autodoc_default_flags = [
     "members",
     "undoc-members",
@@ -237,13 +245,13 @@ htmlhelp_basename = "openai_rosdoc"
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
-    #'papersize': 'letterpaper',
+    # 'papersize': 'letterpaper',
     # The font size ('10pt', '11pt' or '12pt').
-    #'pointsize': '10pt',
+    # 'pointsize': '10pt',
     # Additional stuff for the LaTeX preamble.
-    #'preamble': '',
+    # 'preamble': '',
     # Latex figure (float) alignment
-    #'figure_align': 'htbp',
+    # 'figure_align': 'htbp',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples

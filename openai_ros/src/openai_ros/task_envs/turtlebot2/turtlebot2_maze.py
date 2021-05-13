@@ -1,15 +1,15 @@
-import rospy
-import numpy
-import time
 import math
+import os
+import time
+
+import numpy
+import rospy
 from gym import spaces
+from openai_ros.core import ROSLauncher
 from openai_ros.robot_envs import turtlebot2_env
-from gym.envs.registration import register
+from openai_ros.core.helpers import load_ros_params_from_yaml
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Header
-from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.common import ROSLauncher
-import os
 
 
 class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
@@ -25,7 +25,7 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
             assert os.path.exists(workspace_path), (
                 "The Simulation ROS Workspace path "
                 + workspace_path
-                + " DOESNT exist, execute: mkdir -p "
+                + " DOESN'T exist, execute: mkdir -p "
                 + workspace_path
                 + "/src;cd "
                 + workspace_path
@@ -39,7 +39,7 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         )
 
         # Load Params from the desired Yaml file
-        LoadYamlFileParamsTest(
+        load_ros_params_from_yaml(
             package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/turtlebot2/config",
             yaml_file_name="turtlebot2_maze.yaml",
@@ -145,8 +145,9 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         # Set to false Done, because its calculated asyncronously
         self._episode_done = False
 
-        # We wait a small ammount of time to start everything because in very fast resets, laser scan values are sluggish
-        # and sometimes still have values from the prior position that triguered the done.
+        # We wait a small ammount of time to start everything because in very fast
+        # resets, laser scan values are sluggish and sometimes still have values from
+        # the prior position that triguered the done.
         time.sleep(1.0)
 
         # TODO: Add reset of published filtered laser readings

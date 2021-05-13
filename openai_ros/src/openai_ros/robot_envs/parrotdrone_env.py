@@ -1,19 +1,12 @@
+import time
+
 import numpy
 import rospy
-import time
+from geometry_msgs.msg import Pose, Twist
 from openai_ros import robot_gazebo_env
-from std_msgs.msg import Float64
-from sensor_msgs.msg import JointState
-from sensor_msgs.msg import Image
-from sensor_msgs.msg import LaserScan
-from sensor_msgs.msg import PointCloud2
-from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist
-from sensor_msgs.msg import Range
-from sensor_msgs.msg import Imu
-from geometry_msgs.msg import Pose
+from openai_ros.core import ROSLauncher
+from sensor_msgs.msg import Image, Imu, Range
 from std_msgs.msg import Empty
-from openai_ros.common import ROSLauncher
 
 
 class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -23,22 +16,26 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         Initializes a new ParrotDroneEnv environment.
 
-        To check any topic we need to have the simulations running, we need to do two things:
-        1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
-        that are pause for whatever the reason
-        2) If the simulation was running already for some reason, we need to reset the controlers.
-        This has to do with the fact that some plugins with tf, dont understand the reset of the simulation
-        and need to be reseted to work properly.
+        To check any topic we need to have the simulations running, we need to do two
+        things:
+        1)  the simulation: without that th stream of data doesn't flow. This is
+           for simulations that are pause for whatever the reason.
+        2) If the simulation was running already for some reason, we need to reset the
+           controllers.
+        This has to do with the fact that some plugins with tf, don't understand the
+        reset of the simulation and need to be reset to work properly.
 
-        The Sensors: The sensors accesible are the ones considered usefull for AI learning.
+        The Sensors: The sensors accessible are the ones considered usefull for AI
+        learning.
 
         Sensor Topic List:
         * /drone/down_camera/image_raw: RGB Camera facing down.
         * /drone/front_camera/image_raw: RGB Camera facing front.
-        * /drone/imu: IMU of the drone giving acceleration and orientation relative to world.
+        * /drone/imu: IMU of the drone giving acceleration and orientation relative to
+          world.
         * /drone/sonar: Sonar readings facing front
         * /drone/gt_pose: Get position and orientation in Global space
-        * /drone/gt_vel: Get the linear velocity , the angular doesnt record anything.
+        * /drone/gt_vel: Get the linear velocity , the angular doesn't record anything.
 
         Actuators Topic List:
         * /cmd_vel: Move the Drone Around when you have taken off.
@@ -53,13 +50,14 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         # None in this case
 
         # Internal Vars
-        # Doesnt have any accesibles
+        # Doesn't have any accessibles
         self.controllers_list = []
 
-        # It doesnt use namespace
+        # It doesn't use namespace
         self.robot_name_space = ""
 
-        # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
+        # We launch the init function of the parent class
+        # robot_gazebo_env.RobotGazeboEnv
         super(ParrotDroneEnv, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,
@@ -68,7 +66,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
             reset_world_or_sim="WORLD",
         )
 
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
 
         ROSLauncher(
             package_name="drone_construct",
@@ -101,7 +99,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self._check_all_publishers_ready()
 
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
 
         rospy.logdebug("Finished ParrotDroneEnv INIT...")
 
@@ -138,10 +136,10 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/drone/down_camera/image_raw", Image, timeout=5.0
                 )
                 rospy.logdebug("Current /drone/down_camera/image_raw READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /drone/down_camera/image_raw not ready yet, retrying for getting down_camera_rgb_image_raw"
+                    "Current /drone/down_camera/image_raw not ready yet, retrying for "
+                    "getting down_camera_rgb_image_raw."
                 )
         return self.down_camera_rgb_image_raw
 
@@ -154,10 +152,10 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/drone/front_camera/image_raw", Image, timeout=5.0
                 )
                 rospy.logdebug("Current /drone/front_camera/image_raw READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /drone/front_camera/image_raw not ready yet, retrying for getting front_camera_rgb_image_raw"
+                    "Current /drone/front_camera/image_raw not ready yet, retrying for "
+                    "getting front_camera_rgb_image_raw"
                 )
         return self.front_camera_rgb_image_raw
 
@@ -168,8 +166,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
             try:
                 self.imu = rospy.wait_for_message("/drone/imu", Imu, timeout=5.0)
                 rospy.logdebug("Current/drone/imu READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current /drone/imu not ready yet, retrying for getting imu"
                 )
@@ -183,8 +180,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
             try:
                 self.sonar = rospy.wait_for_message("/drone/sonar", Range, timeout=5.0)
                 rospy.logdebug("Current/drone/sonar READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current /drone/sonar not ready yet, retrying for getting sonar"
                 )
@@ -200,8 +196,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/drone/gt_pose", Pose, timeout=5.0
                 )
                 rospy.logdebug("Current /drone/gt_pose READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current /drone/gt_pose not ready yet, retrying for getting gt_pose"
                 )
@@ -218,7 +213,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
                 )
                 rospy.logdebug("Current /drone/gt_vel READY=>")
 
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current /drone/gt_vel not ready yet, retrying for getting gt_vel"
                 )
@@ -334,7 +329,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         It unpauses the simulation and pauses again
         to allow it to be a self contained action
         """
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
         self._check_takeoff_pub_connection()
 
         takeoff_cmd = Empty()
@@ -344,7 +339,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         self.wait_for_height(
             heigh_value_to_check=0.8, smaller_than=False, epsilon=0.05, update_rate=10
         )
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
 
     def land(self):
         """
@@ -352,7 +347,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         It unpauses the simulation and pauses again
         to allow it to be a self contained action
         """
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
 
         self._check_land_pub_connection()
 
@@ -363,17 +358,17 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
             heigh_value_to_check=0.6, smaller_than=True, epsilon=0.05, update_rate=10
         )
 
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
 
     def wait_for_height(self, heigh_value_to_check, smaller_than, epsilon, update_rate):
         """
         Checks if current height is smaller or bigger than a value
-        :param: smaller_than: If True, we will wait until value is smaller than the one given
+        :param: smaller_than: If True, we will wait until value is smaller than the one
+            given.
         """
 
         rate = rospy.Rate(update_rate)
-        start_wait_time = rospy.get_rostime().to_sec()
-        end_wait_time = 0.0
+        # end_wait_time = 0.0
 
         rospy.logdebug("epsilon>>" + str(epsilon))
 
@@ -401,7 +396,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
 
             if takeoff_height_achieved:
                 rospy.logwarn("Reached Height!")
-                end_wait_time = rospy.get_rostime().to_sec()
+                # end_wait_time = rospy.get_rostime().to_sec()
                 break
             rospy.logwarn("Height Not there yet, keep waiting...")
             rate.sleep()
@@ -412,9 +407,12 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         It will move the base based on the linear and angular speeds given.
         It will wait untill those twists are achived reading from the odometry topic.
-        :param linear_speed_vector: Speed in the XYZ axis of the robot base frame, because drones can move in any direction
-        :param angular_speed: Speed of the angular turning of the robot base frame, because this drone only turns on the Z axis.
-        :param epsilon: Acceptable difference between the speed asked and the odometry readings
+        :param linear_speed_vector: Speed in the XYZ axis of the robot base frame,
+            because drones can move in any direction
+        :param angular_speed: Speed of the angular turning of the robot base frame,
+            because this drone only turns on the Z axis.
+        :param epsilon: Acceptable difference between the speed asked and the odometry
+            readings
         :param update_rate: Rate at which we check the odometry.
         :return:
         """
@@ -435,7 +433,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def wait_time_for_execute_movement(self):
         """
-        Because this Parrot Drone position is global, we really dont have
+        Because this Parrot Drone position is global, we really don't have
         a way to know if its moving in the direction desired, because it would need
         to evaluate the diference in position and speed on the local reference.
         """

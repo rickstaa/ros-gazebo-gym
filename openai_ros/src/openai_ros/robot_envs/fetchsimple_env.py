@@ -1,9 +1,9 @@
 import numpy as np
 import rospy
-from std_msgs.msg import Float64
-from sensor_msgs.msg import JointState
 from openai_ros import robot_gazebo_env
-from openai_ros.common import ROSLauncher
+from openai_ros.core import ROSLauncher
+from sensor_msgs.msg import JointState
+from std_msgs.msg import Float64
 
 
 class FetchSimpleEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -58,14 +58,14 @@ class FetchSimpleEnv(robot_gazebo_env.RobotGazeboEnv):
             "joint6",
         ]
 
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
         # Start Move Fetch Object, that checks all systems are ready
         self.move_fetch_object = FetchSimpleMove()
         # Wait until Fetch goes to the init pose
         self.move_fetch_object.init_position()
 
         # We pause until the next step
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
 
     # RobotGazeboEnv virtual methods
     # ----------------------------
@@ -213,10 +213,10 @@ class FetchSimpleMove(object):
                 rospy.logdebug(
                     "Current /fetch/joint_states READY=>" + str(self.joints_state)
                 )
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /fetch/joint_states not ready yet, retrying for getting joint_states"
+                    "Current /fetch/joint_states not ready yet, retrying for getting "
+                    "joint_states."
                 )
         return self.joints_state
 
@@ -280,7 +280,7 @@ class FetchSimpleMove(object):
 
     def move_all_joints(self, joints_pos_array, time_out=3.0, error=0.2):
 
-        assert len(joints_pos_array) == len(self.joint_array), "Lengths dont match"
+        assert len(joints_pos_array) == len(self.joint_array), "Lengths don't match"
         i = 0
         for angle in joints_pos_array:
             angle_msg = Float64()
@@ -322,11 +322,12 @@ class FetchSimpleMove(object):
 
     def delta_joints(self, delta_array):
         """
-              delta_array = [bellows_joint, elbow_flex_joint, forearm_roll_joint, head_pan_joint, head_tilt_joint,
-        l_gripper_finger_joint, r_gripper_finger_joint, shoulder_lift_joint, shoulder_pan_joint,
-        torso_lift_joint, upperarm_roll_joint, wrist_flex_joint, wrist_roll_joint]
-              :param delta_array:
-              :return:
+        delta_array = [bellows_joint, elbow_flex_joint, forearm_roll_joint,
+        head_pan_joint, head_tilt_joint, l_gripper_finger_joint, r_gripper_finger_joint,
+        shoulder_lift_joint, shoulder_pan_joint, torso_lift_joint, upperarm_roll_joint,
+        wrist_flex_joint, wrist_roll_joint]
+        :param delta_array:
+        :return:
         """
         new_pos_array = len(delta_array) * [0.0]
         i = 0

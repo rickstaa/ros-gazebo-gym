@@ -1,14 +1,13 @@
+import time
+
 import numpy
 import rospy
-import time
-from openai_ros import robot_gazebo_env
 from gazebo_msgs.msg import ContactsState
-from sensor_msgs.msg import Imu
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Point, Quaternion, Vector3
-from sensor_msgs.msg import JointState
+from openai_ros import robot_gazebo_env
+from openai_ros.core import ROSLauncher
+from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import Float64
-from openai_ros.common import ROSLauncher
 
 
 class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -18,22 +17,26 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         Initializes a new HopperEnv environment.
 
-        To check any topic we need to have the simulations running, we need to do two things:
-        1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
-        that are pause for whatever the reason
-        2) If the simulation was running already for some reason, we need to reset the controlers.
-        This has to do with the fact that some plugins with tf, dont understand the reset of the simulation
-        and need to be reseted to work properly.
+        To check any topic we need to have the simulations running, we need to do two
+        things:
+        1) Un-pause the simulation: without that th stream of data doesn't flow. This is
+           for simulations that are pause for whatever the reason
+        2) If the simulation was running already for some reason, we need to reset the
+           controllers.
+        This has to do with the fact that some plugins with tf, don't understand the
+        reset of the simulation and need to be reset to work properly.
 
-        The Sensors: The sensors accesible are the ones considered usefull for AI learning.
+        The Sensors: The sensors accessible are the ones considered usefull for AI
+        learning.
 
         Sensor Topic List:
         * /drone/down_camera/image_raw: RGB Camera facing down.
         * /drone/front_camera/image_raw: RGB Camera facing front.
-        * /drone/imu: IMU of the drone giving acceleration and orientation relative to world.
+        * /drone/imu: IMU of the drone giving acceleration and orientation relative to
+          world.
         * /drone/sonar: Sonar readings facing front
         * /drone/gt_pose: Get position and orientation in Global space
-        * /drone/gt_vel: Get the linear velocity , the angular doesnt record anything.
+        * /drone/gt_vel: Get the linear velocity , the angular doesn't record anything.
 
         Actuators Topic List:
         * /cmd_vel: Move the Drone Around when you have taken off.
@@ -55,7 +58,7 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
         # None in this case
 
         # Internal Vars
-        # Doesnt have any accesibles
+        # Doesn't have any accessibles
         self.controllers_list = [
             "joint_state_controller",
             "haa_joint_position_controller",
@@ -63,10 +66,11 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
             "kfe_joint_position_controller",
         ]
 
-        # It doesnt use namespace
+        # It doesn't use namespace
         self.robot_name_space = "monoped"
 
-        # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
+        # We launch the init function of the parent class
+        # robot_gazebo_env.RobotGazeboEnv
         super(HopperEnv, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,
@@ -76,7 +80,7 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
         )
 
         rospy.logdebug("HopperEnv unpause1...")
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
         # self.controllers_object.reset_controllers()
 
         self._check_all_systems_ready()
@@ -85,11 +89,13 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.Subscriber("/odom", Odometry, self._odom_callback)
         # We use the IMU for orientation and linearacceleration detection
         rospy.Subscriber("/monoped/imu/data", Imu, self._imu_callback)
-        # We use it to get the contact force, to know if its in the air or stumping too hard.
+        # We use it to get the contact force, to know if its in the air or stumping too
+        # hard.
         rospy.Subscriber(
             "/lowerleg_contactsensor_state", ContactsState, self._contact_callback
         )
-        # We use it to get the joints positions and calculate the reward associated to it
+        # We use it to get the joints positions and calculate the reward associated to
+        # it
         rospy.Subscriber(
             "/monoped/joint_states", JointState, self._joints_state_callback
         )
@@ -111,7 +117,7 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self._check_all_publishers_ready()
 
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
 
         rospy.logdebug("Finished HopperEnv INIT...")
 
@@ -146,8 +152,7 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
             try:
                 self.odom = rospy.wait_for_message("/odom", Odometry, timeout=1.0)
                 rospy.logdebug("Current /odom READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr("Current /odom not ready yet, retrying for getting odom")
         return self.odom
 
@@ -158,8 +163,7 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
             try:
                 self.imu = rospy.wait_for_message("/monoped/imu/data", Imu, timeout=1.0)
                 rospy.logdebug("Current /monoped/imu/data READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current /monoped/imu/data not ready yet, retrying for getting imu"
                 )
@@ -174,10 +178,10 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/lowerleg_contactsensor_state", ContactsState, timeout=1.0
                 )
                 rospy.logdebug("Current /lowerleg_contactsensor_state READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /lowerleg_contactsensor_state not ready yet, retrying for getting lowerleg_contactsensor_state"
+                    "Current /lowerleg_contactsensor_state not ready yet, retrying for "
+                    "getting lowerleg_contactsensor_state."
                 )
         return self.lowerleg_contactsensor_state
 
@@ -190,10 +194,10 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/monoped/joint_states", JointState, timeout=1.0
                 )
                 rospy.logdebug("Current /monoped/joint_states READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /monoped/joint_states not ready yet, retrying for getting joint_states"
+                    "Current /monoped/joint_states not ready yet, retrying for getting "
+                    "joint_states."
                 )
         return self.joint_states
 
@@ -294,7 +298,8 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
     def wait_time_for_execute_movement(self, joints_array, epsilon, update_rate):
         """
         We wait until Joints are where we asked them to be based on the joints_states
-        :param joints_array:Joints Values in radians of each of the three joints of hopper leg.
+        :param joints_array:Joints Values in radians of each of the three joints of
+            hopper leg.
         :param epsilon: Error acceptable in odometry readings.
         :param update_rate: Rate at which we check the joint_states.
         :return:

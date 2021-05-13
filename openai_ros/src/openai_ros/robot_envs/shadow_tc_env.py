@@ -1,12 +1,9 @@
-import numpy
 import rospy
-import time
 import tf
-from openai_ros import robot_gazebo_env
-from sensor_msgs.msg import Imu
-from sensor_msgs.msg import JointState
 from moveit_msgs.msg import PlanningScene
-from openai_ros.common import ROSLauncher
+from openai_ros import robot_gazebo_env
+from openai_ros.core import ROSLauncher
+from sensor_msgs.msg import Imu, JointState
 
 
 class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -16,14 +13,17 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         Initializes a new ShadowTcEnv environment.
 
-        To check any topic we need to have the simulations running, we need to do two things:
-        1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
-        that are pause for whatever the reason
-        2) If the simulation was running already for some reason, we need to reset the controlers.
-        This has to do with the fact that some plugins with tf, dont understand the reset of the simulation
-        and need to be reseted to work properly.
+        To check any topic we need to have the simulations running, we need to do two
+        things:
+        1) Un-pause the simulation: without that th stream of data doesn't flow. This is
+           for simulations that are pause for whatever the reason
+        2) If the simulation was running already for some reason, we need to reset the
+           controllers.
+        This has to do with the fact that some plugins with tf, don't understand the
+        reset of the simulation and need to be reset to work properly.
 
-        The Sensors: The sensors accesible are the ones considered usefull for AI learning.
+        The Sensors: The sensors accessible are the ones considered usefull for AI
+        learning.
 
         Sensor Topic List:
         * /imu/data
@@ -49,13 +49,14 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         )
 
         # Internal Vars
-        # Doesnt have any accesibles
+        # Doesn't have any accessibles
         self.controllers_list = []
 
-        # It doesnt use namespace
+        # It doesn't use namespace
         self.robot_name_space = ""
 
-        # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
+        # We launch the init function of the parent class
+        # robot_gazebo_env.RobotGazeboEnv
         super(ShadowTcEnv, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,
@@ -65,18 +66,20 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         )
 
         rospy.logdebug("ShadowTcEnv unpause...")
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
         # self.controllers_object.reset_controllers()
 
         self._check_all_systems_ready()
 
         rospy.Subscriber("/imu/data", Imu, self._imu_callback)
         rospy.Subscriber("/joint_states", JointState, self._joints_state_callback)
-        # rospy.Subscriber('/planning_scene', PlanningScene, self._planning_scene_callback)
+        # rospy.Subscriber(
+        #     "/planning_scene", PlanningScene, self._planning_scene_callback
+        # )
 
         self._setup_smart_grasper()
 
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
 
         rospy.logdebug("Finished ShadowTcEnv INIT...")
 
@@ -111,8 +114,7 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
             try:
                 self.imu = rospy.wait_for_message("/imu/data", Imu, timeout=5.0)
                 rospy.logdebug("Current/imu/data READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current /imu/data not ready yet, retrying for getting imu"
                 )
@@ -128,10 +130,10 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/joint_states", JointState, timeout=1.0
                 )
                 rospy.logdebug("Current /joint_states READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /joint_states not ready yet, retrying for getting joint_states"
+                    "Current /joint_states not ready yet, retrying for getting "
+                    "joint_states."
                 )
         return self.joint_states
 
@@ -144,10 +146,10 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/planning_scene", PlanningScene, timeout=1.0
                 )
                 rospy.logdebug("Current /planning_scene READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /planning_scene not ready yet, retrying for getting planning_scene"
+                    "Current /planning_scene not ready yet, retrying for getting "
+                    "planning_scene."
                 )
         return self.planning_scene
 
@@ -231,9 +233,9 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         running it wont get the Ball information of position.
         """
         rospy.logdebug("START get_ball_pose ==>")
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
         ball_pose = self.sgs.get_object_pose()
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
         rospy.logdebug("ball_pose ==>" + str(ball_pose))
         rospy.logdebug("STOP get_ball_pose ==>")
 
@@ -247,9 +249,9 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         running it wont get the TCP information of position.
         """
         rospy.logdebug("START get_tip_pose ==>")
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
         tcp_pose = self.sgs.get_tip_pose()
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
         rospy.logdebug("END get_tip_pose ==>")
         return tcp_pose
 
@@ -273,13 +275,14 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         Send a dictionnary of joint targets to the arm and hand directly.
         To get the available joints names: rostopic echo /joint_states/name -n1
-        [H1_F1J1, H1_F1J2, H1_F1J3, H1_F2J1, H1_F2J2, H1_F2J3, H1_F3J1, H1_F3J2, H1_F3J3,
-        elbow_joint, shoulder_lift_joint, shoulder_pan_joint, wrist_1_joint, wrist_2_joint,
-        wrist_3_joint]
+        [H1_F1J1, H1_F1J2, H1_F1J3, H1_F2J1, H1_F2J2, H1_F2J3, H1_F3J1, H1_F3J2,
+        H1_F3J3, elbow_joint, shoulder_lift_joint, shoulder_pan_joint, wrist_1_joint,
+        wrist_2_joint, wrist_3_joint]
 
         :param command: a dictionnary of joint names associated with a target:
                         {"H1_F1J1": -1.0, "shoulder_pan_joint": 1.0}
-        :param duration: the amount of time it will take to get there in seconds. Needs to be bigger than 0.0
+        :param duration: the amount of time it will take to get there in seconds. Needs
+            to be bigger than 0.0
         """
         self.sgs.send_command(command, duration)
 
@@ -301,15 +304,16 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         with fingers.
         Objects in sim: cricket_ball__link, drill__link
         """
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
         self.set_fingers_colision(True)
         planning_scene = self._check_planning_scene_ready()
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
 
         objects_scene = planning_scene.allowed_collision_matrix.entry_names
         colissions_matrix = planning_scene.allowed_collision_matrix.entry_values
 
-        # We look for the Ball object model name in the objects sceen list and get the index:
+        # We look for the Ball object model name in the objects sceen list and get the
+        # index
         object_collision_name_index = objects_scene.index(object_collision_name)
 
         Finger_Links_Names = [
@@ -331,7 +335,8 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         ]
 
         # We get all the index of the model links that are part of the fingers
-        # We separate by finguer to afterwards be easy to detect that there is contact in all of the finguers
+        # We separate by finguer to afterwards be easy to detect that there is contact
+        # in all of the finguers
         finger1_indices = [
             i for i, var in enumerate(Finger_Links_Names) if "H1_F1" in var
         ]
@@ -342,8 +347,8 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
             i for i, var in enumerate(Finger_Links_Names) if "H1_F3" in var
         ]
 
-        # Now we search in the entry_value corresponding to the object to check the collision
-        # With all the rest of objects.
+        # Now we search in the entry_value corresponding to the object to check the
+        # collision with all the rest of objects.
         object_collision_array = colissions_matrix[object_collision_name_index].enabled
 
         # Is there a collision with Finguer1

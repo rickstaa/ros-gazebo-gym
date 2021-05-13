@@ -1,31 +1,28 @@
-from gym import utils
-import copy
-import rospy
-from gym import spaces
-from openai_ros.robot_envs import fetchsimple_env
-from gym.envs.registration import register
-import numpy as np
-from sensor_msgs.msg import JointState
-from openai_ros.common import ROSLauncher
-from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
 import os
+
+import numpy as np
+import rospy
+from gym import spaces, utils
+from openai_ros.core import ROSLauncher
+from openai_ros.robot_envs import fetchsimple_env
+from openai_ros.core.helpers import load_ros_params_from_yaml
 
 
 class FetchSimpleTestEnv(fetchsimple_env.FetchSimpleEnv, utils.EzPickle):
     def __init__(self):
 
         # Launch the Task Simulated-Environment
-        # This is the path where the simulation files are,
-        # the Task and the Robot gits will be downloaded if not there
-
+        # This is the path where the simulation files are, the Task and the Robot gits
+        # will be downloaded if not there
         workspace_path = rospy.get_param("/fetch/workspace_path", None)
-        assert (
-            workspace_path is not None
-        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
+        assert workspace_path is not None, (
+            "You forgot to set workspace_path in your yaml file of your main RL "
+            "script. Set workspace_path: 'YOUR/SIM_WS/PATH'."
+        )
         assert os.path.exists(workspace_path), (
             "The Simulation ROS Workspace path "
             + workspace_path
-            + " DOESNT exist, execute: mkdir -p "
+            + " DOESN'T exist, execute: mkdir -p "
             + workspace_path
             + "/src;cd "
             + workspace_path
@@ -39,7 +36,7 @@ class FetchSimpleTestEnv(fetchsimple_env.FetchSimpleEnv, utils.EzPickle):
         )
 
         # Load Params from the desired Yaml file relative to this TaskEnvironment
-        LoadYamlFileParamsTest(
+        load_ros_params_from_yaml(
             package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/fetch/config",
             yaml_file_name="fetchsimple_test.yaml",
@@ -102,7 +99,7 @@ class FetchSimpleTestEnv(fetchsimple_env.FetchSimpleEnv, utils.EzPickle):
 
     def _set_init_pose(self):
         """Sets the Robot in its init pose
-        The Simulation will be unpaused for this purpose.
+        The Simulation will be un-paused for this purpose.
         """
         # Check because it seems its not being used
         rospy.logdebug("Init Pos:")
@@ -128,7 +125,7 @@ class FetchSimpleTestEnv(fetchsimple_env.FetchSimpleEnv, utils.EzPickle):
         Inits variables needed to be initialised each time we reset at the start
         of an episode.
         The simulation will be paused, therefore all the data retrieved has to be
-        from a system that doesnt need the simulation running, like variables where the
+        from a system that doesn't need the simulation running, like variables where the
         callbackas have stored last know sesnor data.
         :return:
         """
@@ -186,8 +183,9 @@ class FetchSimpleTestEnv(fetchsimple_env.FetchSimpleEnv, utils.EzPickle):
 
     def _is_done(self, observations):
         """
-        If the latest Action didnt succeed, it means that tha position asked was imposible therefore the episode must end.
-        It will also end if it reaches its goal.
+        If the latest Action didn't succeed, it means that tha position asked was
+        impossible therefore the episode must end. It will also end if it reaches its
+        goal.
         """
 
         done = np.allclose(a=observations, b=self.goal_pos, atol=0.2)
@@ -202,7 +200,7 @@ class FetchSimpleTestEnv(fetchsimple_env.FetchSimpleEnv, utils.EzPickle):
     def _compute_reward(self, observations, done):
         """
         We punish each step that it passes without achieveing the goal.
-        Punishes differently if it reached a position that is imposible to move to.
+        Punishes differently if it reached a position that is impossible to move to.
         Rewards getting to a position close to the goal.
         """
         reward = 1.0 / (

@@ -1,18 +1,11 @@
-import numpy
-import rospy
 import time
-from openai_ros import robot_gazebo_env
-from std_msgs.msg import Float64
-from sensor_msgs.msg import JointState
-from sensor_msgs.msg import Image
-from sensor_msgs.msg import LaserScan
-from sensor_msgs.msg import PointCloud2
-from sensor_msgs.msg import Imu
-from sensor_msgs.msg import NavSatFix
+
+import rospy
+from geometry_msgs.msg import Twist, Vector3Stamped
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist
-from geometry_msgs.msg import Vector3Stamped
-from openai_ros.common import ROSLauncher
+from openai_ros import robot_gazebo_env
+from openai_ros.core import ROSLauncher
+from sensor_msgs.msg import Image, Imu, LaserScan, NavSatFix, PointCloud2
 
 
 class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -25,20 +18,23 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         Execute a call to service /summit_xl/controller_manager/list_controllers
         To get the list of controllers to be restrarted
 
-        To check any topic we need to have the simulations running, we need to do two things:
-        1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
-        that are pause for whatever the reason
-        2) If the simulation was running already for some reason, we need to reset the controlers.
-        This has to do with the fact that some plugins with tf, dont understand the reset of the simulation
-        and need to be reseted to work properly.
+        To check any topic we need to have the simulations running, we need to do two
+        things:
+        1) Un-pause the simulation: without that th stream of data doesn't flow. This is
+           for simulations that are pause for whatever the reason.
+        2) If the simulation was running already for some reason, we need to reset the
+           controllers.
+        This has to do with the fact that some plugins with tf, don't understand the
+        reset of the simulation and need to be reset to work properly.
 
-        The Sensors: The sensors accesible are the ones considered usefull for AI learning.
+        The Sensors: The sensors accessible are the ones considered usefull for AI
+        learning.
 
         Sensor Topic List:
         * /gps/fix : GPS position Data
         * /gps/fix_velocity: GPS Speed data
         * /hokuyo_base/scan: Laser Readings
-        * /imu/data: Inertial Mesurment Unit data, orientation and acceleration
+        * /imu/data: Inertial Measurement Unit data, orientation and acceleration
         * /orbbec_astra/depth/image_raw
         * /orbbec_astra/depth/points
         * /orbbec_astra/rgb/image_raw
@@ -60,7 +56,7 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         )
         print("SPAWN DONE SumitXlEnv INIT...")
         # Internal Vars
-        # Doesnt have any accesibles
+        # Doesn't have any accessibles
         self.controllers_list = [
             "joint_read_state_controller",
             "joint_blw_velocity_controller",
@@ -69,10 +65,10 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
             "joint_frw_velocity_controller",
         ]
 
-        # It doesnt use namespace
+        # It doesn't use namespace
         self.robot_name_space = "summit_xl"
 
-        # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
+        # Launch the init function of the parent class robot_gazebo_env.RobotGazeboEnv
         print("START OpenAIROS CORE SumitXlEnv INIT...")
         super(SumitXlEnv, self).__init__(
             controllers_list=self.controllers_list,
@@ -82,8 +78,8 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
             reset_world_or_sim="WORLD",
         )
         print("DONE OpenAIROS CORE SumitXlEnv INIT...")
-        self.gazebo.unpauseSim()
-        # TODO: See why this doesnt work in Summit XL
+        self.gazebo.unpause_sim()
+        # TODO: See why this doesn't work in Summit XL
         # self.controllers_object.reset_controllers()
 
         print("START CHECK SENSORS SumitXlEnv INIT...")
@@ -120,7 +116,7 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         self._check_publishers_connection()
         print("DONE CHECK PUBLISHERS SumitXlEnv INIT...")
 
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
 
         print("Finished SumitXlEnv INIT...")
 
@@ -159,8 +155,7 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/gps/fix", NavSatFix, timeout=5.0
                 )
                 print("Current /gps/fix READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current /gps/fix not ready yet, retrying for getting odom"
                 )
@@ -176,8 +171,7 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/gps/fix_velocity", Vector3Stamped, timeout=5.0
                 )
                 print("Current /gps/fix_velocity READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current /gps/fix_velocity not ready yet, retrying for getting odom"
                 )
@@ -193,10 +187,10 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/orbbec_astra/depth/image_raw", Image, timeout=5.0
                 )
                 print("Current /orbbec_astra/depth/image_raw READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /orbbec_astra/depth/image_raw not ready yet, retrying for getting camera_depth_image_raw"
+                    "Current /orbbec_astra/depth/image_raw not ready yet, retrying for "
+                    "getting camera_depth_image_raw."
                 )
         return self.camera_depth_image_raw
 
@@ -209,10 +203,10 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/orbbec_astra/depth/points", PointCloud2, timeout=10.0
                 )
                 print("Current /orbbec_astra/depth/points READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /orbbec_astra/depth/points not ready yet, retrying for getting camera_depth_points"
+                    "Current /orbbec_astra/depth/points not ready yet, retrying for "
+                    "getting camera_depth_points."
                 )
         return self.camera_depth_points
 
@@ -225,10 +219,10 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/orbbec_astra/rgb/image_raw", Image, timeout=5.0
                 )
                 print("Current /orbbec_astra/rgb/image_raw READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /orbbec_astra/rgb/image_raw not ready yet, retrying for getting camera_rgb_image_raw"
+                    "Current /orbbec_astra/rgb/image_raw not ready yet, retrying for "
+                    "getting camera_rgb_image_raw."
                 )
         return self.camera_rgb_image_raw
 
@@ -241,8 +235,7 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/summit_xl/odom", Odometry, timeout=0.5
                 )
                 print("Current /summit_xl/odom READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current /summit_xl/odom not ready yet, retrying for getting odom"
                 )
@@ -256,8 +249,7 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
             try:
                 self.imu = rospy.wait_for_message("/imu/data", Imu, timeout=5.0)
                 print("Current /imu/data READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current /imu/data not ready yet, retrying for getting imu"
                 )
@@ -273,10 +265,10 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/hokuyo_base/scan", LaserScan, timeout=1.0
                 )
                 print("Current /hokuyo_base/scan READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /hokuyo_base/scan not ready yet, retrying for getting laser_scan"
+                    "Current /hokuyo_base/scan not ready yet, retrying for getting "
+                    "laser_scan."
                 )
         return self.laser_scan
 
@@ -358,7 +350,8 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         It will wait untill those twists are achived reading from the odometry topic.
         :param linear_speed: Speed in the X axis of the robot base frame
         :param angular_speed: Speed of the angular turning of the robot base frame
-        :param epsilon: Acceptable difference between the speed asked and the odometry readings
+        :param epsilon: Acceptable difference between the speed asked and the odometry
+            readings.
         :param update_rate: Rate at which we check the odometry.
         :return:
         """
@@ -414,9 +407,9 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
             odom_linear_vel = current_odometry.twist.twist.linear.x
             """
             When asking to turn EX: angular.Z = 0.3 --> Odometry is 0.6
-            In linera runs ok. It also flutuates a lot, due to the turning through friction.
-            Therefore we will have to multiply the angular by 2 and broaden the
-            accepted error for angular.
+            In linera runs ok. It also flutuates a lot, due to the turning through
+            friction. Therefore we will have to multiply the angular by 2 and broaden
+            the accepted error for angular.
             """
             odom_angular_vel = current_odometry.twist.twist.angular.z
 

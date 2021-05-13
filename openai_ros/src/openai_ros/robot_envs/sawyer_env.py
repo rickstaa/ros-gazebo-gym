@@ -1,14 +1,11 @@
-import numpy
-import rospy
-import time
-import tf
-from openai_ros import robot_gazebo_env
 import intera_interface
-import intera_external_devices
-from intera_interface import CHECK_VERSION
+import rospy
+import tf
 from intera_core_msgs.msg import JointLimits
+from intera_interface import CHECK_VERSION
+from openai_ros import robot_gazebo_env
+from openai_ros.core import ROSLauncher
 from sensor_msgs.msg import Image
-from openai_ros.common import ROSLauncher
 
 
 class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -18,20 +15,24 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         Initializes a new SawyerEnv environment.
 
-        To check any topic we need to have the simulations running, we need to do two things:
-        1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
-        that are pause for whatever the reason
-        2) If the simulation was running already for some reason, we need to reset the controlers.
-        This has to do with the fact that some plugins with tf, dont understand the reset of the simulation
-        and need to be reseted to work properly.
+        To check any topic we need to have the simulations running, we need to do two
+        things:
+        1) Un-pause the simulation: without that th stream of data doesn't flow. This is
+           for simulations that are pause for whatever the reason
+        2) If the simulation was running already for some reason, we need to reset the
+           controllers.
+        This has to do with the fact that some plugins with tf, don't understand the
+        reset of the simulation and need to be reset to work properly.
 
-        The Sensors: The sensors accesible are the ones considered usefull for AI learning.
+        The Sensors: The sensors accessible are the ones considered usefull for AI
+        learning.
 
         Sensor Topic List:
         * /robot/joint_limits: Odometry of the Base of Wamv
 
         Actuators Topic List:
-        * As actuator we will use a class to interface with the movements through commands.
+        * As actuator we will use a class to interface with the movements through
+          commands.
 
         Args:
         """
@@ -47,13 +48,14 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         )
 
         # Internal Vars
-        # Doesnt have any accesibles
+        # Doesn't have any accessibles
         self.controllers_list = []
 
-        # It doesnt use namespace
+        # It doesn't use namespace
         self.robot_name_space = ""
 
-        # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
+        # We launch the init function of the parent class
+        # robot_gazebo_env.RobotGazeboEnv
         super(SawyerEnv, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,
@@ -63,7 +65,7 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         )
 
         rospy.logdebug("SawyerEnv unpause...")
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
         # self.controllers_object.reset_controllers()
 
         # TODO: Fill it with the sensors
@@ -83,7 +85,7 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         self._setup_tf_listener()
         self._setup_movement_system()
 
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
 
         rospy.logdebug("Finished SawyerEnv INIT...")
 
@@ -123,10 +125,10 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
                 rospy.logdebug(
                     "Current /io/internal_camera/head_camera/image_raw READY=>"
                 )
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /io/internal_camera/head_camera/image_raw not ready yet, retrying for getting head_camera_image_raw"
+                    "Current /io/internal_camera/head_camera/image_raw not ready yet, "
+                    "retrying for getting head_camera_image_raw."
                 )
         return self.head_camera_image_raw
 
@@ -145,10 +147,10 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
                 rospy.logdebug(
                     "Current /io/internal_camera/right_hand_camera/image_raw READY=>"
                 )
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /io/internal_camera/right_hand_camera/image_raw not ready yet, retrying for getting right_hand_camera_image_raw"
+                    "Current /io/internal_camera/right_hand_camera/image_raw not ready "
+                    "yet, retrying for getting right_hand_camera_image_raw."
                 )
         return self.right_hand_camera_image_raw
 
@@ -182,7 +184,6 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
 
         print("Getting robot state... ")
         rs = intera_interface.RobotEnable(CHECK_VERSION)
-        init_state = rs.state().enabled
 
         rospy.loginfo("Enabling robot...")
         rs.enable()
@@ -194,7 +195,7 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
 
         try:
             self.gripper = intera_interface.Gripper(side + "_gripper")
-        except:
+        except Exception:
             self.has_gripper = False
             rospy.loginfo("The electric gripper is not detected on the robot.")
         else:
@@ -335,7 +336,8 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         It executed the command given through an id. This will move any joint
         of Sawyer, including the gripper if it has it.
-        :param: action_id: These are the possible action_id values and the action asociated.
+        :param: action_id: These are the possible action_id values and the action
+            associated.
 
         self.joints[0]+"_increase",
         self.joints[0]+_decrease,
@@ -366,7 +368,8 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
                 cmd[0](cmd[1])
                 rospy.loginfo("command: %s" % (cmd[2],))
             else:
-                # expand binding to something like "self.set_j(right, 'j0', joint_delta)"
+                # Expand binding to something like "self.set_j(right, 'j0',
+                # joint_delta)"
                 cmd[0](*cmd[1])
                 rospy.loginfo("command: %s" % (cmd[2],))
         else:
@@ -392,7 +395,8 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         self, joint_positions_dict, timeout=15.0, threshold=0.008726646
     ):
         """
-        It moves all the joints to the given position and doesnt exit until it reaches that position
+        It moves all the joints to the given position and doesn't exit until it reaches
+        that position.
         """
         self.limb.move_to_joint_positions(
             positions=joint_positions_dict,
@@ -421,8 +425,10 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def get_tf_start_to_end_frames(self, start_frame_name, end_frame_name):
         """
-        Given two frames, it returns the transform from the start_frame_name to the end_frame_name.
-        It will only return something different to None if the TFs of the Two frames are in TF topic
+        Given two frames, it returns the transform from the start_frame_name to the
+        end_frame_name.
+        It will only return something different to None if the TFs of the Two frames
+        are in TF topic
         published and are connected through the TF tree.
         :param: start_frame_name: Start Frame of the TF transform
                 end_frame_name: End Frame of the TF transform
@@ -457,10 +463,10 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/robot/joint_limits", JointLimits, timeout=3.0
                 )
                 rospy.logdebug("Current /robot/joint_limits READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /robot/joint_limits not ready yet, retrying for getting joint_limits"
+                    "Current /robot/joint_limits not ready yet, retrying for getting "
+                    "joint_limits."
                 )
         return self.joint_limits
 
@@ -475,10 +481,12 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def init_joint_limits(self):
         """
-        Get the Joint Limits, in the init fase where we need to unpause the simulation to get them
-        :return: joint_limits: The Joint Limits Dictionary, with names, angles, vel and effort limits.
+        Get the Joint Limits, in the init fase where we need to unpause the simulation
+        to get them
+        :return: joint_limits: The Joint Limits Dictionary, with names, angles, vel and
+        effort limits.
         """
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
         joint_limits = self.check_joint_limits_ready()
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
         return joint_limits

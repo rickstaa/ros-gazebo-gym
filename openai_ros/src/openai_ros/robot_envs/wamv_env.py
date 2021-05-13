@@ -1,9 +1,9 @@
-import numpy
-import rospy
 import time
-from openai_ros import robot_gazebo_env
+
+import rospy
 from nav_msgs.msg import Odometry
-from openai_ros.common import ROSLauncher
+from openai_ros import robot_gazebo_env
+from openai_ros.core import ROSLauncher
 
 
 class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -13,14 +13,17 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         Initializes a new WamvEnv environment.
 
-        To check any topic we need to have the simulations running, we need to do two things:
-        1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
-        that are pause for whatever the reason
-        2) If the simulation was running already for some reason, we need to reset the controlers.
-        This has to do with the fact that some plugins with tf, dont understand the reset of the simulation
-        and need to be reseted to work properly.
+        To check any topic we need to have the simulations running, we need to do two
+        things:
+        1) Un-pause the simulation: without that th stream of data doesn't flow. This is
+           for simulations that are pause for whatever the reason
+        2) If the simulation was running already for some reason, we need to reset the
+           controllers.
+        This has to do with the fact that some plugins with tf, don't understand the
+        reset of the simulation and need to be reset to work properly.
 
-        The Sensors: The sensors accesible are the ones considered usefull for AI learning.
+        The Sensors: The sensors accessible are the ones considered usefull for AI
+        learning.
 
         Sensor Topic List:
         * /wamv/odom: Odometry of the Base of Wamv
@@ -44,13 +47,14 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         from robotx_gazebo.msg import UsvDrive
 
         # Internal Vars
-        # Doesnt have any accesibles
+        # Doesn't have any accessibles
         self.controllers_list = []
 
-        # It doesnt use namespace
+        # It doesn't use namespace
         self.robot_name_space = ""
 
-        # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
+        # We launch the init function of the parent class
+        # robot_gazebo_env.RobotGazeboEnv
         super(WamvEnv, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,
@@ -60,7 +64,7 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
         )
 
         rospy.logdebug("WamvEnv unpause1...")
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
         # self.controllers_object.reset_controllers()
 
         self._check_all_systems_ready()
@@ -75,7 +79,7 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self._check_all_publishers_ready()
 
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
 
         rospy.logdebug("Finished WamvEnv INIT...")
 
@@ -107,8 +111,7 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
             try:
                 self.odom = rospy.wait_for_message("/wamv/odom", Odometry, timeout=1.0)
                 rospy.logdebug("Current /wamv/odom READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current /wamv/odom not ready yet, retrying for getting odom"
                 )
@@ -195,7 +198,7 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def wait_time_for_execute_movement(self, time_sleep):
         """
-        Because this Wamv position is global, we really dont have
+        Because this Wamv position is global, we really don't have
         a way to know if its moving in the direction desired, because it would need
         to evaluate the diference in position and speed on the local reference.
         """

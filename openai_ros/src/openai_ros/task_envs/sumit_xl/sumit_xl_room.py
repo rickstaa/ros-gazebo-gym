@@ -1,14 +1,13 @@
-import rospy
-import numpy
-from gym import spaces
-from openai_ros.robot_envs import sumitxl_env
-from gym.envs.registration import register
-from geometry_msgs.msg import Vector3
-from geometry_msgs.msg import Point
-from tf.transformations import euler_from_quaternion
-from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.common import ROSLauncher
 import os
+
+import numpy
+import rospy
+from geometry_msgs.msg import Point
+from gym import spaces
+from openai_ros.core import ROSLauncher
+from openai_ros.robot_envs import sumitxl_env
+from openai_ros.core.helpers import load_ros_params_from_yaml
+from tf.transformations import euler_from_quaternion
 
 
 class SumitXlRoom(sumitxl_env.SumitXlEnv):
@@ -19,15 +18,17 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         It will learn how to move around without crashing.
         """
 
-        # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
+        # This is the path where the simulation files, the Task and the Robot gits will
+        # be downloaded if not there
         workspace_path = rospy.get_param("/sumit_xl/workspace_path", None)
-        assert (
-            workspace_path is not None
-        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
+        assert workspace_path is not None, (
+            "You forgot to set workspace_path in your yaml file of your main RL "
+            "script. Set workspace_path: 'YOUR/SIM_WS/PATH'."
+        )
         assert os.path.exists(workspace_path), (
             "The Simulation ROS Workspace path "
             + workspace_path
-            + " DOESNT exist, execute: mkdir -p "
+            + " DOESN'T exist, execute: mkdir -p "
             + workspace_path
             + "/src;cd "
             + workspace_path
@@ -41,7 +42,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         )
 
         # Load Params from the desired Yaml file
-        LoadYamlFileParamsTest(
+        load_ros_params_from_yaml(
             package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/sumit_xl/config",
             yaml_file_name="sumit_xl_room.yaml",
@@ -157,7 +158,8 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         """
 
         rospy.logdebug("Start Set Action ==>" + str(action))
-        # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
+        # We convert the actions to speed movements to send to the parent class
+        # CubeSingleDiskEnv
         if action == 0:  # FORWARD
             linear_speed = self.linear_forward_speed
             angular_speed = 0.0
@@ -245,7 +247,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
             self._episode_done = True
         else:
             rospy.logerr(
-                "DIDNT crash SumitXl ==>"
+                "DIDN'T crash SumitXl ==>"
                 + str(linear_acceleration_magnitude)
                 + ">"
                 + str(self.max_linear_aceleration)
@@ -280,7 +282,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
     def _compute_reward(self, observations, done):
         """
         We give reward to the robot when it gets closer to the desired point.
-        We Dont give it contsnatly, but only if there is an improvement
+        We don't give it contsnatly, but only if there is an improvement
         """
 
         # We get the current Position from the obervations
@@ -306,12 +308,13 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         rospy.logwarn("distance_difference=" + str(distance_difference))
 
         if not done:
-            # If there has been a decrease in the distance to the desired point, we reward it
+            # If there has been a decrease in the distance to the desired point, we
+            # reward it
             if distance_difference < 0.0:
                 rospy.logwarn("DECREASE IN DISTANCE GOOD")
                 reward = self.closer_to_point_reward
             else:
-                # If it didnt get closer, we give much less points in theory
+                # If it didn't get closer, we give much less points in theory
                 # This should trigger the behaviour of moving towards the point
                 rospy.logwarn("NO DECREASE IN DISTANCE, so much less points")
                 reward = self.not_ending_point_reward

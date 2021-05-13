@@ -1,14 +1,13 @@
-import rospy
-import numpy
-from gym import spaces
-from openai_ros.robot_envs import wamv_env
-from gym.envs.registration import register
-from geometry_msgs.msg import Point
-from geometry_msgs.msg import Vector3
-from tf.transformations import euler_from_quaternion
-from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.common import ROSLauncher
 import os
+
+import numpy
+import rospy
+from geometry_msgs.msg import Point, Vector3
+from gym import spaces
+from openai_ros.core import ROSLauncher
+from openai_ros.robot_envs import wamv_env
+from openai_ros.core.helpers import load_ros_params_from_yaml
+from tf.transformations import euler_from_quaternion
 
 
 class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
@@ -19,16 +18,17 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         http://robotx.org/images/files/RobotX_2018_Task_Summary.pdf
         Demonstrate Navigation Control
         """
-
-        # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
+        # This is the path where the simulation files, the Task and the Robot gits will
+        #  be downloaded if not there
         workspace_path = rospy.get_param("/wamv/workspace_path", None)
-        assert (
-            workspace_path is not None
-        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
+        assert workspace_path is not None, (
+            "You forgot to set workspace_path in your yaml file of your main RL "
+            "script. Set workspace_path: 'YOUR/SIM_WS/PATH'."
+        )
         assert os.path.exists(workspace_path), (
             "The Simulation ROS Workspace path "
             + workspace_path
-            + " DOESNT exist, execute: mkdir -p "
+            + " DOESN'T exist, execute: mkdir -p "
             + workspace_path
             + "/src;cd "
             + workspace_path
@@ -42,7 +42,7 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         )
 
         # Load Params from the desired Yaml file
-        LoadYamlFileParamsTest(
+        load_ros_params_from_yaml(
             package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/wamv/config",
             yaml_file_name="wamv_nav_twosets_buoys.yaml",
@@ -235,8 +235,6 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         1) The wamvs is ouside the workspace
         2) It got to the desired point
         """
-        distance_from_desired_point = observations[8]
-
         current_position = Vector3()
         current_position.x = observations[0]
         current_position.y = observations[1]
@@ -269,7 +267,8 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
 
         if not done:
 
-            # If there has been a decrease in the distance to the desired point, we reward it
+            # If there has been a decrease in the distance to the desired point, we
+            #  reward it
             if distance_difference < 0.0:
                 rospy.logwarn("DECREASE IN DISTANCE GOOD")
                 reward = self.closer_to_point_reward

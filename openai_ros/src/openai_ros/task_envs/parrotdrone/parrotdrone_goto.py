@@ -1,14 +1,13 @@
-import rospy
-import numpy
-from gym import spaces
-from openai_ros.robot_envs import parrotdrone_env
-from gym.envs.registration import register
-from geometry_msgs.msg import Point
-from geometry_msgs.msg import Vector3
-from tf.transformations import euler_from_quaternion
-from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.common import ROSLauncher
 import os
+
+import numpy
+import rospy
+from geometry_msgs.msg import Point, Vector3
+from gym import spaces
+from openai_ros.core import ROSLauncher
+from openai_ros.robot_envs import parrotdrone_env
+from openai_ros.core.helpers import load_ros_params_from_yaml
+from tf.transformations import euler_from_quaternion
 
 
 class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
@@ -17,13 +16,14 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         Make parrotdrone learn how to navigate to get to a point
         """
         workspace_path = rospy.get_param("/drone/workspace_path", None)
-        assert (
-            workspace_path is not None
-        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
+        assert workspace_path is not None, (
+            "You forgot to set workspace_path in your yaml file of your main RL "
+            "script. Set workspace_path: 'YOUR/SIM_WS/PATH'."
+        )
         assert os.path.exists(workspace_path), (
             "The Simulation ROS Workspace path "
             + workspace_path
-            + " DOESNT exist, execute: mkdir -p "
+            + " DOESN'T exist, execute: mkdir -p "
             + workspace_path
             + "/src;cd "
             + workspace_path
@@ -37,7 +37,7 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         )
 
         # Load Params from the desired Yaml file
-        LoadYamlFileParamsTest(
+        load_ros_params_from_yaml(
             package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/parrotdrone/config",
             yaml_file_name="parrotdrone_goto.yaml",
@@ -136,9 +136,9 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
     def _set_init_pose(self):
         """
         Sets the Robot in its init linear and angular speeds
-        and lands the robot. Its preparing it to be reseted in the world.
+        and lands the robot. Its preparing it to be reset in the world.
         """
-        # raw_input("INIT SPEED PRESS")
+        # input("INIT SPEED PRESS")
         self.move_base(
             self.init_linear_speed_vector,
             self.init_angular_turn_speed,
@@ -146,7 +146,7 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
             update_rate=10,
         )
         # We Issue the landing command to be sure it starts landing
-        # raw_input("LAND PRESS")
+        # input("LAND PRESS")
         # self.land()
 
         return True
@@ -157,7 +157,7 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         of an episode.
         :return:
         """
-        # raw_input("TakeOFF PRESS")
+        # input("TakeOFF PRESS")
         # We TakeOff before sending any movement commands
         self.takeoff()
 
@@ -177,7 +177,8 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         """
 
         rospy.logdebug("Start Set Action ==>" + str(action))
-        # We convert the actions to speed movements to send to the parent class of Parrot
+        # We convert the actions to speed movements to send to the parent class of
+        # Parrot
         linear_speed_vector = Vector3()
         angular_speed = 0.0
 
@@ -271,8 +272,8 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         sonar_value = observations[6]
 
         is_inside_workspace_now = self.is_inside_workspace(current_position)
-        sonar_detected_something_too_close_now = (
-            self.sonar_detected_something_too_close(sonar_value)
+        sonar_detected_something_too_close_now = self.sonar_detected_something_too_close(  # noqa: E501
+            sonar_value
         )
         drone_flipped = self.drone_has_flipped(current_orientation)
         has_reached_des_point = self.is_in_desired_position(
@@ -335,7 +336,8 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
 
         if not done:
 
-            # If there has been a decrease in the distance to the desired point, we reward it
+            # If there has been a decrease in the distance to the desired point, we
+            # reward it
             if distance_difference < 0.0:
                 rospy.logwarn("DECREASE IN DISTANCE GOOD")
                 reward = self.closer_to_point_reward

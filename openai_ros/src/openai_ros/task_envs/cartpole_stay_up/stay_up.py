@@ -1,13 +1,11 @@
-from gym import utils
-from openai_ros.robot_envs import cartpole_env
-from gym.envs.registration import register
-from gym import error, spaces
-import rospy
-import math
-import numpy as np
-from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.common import ROSLauncher
 import os
+
+import numpy as np
+import rospy
+from gym import spaces
+from openai_ros.core import ROSLauncher
+from openai_ros.core.helpers import load_ros_params_from_yaml
+from openai_ros.robot_envs import cartpole_env
 
 
 class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
@@ -20,7 +18,7 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
             assert os.path.exists(workspace_path), (
                 "The Simulation ROS Workspace path "
                 + workspace_path
-                + " DOESNT exist, execute: mkdir -p "
+                + " DOESN'T exist, execute: mkdir -p "
                 + workspace_path
                 + "/src;cd "
                 + workspace_path
@@ -34,9 +32,9 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
         )
 
         # Load Params from the desired Yaml file
-        LoadYamlFileParamsTest(
+        load_ros_params_from_yaml(
             package_name="openai_ros",
-            rel_path_from_package_to_file="src/openai_ros/task_envs/cartpole_stay_up/config",
+            rel_path_from_package_to_file="src/openai_ros/task_envs/cartpole_stay_up/config",  # noqa: E501
             yaml_file_name="stay_up.yaml",
         )
 
@@ -95,7 +93,7 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
 
         # 1st: unpause simulation
         # rospy.logdebug("Unpause SIM...")
-        # self.gazebo.unpauseSim()
+        # self.gazebo.unpause_sim()
 
         self.move_joints(self.pos)
         rospy.logdebug(
@@ -109,20 +107,23 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
 
         # 3rd: pause simulation
         # rospy.logdebug("Pause SIM...")
-        # self.gazebo.pauseSim()
+        # self.gazebo.pause_sim()
 
     def _get_obs(self):
 
         data = self.joints
-        #       base_postion                base_velocity              pole angle                 pole velocity
-        # obs = [round(data.position[1],1), round(data.velocity[1],1), round(data.position[0],1), round(data.velocity[0],1)]
+        # obs = [
+        #     round(data.position[1], 1),  # Base
+        #     round(data.velocity[1], 1),  # Base
+        #     round(data.position[0], 1),  # Pole
+        #     round(data.velocity[0], 1),  # Pole
+        # ]
         obs = [data.position[1], data.velocity[1], data.position[0], data.velocity[0]]
 
         return np.array(obs)
 
     def _is_done(self, observations):
         done = False
-        data = self.joints
 
         rospy.loginfo("BASEPOSITION==" + str(observations[0]))
         rospy.loginfo("POLE ANGLE==" + str(observations[2]))
@@ -161,8 +162,8 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
 
     def _compute_reward(self, observations, done):
         """
-        Gives more points for staying upright, gets data from given observations to avoid
-        having different data than other previous functions
+        Gives more points for staying upright, gets data from given observations to
+        avoid having different data than other previous functions
         :return:reward
         """
         rospy.logdebug("START _compute_reward")
@@ -175,8 +176,11 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
             reward = 1.0
         else:
             if self.steps_beyond_done == 0:
-                logger.warning(
-                    "You are calling 'step()' even though this environment has already returned done = True. You should always call 'reset()' once you receive 'done = True' -- any further steps are undefined behavior."
+                rospy.logwarn(
+                    "You are calling 'step()' even though this environment has already "
+                    "returned done = True. You should always call 'reset()' once you "
+                    "receive 'done = True' -- any further steps are undefined behaviour"
+                    "."
                 )
             self.steps_beyond_done += 1
             reward = 0.0

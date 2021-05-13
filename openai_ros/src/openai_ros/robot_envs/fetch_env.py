@@ -1,14 +1,13 @@
+import sys
+
+import geometry_msgs.msg
+import moveit_commander
 import numpy as np
 import rospy
-from gazebo_msgs.srv import GetWorldProperties, GetModelState
-from sensor_msgs.msg import JointState
+from gazebo_msgs.srv import GetModelState, GetWorldProperties
 from openai_ros import robot_gazebo_env
-import sys
-import moveit_commander
-import moveit_msgs.msg
-import geometry_msgs.msg
-import trajectory_msgs.msg
-from openai_ros.common import ROSLauncher
+from openai_ros.core import ROSLauncher
+from sensor_msgs.msg import JointState
 
 
 class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -51,7 +50,7 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
             "joint6",
         ]
 
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
         self._check_all_systems_ready()
 
         self.joint_states_sub = rospy.Subscriber(
@@ -65,7 +64,7 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
         # Wait until it has reached its Sturtup Position
         self.wait_fetch_ready()
 
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
         # Variables that we give through the constructor.
 
         rospy.logdebug("========= Out Fetch Env")
@@ -102,8 +101,7 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
                     + " READY=>"
                     + str(self.joints)
                 )
-
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current "
                     + str(self.JOINT_STATES_SUBSCRIBER)
@@ -206,9 +204,9 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
                 float64 z
                 float64 w
         """
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
         gripper_pose = self.move_fetch_object.ee_pose()
-        self.gazebo.pauseSim()
+        self.gazebo.pause_simm()
         return gripper_pose
 
     def get_ee_rpy(self):
@@ -272,8 +270,8 @@ class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
 
 class Obj_Pos(object):
     """
-    This object maintains the pose and rotation of the cube in a simulation through Gazebo Service
-
+    This object maintains the pose and rotation of the cube in a simulation through
+    Gazebo Service.
     """
 
     def __init__(self):

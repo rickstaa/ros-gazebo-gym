@@ -1,28 +1,31 @@
-import rospy
-import numpy
 import math
-from gym import spaces
-from openai_ros.robot_envs import cube_single_disk_env
-from geometry_msgs.msg import Point
-from tf.transformations import euler_from_quaternion
-from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.common import ROSLauncher
 import os
+
+import numpy
+import rospy
+from geometry_msgs.msg import Point
+from gym import spaces
+from openai_ros.core import ROSLauncher
+from openai_ros.robot_envs import cube_single_disk_env
+from openai_ros.core.helpers import load_ros_params_from_yaml
+from tf.transformations import euler_from_quaternion
 
 
 class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
     def __init__(self):
 
         # Launch the Task Simulated-Environment
-        # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
+        # This is the path where the simulation files, the Task and the Robot gits will
+        # be downloaded if not there
         workspace_path = rospy.get_param("/moving_cube/workspace_path", None)
-        assert (
-            workspace_path is not None
-        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
+        assert workspace_path is not None, (
+            "You forgot to set workspace_path in your yaml file of your main RL "
+            "script. Set workspace_path: 'YOUR/SIM_WS/PATH'."
+        )
         assert os.path.exists(workspace_path), (
             "The Simulation ROS Workspace path "
             + workspace_path
-            + " DOESNT exist, execute: mkdir -p "
+            + " DOESN'T exist, execute: mkdir -p "
             + workspace_path
             + "/src;cd "
             + workspace_path
@@ -36,7 +39,7 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         )
 
         # Load Params from the desired Yaml file
-        LoadYamlFileParamsTest(
+        load_ros_params_from_yaml(
             package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/moving_cube/config",
             yaml_file_name="one_disk_walk.yaml",
@@ -88,7 +91,8 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         rospy.logwarn("ACTION SPACES TYPE===>" + str(self.action_space))
         rospy.logwarn("OBSERVATION SPACES TYPE===>" + str(self.observation_space))
 
-        # Variables that we retrieve through the param server, loded when launch training launch.
+        # Variables that we retrieve through the param server, loded when launch
+        # training launch.
         self.init_roll_vel = rospy.get_param("/moving_cube/init_roll_vel")
 
         # Get Observations
@@ -139,7 +143,8 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
 
     def _set_action(self, action):
 
-        # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
+        # We convert the actions to speed movements to send to the parent class
+        # CubeSingleDiskEnv
         if action == 0:  # Move Speed Wheel Forwards
             self.roll_turn_speed = self.roll_speed_fixed_value
         elif action == 1:  # Move Speed Wheel Backwards
@@ -240,7 +245,8 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
             yaw_angle = observations[5]
             rospy.logdebug("yaw_angle=" + str(yaw_angle))
 
-            # Worst yaw is 90 and 270 degrees, best 0 and 180. We use sin function for giving reward.
+            # Worst yaw is 90 and 270 degrees, best 0 and 180. We use sin function for
+            # giving reward.
             sin_yaw_angle = math.sin(yaw_angle)
             rospy.logdebug("sin_yaw_angle=" + str(sin_yaw_angle))
             reward_y_axis_angle = (
@@ -249,13 +255,14 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
 
             # Rolling reward
             roll_angle = observations[2]
-            roll_reward = (
-                math.sin(abs(self.pre_roll_angle - roll_angle))
-                * self.roll_reward_weight
-            )
+            # roll_reward = (
+            #     math.sin(abs(self.pre_roll_angle - roll_angle))
+            #     * self.roll_reward_weight
+            # )
             self.pre_roll_angle = roll_angle
 
-            # We are not intereseted in decimals of the reward, doesnt give any advatage.
+            # We are not interested in decimals of the reward, doesn't give any
+            # advantage
             reward = (
                 round(reward_distance, 0)
                 + round(reward_y_axis_speed, 0)

@@ -1,12 +1,11 @@
 #! /usr/bin/env python
 
-import numpy
 import rospy
-from openai_ros import robot_gazebo_env
-from std_msgs.msg import Float64
-from sensor_msgs.msg import JointState
 from nav_msgs.msg import Odometry
-from openai_ros.common import ROSLauncher
+from openai_ros import robot_gazebo_env
+from openai_ros.core import ROSLauncher
+from sensor_msgs.msg import JointState
+from std_msgs.msg import Float64
 
 
 class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -35,7 +34,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self.robot_name_space = "moving_cube"
 
-        # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
+        # Launch the init function of the parent class robot_gazebo_env.RobotGazeboEnv
         super(CubeSingleDiskEnv, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,
@@ -55,7 +54,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         self._check_all_systems_ready()
 
         # We pause the simulation once everything is ready
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
 
     # Methods needed by the RobotGazeboEnv
     # ----------------------------
@@ -88,9 +87,10 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
                     "Current moving_cube/joint_states READY=>" + str(self.joints)
                 )
 
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current moving_cube/joint_states not ready yet, retrying for getting joint_states"
+                    "Current moving_cube/joint_states not ready yet, retrying for "
+                    "getting joint_states."
                 )
         return self.joints
 
@@ -102,8 +102,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/moving_cube/odom", Odometry, timeout=1.0
                 )
                 rospy.logdebug("Current /moving_cube/odom READY=>" + str(self.odom))
-
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current /moving_cube/odom not ready yet, retrying for getting odom"
                 )

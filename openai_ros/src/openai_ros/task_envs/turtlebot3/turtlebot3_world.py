@@ -1,12 +1,11 @@
-import rospy
-import numpy
-from gym import spaces
-from openai_ros.robot_envs import turtlebot3_env
-from gym.envs.registration import register
-from geometry_msgs.msg import Vector3
-from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.common import ROSLauncher
 import os
+
+import numpy
+import rospy
+from gym import spaces
+from openai_ros.core import ROSLauncher
+from openai_ros.robot_envs import turtlebot3_env
+from openai_ros.core.helpers import load_ros_params_from_yaml
 
 
 class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
@@ -23,7 +22,7 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
             assert os.path.exists(workspace_path), (
                 "The Simulation ROS Workspace path "
                 + workspace_path
-                + " DOESNT exist, execute: mkdir -p "
+                + " DOESN'T exist, execute: mkdir -p "
                 + workspace_path
                 + "/src;cd "
                 + workspace_path
@@ -37,7 +36,7 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
         )
 
         # Load Params from the desired Yaml file
-        LoadYamlFileParamsTest(
+        load_ros_params_from_yaml(
             package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/turtlebot3/config",
             yaml_file_name="turtlebot3_world.yaml",
@@ -136,7 +135,8 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
         """
 
         rospy.logdebug("Start Set Action ==>" + str(action))
-        # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
+        # We convert the actions to speed movements to send to the parent class
+        # CubeSingleDiskEnv
         if action == 0:  # FORWARD
             linear_speed = self.linear_forward_speed
             angular_speed = 0.0
@@ -196,7 +196,7 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
             self._episode_done = True
         else:
             rospy.logerr(
-                "DIDNT crash TurtleBot3 ==>"
+                "DIDN'T crash TurtleBot3 ==>"
                 + str(linear_acceleration_magnitude)
                 + ">"
                 + str(self.max_linear_aceleration)

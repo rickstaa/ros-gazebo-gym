@@ -1,27 +1,12 @@
 #!/usr/bin/env python3
 
-import gym
 import rospy
-import roslaunch
-import time
-import numpy as np
-from gym import utils, spaces
-from geometry_msgs.msg import Twist
-from std_srvs.srv import Empty
 from gym.utils import seeding
-from gym.envs.registration import register
-import copy
-import math
-import os
-
-from sensor_msgs.msg import JointState
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
-from std_msgs.msg import Float64
-from gazebo_msgs.srv import SetLinkState
-from gazebo_msgs.msg import LinkState
-from rosgraph_msgs.msg import Clock
 from openai_ros import robot_gazebo_env
-from openai_ros.common import ROSLauncher
+from openai_ros.core import ROSLauncher
+from rosgraph_msgs.msg import Clock
+from sensor_msgs.msg import JointState
+from std_msgs.msg import Float64
 
 
 class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -149,9 +134,10 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
                     )
                     base_data_ok = positions_ok and velocity_ok and efforts_ok
                     rospy.logdebug("Checking Init Values Ok=>" + str(base_data_ok))
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current cartpole_v0/joint_states not ready yet, retrying for getting joint_states"
+                    "Current cartpole_v0/joint_states not ready yet, retrying for "
+                    "getting joint_states."
                 )
         rospy.logdebug("ALL SYSTEMS READY")
 
@@ -167,8 +153,9 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
             try:
                 self.clock_time = rospy.wait_for_message("/clock", Clock, timeout=1.0)
                 rospy.logdebug("Current clock_time READY=>" + str(self.clock_time))
-            except:
+            except Exception:
                 rospy.logdebug(
-                    "Current clock_time not ready yet, retrying for getting Current clock_time"
+                    "Current clock_time not ready yet, retrying for getting Current "
+                    "clock_time"
                 )
         return self.clock_time

@@ -1,14 +1,9 @@
-import numpy
 import rospy
-from openai_ros import robot_gazebo_env
-from std_msgs.msg import Float64
-from sensor_msgs.msg import JointState
-from sensor_msgs.msg import Image
-from sensor_msgs.msg import LaserScan
-from sensor_msgs.msg import PointCloud2
-from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
-from openai_ros.common import ROSLauncher
+from nav_msgs.msg import Odometry
+from openai_ros import robot_gazebo_env
+from openai_ros.core import ROSLauncher
+from sensor_msgs.msg import Image, LaserScan, PointCloud2
 
 
 class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
@@ -17,17 +12,20 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
     def __init__(self, workspace_path):
         """
         Initializes a new HusarionEnv environment.
-        Husarion doesnt use controller_manager, therefore we wont reset the
+        Husarion doesn't use controller_manager, therefore we wont reset the
         controllers in the standard fashion. For the moment we wont reset them.
 
-        To check any topic we need to have the simulations running, we need to do two things:
-        1) Unpause the simulation: without that th stream of data doesnt flow. This is for simulations
-        that are pause for whatever the reason
-        2) If the simulation was running already for some reason, we need to reset the controlers.
-        This has to do with the fact that some plugins with tf, dont understand the reset of the simulation
-        and need to be reseted to work properly.
+        To check any topic we need to have the simulations running, we need to do two
+        things:
+        1) Un-pause the simulation: without that th stream of data doesn't flow. This is
+           for simulations that are pause for whatever the reason
+        2) If the simulation was running already for some reason, we need to reset the
+           controllers.
+        This has to do with the fact that some plugins with tf, don't understand the
+        reset of the simulation and need to be reset to work properly.
 
-        The Sensors: The sensors accesible are the ones considered usefull for AI learning.
+        The Sensors: The sensors accessible are the ones considered usefull for AI
+        learning.
 
         Sensor Topic List:
         * /odom : Odometry readings of the Base of the Robot
@@ -51,13 +49,14 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
         )
         rospy.logerr(">>>>>>>>>>>ROSLAUCHER DONE HusarionEnv INIT...")
         # Internal Vars
-        # Doesnt have any accesibles
+        # Doesn't have any accessibles
         self.controllers_list = []
 
-        # It doesnt use namespace
+        # It doesn't use namespace
         self.robot_name_space = ""
 
-        # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
+        # We launch the init function of the parent class
+        # robot_gazebo_env.RobotGazeboEnv
         super(HusarionEnv, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,
@@ -66,7 +65,7 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
             reset_world_or_sim="WORLD",
         )
 
-        self.gazebo.unpauseSim()
+        self.gazebo.unpause_sim()
         # self.controllers_object.reset_controllers()
         self._check_all_sensors_ready()
 
@@ -87,7 +86,7 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self._check_publishers_connection()
 
-        self.gazebo.pauseSim()
+        self.gazebo.pause_sim()
 
         rospy.logdebug("Finished HusarionEnv INIT...")
 
@@ -108,7 +107,7 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
     def _check_all_sensors_ready(self):
         rospy.logdebug("START ALL SENSORS READY")
         self._check_odom_ready()
-        # We dont need to check for the moment, takes too long
+        # We don't need to check for the moment, takes too long
         self._check_camera_depth_image_raw_ready()
         self._check_camera_depth_points_ready()
         self._check_camera_rgb_image_raw_ready()
@@ -122,8 +121,7 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
             try:
                 self.odom = rospy.wait_for_message("/odom", Odometry, timeout=5.0)
                 rospy.logdebug("Current /odom READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr("Current /odom not ready yet, retrying for getting odom")
 
         return self.odom
@@ -137,10 +135,10 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/camera/depth/image_raw", Image, timeout=5.0
                 )
                 rospy.logdebug("Current /camera/depth/image_raw READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /camera/depth/image_raw not ready yet, retrying for getting camera_depth_image_raw"
+                    "Current /camera/depth/image_raw not ready yet, retrying for "
+                    "getting camera_depth_image_raw."
                 )
         return self.camera_depth_image_raw
 
@@ -153,10 +151,10 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/camera/depth/points", PointCloud2, timeout=10.0
                 )
                 rospy.logdebug("Current /camera/depth/points READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /camera/depth/points not ready yet, retrying for getting camera_depth_points"
+                    "Current /camera/depth/points not ready yet, retrying for getting "
+                    "camera_depth_points."
                 )
         return self.camera_depth_points
 
@@ -169,10 +167,10 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/camera/rgb/image_raw", Image, timeout=5.0
                 )
                 rospy.logdebug("Current /camera/rgb/image_raw READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current /camera/rgb/image_raw not ready yet, retrying for getting camera_rgb_image_raw"
+                    "Current /camera/rgb/image_raw not ready yet, retrying for getting "
+                    "camera_rgb_image_raw."
                 )
         return self.camera_rgb_image_raw
 
@@ -185,8 +183,7 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
                     "/scan", LaserScan, timeout=1.0
                 )
                 rospy.logdebug("Current /scan READY=>")
-
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current /scan not ready yet, retrying for getting laser_scan"
                 )
@@ -261,7 +258,8 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
         It will wait untill those twists are achived reading from the odometry topic.
         :param linear_speed: Speed in the X axis of the robot base frame
         :param angular_speed: Speed of the angular turning of the robot base frame
-        :param epsilon: Acceptable difference between the speed asked and the odometry readings
+        :param epsilon: Acceptable difference between the speed asked and the odometry
+            readings
         :param update_rate: Rate at which we check the odometry.
         :return:
         """
@@ -279,7 +277,8 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         We wait for the cmd_vel twist given to be reached by the robot reading
         Bare in mind that the angular wont be controled , because its too imprecise.
-        We will only consider to check if its moving or not inside the angular_speed_noise fluctiations it has.
+        We will only consider to check if its moving or not inside the
+        angular_speed_noise fluctiations it has.
         from the odometry.
         :param cmd_vel_value: Twist we want to wait to reach.
         :param epsilon: Error acceptable in odometry readings.
@@ -363,8 +362,8 @@ class HusarionEnv(robot_gazebo_env.RobotGazeboEnv):
         elif angular_speed <= angular_speed_noise:
             angular_speed_is = -1
         else:
-            angular_speed_is = 0
             rospy.logerr("Angular Speed has wrong value==" + str(angular_speed))
+        rospy.logdebug(f"Angular speed value: {angular_speed_is}")
 
     def get_odom(self):
         return self.odom

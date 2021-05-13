@@ -1,15 +1,15 @@
-import rospy
+import os
+
 import numpy
-from gym import spaces
-from openai_ros.robot_envs import husarion_env
-from geometry_msgs.msg import Vector3
+import rospy
 from geometry_msgs.msg import Point
-from tf.transformations import euler_from_quaternion
+from gym import spaces
+from openai_ros.core import ROSLauncher
+from openai_ros.robot_envs import husarion_env
+from openai_ros.core.helpers import load_ros_params_from_yaml
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Header
-from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.common import ROSLauncher
-import os
+from tf.transformations import euler_from_quaternion
 
 
 class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
@@ -20,15 +20,17 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         It will learn how to move around without crashing.
         """
         # Launch the Task Simulated-Environment
-        # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
+        # This is the path where the simulation files, the Task and the Robot gits will
+        # be downloaded if not there
         workspace_path = rospy.get_param("/husarion/workspace_path", None)
-        assert (
-            workspace_path is not None
-        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
+        assert workspace_path is not None, (
+            "You forgot to set workspace_path in your yaml file of your main RL "
+            "script. Set workspace_path: 'YOUR/SIM_WS/PATH'."
+        )
         assert os.path.exists(workspace_path), (
             "The Simulation ROS Workspace path "
             + workspace_path
-            + " DOESNT exist, execute: mkdir -p "
+            + " DOESN'T exist, execute: mkdir -p "
             + workspace_path
             + "/src;cd "
             + workspace_path
@@ -42,7 +44,7 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         )
 
         # Load Params from the desired Yaml file
-        LoadYamlFileParamsTest(
+        load_ros_params_from_yaml(
             package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/husarion/config",
             yaml_file_name="husarion_get_to_position_turtlebot_playground.yaml",
@@ -170,7 +172,8 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         """
 
         rospy.logdebug("Start Set Action ==>" + str(action))
-        # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
+        # We convert the actions to speed movements to send to the parent class
+        # CubeSingleDiskEnv
         if action == 0:  # FORWARD
             linear_speed = self.linear_forward_speed
             angular_speed = 0.0
@@ -250,7 +253,8 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         """
 
         # We fetch data through the observations
-        # Its all the array except from the last four elements, which are XY odom and XY des_pos
+        # Its all the array except from the last four elements, which are XY odom and
+        # XY des_pos
         laser_readings = observations[:-5]
 
         current_position = Point()
@@ -291,12 +295,9 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         2) The robot has reached the desired point
 
         We will penalise the following behaviours:
-        1) Ending the episode without reaching the desired pos. That means it has crashed
-        or it has gone outside the workspace
-
+        1) Ending the episode without reaching the desired pos. That means it has
+           crashed or it has gone outside the workspace
         """
-
-        laser_readings = observations[:-5]
 
         current_position = Point()
         current_position.x = observations[-5]
@@ -327,7 +328,8 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         rospy.logwarn("distance_difference=" + str(distance_difference))
 
         if not done:
-            # If there has been a decrease in the distance to the desired point, we reward it
+            # If there has been a decrease in the distance to the desired point, we
+            # reward it
             if distance_difference < 0.0:
                 rospy.logwarn("DECREASE IN DISTANCE GOOD")
                 reward = self.closer_to_point_reward
@@ -381,8 +383,6 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         rospy.logdebug("data=" + str(data))
         rospy.logdebug("new_ranges=" + str(new_ranges))
         rospy.logdebug("mod=" + str(mod))
-
-        nan_value = (self.min_laser_value + self.min_laser_value) / 2.0
 
         for i, item in enumerate(data.ranges):
             if i % mod == 0:
@@ -576,10 +576,6 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
     def publish_filtered_laser_scan(
         self, laser_original_data, new_filtered_laser_range
     ):
-
-        length_range = len(laser_original_data.ranges)
-        length_intensities = len(laser_original_data.intensities)
-
         laser_filtered_object = LaserScan()
 
         h = Header()

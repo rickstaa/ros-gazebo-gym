@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 
 import time
-import rospy
-import math
-import copy
+
 import numpy
-from std_msgs.msg import Float64
-from sensor_msgs.msg import JointState
-from nav_msgs.msg import Odometry
+import rospy
 from geometry_msgs.msg import Point
+from nav_msgs.msg import Odometry
+from sensor_msgs.msg import JointState
+from std_msgs.msg import Float64
 from tf.transformations import euler_from_quaternion
 
 
@@ -39,10 +38,10 @@ class CubeRLUtils(object):
                     "Current moving_cube/joint_states READY=>"
                     + str(self.disk_joints_data)
                 )
-
-            except:
+            except Exception:
                 rospy.logerr(
-                    "Current moving_cube/joint_states not ready yet, retrying for getting joint_states"
+                    "Current moving_cube/joint_states not ready yet, retrying for "
+                    "getting joint_states."
                 )
 
         self.cube_odom_data = None
@@ -54,8 +53,7 @@ class CubeRLUtils(object):
                 rospy.loginfo(
                     "Current /moving_cube/odom READY=>" + str(self.cube_odom_data)
                 )
-
-            except:
+            except Exception:
                 rospy.logerr(
                     "Current /moving_cube/odom not ready yet, retrying for getting odom"
                 )

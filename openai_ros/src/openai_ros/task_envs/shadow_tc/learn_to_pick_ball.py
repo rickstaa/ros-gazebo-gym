@@ -1,14 +1,12 @@
-import rospy
-import numpy
-from gym import spaces
-from openai_ros.robot_envs import shadow_tc_env
-from gym.envs.registration import register
-from geometry_msgs.msg import Point
-from geometry_msgs.msg import Vector3
-from tf.transformations import euler_from_quaternion
-from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.common import ROSLauncher
 import os
+
+import numpy
+import rospy
+from geometry_msgs.msg import Vector3
+from gym import spaces
+from openai_ros.core import ROSLauncher
+from openai_ros.robot_envs import shadow_tc_env
+from openai_ros.core.helpers import load_ros_params_from_yaml
 
 
 class ShadowTcGetBallEnv(shadow_tc_env.ShadowTcEnv):
@@ -16,15 +14,17 @@ class ShadowTcGetBallEnv(shadow_tc_env.ShadowTcEnv):
         """
         Make ShadowTc learn how pick up a ball
         """
-        # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
+        # This is the path where the simulation files, the Task and the Robot gits will
+        #  be downloaded if not there
         workspace_path = rospy.get_param("/shadow_tc/workspace_path", None)
-        assert (
-            workspace_path is not None
-        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
+        assert workspace_path is not None, (
+            "You forgot to set workspace_path in your yaml file of your main RL "
+            "script. Set workspace_path: 'YOUR/SIM_WS/PATH'."
+        )
         assert os.path.exists(workspace_path), (
             "The Simulation ROS Workspace path "
             + workspace_path
-            + " DOESNT exist, execute: mkdir -p "
+            + " DOESN'T exist, execute: mkdir -p "
             + workspace_path
             + "/src;cd "
             + workspace_path
@@ -38,14 +38,15 @@ class ShadowTcGetBallEnv(shadow_tc_env.ShadowTcEnv):
         )
 
         # Load Params from the desired Yaml file
-        LoadYamlFileParamsTest(
+        load_ros_params_from_yaml(
             package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/shadow_tc/config",
             yaml_file_name="learn_to_pick_ball.yaml",
         )
 
         # We execute this one before because there are some functions that this
-        # TaskEnv uses that use variables from the parent class, like the effort limit fetch.
+        # TaskEnv uses that use variables from the parent class, like the effort limit
+        # fetch.
         super(ShadowTcGetBallEnv, self).__init__(workspace_path)
 
         # Here we will add any init functions prior to starting the MyRobotEnv
@@ -117,7 +118,8 @@ class ShadowTcGetBallEnv(shadow_tc_env.ShadowTcEnv):
 
     def _set_init_pose(self):
         """
-        Sets the UR5 arm to the initial position and the objects to the original position.
+        Sets the UR5 arm to the initial position and the objects to the original
+        position.
         """
         rospy.logdebug("START _set_init_pose...")
         # We set the angles to zero of the limb
@@ -145,7 +147,7 @@ class ShadowTcGetBallEnv(shadow_tc_env.ShadowTcEnv):
 
         rospy.logdebug("END TaskEnv _init_env_variables")
 
-    def _set_action(self, action):
+    def _set_action(self, action):  # noqa: C901
         """
         It sets the joints of shadow_tc based on the action integer given
         based on the action number given.
@@ -183,7 +185,7 @@ class ShadowTcGetBallEnv(shadow_tc_env.ShadowTcEnv):
 
         if action_id == "move":
             # We tell shadow_tc the action to perform
-            # We dont change the RPY, therefore it will always be zero
+            # We don't change the RPY, therefore it will always be zero
 
             self.move_tip(
                 x=increment_vector.x, y=increment_vector.y, z=increment_vector.z
@@ -214,7 +216,7 @@ class ShadowTcGetBallEnv(shadow_tc_env.ShadowTcEnv):
 
         tcp_pose = self.get_tip_pose()
 
-        # We dont add it to the observations because is not part of the robot
+        # We don't add it to the observations because is not part of the robot
         self.ball_pose = self.get_ball_pose()
 
         # We activate the Finguer collision detection
@@ -297,7 +299,8 @@ class ShadowTcGetBallEnv(shadow_tc_env.ShadowTcEnv):
 
         if not done:
 
-            # If there has been a decrease in the distance to the desired point, we reward it
+            # If there has been a decrease in the distance to the desired point, we
+            # reward it
             if distance_difference < 0.0:
                 rospy.logerr("NOT ERROR: DECREASE IN DISTANCE GOOD")
                 reward = self.closer_to_block_reward

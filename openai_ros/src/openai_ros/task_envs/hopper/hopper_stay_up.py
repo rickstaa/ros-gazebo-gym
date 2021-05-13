@@ -1,14 +1,13 @@
-import rospy
-import numpy
-from gym import spaces
-from openai_ros.robot_envs import hopper_env
-from gym.envs.registration import register
-from geometry_msgs.msg import Point
-from geometry_msgs.msg import Vector3
-from tf.transformations import euler_from_quaternion
-from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.common import ROSLauncher
 import os
+
+import numpy
+import rospy
+from geometry_msgs.msg import Point, Vector3
+from gym import spaces
+from openai_ros.core import ROSLauncher
+from openai_ros.robot_envs import hopper_env
+from openai_ros.core.helpers import load_ros_params_from_yaml
+from tf.transformations import euler_from_quaternion
 
 
 class HopperStayUpEnv(hopper_env.HopperEnv):
@@ -26,15 +25,17 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         """
         rospy.logdebug("Start HopperStayUpEnv INIT...")
 
-        # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
+        # This is the path where the simulation files, the Task and the Robot gits will
+        # be downloaded if not there
         workspace_path = rospy.get_param("/monoped/workspace_path", None)
-        assert (
-            workspace_path is not None
-        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
+        assert workspace_path is not None, (
+            "You forgot to set workspace_path in your yaml file of your main RL "
+            "script. Set workspace_path: 'YOUR/SIM_WS/PATH'."
+        )
         assert os.path.exists(workspace_path), (
             "The Simulation ROS Workspace path "
             + workspace_path
-            + " DOESNT exist, execute: mkdir -p "
+            + " DOESN'T exist, execute: mkdir -p "
             + workspace_path
             + "/src;cd "
             + workspace_path
@@ -48,7 +49,7 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         )
 
         # Load Params from the desired Yaml file
-        LoadYamlFileParamsTest(
+        load_ros_params_from_yaml(
             package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/hopper/config",
             yaml_file_name="hopper_stay_up.yaml",
@@ -187,7 +188,7 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
     def _set_init_pose(self):
         """
         Sets the Robot in its init linear and angular speeds
-        and lands the robot. Its preparing it to be reseted in the world.
+        and lands the robot. Its preparing it to be reset in the world.
         """
 
         joints_array = [
@@ -368,7 +369,8 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
     def _compute_reward(self, observations, done):
         """
         We Base the rewards in if its done or not and we base it on
-        the joint poisition, effort, contact force, orientation and distance from desired point.
+        the joint poisition, effort, contact force, orientation and distance from
+        desired point.
         :return:
         """
 
@@ -594,9 +596,10 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
 
     def get_contact_force_magnitude(self):
         """
-        You will see that because the X axis is the one pointing downwards, it will be the one with
-        higher value when touching the floor
-        For a Robot of total mas of 0.55Kg, a gravity of 9.81 m/sec**2, Weight = 0.55*9.81=5.39 N
+        You will see that because the X axis is the one pointing downwards, it will be
+        the one with higher value when touching the floor
+        For a Robot of total mas of 0.55Kg, a gravity of 9.81 m/sec**2, Weight =
+        0.55*9.81=5.39 N
         Falling from around 5centimetres ( negligible height ), we register peaks around
         Fx = 7.08 N
         :return:
@@ -616,8 +619,10 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
 
     def get_contact_force(self, lowerleg_contactsensor_state):
         """
-        /lowerleg_contactsensor_state/states[0]/contact_positions ==> PointContact in World
-        /lowerleg_contactsensor_state/states[0]/contact_normals ==> NormalContact in World
+        /lowerleg_contactsensor_state/states[0]/contact_positions ==> PointContact in
+        World
+        /lowerleg_contactsensor_state/states[0]/contact_normals ==> NormalContact in
+        World
 
         ==> One is an array of all the forces, the other total,
          and are relative to the contact link referred to in the sensor.
@@ -648,12 +653,13 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
 
     def calculate_reward_joint_position(self, joints_state_array, weight=1.0):
         """
-        We calculate reward base on the joints configuration. The more near 0 the better.
+        We calculate reward base on the joints configuration. The more near 0 the
+        better.
         :return:
         """
         acumulated_joint_pos = 0.0
         for joint_pos in joints_state_array:
-            # Abs to remove sign influence, it doesnt matter the direction of turn.
+            # Abs to remove sign influence, it doesn't matter the direction of turn.
             acumulated_joint_pos += abs(joint_pos)
             rospy.logdebug(
                 "calculate_reward_joint_position>>acumulated_joint_pos="
@@ -692,7 +698,8 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         The more its closser to 0 the better because it means its upright
         desired_yaw is the yaw that we want it to be.
         to praise it to have a certain orientation, here is where to set it.
-        :param: rpy_array: Its an array with Roll Pitch and Yaw in place 0, 1 and 2 respectively.
+        :param: rpy_array: Its an array with Roll Pitch and Yaw in place 0, 1 and 2
+            respectively.
         :return:
         """
 

@@ -1,14 +1,13 @@
-import rospy
-import numpy
-from gym import spaces
-from openai_ros.robot_envs import sawyer_env
-from gym.envs.registration import register
-from geometry_msgs.msg import Point
-from geometry_msgs.msg import Vector3
-from tf.transformations import euler_from_quaternion
-from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.common import ROSLauncher
 import os
+
+import numpy
+import rospy
+from geometry_msgs.msg import Vector3
+from gym import spaces
+from openai_ros.core import ROSLauncher
+from openai_ros.robot_envs import sawyer_env
+from openai_ros.core.helpers import load_ros_params_from_yaml
+from tf.transformations import euler_from_quaternion
 
 
 class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
@@ -17,15 +16,17 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         Make sawyer learn how pick up a cube
         """
 
-        # This is the path where the simulation files, the Task and the Robot gits will be downloaded if not there
+        # This is the path where the simulation files, the Task and the Robot gits will
+        # be downloaded if not there
         workspace_path = rospy.get_param("/sawyer/workspace_path", None)
-        assert (
-            workspace_path is not None
-        ), "You forgot to set workspace_path in your yaml file of your main RL script. Set workspace_path: 'YOUR/SIM_WS/PATH'"
+        assert workspace_path is not None, (
+            "You forgot to set workspace_path in your yaml file of your main RL "
+            "script. Set workspace_path: 'YOUR/SIM_WS/PATH'."
+        )
         assert os.path.exists(workspace_path), (
             "The Simulation ROS Workspace path "
             + workspace_path
-            + " DOESNT exist, execute: mkdir -p "
+            + " DOESN'T exist, execute: mkdir -p "
             + workspace_path
             + "/src;cd "
             + workspace_path
@@ -39,7 +40,7 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         )
 
         # Load Params from the desired Yaml file
-        LoadYamlFileParamsTest(
+        load_ros_params_from_yaml(
             package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/sawyer/config",
             yaml_file_name="learn_to_touch_cube.yaml",
@@ -50,7 +51,8 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         time.sleep(15)
         print("STARTING SPAWN ROBOT")
         # We execute this one before because there are some functions that this
-        # TaskEnv uses that use variables from the parent class, like the effort limit fetch.
+        # TaskEnv uses that use variables from the parent class, like the effort limit
+        # fetch.
         super(SawyerTouchCubeEnv, self).__init__(workspace_path)
 
         # Here we will add any init functions prior to starting the MyRobotEnv
@@ -85,8 +87,8 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         # TODO: Fill when get_observations is done.
         """
         We supose that its all these:
-        head_pan, right_gripper_l_finger_joint, right_gripper_r_finger_joint, right_j0, right_j1,
-  right_j2, right_j3, right_j4, right_j5, right_j6
+        head_pan, right_gripper_l_finger_joint, right_gripper_r_finger_joint, right_j0,
+        right_j1, right_j2, right_j3, right_j4, right_j5, right_j6
 
         Plus the first three are the block_to_tcp vector
         """
@@ -156,9 +158,11 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         joint_positions_dict_zero = dict(zip(self.joints, join_values_array))
 
         actual_joint_angles_dict = self.get_all_limb_joint_angles()
-        # We generate the two step movement. Turn Right/Left where you are and then set all to zero
+        # We generate the two step movement. Turn Right/Left where you are and then set
+        # all to zero
         if "right_j0" in actual_joint_angles_dict:
-            # We turn to the left or to the right based on where the position is to avoid the table.
+            # We turn to the left or to the right based on where the position is to
+            # avoid the table.
             if actual_joint_angles_dict["right_j0"] >= 0.0:
                 actual_joint_angles_dict["right_j0"] = 1.57
             else:
@@ -206,7 +210,7 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
             start_frame_name="world", end_frame_name="right_electric_gripper_base"
         )
 
-    def _set_action(self, action):
+    def _set_action(self, action):  # noqa: C901
         """
         It sets the joints of sawyer based on the action integer given
         based on the action number given.
@@ -267,21 +271,23 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
             translation_tcp_block, decimals=self.dec_obs
         )
 
-        # We get this data but we dont put it in the observations because its somthing internal for evaluation.
-        # The order is cucial, get it upside down and it make no sense.
+        # We get this data but we don't put it in the observations because its something
+        # internal for evaluation.The order is cucial, get it upside down and it make
+        # no sense.
         self.translation_tcp_world, _ = self.get_tf_start_to_end_frames(
             start_frame_name="world", end_frame_name="right_electric_gripper_base"
         )
 
-        # Same here, the values are used internally for knowing if done, they wont define the state ( although these are left out for performance)
+        # Same here, the values are used internally for knowing if done, they won't
+        # define the state ( although these are left out for performance)
         self.joints_efforts_dict = self.get_all_limb_joint_efforts()
         rospy.logdebug(
             "JOINTS EFFORTS DICT OBSERVATION METHOD==>" + str(self.joints_efforts_dict)
         )
         """
         We supose that its all these:
-        head_pan, right_gripper_l_finger_joint, right_gripper_r_finger_joint, right_j0, right_j1,
-  right_j2, right_j3, right_j4, right_j5, right_j6
+        head_pan, right_gripper_l_finger_joint, right_gripper_r_finger_joint, right_j0,
+        right_j1, right_j2, right_j3, right_j4, right_j5, right_j6
         """
 
         joints_angles_array = self.get_all_limb_joint_angles().values()
@@ -300,7 +306,8 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         """
         We consider the episode done if:
         1) The sawyer TCP is outside the workspace, with self.translation_tcp_world
-        2) The Joints exeded a certain effort ( it got stuck somewhere ), self.joints_efforts_array
+        2) The Joints exeded a certain effort ( it got stuck somewhere ),
+           self.joints_efforts_array
         3) The TCP to block distance is lower than a threshold ( it got to the place )
         """
 
@@ -355,7 +362,8 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
 
         if not done:
 
-            # If there has been a decrease in the distance to the desired point, we reward it
+            # If there has been a decrease in the distance to the desired point, we
+            # reward it
             if distance_difference < 0.0:
                 rospy.logdebug("DECREASE IN DISTANCE GOOD")
                 reward = self.closer_to_block_reward
@@ -440,7 +448,8 @@ class SawyerTouchCubeEnv(sawyer_env.SawyerEnv):
         """
         It return True if the transform TCP to block vector magnitude is smaller than
         the minimum_distance.
-        tcp_z_position we use it to only consider that it has reached if its above the table.
+        tcp_z_position we use it to only consider that it has reached if its above the
+        table.
         """
 
         reached_block_b = False

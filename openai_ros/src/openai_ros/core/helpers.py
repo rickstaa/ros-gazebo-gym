@@ -10,6 +10,7 @@ from pathlib import Path
 import catkin
 import catkin_pkg
 import pygit2
+import rosparam
 import rospkg
 import rospy
 import ruamel.yaml as yaml
@@ -173,10 +174,7 @@ def clone_dependency_repo(package_name, workspace_path, git_src, branch=None):
     pathstr = Path(workspace_path).joinpath("src", "rosdeps", package_name)
     try:
         pygit2.clone_repository(
-            git_src,
-            pathstr,
-            checkout_branch=branch,
-            callbacks=GitProgressCallback(),
+            git_src, pathstr, checkout_branch=branch, callbacks=GitProgressCallback(),
         )
     except Exception as e:
         rospy.logwarn(
@@ -211,7 +209,7 @@ def build_catkin_ws(workspace_path):
         )
 
 
-def package_installer(package_name, workspace_path=None):
+def package_installer(package_name, workspace_path=None):  # noqa: C901
     """Install a given ROS package together with it's dependencies. This function checks
     if a ROS packages is installed and installs it if this is not the case. It uses the
     openai_ros package dependency index to clone the package and dependencies in the
@@ -370,3 +368,22 @@ def package_installer(package_name, workspace_path=None):
 
     # Return package path
     return package_installed
+
+
+def load_ros_params_from_yaml(
+    package_name, rel_path_from_package_to_file, yaml_file_name
+):
+    """Loads ros parameters from yaml file.
+
+    Args:
+        package_name (str): [description]
+        rel_path_from_package_to_file (str): [description]
+        yaml_file_name (str): [description]
+    """  # TODO: Docstring
+    rospack = rospkg.RosPack()
+    pkg_path = rospack.get_path(package_name)
+    config_dir = os.path.join(pkg_path, rel_path_from_package_to_file)
+    path_config_file = os.path.join(config_dir, yaml_file_name)
+    paramlist = rosparam.load_file(path_config_file)
+    for params, ns in paramlist:
+        rosparam.upload_params(ns, params)

@@ -1,12 +1,12 @@
-import rospy
-import numpy
-from gym import spaces
-from openai_ros.robot_envs import turtlebot2_env
-from gym.envs.registration import register
-from geometry_msgs.msg import Point
-from openai_ros.task_envs.task_commons import LoadYamlFileParamsTest
-from openai_ros.common import ROSLauncher
 import os
+
+import numpy
+import rospy
+from geometry_msgs.msg import Point
+from gym import spaces
+from openai_ros.core import ROSLauncher
+from openai_ros.robot_envs import turtlebot2_env
+from openai_ros.core.helpers import load_ros_params_from_yaml
 
 
 class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
@@ -22,7 +22,7 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
             assert os.path.exists(workspace_path), (
                 "The Simulation ROS Workspace path "
                 + workspace_path
-                + " DOESNT exist, execute: mkdir -p "
+                + " DOESN'T exist, execute: mkdir -p "
                 + workspace_path
                 + "/src;cd "
                 + workspace_path
@@ -36,7 +36,7 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
         )
 
         # Load Params from the desired Yaml file
-        LoadYamlFileParamsTest(
+        load_ros_params_from_yaml(
             package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/turtlebot2/config",
             yaml_file_name="turtlebot2_wall.yaml",
@@ -144,7 +144,8 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
         """
 
         rospy.logdebug("Start Set Action ==>" + str(action))
-        # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
+        # We convert the actions to speed movements to send to the parent class
+        # CubeSingleDiskEnv
         if action == 0:  # FORWARD
             linear_speed = self.linear_forward_speed
             angular_speed = 0.0
@@ -199,7 +200,7 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
         if self._episode_done:
             rospy.logerr("TurtleBot2 is Too Close to wall==>")
         else:
-            rospy.logerr("TurtleBot2 didnt crash at least ==>")
+            rospy.logerr("TurtleBot2 didn't crash at least ==>")
 
             current_position = Point()
             current_position.x = observations[-2]
@@ -257,7 +258,8 @@ class TurtleBot2WallEnv(turtlebot2_env.TurtleBot2Env):
             else:
                 reward = self.turn_reward
 
-            # If there has been a decrease in the distance to the desired point, we reward it
+            # If there has been a decrease in the distance to the desired point, we
+            # reward it
             if distance_difference < 0.0:
                 rospy.logwarn("DECREASE IN DISTANCE GOOD")
                 reward += self.forwards_reward

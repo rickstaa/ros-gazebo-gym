@@ -1,38 +1,63 @@
 #!/usr/bin/env python3
+"""Contains a small python API class that makes it easier to interact with the Gazebo
+simulator.
+"""
 
 import rospy
-from std_srvs.srv import Empty
 from gazebo_msgs.msg import ODEPhysics
 from gazebo_msgs.srv import SetPhysicsProperties, SetPhysicsPropertiesRequest
-from std_msgs.msg import Float64
 from geometry_msgs.msg import Vector3
+from std_msgs.msg import Float64
+from std_srvs.srv import Empty
 
 
 class GazeboConnection:
-    def __init__(self, start_init_physics_parameters, reset_world_or_sim, max_retry=20):
+    """Class that contains several methods that can be used to interact with the Gazebo
+    simulation.
 
-        self._max_retry = max_retry
-        self.unpause = rospy.ServiceProxy("/gazebo/unpause_physics", Empty)
-        self.pause = rospy.ServiceProxy("/gazebo/pause_physics", Empty)
+    Attributes:
+        pause_proxy (function): ROS service that pauses the gazebo simulator.
+        unpause_proxy (function): ROS service that un-pauses the gazebo simulator.
+        reset_simulation_proxy (function): ROS service that resets the gazebo simulator.
+        reset_world_proxy (function): ROS service that resets the gazebo world.
+    """  # TODO: Set right type
+
+    def __init__(self, start_init_physics_parameters, reset_world_or_sim, max_retry=20):
+        """Initiate the GazeboConnection instance.
+
+        Args:
+            start_init_physics_parameters (bool, optional): Wether you want to
+                initialize the simulation parameters. Defaults to True.
+            reset_world_or_sim (str, optional): Wether you want to reset the whole
+                simulation "SIMULATION" at startup or only the world "WORLD" (object
+                positions). Defaults to "SIMULATION".
+            max_retry (int, optional): How many times a command to the simulator is
+                retried before giving up. Defaults to 20.
+        """
+        self.pause_proxy = rospy.ServiceProxy("/gazebo/pause_physics", Empty)
+        self.unpause_proxy = rospy.ServiceProxy("/gazebo/unpause_physics", Empty)
         self.reset_simulation_proxy = rospy.ServiceProxy(
             "/gazebo/reset_simulation", Empty
         )
         self.reset_world_proxy = rospy.ServiceProxy("/gazebo/reset_world", Empty)
+        self._max_retry = max_retry
 
-        # Setup the Gravity Controle system
+        # Setup the physics properties controle system
         service_name = "/gazebo/set_physics_properties"
         rospy.logdebug("Waiting for service " + str(service_name))
         rospy.wait_for_service(service_name)
         rospy.logdebug("Service Found " + str(service_name))
-
         self.set_physics = rospy.ServiceProxy(service_name, SetPhysicsProperties)
         self.start_init_physics_parameters = start_init_physics_parameters
         self.reset_world_or_sim = reset_world_or_sim
         self.init_values()
-        # We always pause the simulation, important for legged robots learning
-        self.pauseSim()
 
-    def pauseSim(self):
+        # We always pause the simulation, important for legged robots learning
+        self.pause_sim()
+
+    def pause_sim(self):
+        """Pause the simulation.
+        """
         rospy.logdebug("PAUSING service found...")
         paused_done = False
         counter = 0
@@ -40,10 +65,10 @@ class GazeboConnection:
             if counter < self._max_retry:
                 try:
                     rospy.logdebug("PAUSING service calling...")
-                    self.pause()
+                    self.pause_proxy()
                     paused_done = True
                     rospy.logdebug("PAUSING service calling...DONE")
-                except rospy.ServiceException as e:
+                except rospy.ServiceException:
                     counter += 1
                     rospy.logerr("/gazebo/pause_physics service call failed")
             else:
@@ -55,9 +80,11 @@ class GazeboConnection:
                 rospy.logerr(error_message)
                 assert False, error_message
 
-        rospy.logdebug("PAUSING FINISH")
+        rospy.logdebug("PAUSING finished")
 
-    def unpauseSim(self):
+    def unpause_sim(self):
+        """Unpauses the simulation.
+        """
         rospy.logdebug("UNPAUSING service found...")
         unpaused_done = False
         counter = 0
@@ -65,10 +92,10 @@ class GazeboConnection:
             if counter < self._max_retry:
                 try:
                     rospy.logdebug("UNPAUSING service calling...")
-                    self.unpause()
+                    self.unpause_proxy()
                     unpaused_done = True
                     rospy.logdebug("UNPAUSING service calling...DONE")
-                except rospy.ServiceException as e:
+                except rospy.ServiceException:
                     counter += 1
                     rospy.logerr(
                         "/gazebo/unpause_physics service call failed...Retrying "
@@ -83,54 +110,48 @@ class GazeboConnection:
                 rospy.logerr(error_message)
                 assert False, error_message
 
-        rospy.logdebug("UNPAUSING FiNISH")
+        rospy.logdebug("UNPAUSING finished")
 
-    def resetSim(self):
+    def _reset_simulation(self):
+        """Calls the ROS reset simulation service.
         """
-        This was implemented because some simulations, when reseted the simulation
-        the systems that work with TF break, and because sometime we wont be able to change them
-        we need to reset world that ONLY resets the object position, not the entire simulation
-        systems.
+        rospy.wait_for_service("/gazebo/reset_simulation")
+        try:
+            self.reset_simulation_proxy()
+        except rospy.ServiceException:
+            print("/gazebo/reset_simulation service call failed")
+
+    def _reset_world(self):
+        """Resets the world (NOT THE WHOLE SIMULATION).
+        """
+        rospy.wait_for_service("/gazebo/reset_world")
+        try:
+            self.reset_world_proxy()
+        except rospy.ServiceException:
+            print("/gazebo/reset_world service call failed")
+
+    def reset_sim(self):
+        """Reset the simulation or the world.
+
+        .. note::
+            Implemented like this since in some simulations, when reset the simulation
+            the systems that work with TF break. In this case we ONLY resets the object
+            position, not the entire simulation.
         """
         if self.reset_world_or_sim == "SIMULATION":
             rospy.logerr("SIMULATION RESET")
-            self.resetSimulation()
+            self._reset_simulation()
         elif self.reset_world_or_sim == "WORLD":
             rospy.logerr("WORLD RESET")
-            self.resetWorld()
+            self._reset_world()
         elif self.reset_world_or_sim == "NO_RESET_SIM":
             rospy.logerr("NO RESET SIMULATION SELECTED")
         else:
             rospy.logerr("WRONG Reset Option:" + str(self.reset_world_or_sim))
 
-    def resetSimulation(self):
-        rospy.wait_for_service("/gazebo/reset_simulation")
-        try:
-            self.reset_simulation_proxy()
-        except rospy.ServiceException as e:
-            print("/gazebo/reset_simulation service call failed")
-
-    def resetWorld(self):
-        rospy.wait_for_service("/gazebo/reset_world")
-        try:
-            self.reset_world_proxy()
-        except rospy.ServiceException as e:
-            print("/gazebo/reset_world service call failed")
-
-    def init_values(self):
-
-        self.resetSim()
-
-        if self.start_init_physics_parameters:
-            rospy.logdebug("Initialising Simulation Physics Parameters")
-            self.init_physics_parameters()
-        else:
-            rospy.logerr("NOT Initialising Simulation Physics Parameters")
-
-    def init_physics_parameters(self):
-        """
-        We initialise the physics parameters of the simulation, like gravity,
-        friction coeficients and so on.
+    def _init_physics_parameters(self):
+        """Initialise the physics parameters of the simulation, like gravity,
+        friction coefficients and so on.
         """
         self._time_step = Float64(0.001)
         self._max_update_rate = Float64(1000.0)
@@ -152,20 +173,32 @@ class GazeboConnection:
         self._ode_config.erp = 0.2
         self._ode_config.max_contacts = 20
 
-        self.update_gravity_call()
+        self._update_gravity_call()
 
-    def update_gravity_call(self):
+    def init_values(self):
+        """Sets the initial simulator parameter values.
+        """
+        self.reset_sim()
+        if self.start_init_physics_parameters:
+            rospy.logdebug("Initialising simulation Physics Parameters")
+            self._init_physics_parameters()
+        else:
+            rospy.logerr("NOT Initialising simulation Physics Parameters")
 
-        self.pauseSim()
+    def _update_gravity_call(self):
+        """Updates the simulator gravity property.
+        """
+        self.pause_sim()
 
+        # Create physic change message
         set_physics_request = SetPhysicsPropertiesRequest()
         set_physics_request.time_step = self._time_step.data
         set_physics_request.max_update_rate = self._max_update_rate.data
         set_physics_request.gravity = self._gravity
         set_physics_request.ode_config = self._ode_config
-
         rospy.logdebug(str(set_physics_request.gravity))
 
+        # Send physic change request
         result = self.set_physics(set_physics_request)
         rospy.logdebug(
             "Gravity Update Result=="
@@ -177,8 +210,14 @@ class GazeboConnection:
         self.unpauseSim()
 
     def change_gravity(self, x, y, z):
+        """Changes the gravity vector
+
+        Args:
+            x (float): Gravity vector x coordinate.
+            y (float): Gravity vector y coordinate.
+            z (float): Gravity vector z coordinate.
+        """
         self._gravity.x = x
         self._gravity.y = y
         self._gravity.z = z
-
-        self.update_gravity_call()
+        self._update_gravity_call()

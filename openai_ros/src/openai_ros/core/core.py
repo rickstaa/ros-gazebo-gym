@@ -1,10 +1,11 @@
+#!/usr/bin/env python3
 """Contains several core openai_ros functions. These functions can be used to setup
 the openai_ros gym environments for training.
 """
 
 import gym
 import rospy
-from openai_ros.common.helpers import register_openai_ros_env
+from openai_ros.core.helpers import register_openai_ros_env
 
 
 def start_openai_ros_env(task_environment):
