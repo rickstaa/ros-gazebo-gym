@@ -70,7 +70,6 @@ class RobotGazeboEnv(gym.Env):
         self.gazebo.unpause_sim()
         if self.reset_controls:
             self.controllers_object.reset_controllers()
-
         rospy.logdebug("END init RobotGazeboEnv")
 
     #############################################
@@ -152,7 +151,7 @@ class RobotGazeboEnv(gym.Env):
 
     def reset(self):
         """Function executed when resetting the environment."""
-        rospy.logdebug("Reseting RobotGazeboEnvironment")
+        rospy.logdebug("Resetting RobotGazeboEnvironment")
         self._reset_sim()
         self._init_env_variables()
         self._update_episode()
@@ -214,17 +213,17 @@ class RobotGazeboEnv(gym.Env):
         """
         raise NotImplementedError()
 
-    def _get_obs(self):
-        """Returns the observation.
+    def _init_env_variables(self):
+        """Inits variables needed to be initialised each time we reset at the start
+        of an episode.
 
         Raises:
             NotImplementedError: Thrown when not overloaded by the task environment.
         """
         raise NotImplementedError()
 
-    def _init_env_variables(self):
-        """Inits variables needed to be initialised each time we reset at the start
-        of an episode.
+    def _get_obs(self):
+        """Returns the observation.
 
         Raises:
             NotImplementedError: Thrown when not overloaded by the task environment.
@@ -273,19 +272,6 @@ class RobotGazeboEnv(gym.Env):
     def _check_all_systems_ready(self):
         """Checks that all the sensors, publishers and other simulation systems are
         operational.
-
-        Raises:
-            NotImplementedError: Thrown when not overloaded by the robot environment.
-        """
-        raise NotImplementedError()
-
-    def _env_setup(self, initial_qpos):
-        """Initial configuration of the environment. Can be used to configure initial state
-        and extract information from the simulation.
-
-        Args:
-            initial_qpos (numpy.ndarray): The initial agent pose (generalized
-                coordinates).
 
         Raises:
             NotImplementedError: Thrown when not overloaded by the robot environment.

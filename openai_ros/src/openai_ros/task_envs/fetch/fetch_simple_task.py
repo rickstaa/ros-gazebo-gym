@@ -4,8 +4,8 @@ import numpy as np
 import rospy
 from gym import spaces, utils
 from openai_ros.core import ROSLauncher
-from openai_ros.robot_envs import fetchsimple_env
 from openai_ros.core.helpers import load_ros_params_from_yaml
+from openai_ros.robot_envs import fetchsimple_env
 
 
 class FetchSimpleTestEnv(fetchsimple_env.FetchSimpleEnv, utils.EzPickle):
@@ -199,7 +199,7 @@ class FetchSimpleTestEnv(fetchsimple_env.FetchSimpleEnv, utils.EzPickle):
 
     def _compute_reward(self, observations, done):
         """
-        We punish each step that it passes without achieveing the goal.
+        We punish each step that it passes without achieving the goal.
         Punishes differently if it reached a position that is impossible to move to.
         Rewards getting to a position close to the goal.
         """

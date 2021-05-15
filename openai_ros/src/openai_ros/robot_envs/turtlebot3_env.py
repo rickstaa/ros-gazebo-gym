@@ -78,9 +78,9 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         # Un-pause simulations, reset controllers and check robot sensors
         self.gazebo.unpause_sim()
         # self.controllers_object.reset_controllers()
-        self._check_all_sensors_ready()
 
         # Create ROS related Subscribers and publishers
+        self._check_all_sensors_ready()
         rospy.Subscriber("/odom", Odometry, self._odom_callback)
         rospy.Subscriber("/imu", Imu, self._imu_callback)
         rospy.Subscriber("/scan", LaserScan, self._laser_scan_callback)
@@ -90,21 +90,6 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         # Pause the simulation
         self.gazebo.pause_sim()
         rospy.logdebug("TurtleBot3Env environment initialized.")
-
-    #############################################
-    # Overload Gazebo env virtual methods #######
-    #############################################
-    # NOTE: Methods needed by the RobotGazeboEnv
-    def _check_all_systems_ready(self):
-        """Checks that all the sensors, publishers and other simulation systems are
-        operational.
-
-        Returns:
-            bool: Whether the systems are ready. Will not return if the systems are not
-                yet ready.
-        """
-        self._check_all_sensors_ready()
-        return True
 
     #############################################
     # Robot environment internal methods ########
@@ -336,3 +321,20 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
             :obj:`sensor_msgs.msg._LaserScan.LaserScan`: The laser scan message.
         """
         return self.laser_scan
+
+    #############################################
+    # Overload Gazebo env virtual methods #######
+    #############################################
+    # NOTE: Methods needed by the Robot or gazebo environments
+    def _check_all_systems_ready(self):
+        """Checks that all the sensors, publishers and other simulation systems are
+        operational.
+
+        Returns:
+            bool: Whether the systems are ready. Will not return if the systems are not
+                yet ready.
+        """
+        self._check_all_sensors_ready()
+        self._check_publishers_connection()
+        rospy.logdebug("ALL SYSTEMS READY")
+        return True

@@ -65,40 +65,19 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
             workspace_path=workspace_path,
         )
 
-        # Load task environment parameters onto the parameter server
+        # Retrieve env params from the desired Yaml file
         load_ros_params_from_yaml(
             package_name="openai_ros",
             rel_path_from_package_to_file="src/openai_ros/task_envs/turtlebot3/config",
             yaml_file_name="turtlebot3_world.yaml",
         )
+        self._get_params()
 
         # Initialize robot environment
         super(TurtleBot3WorldEnv, self).__init__(workspace_path)
 
-        # Retrieve task environment parameters form the parameter server
-        number_actions = rospy.get_param("/turtlebot3/n_actions")
-        self.linear_forward_speed = rospy.get_param("/turtlebot3/linear_forward_speed")
-        self.linear_turn_speed = rospy.get_param("/turtlebot3/linear_turn_speed")
-        self.angular_speed = rospy.get_param("/turtlebot3/angular_speed")
-        self.init_linear_forward_speed = rospy.get_param(
-            "/turtlebot3/init_linear_forward_speed"
-        )
-        self.init_linear_turn_speed = rospy.get_param(
-            "/turtlebot3/init_linear_turn_speed"
-        )
-        self.new_ranges = rospy.get_param("/turtlebot3/new_ranges")
-        self.min_range = rospy.get_param("/turtlebot3/min_range")
-        self.max_laser_value = rospy.get_param("/turtlebot3/max_laser_value")
-        self.min_laser_value = rospy.get_param("/turtlebot3/min_laser_value")
-        self.max_linear_acceleration = rospy.get_param(
-            "/turtlebot3/max_linear_acceleration"
-        )
-        self.forwards_reward = rospy.get_param("/turtlebot3/forwards_reward")
-        self.turn_reward = rospy.get_param("/turtlebot3/turn_reward")
-        self.end_episode_points = rospy.get_param("/turtlebot3/end_episode_points")
-
         # Create action and reward space
-        self.action_space = spaces.Discrete(number_actions)
+        self.action_space = spaces.Discrete(self.n_actions)
         self.reward_range = (-np.inf, np.inf)
         rospy.logdebug("ACTION SPACES TYPE===>" + str(self.action_space))
 
@@ -122,30 +101,97 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
         self.cumulated_steps = 0.0
 
     #############################################
+    # Task environment internal methods #########
+    #############################################
+    # NOTE: Here you can add additional helper methods that are used in the task env
+    def _discretize_scan_observation(self, data, new_ranges):
+        """Discretize the laser scan observations into a integer value.
+
+        .. note::
+            Done by downsizing the 360 laser scan data into a smaller amount of
+            sections. Following we discard all the laser readings that are not multiple
+            in index of new_rangesvalue.
+
+        Args:
+            data (:obj:`sensor_msgs.msg._LaserScan.LaserScan`): The laser scan data.
+            new_ranges (int): The number of ranges (sections) you want to use for
+                the downsampling.
+        Returns:
+            list: The discritezed down-sampled values.
+        """
+        self._episode_done = False
+        discretized_ranges = []
+        mod = len(data.ranges) / new_ranges
+        rospy.logdebug("data=" + str(data))
+        rospy.logdebug("new_ranges=" + str(new_ranges))
+        rospy.logdebug("mod=" + str(mod))
+
+        # Downsample range and discretize values
+        for i, item in enumerate(data.ranges):
+            if i % mod == 0:
+                if item == float("Inf") or np.isinf(item):
+                    discretized_ranges.append(self.max_laser_value)
+                elif np.isnan(item):
+                    discretized_ranges.append(self.min_laser_value)
+                else:
+                    discretized_ranges.append(int(item))
+                if self.min_range > item > 0:
+                    rospy.logerr(
+                        "done Validation >>> item="
+                        + str(item)
+                        + "< "
+                        + str(self.min_range)
+                    )
+                    self._episode_done = True
+                else:
+                    rospy.logdebug(
+                        "NOT done Validation >>> item="
+                        + str(item)
+                        + "< "
+                        + str(self.min_range)
+                    )
+        return discretized_ranges
+
+    def _get_params(self):
+        """Retrieve task environment configuration parameters from the parameter server."""
+        self.n_actions = rospy.get_param("/turtlebot3/n_actions")
+        self.linear_forward_speed = rospy.get_param("/turtlebot3/linear_forward_speed")
+        self.linear_turn_speed = rospy.get_param("/turtlebot3/linear_turn_speed")
+        self.angular_speed = rospy.get_param("/turtlebot3/angular_speed")
+        self.init_linear_forward_speed = rospy.get_param(
+            "/turtlebot3/init_linear_forward_speed"
+        )
+        self.init_linear_turn_speed = rospy.get_param(
+            "/turtlebot3/init_linear_turn_speed"
+        )
+        self.new_ranges = rospy.get_param("/turtlebot3/new_ranges")
+        self.min_range = rospy.get_param("/turtlebot3/min_range")
+        self.max_laser_value = rospy.get_param("/turtlebot3/max_laser_value")
+        self.min_laser_value = rospy.get_param("/turtlebot3/min_laser_value")
+        self.max_linear_acceleration = rospy.get_param(
+            "/turtlebot3/max_linear_acceleration"
+        )
+        self.forwards_reward = rospy.get_param("/turtlebot3/forwards_reward")
+        self.turn_reward = rospy.get_param("/turtlebot3/turn_reward")
+        self.end_episode_points = rospy.get_param("/turtlebot3/end_episode_points")
+
+    #############################################
     # Overload Robot env virtual methods ########
     #############################################
-    # NOTE: Methods that need to be implemented as they are called by the Gazebo
-    # and robot environments.
+    # NOTE: Methods that need to be implemented as they are called by the robot and
+    # gazebo environments.
     def _set_init_pose(self):
-        """Sets the Robot in its init pose.
-
-        Returns:
-            bool: Whether the pose was set successfully.
-        """
+        """Sets the Robot in its init pose."""
         self.move_base(
             self.init_linear_forward_speed,
             self.init_linear_turn_speed,
             epsilon=0.05,
             update_rate=10,
         )
-        return True
 
     def _init_env_variables(self):
         """Inits variables needed to be initialised each time we reset at the start
         of an episode.
-
-        Returns:
-            bool: Whether the pose was set successfully.
         """
         self.cumulated_reward = 0.0  # For Info Purposes
         self._episode_done = (
@@ -157,9 +203,6 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
 
         Args:
             action (numpy.ndarray): The action we want to apply.
-
-        Returns:
-            bool: Whether the pose was set successfully.
         """
         rospy.logdebug("Start Set Action ==>" + str(action))
 
@@ -191,7 +234,7 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
 
         # We get the laser scan data
         laser_scan = self.get_laser_scan()
-        discretized_observations = self.discretize_scan_observation(
+        discretized_observations = self._discretize_scan_observation(
             laser_scan, self.new_ranges
         )
         rospy.logdebug("Observations==>" + str(discretized_observations))
@@ -206,7 +249,7 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
             observations (numpy.ndarray): The observation vector.
 
         Returns:
-            bool: Whether the epside was finished.
+            bool: Whether the episode was finished.
         """
         if self._episode_done:
             rospy.logerr("TurtleBot3 is Too Close to wall==>")
@@ -258,55 +301,3 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
         self.cumulated_steps += 1
         rospy.logdebug("Cumulated_steps=" + str(self.cumulated_steps))
         return reward
-
-    #############################################
-    # Task environment internal methods #########
-    #############################################
-    # NOTE: Here you can add additional helper methods that are used in the task env
-    def discretize_scan_observation(self, data, new_ranges):
-        """Discretize the laser scan observations into a integer value.
-
-        .. note::
-            Done by downsizing the 360 laser scan data into a smaller amount of
-            sections. Following we discard all the laser readings that are not multiple
-            in index of new_rangesvalue.
-
-        Args:
-            data (:obj:`sensor_msgs.msg._LaserScan.LaserScan`): The laser scan data.
-            new_ranges (int): The number of ranges (sections) you want to use for
-                the downsampling.
-        Returns:
-            list: The discritezed down-sampled values.
-        """
-        self._episode_done = False
-        discretized_ranges = []
-        mod = len(data.ranges) / new_ranges
-        rospy.logdebug("data=" + str(data))
-        rospy.logdebug("new_ranges=" + str(new_ranges))
-        rospy.logdebug("mod=" + str(mod))
-
-        # Downsample range and discretize values
-        for i, item in enumerate(data.ranges):
-            if i % mod == 0:
-                if item == float("Inf") or np.isinf(item):
-                    discretized_ranges.append(self.max_laser_value)
-                elif np.isnan(item):
-                    discretized_ranges.append(self.min_laser_value)
-                else:
-                    discretized_ranges.append(int(item))
-                if self.min_range > item > 0:
-                    rospy.logerr(
-                        "done Validation >>> item="
-                        + str(item)
-                        + "< "
-                        + str(self.min_range)
-                    )
-                    self._episode_done = True
-                else:
-                    rospy.logdebug(
-                        "NOT done Validation >>> item="
-                        + str(item)
-                        + "< "
-                        + str(self.min_range)
-                    )
-        return discretized_ranges

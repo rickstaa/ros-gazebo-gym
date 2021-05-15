@@ -53,37 +53,18 @@ class MyTaskEnv(MyRobotEnv):
     #############################################
     # Overload Robot env virtual methods ########
     #############################################
-    # NOTE: Methods that need to be implemented as they are called by the Gazebo
-    # and robot environments.
+    # NOTE: Methods that need to be implemented as they are called by the robot and
+    # gazebo environments.
     def _set_init_pose(self):
-        """Sets the Robot in its init pose.
-
-        Returns:
-            bool: Whether the pose was set successfully.
-        """
+        """Sets the Robot in its init pose."""
         # TODO: Implement the logic that sets the robot to it's initial position
         return True
 
     def _init_env_variables(self):
         """Inits variables needed to be initialised each time we reset at the start
         of an episode.
-
-        Returns:
-            bool: Whether the pose was set successfully.
         """
         # TODO: Reset variables that need to be reset at the start of each episode.
-        return True
-
-    def _set_action(self, action):
-        """Applies the given action to the simulation.
-
-        Args:
-            action (numpy.ndarray): The action we want to apply.
-
-        Returns:
-            bool: Whether the pose was set successfully.
-        """
-        # TODO: Implement logic that moves the robot based on a given action
         return True
 
     def _get_obs(self):
@@ -96,6 +77,15 @@ class MyTaskEnv(MyRobotEnv):
         observations = np.array([0.0, 0.0, 0.0])
         return observations
 
+    def _set_action(self, action):
+        """Applies the given action to the simulation.
+
+        Args:
+            action (numpy.ndarray): The action we want to apply.
+        """
+        # TODO: Implement logic that moves the robot based on a given action
+        return True
+
     def _is_done(self, observations):
         """Indicates whether or not the episode is done (the robot has fallen for
         example).
@@ -104,7 +94,7 @@ class MyTaskEnv(MyRobotEnv):
             observations (numpy.ndarray): The observation vector.
 
         Returns:
-            bool: Whether the epside was finished.
+            bool: Whether the episode was finished.
         """
         # TODO: Implement logic used to check whether a episode is done.
         done = True

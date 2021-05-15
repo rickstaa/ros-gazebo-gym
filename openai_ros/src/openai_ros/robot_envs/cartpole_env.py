@@ -4,10 +4,8 @@ original `CartPole-v1 <https://gym.openai.com/envs/CartPole-v1/>`_ OpenAi gym
 environment.
 """
 import rospy
-from gym.utils import seeding
 from openai_ros import robot_gazebo_env
 from openai_ros.core import ROSLauncher
-from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64
 
@@ -87,30 +85,40 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
         )
 
         # Create ROS related Subscribers and publishers
-        self.publishers_array = []
+        self._check_all_sensors_ready()
+        rospy.Subscriber("/cartpole_v0/joint_states", JointState, self._joints_callback)
         self._base_pub = rospy.Publisher(
             "/cartpole_v0/foot_joint_velocity_controller/command", Float64, queue_size=1
         )
         self._pole_pub = rospy.Publisher(
             "/cartpole_v0/pole_joint_velocity_controller/command", Float64, queue_size=1
         )
-        self.publishers_array.append(self._base_pub)
-        self.publishers_array.append(self._pole_pub)
-        rospy.Subscriber("/cartpole_v0/joint_states", JointState, self._joints_callback)
+        self._check_publishers_connection()
+
+        # Setup initial environment state
+        self._env_setup()
         rospy.logdebug("CartPoleEnv environment initialized.")
 
     #############################################
-    # Overload Gazebo env virtual methods #######
+    # Robot environment internal methods ########
     #############################################
-    # NOTE: Methods needed by the RobotGazeboEnv
-    def _check_all_systems_ready(self, init=True):
-        """Checks that all the sensors, publishers and other simulation systems are
-        operational.
+    def _joints_callback(self, data):
+        """Joint states subscriber callback function.
 
-        Returns:
-            bool: Whether the systems are ready. Will not return if the systems are not
-                yet ready.
+        Args:
+            data (:obj:`sensor_msgs.msg._JointState.JointState`): The data that is
+                returned by the subscriber.
         """
+        self.joints = data
+
+    def _check_all_sensors_ready(self, init=True):
+        """Check if all sensors are ready.
+
+        Args:
+            init (bool, optional): Check if sensors are at initial values. Defaults to
+                ``True``.
+        """
+        rospy.logdebug("START ALL SENSORS READY")
         self.base_position = None
         while self.base_position is None and not rospy.is_shutdown():
             try:
@@ -138,70 +146,48 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
                     "Current cartpole_v0/joint_states not ready yet, retrying for "
                     "getting joint_states."
                 )
-        rospy.logdebug("ALL SYSTEMS READY")
+        rospy.logdebug("ALL SENSORS READY")
 
-    #############################################
-    # Overload Gazebo env virtual methods #######
-    #############################################
-    # NOTE: Methods needed by the RobotGazeboEnv
-    def _env_setup(self, initial_qpos):
+    def _check_publishers_connection(self):
+        """Checks that all the publishers are working."""
+        rate = rospy.Rate(10)  # 10hz
+
+        # Check base publisher
+        while self._base_pub.get_num_connections() == 0 and not rospy.is_shutdown():
+            rospy.logdebug(
+                "No subscribers to '_base_pub' yet so we wait and try again."
+            )
+            try:
+                rate.sleep()
+            except rospy.ROSInterruptException:
+                # This is to avoid error when world is rested, time when backwards.
+                pass
+        rospy.logdebug("'_base_pub' Publisher Connected")
+
+        # Check pole publisher
+        while self._pole_pub.get_num_connections() == 0 and not rospy.is_shutdown():
+            rospy.logdebug(
+                "No subscribers to '_pole_pub' yet so we wait and try again."
+            )
+            try:
+                rate.sleep()
+            except rospy.ROSInterruptException:
+                # This is to avoid error when world is rested, time when backwards.
+                pass
+        rospy.logdebug("'_pole_pub' publisher connected.")
+        rospy.logdebug("All Publishers READY.")
+
+    def _env_setup(self):
         """Initial configuration of the environment. Can be used to configure initial
         state and extract information from the simulation.
-
-        Args:
-            initial_qpos (numpy.ndarray): The initial agent pose (generalized
-                coordinates).
         """
-        self.init_internal_vars(self.init_pos)
-        self.set_init_pose()
-        self.check_all_systems_ready()
-
-    #############################################
-    # Robot environment internal methods ########
-    #############################################
-    def _joints_callback(self, data):
-        """Joint states subscriber callback function.
-
-        Args:
-            data (:obj:`sensor_msgs.msg._JointState.JointState`): The data that is
-                returned by the subscriber.
-        """
-        self.joints = data
+        self._set_init_pose()
+        self._check_all_systems_ready()
 
     #############################################
     # Robot env main methods ####################
     #############################################
     # NOTE: Contains methods that the TrainingEnvironment will need.
-    def init_internal_vars(self, init_pos_value):
-        self.pos = [init_pos_value]
-        self.joints = None
-
-    def check_publishers_connection(self):
-        """
-        Checks that all the publishers are working
-        :return:
-        """
-        rate = rospy.Rate(10)  # 10hz
-        while self._base_pub.get_num_connections() == 0 and not rospy.is_shutdown():
-            rospy.logdebug("No susbribers to _base_pub yet so we wait and try again")
-            try:
-                rate.sleep()
-            except rospy.ROSInterruptException:
-                # This is to avoid error when world is rested, time when backwards.
-                pass
-        rospy.logdebug("_base_pub Publisher Connected")
-
-        while self._pole_pub.get_num_connections() == 0 and not rospy.is_shutdown():
-            rospy.logdebug("No susbribers to _pole_pub yet so we wait and try again")
-            try:
-                rate.sleep()
-            except rospy.ROSInterruptException:
-                # This is to avoid error when world is rested, time when backwards.
-                pass
-        rospy.logdebug("_pole_pub Publisher Connected")
-
-        rospy.logdebug("All Publishers READY")
-
     def move_joints(self, joints_array):
         """Move the cartpole joints.
 
@@ -211,18 +197,21 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
         joint_value = Float64()
         joint_value.data = joints_array[0]
         rospy.logdebug("Single Base JointsPos>>" + str(joint_value))
+        self._check_publishers_connection()
         self._base_pub.publish(joint_value)
 
-    def get_clock_time(self):
-
-        self.clock_time = None
-        while self.clock_time is None and not rospy.is_shutdown():
-            try:
-                self.clock_time = rospy.wait_for_message("/clock", Clock, timeout=1.0)
-                rospy.logdebug("Current clock_time READY=>" + str(self.clock_time))
-            except Exception:
-                rospy.logdebug(
-                    "Current clock_time not ready yet, retrying for getting Current "
-                    "clock_time"
-                )
-        return self.clock_time
+    #############################################
+    # Overload Gazebo env virtual methods #######
+    #############################################
+    # NOTE: Methods needed by the Robot or gazebo environments
+    def _check_all_systems_ready(self):
+        """Checks that all the sensors, publishers and other simulation systems are
+        operational.
+        Returns:
+            bool: Whether the systems are ready. Will not return if the systems are not
+                yet ready.
+        """
+        self._check_all_sensors_ready()
+        self._check_publishers_connection()
+        rospy.logdebug("ALL SYSTEMS READY")
+        return True
