@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Task environment for the Turtlebot3. This is the new version of the classic
 Turtlebot2 created by `ROBOTIS <www.robotis.us>`_. The goal of the task environment is
 for the agent to learn to move in the world without bumping into walls or objects.
@@ -8,7 +9,8 @@ import numpy as np
 import rospy
 from gym import spaces
 from openai_ros.core import ROSLauncher
-from openai_ros.core.helpers import get_vector_magnitude, load_ros_params_from_yaml
+from openai_ros.core.helpers import (get_vector_magnitude,
+                                     load_ros_params_from_yaml)
 from openai_ros.robot_envs import turtlebot3_env
 
 

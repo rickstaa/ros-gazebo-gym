@@ -44,6 +44,53 @@ class GitProgressCallback(pygit2.RemoteCallbacks):
         self.pbar.refresh()
 
 
+def query_yes_no(question, default="yes"):
+    """Ask a yes/no question via raw_input() and return their answer.
+
+    "question" is a string that is presented to the user.
+    "default" is the presumed answer if the user just hits <Enter>.
+            It must be "yes" (the default), "no" or None (meaning
+            an answer is required of the user).
+
+    The "answer" return value is True for "yes" or False for "no".
+
+    Args:
+        question (str): String presented to the user.
+        default (str, optional): The presumed answer if the user just hits <Enter>. It
+            must be "yes" (the default), "no" or None (meaning an answer is required of
+            the user). Defaults to "yes".
+
+    Raises:
+        ValueError: If the default answer is not correct.
+
+    Returns:
+        str: Returns the given answer.
+
+    .. seealso::
+        This function was based on the function given by `@fmark <https://stackoverflow.com/users/103225/fmark>`_ in
+        `this stackoverflow question <https://stackoverflow.com/questions/3041986/apt-command-line-interface-like-yes-no-input>`_
+    """  # noqa: E501
+    valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
+    if default is None:
+        prompt = " [y/n] "
+    elif default == "yes":
+        prompt = " [Y/n] "
+    elif default == "no":
+        prompt = " [y/N] "
+    else:
+        raise ValueError("invalid default answer: '%s'" % default)
+
+    while True:
+        sys.stdout.write(question + prompt)
+        choice = input().lower()
+        if default is not None and choice == "":
+            return valid[default]
+        elif choice in valid:
+            return valid[choice]
+        else:
+            sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
+
+
 def register_openai_ros_env(task_env, max_episode_steps=10000):
     """Register a given openai_ros task environment.
 
@@ -185,13 +232,13 @@ def clone_dependency_repo(package_name, workspace_path, git_src, branch=None):
         raise e
 
 
-def build_catkin_ws(workspace_path, install_ros_deps=False):
+def build_catkin_ws(workspace_path, install_ros_deps=True):
     """Installs the system dependencies and re-builds a catkin workspace.
 
     Args:
         workspace_path (str): The path of the catkin workspace.
-        install_ros_deps (bool): Whether you also want to installt he system
-            using rosdep.
+        install_ros_deps (bool, optional): Whether you also want to installt he system
+            using rosdep. Defaults to ``True``.
 
     Raises:
         Exception: When something goes wrong while re-building the workspace.
@@ -201,13 +248,23 @@ def build_catkin_ws(workspace_path, install_ros_deps=False):
     # Install system dependencies using rosdep
     if install_ros_deps:
         rospy.logwarn(
-            "Installing ROS system dependencies. Please ask your root password if the "
-            "system asks for it."
+            "Several system dependencies are required to use the newly installed ROS "
+            "packages."
         )
-        rosdep_command = (
-            f"rosdep install --from-paths {workspace_path}/src --ignore-src -r -y"
+        answer = query_yes_no(
+            "Do you want to install these ROS system dependencies?", default="no"
         )
-        p = subprocess.call(rosdep_command, shell=True)
+        if answer:
+            rospy.logwarn(
+                "Installing ROS system dependencies. Please supply your root password:"
+            )
+            rosdep_command = (
+                f"sudo -S rosdep install --from-paths {workspace_path}/src "
+                + "--ignore-src -r -y --rosdistro {}".format(
+                    os.environ.get("ROS_DISTRO")
+                )
+            )
+            p = subprocess.call(rosdep_command, shell=True, cwd=workspace_path)
 
     # Build workspace
     if catkin_make_used:  # Use catkin_make
@@ -216,7 +273,7 @@ def build_catkin_ws(workspace_path, install_ros_deps=False):
         rosbuild_command = "catkin build"
     rosbuild_command = "catkin build"
     rospy.logwarn("Re-building catkin workspace.")
-    p = subprocess.call(rosbuild_command, shell=True)
+    p = subprocess.call(rosbuild_command, shell=True, cwd=workspace_path)
 
     # Catch result
     if p != 0:
@@ -281,7 +338,9 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
     # Download the package repository if it is not installed in the right location
     package_installed = True
     deps_cloned = False
+    rospy.loginfo("Checking if all required ROS dependencies are installed...")
     if ROSDEP_INDEX and package_name in ROSDEP_INDEX.keys():
+        # Download package
         if not local_pkg_path and (
             not global_pkg_path
             or (
@@ -301,6 +360,10 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
                     f"Package '{package_name}' should be installed in the local catkin "
                     "workspace. " + debug_message
                 )
+            else:
+                debug_message = (
+                    f"ROS dependency '{package_name}' not installed. " + debug_message
+                )
             rospy.logwarn(debug_message)
 
             # Download package repository
@@ -309,7 +372,9 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
                     package_name,
                     workspace_path,
                     ROSDEP_INDEX[package_name]["git"],
-                    ROSDEP_INDEX[package_name]["branch"],
+                    ROSDEP_INDEX[package_name]["branch"]
+                    if "branch" in ROSDEP_INDEX[package_name].keys()
+                    else "main",
                 )
                 deps_cloned = True
             except Exception:
@@ -317,44 +382,50 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
                 warn_msg = f"ROS dependency '{package_name}' could not be installed."
                 rospy.logwarn(warn_msg)
 
-            # Download additional dependencies
-            if "deps" in ROSDEP_INDEX[package_name].keys() and isinstance(
-                ROSDEP_INDEX[package_name]["deps"], dict
-            ):
-                for dep, dep_index_info in ROSDEP_INDEX[package_name]["deps"].items():
-                    global_dep_pkg_path = get_global_pkg_path(dep)
-                    local_dep_pkg_path = get_local_pkg_path(dep, workspace_path)
-                    if not local_dep_pkg_path and (
-                        not global_dep_pkg_path
-                        or (
-                            global_dep_pkg_path
-                            and (
-                                global_dep_pkg_path != local_dep_pkg_path
-                                and not dep_index_info["binary"]
-                            )
-                        )
-                    ):
-                        debug_message = f"Cloning '{dep}' into local catkin workspace."
-                        if (
+        # Download additional package dependencies
+        if "deps" in ROSDEP_INDEX[package_name].keys() and isinstance(
+            ROSDEP_INDEX[package_name]["deps"], dict
+        ):
+            for dep, dep_index_info in ROSDEP_INDEX[package_name]["deps"].items():
+                global_dep_pkg_path = get_global_pkg_path(dep)
+                local_dep_pkg_path = get_local_pkg_path(dep, workspace_path)
+                if not local_dep_pkg_path and (
+                    not global_dep_pkg_path
+                    or (
+                        global_dep_pkg_path
+                        and (
                             global_dep_pkg_path != local_dep_pkg_path
                             and not dep_index_info["binary"]
-                        ):
-                            debug_message = (
-                                f"Package '{dep}' should be installed in the local "
-                                "catkin workspace. " + debug_message
-                            )
-                        rospy.logwarn(debug_message)
-                        try:
-                            clone_dependency_repo(
-                                dep,
-                                workspace_path,
-                                dep_index_info["git"],
-                                dep_index_info["branch"],
-                            )
-                            deps_cloned = True
-                        except Exception:
-                            warn_msg = f"ROS dependency '{dep}' could not be installed."
-                            rospy.logwarn(warn_msg)
+                        )
+                    )
+                ):
+                    debug_message = f"Cloning '{dep}' into local catkin workspace."
+                    if (
+                        global_dep_pkg_path != local_dep_pkg_path
+                        and not dep_index_info["binary"]
+                    ):
+                        debug_message = (
+                            f"Package '{dep}' should be installed in the local "
+                            "catkin workspace. " + debug_message
+                        )
+                    else:
+                        debug_message = (
+                            f"ROS dependency '{dep}' not installed. " + debug_message
+                        )
+                    rospy.logwarn(debug_message)
+                    try:
+                        clone_dependency_repo(
+                            dep,
+                            workspace_path,
+                            dep_index_info["git"],
+                            dep_index_info["branch"]
+                            if "branch" in dep_index_info.keys()
+                            else "main",
+                        )
+                        deps_cloned = True
+                    except Exception:
+                        warn_msg = f"ROS dependency '{dep}' could not be installed."
+                        rospy.logwarn(warn_msg)
     else:
         if global_pkg_path or local_pkg_path:
             space_str = (

@@ -42,6 +42,7 @@ fetch_simple_description:
     spawn_robot_tools_pkg:
       binary: False
       git: https://bitbucket.org/theconstructcore/spawn_robot_tools.git
+      branch: master
 # CartPole env
 cartpole_description:
   binary: False
@@ -51,6 +52,7 @@ cartpole_description:
     spawn_robot_tools_pkg:
       binary: False
       git: https://bitbucket.org/theconstructcore/spawn_robot_tools.git
+      branch: master
 cartpole_v0_training:
   binary: False
   git: https://bitbucket.org/theconstructcore/cart_pole.git
@@ -59,6 +61,7 @@ cartpole_v0_training:
     spawn_robot_tools_pkg:
       binary: False
       git: https://bitbucket.org/theconstructcore/spawn_robot_tools.git
+      branch: master
 # Hopper env
 legged_robots_sims:
   binary: False

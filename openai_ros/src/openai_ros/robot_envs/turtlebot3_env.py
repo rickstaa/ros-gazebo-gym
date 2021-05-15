@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Robot environment for the Turtlebot3. This is the new version of the classic
 Turtlebot2 created by `ROBOTIS <www.robotis.us>`_.
 """
@@ -42,7 +43,7 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         learning.
 
         Sensor Topic List:
-        * /odom : Odometry readings of the base of the Robot.
+        * /odom: Odometry readings of the base of the Robot.
         * /imu: Inertial Measuring Unit that gives relative accelerations and
           orientations.
         * /scan: Laser readings.
@@ -335,72 +336,3 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
             :obj:`sensor_msgs.msg._LaserScan.LaserScan`: The laser scan message.
         """
         return self.laser_scan
-
-    #############################################
-    # Robot env virtual methods #################
-    #############################################
-    # NOTE: Below are methods that the TrainingEnvironment will need to define here as
-    # virtual because they will be used in RobotGazeboEnv. These methods need to be
-    # overloaded in the TrainingEnvironment.
-    def _set_init_pose(self):
-        """Sets the Robot in its init pose.
-
-        Raises:
-            NotImplementedError: Thrown when not overloaded by the task environment.
-        """
-        raise NotImplementedError()
-
-    def _get_obs(self):
-        """Returns the observation.
-
-        Raises:
-            NotImplementedError: Thrown when not overloaded by the task environment.
-        """
-        raise NotImplementedError()
-
-    def _init_env_variables(self):
-        """Inits variables needed to be initialised each time we reset at the start
-        of an episode.
-
-        Raises:
-            NotImplementedError: Thrown when not overloaded by the task environment.
-        """
-        raise NotImplementedError()
-
-    def _set_action(self, action):
-        """Applies the given action to the simulation.
-
-        Args:
-            action (numpy.ndarray): The action you want to set.
-
-        Raises:
-            NotImplementedError: Thrown When the method was not overloaded by the task
-                environment.
-        """
-        raise NotImplementedError()
-
-    def _is_done(self, observations):
-        """Indicates whether or not the episode is done (the robot has fallen for
-        example).
-
-        Args:
-            observations (numpy.ndarray): The observations.
-
-        Raises:
-            NotImplementedError: Thrown When the method was not overloaded by the task
-                environment.
-        """
-        raise NotImplementedError()
-
-    def _compute_reward(self, observations, done):
-        """Calculates the reward to give based on the observations given.
-
-        Args:
-            observations (numpy.ndarray): The observations.
-            done (function): Whether the episode was done.
-
-        Raises:
-            NotImplementedError: Thrown When the method was not overloaded by the task
-                environment.
-        """
-        raise NotImplementedError()

@@ -284,7 +284,8 @@ class RobotGazeboEnv(gym.Env):
         and extract information from the simulation.
 
         Args:
-            initial_qpos (numpy.ndarray): The initial agent pose (generalized coordinates).
+            initial_qpos (numpy.ndarray): The initial agent pose (generalized
+                coordinates).
 
         Raises:
             NotImplementedError: Thrown when not overloaded by the robot environment.

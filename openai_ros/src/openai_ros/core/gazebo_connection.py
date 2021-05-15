@@ -205,7 +205,7 @@ class GazeboConnection:
             + str(result.status_message)
         )
 
-        self.unpauseSim()
+        self.unpause_sim()
 
     def change_gravity(self, x, y, z):
         """Changes the gravity vector
