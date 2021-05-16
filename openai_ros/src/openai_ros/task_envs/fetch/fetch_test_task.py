@@ -5,32 +5,30 @@ import numpy as np
 import rospy
 from gym import spaces, utils
 from openai_ros.core import ROSLauncher
-from openai_ros.robot_envs import fetch_env
 from openai_ros.core.helpers import load_ros_params_from_yaml
+from openai_ros.robot_envs import fetch_env
 
 
 class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
     def __init__(self):
 
-        # Launch the Task Simulated-Environment
-        # This is the path where the simulation files are, the Task and the Robot gits
-        # will be downloaded if not there
+        # This is the path where the simulation files, the Task and the Robot gits will
+        # be downloaded if not there
         workspace_path = rospy.get_param("/fetch/workspace_path", None)
-        assert workspace_path is not None, (
-            "You forgot to set workspace_path in your yaml file of your main RL "
-            "script. Set workspace_path: 'YOUR/SIM_WS/PATH'."
-        )
-        assert os.path.exists(workspace_path), (
-            "The Simulation ROS Workspace path "
-            + workspace_path
-            + " DOESN'T exist, execute: mkdir -p "
-            + workspace_path
-            + "/src;cd "
-            + workspace_path
-            + ";catkin_make"
-        )
+        if workspace_path:
+            assert os.path.exists(workspace_path), (
+                "The Simulation ROS Workspace path "
+                + workspace_path
+                + " DOESN'T exist, execute: mkdir -p "
+                + workspace_path
+                + "/src;cd "
+                + workspace_path
+                + ";catkin_make"
+            )
 
-        ROSLauncher(
+        # Launch the Fetch gazebo environment
+        # NOTE: This downloads and builds the required ROS packages if not found
+        ROSLauncher.launch(
             package_name="fetch_gazebo",
             launch_file_name="start_world.launch",
             workspace_path=workspace_path,

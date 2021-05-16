@@ -11,11 +11,11 @@ from sensor_msgs.msg import JointState
 
 
 class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
-    def __init__(self, workspace_path):
-        rospy.logdebug("========= In Fetch Env")
+    def __init__(self, workspace_path=None):
+        rospy.logdebug("Initialize FetchEnv robot environment...")
 
-        # We launch the ROSlaunch that spawns the robot into the world
-        ROSLauncher(
+        # Launch the ROS launch that spawns the robot into the world
+        ROSLauncher.launch(
             package_name="fetch_gazebo",
             launch_file_name="put_robot_in_world_HER.launch",
             workspace_path=workspace_path,

@@ -84,7 +84,7 @@ class ROSLauncher(object):
             # Launch the launchfile using a subprocess.
             # NOTE: I also tried using the roslaunch python api but I could not find a
             # way to first source the catkin workspace.
-            p = subprocess.Popen(command, shell=True)
+            p = subprocess.Popen(command, shell=True, cwd=workspace_path)
             state = p.poll()
             if state is None:
                 rospy.logdebug("Launch file successfully launched.")

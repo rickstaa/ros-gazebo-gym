@@ -174,7 +174,11 @@ def get_global_pkg_path(package_name, workspace_path=None):
         command = source_command + package_command
         try:
             global_pkg_path = subprocess.check_output(
-                command, shell=True, text=True, stderr=subprocess.DEVNULL
+                command,
+                shell=True,
+                text=True,
+                stderr=subprocess.DEVNULL,
+                cwd=workspace_path,
             ).split("\n")[0]
         except Exception:
             global_pkg_path = None
@@ -256,7 +260,8 @@ def build_catkin_ws(workspace_path, install_ros_deps=True):
         )
         if answer:
             rospy.logwarn(
-                "Installing ROS system dependencies. Please supply your root password:"
+                "Installing ROS system dependencies. If asked please supply your root "
+                "password:"
             )
             rosdep_command = (
                 f"sudo -S rosdep install --from-paths {workspace_path}/src "
@@ -269,17 +274,39 @@ def build_catkin_ws(workspace_path, install_ros_deps=True):
     # Build workspace
     if catkin_make_used:  # Use catkin_make
         rosbuild_command = "catkin_make"
+        rosbuild_clean_command = "rm -r devel logs build -y"
     else:  # Use catkin build
         rosbuild_command = "catkin build"
+        rosbuild_clean_command = "catkin clean -y"
     rosbuild_command = "catkin build"
     rospy.logwarn("Re-building catkin workspace.")
     p = subprocess.call(rosbuild_command, shell=True, cwd=workspace_path)
 
-    # Catch result
+    # Catch result, clean workspace and try again on fail
     if p != 0:
-        raise Exception(
+        # Clean the workspace and try one more time
+        rospy.logwarn(
             "Something went wrong while trying to build the catkin workspace."
         )
+        answer = query_yes_no(
+            "Do you want to clean the catkin workspace and try again?", default="yes"
+        )
+        if answer:
+            rospy.logwarn("Cleaning the catkin workspace.")
+            p = subprocess.call(rosbuild_clean_command, shell=True, cwd=workspace_path)
+            if p != 0:
+                rospy.logwarn(
+                    "Something went wrong while trying to clean the catkin workspace."
+                )
+            else:
+                rospy.logwarn("Re-building catkin workspace.")
+                p = subprocess.call(rosbuild_command, shell=True, cwd=workspace_path)
+
+        # Throw warning if something went wrong
+        if p != 0:
+            raise Exception(
+                "Something went wrong while trying to build the catkin workspace."
+            )
 
 
 def package_installer(package_name, workspace_path=None):  # noqa: C901

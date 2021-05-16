@@ -8,10 +8,10 @@ from std_msgs.msg import Float64
 
 class FetchSimpleEnv(robot_gazebo_env.RobotGazeboEnv):
     def __init__(self, workspace_path):
-        rospy.logdebug("Entered Fetch Env")
+        rospy.logdebug("Initialize FetchEnv robot environment...")
 
-        # We launch the ROSlaunch that spawns the robot into the world
-        ROSLauncher(
+        # Launch the ROS launch that spawns the robot into the world
+        ROSLauncher.launch(
             package_name="fetch_simple_description",
             launch_file_name="put_fetchsimple_in_world.launch",
             workspace_path=workspace_path,

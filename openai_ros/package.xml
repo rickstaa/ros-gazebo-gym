@@ -8,6 +8,7 @@
   <license>lGPL</license>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <build_export_depend>rospy</build_export_depend>
 
   <build_depend>rospy</build_depend>
   <build_depend>std_msgs</build_depend>
@@ -17,8 +18,7 @@
   <!-- extra build dependencies -->
   <build_depend>python3-catkin-tools</build_depend>
 
-  <build_export_depend>rospy</build_export_depend>
-
+  <!-- run dependencies -->
   <exec_depend>rospy</exec_depend>
   <exec_depend>gazebo_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
@@ -26,8 +26,12 @@
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>controller_manager_msgs</exec_depend>
 
-  <!-- Dependencies But only needed if you execute certain RobotEnvs and TasksEnvs-->
-  <!--
+  <!-- Environment dependencies
+    NOTE: Only needed for certain environments-->
+  <!--FETCH env dependencies-->
+  <exec_depend>moveit_commander</exec_depend>
+  <!-- Other envs-->
+  <!---
   <exec_depend>std_srvs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>trajectory_msgs</exec_depend>
@@ -43,6 +47,8 @@
   -->
 
   <!-- Python dependencies -->
+  <exec_depend>gym-pip</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-pygit2</exec_depend>
   <exec_depend>python3-ruamel.yaml</exec_depend>
   <exec_depend>python3-tqdm</exec_depend>

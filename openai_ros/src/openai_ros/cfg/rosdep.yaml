@@ -34,6 +34,11 @@ fetch_gazebo:
   binary: False
   git: https://bitbucket.org/theconstructcore/fetch_tc.git
   branch: noetic
+  deps:
+    simple_grasping:
+      binary: True
+      git: https://github.com/mikeferguson/simple_grasping.git
+      branch: ros1
 fetch_simple_description:
   binary: False
   git: https://bitbucket.org/theconstructcore/fetch_simple_simulation.git
