@@ -4,6 +4,7 @@ import geometry_msgs.msg
 import moveit_commander
 import numpy as np
 import rospy
+from gazebo_msgs.msg import ModelStates
 from gazebo_msgs.srv import GetModelState, GetWorldProperties
 from openai_ros import robot_gazebo_env
 from openai_ros.core import ROSLauncher
@@ -275,9 +276,7 @@ class Obj_Pos(object):
     """
 
     def __init__(self):
-        world_specs = rospy.ServiceProxy(
-            "/gazebo/get_world_properties", GetWorldProperties
-        )()
+        world_specs = rospy.ServiceProxy("/gazebo/model_states", GetWorldProperties)()
         self.time = 0
         self.model_names = world_specs.model_names
         self.get_model_state = rospy.ServiceProxy(
