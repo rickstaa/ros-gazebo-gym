@@ -74,11 +74,13 @@ class ROSLauncher(object):
                 launch_dir = Path(get_global_pkg_path(package_name)).joinpath("launch")
                 path_launch_file_name = Path(launch_dir).joinpath(launch_file_name)
                 rospy.logdebug(f"Launch file path: {path_launch_file_name}")
+            # NOTE: Bash prefix needed since sourcing setup.sh doesn't seem to work
+            bash_prefix = '/bin/bash -c "'
             source_command = ". {}{};".format(
-                workspace_path, Path("/devel/setup.sh").resolve()
+                workspace_path, Path("/devel/setup.bash").resolve()
             )
             roslaunch_command = "roslaunch {} {}".format(package_name, launch_file_name)
-            command = source_command + roslaunch_command
+            command = bash_prefix + source_command + roslaunch_command + '"'
             rospy.logwarn("Launching command: " + str(command))
 
             # Launch the launchfile using a subprocess.

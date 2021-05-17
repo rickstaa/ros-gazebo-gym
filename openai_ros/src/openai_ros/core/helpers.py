@@ -167,11 +167,13 @@ def get_global_pkg_path(package_name, workspace_path=None):
             if workspace_path
             else catkin.workspace.get_workspaces()[0].replace("/devel", "")
         )
-        source_command = ". {};".format(
-            Path(workspace_path).joinpath("devel", "setup.sh")
+        # NOTE: Bash prefix needed since sourcing setup.sh doesn't seem to work
+        bash_prefix = '/bin/bash -c "'
+        source_command = ". {}{};".format(
+            workspace_path, Path("/devel/setup.bash").resolve()
         )
         package_command = f"rospack find {package_name}"
-        command = source_command + package_command
+        command = bash_prefix + source_command + package_command + '"'
         try:
             global_pkg_path = subprocess.check_output(
                 command,
