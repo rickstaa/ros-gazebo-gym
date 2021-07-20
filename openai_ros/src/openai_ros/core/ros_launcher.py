@@ -23,7 +23,7 @@ class ROSLauncher(object):
     launched = {}  # Stores all processes that were launched
 
     @classmethod
-    def launch(cls, package_name, launch_file_name, workspace_path=None):
+    def launch(cls, package_name, launch_file_name, workspace_path=None, **kwargs):
         """Launch a given launchfile while also installing the launchfile package and or
         dependencies. This is done by using the openai_ros dependency index.
 
@@ -32,6 +32,7 @@ class ROSLauncher(object):
             launch_file_name (str): The launchfile name.
             workspace_path (str, optional): The path of the catkin workspace. Defaults
                 to ``None`` meaning the path will be determined.
+            **kwargs: Keyword arguments you want to pass to the launchfile.
 
         Raises:
             Exception: When something went wrong when launching the launchfile.
@@ -80,7 +81,14 @@ class ROSLauncher(object):
                 workspace_path, Path("/devel/setup.bash").resolve()
             )
             roslaunch_command = "roslaunch {} {}".format(package_name, launch_file_name)
-            command = bash_prefix + source_command + roslaunch_command + '"'
+            kwargs_command = (
+                " " + " ".join([f"{key}:={val}" for key, val in kwargs.items()])
+                if kwargs
+                else ""
+            )
+            command = (
+                bash_prefix + source_command + roslaunch_command + kwargs_command + '"'
+            )
             rospy.logwarn("Launching command: " + str(command))
 
             # Launch the launchfile using a subprocess.
