@@ -30,7 +30,7 @@ class GitProgressCallback(pygit2.RemoteCallbacks):
 
     def __init__(self):
         super().__init__()
-        self.pbar = tqdm()
+        self.pbar = tqdm(file=sys.stdout)
 
     def transfer_progress(self, statsTransferProgress):
         """Displays the current git transfer progress.
