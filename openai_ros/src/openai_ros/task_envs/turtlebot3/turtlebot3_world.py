@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Task environment for the Turtlebot3. This is the new version of the classic
-Turtlebot2 created by `ROBOTIS <www.robotis.us>`_. The goal of the task environment is
-for the agent to learn to move in the world without bumping into walls or objects.
+Turtlebot2 created by `ROBOTIS <www.robotis.us>`__.
+
+Goal:
+    In this environment the agent has to learn to move in the world without bumping
+    into walls or objects.
 """
 import os
 
@@ -9,12 +12,11 @@ import numpy as np
 import rospy
 from gym import spaces
 from openai_ros.core import ROSLauncher
-from openai_ros.core.helpers import (get_vector_magnitude,
-                                     load_ros_params_from_yaml)
-from openai_ros.robot_envs import turtlebot3_env
+from openai_ros.core.helpers import get_vector_magnitude, load_ros_params_from_yaml
+from openai_ros.robot_envs.turtlebot3_env import TurtleBot3Env
 
 
-class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
+class TurtleBot3WorldEnv(TurtleBot3Env):
     """Task Env designed for having the TurtleBot3 in the turtlebot3 world closed
     room with columns. It will learn how to move around without crashing.
 
@@ -44,6 +46,8 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
 
     def __init__(self):
         """Initialize turtlebot3 task environment instance."""
+        rospy.logdebug("Initialize TurtleBot3WorldEnv task environment...")
+
         # This is the path of the workspace where the simulation files can be found
         workspace_path = rospy.get_param("/turtlebot3/workspace_path", None)
         if workspace_path:
@@ -100,9 +104,11 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
         # Other variables
         self.cumulated_steps = 0.0
 
-    #############################################
-    # Task environment internal methods #########
-    #############################################
+        rospy.logdebug("TurtleBot3WorldEnv task environment initialized.")
+
+    ################################################
+    # Task environment internal methods ############
+    ################################################
     # NOTE: Here you can add additional helper methods that are used in the task env
     def _discretize_scan_observation(self, data, new_ranges):
         """Discretize the laser scan observations into a integer value.
@@ -153,7 +159,7 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
         return discretized_ranges
 
     def _get_params(self):
-        """Retrieve task environment configuration parameters from the parameter server."""
+        """Retrieve task environment configuration parameters from parameter server."""
         self.n_actions = rospy.get_param("/turtlebot3/n_actions")
         self.linear_forward_speed = rospy.get_param("/turtlebot3/linear_forward_speed")
         self.linear_turn_speed = rospy.get_param("/turtlebot3/linear_turn_speed")
@@ -175,13 +181,13 @@ class TurtleBot3WorldEnv(turtlebot3_env.TurtleBot3Env):
         self.turn_reward = rospy.get_param("/turtlebot3/turn_reward")
         self.end_episode_points = rospy.get_param("/turtlebot3/end_episode_points")
 
-    #############################################
-    # Overload Robot env virtual methods ########
-    #############################################
+    ################################################
+    # Overload Robot env virtual methods ###########
+    ################################################
     # NOTE: Methods that need to be implemented as they are called by the robot and
     # gazebo environments.
     def _set_init_pose(self):
-        """Sets the Robot in its init pose."""
+        """Sets the Robot in its initial pose."""
         self.move_base(
             self.init_linear_forward_speed,
             self.init_linear_turn_speed,

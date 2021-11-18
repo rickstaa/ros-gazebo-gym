@@ -20,10 +20,11 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
 
         To check any topic we need to have the simulations running, we need to do two
         things:
-        1) Un-pause the simulation: without that th stream of data doesn't flow. This is
-           for simulations that are pause for whatever the reason
-        2) If the simulation was running already for some reason, we need to reset the
-           controllers.
+            1. Un-pause the simulation: without that th stream of data doesn't flow.
+               This is for simulations that are pause for whatever the reason
+            2. If the simulation was running already for some reason, we need to reset
+               the controllers.
+
         This has to do with the fact that some plugins with tf, don't understand the
         reset of the simulation and need to be reset to work properly.
 
@@ -31,15 +32,17 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         learning.
 
         Sensor Topic List:
-        * /odom : Odometry readings of the Base of the Robot
-        * /camera/depth/image_raw: 2d Depth image of the depth sensor.
-        * /camera/depth/points: Pointcloud sensor readings
-        * /camera/rgb/image_raw: RGB camera
-        * /kobuki/laser/scan: Laser Readings
+            * /odom : Odometry readings of the Base of the Robot
+            * /camera/depth/image_raw: 2d Depth image of the depth sensor.
+            * /camera/depth/points: Pointcloud sensor readings
+            * /camera/rgb/image_raw: RGB camera
+            * /kobuki/laser/scan: Laser Readings
 
         Actuators Topic List: /cmd_vel,
 
         Args:
+            workspace_path (str, optional): The path of the workspace in which the
+                turtlebot2_env_gazebo package should be found. Defaults to ``None``.
         """
         rospy.logdebug("Start TurtleBot2Env INIT...")
         # Variables that we give through the constructor.
@@ -212,7 +215,6 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
     def _check_publishers_connection(self):
         """
         Checks that all the publishers are working
-        :return:
         """
         rate = rospy.Rate(10)  # 10hz
         while self._cmd_vel_pub.get_num_connections() == 0 and not rospy.is_shutdown():
@@ -231,7 +233,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
     # TrainingEnvironment.
     # ----------------------------
     def _set_init_pose(self):
-        """Sets the Robot in its init pose"""
+        """Sets the Robot in its initial pose."""
         raise NotImplementedError()
 
     def _init_env_variables(self):
@@ -268,12 +270,13 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         """
         It will move the base based on the linear and angular speeds given.
         It will wait untill those twists are achived reading from the odometry topic.
-        :param linear_speed: Speed in the X axis of the robot base frame
-        :param angular_speed: Speed of the angular turning of the robot base frame
-        :param epsilon: Acceptable difference between the speed asked and the odometry
-            readings.
-        :param update_rate: Rate at which we check the odometry.
-        :return:
+
+        Args:
+            linear_speed: Speed in the X axis of the robot base frame
+            angular_speed: Speed of the angular turning of the robot base frame
+            epsilon: Acceptable difference between the speed asked and the odometry
+                readings.
+            update_rate: Rate at which we check the odometry.
         """
         cmd_vel_value = Twist()
         cmd_vel_value.linear.x = linear_speed
@@ -296,10 +299,14 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         """
         We wait for the cmd_vel twist given to be reached by the robot reading
         from the odometry.
-        :param cmd_vel_value: Twist we want to wait to reach.
-        :param epsilon: Error acceptable in odometry readings.
-        :param update_rate: Rate at which we check the odometry.
-        :return:
+
+        Args:
+            cmd_vel_value: Twist we want to wait to reach.
+            epsilon: Error acceptable in odometry readings.
+            update_rate: Rate at which we check the odometry.
+
+        Returns:
+            float: The time that has passed.
         """
         rospy.logwarn("START wait_until_twist_achieved...")
 

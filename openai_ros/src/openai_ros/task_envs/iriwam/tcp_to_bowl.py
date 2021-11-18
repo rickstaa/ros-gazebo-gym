@@ -183,7 +183,6 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         """
         Inits variables needed to be initialised each time we reset at the start
         of an episode.
-        :return:
         """
 
         # For Info Purposes
@@ -198,7 +197,9 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         """
         It sets the joints of iriwam based on the action integer given
         based on the action number given.
-        :param action: The action integer that sets what movement to do next.
+
+        Args:
+            action (int): The action integer that sets what movement to do next.
         """
 
         rospy.logdebug("Start Set Action ==>" + str(action))
@@ -242,7 +243,9 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         Here we define what sensor data defines our robots observations
         To know which Variables we have access to, we need to read the
         iriwamEnv API DOCS.
-        :return: observation
+
+        Returns:
+            list: The observation.
         """
         rospy.logdebug("Start Get Observation ==>")
 
@@ -309,7 +312,9 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         """
         We Base the rewards in if its done or not and we base it on
         if the distance to the block has increased or not.
-        :return:
+
+        Returns:
+            float: The reward.
         """
 
         tf_tcp_to_block_vector = Vector3()
@@ -447,8 +452,12 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
     def get_distance_from_desired_point(self, current_position):
         """
         Calculates the distance from the current position to the desired point
-        :param start_point:
-        :return:
+
+        Args:
+            current_position: The current position.
+
+        Returns:
+            float: The distance between the current and the desired position.
         """
         distance = self.get_distance_from_point(current_position, self.desired_point)
 
@@ -456,9 +465,14 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
 
     def get_distance_from_point(self, pstart, p_end):
         """
-        Given a Vector3 Object, get distance from current position
-        :param p_end:
-        :return:
+        Given a Vector3 Object, get distance from current position.
+
+        Args:
+            pstart: The start position.
+            p_end: The end position.
+
+        Returns:
+            float: The distance between the start and end positions.
         """
         a = numpy.array((pstart.x, pstart.y, pstart.z))
         b = numpy.array((p_end.x, p_end.y, p_end.z))
@@ -469,9 +483,13 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
 
     def get_magnitud_tf_tcp_to_block(self, translation_vector):
         """
-        Given a Vector3 Object, get the magnitud
-        :param p_end:
-        :return:
+        Given a Vector3 Object, get the magnitud.
+
+        Args:
+            translation_vector: The translation vector.
+
+        Returns:
+            float: The magnitude of the translation vector.
         """
         a = numpy.array(
             (translation_vector.x, translation_vector.y, translation_vector.z)
@@ -542,12 +560,16 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
         Retrieves the distance end effector laser element to the red bowl through the
         image data given
 
-        :param: data: RGB image data
-        :return: magnitude: Distance in pixels from the center of the black blob (the
-        laser)
-        To the center of the red blob ( the red bowl)
-        Bear in mind that if the laser tip goes out of the cameras view, it will give a
-        false positive
+        Args:
+            data: RGB image data
+
+        Returns:
+            magnitude: Distance in pixels from the center of the black blob (the laser)
+                To the center of the red blob ( the red bowl)
+
+        .. note::
+            Bear in mind that if the laser tip goes out of the cameras view, it will
+            give a false positive.
         """
 
         try:

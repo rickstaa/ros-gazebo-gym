@@ -123,7 +123,6 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
     def _check_all_publishers_ready(self):
         """
         Checks that all the publishers are working
-        :return:
         """
         rospy.logdebug("START ALL SENSORS READY")
         for publisher_object in self.publishers_array:
@@ -151,7 +150,7 @@ class WamvEnv(robot_gazebo_env.RobotGazeboEnv):
     # TrainingEnvironment.
     # ----------------------------
     def _set_init_pose(self):
-        """Sets the Robot in its init pose"""
+        """Sets the Robot in its initial pose."""
         raise NotImplementedError()
 
     def _init_env_variables(self):

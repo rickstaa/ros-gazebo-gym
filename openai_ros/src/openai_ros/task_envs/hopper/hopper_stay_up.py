@@ -211,7 +211,6 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         """
         Inits variables needed to be initialised each time we reset at the start
         of an episode.
-        :return:
         """
 
         # For Info Purposes
@@ -226,7 +225,9 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         """
         It sets the joints of monoped based on the action integer given
         based on the action number given.
-        :param action: The action integer that sets what movement to do next.
+
+        Args:
+            action: The action integer that sets what movement to do next.
         """
 
         rospy.logdebug("Start Set Action ==>" + str(action))
@@ -294,13 +295,13 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         HopperEnv API DOCS
         Returns the state of the robot needed for OpenAI QLearn Algorithm
         The state will be defined by an array of the:
-        1) distance from desired point in meters
-        2) The pitch orientation in radians
-        3) the Roll orientation in radians
-        4) the Yaw orientation in radians
-        5) Force in contact sensor in Newtons
-        6-7-8) State of the 3 joints in radians
-        9) Height of the Base
+            1. distance from desired point in meters
+            2. The pitch orientation in radians
+            3. the Roll orientation in radians
+            4. the Yaw orientation in radians
+            5. Force in contact sensor in Newtons
+            6. State of the 3 joints in radians
+            7. Height of the Base
 
         observation = [distance_from_desired_point,
                  base_roll,
@@ -311,7 +312,9 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
                  joint_states_hfe,
                  joint_states_kfe,
                  height_base]
-        :return: observation
+
+        Returns:
+            list: The observation.
         """
         rospy.logdebug("Start Get Observation ==>")
 
@@ -371,7 +374,9 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         We Base the rewards in if its done or not and we base it on
         the joint poisition, effort, contact force, orientation and distance from
         desired point.
-        :return:
+
+        Returns:
+            float: The total reward.
         """
 
         joints_state_array = observations[5:8]
@@ -541,9 +546,13 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
 
     def get_distance_from_desired_point(self, current_position):
         """
-        Calculates the distance from the current position to the desired point
-        :param start_point:
-        :return:
+        Calculates the distance from the current position to the desired point.
+
+        Args:
+            current_position: The current position.
+
+        Returns:
+            float: Distance between the desired and current position.
         """
         distance = self.get_distance_from_point(current_position, self.desired_point)
 
@@ -551,9 +560,14 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
 
     def get_distance_from_point(self, pstart, p_end):
         """
-        Given a Vector3 Object, get distance from current position
-        :param p_end:
-        :return:
+        Given a Vector3 Object, get distance from current position.
+
+        Args:
+            pstart: The start position.
+            p_end: The end position.
+
+        Returns:
+            float: The distance between the start and end position.
         """
         a = numpy.array((pstart.x, pstart.y, pstart.z))
         b = numpy.array((p_end.x, p_end.y, p_end.z))
@@ -602,7 +616,9 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         0.55*9.81=5.39 N
         Falling from around 5centimetres ( negligible height ), we register peaks around
         Fx = 7.08 N
-        :return:
+
+        Returns:
+            float: The force magnitude.
         """
         # We get the Contact Sensor data
         lowerleg_contactsensor_state = self.get_lowerleg_contactsensor_state()
@@ -618,17 +634,10 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         return force_magnitude
 
     def get_contact_force(self, lowerleg_contactsensor_state):
-        """
-        /lowerleg_contactsensor_state/states[0]/contact_positions ==> PointContact in
-        World
-        /lowerleg_contactsensor_state/states[0]/contact_normals ==> NormalContact in
-        World
+        """Retrieve the contract forces.
 
-        ==> One is an array of all the forces, the other total,
-         and are relative to the contact link referred to in the sensor.
-        /lowerleg_contactsensor_state/states[0]/wrenches[]
-        /lowerleg_contactsensor_state/states[0]/total_wrench
-        :return:
+        Returns:
+            :obj:`geometry_msgs.msg.Vector3`: The contact force vector.
         """
 
         # We create an empty element , in case there is no contact.
@@ -655,7 +664,9 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         """
         We calculate reward base on the joints configuration. The more near 0 the
         better.
-        :return:
+
+        Returns:
+            float: The reward.
         """
         acumulated_joint_pos = 0.0
         for joint_pos in joints_state_array:
@@ -676,7 +687,9 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         We use exponential to magnify big departures from the desired force.
         Default ( 7.08 N ) desired force was taken from reading of the robot touching
         the ground from a negligible height of 5cm.
-        :return:
+
+        Returns:
+            float: The reward.
         """
         force_displacement = force_magnitude - self.desired_force
 
@@ -698,9 +711,14 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
         The more its closser to 0 the better because it means its upright
         desired_yaw is the yaw that we want it to be.
         to praise it to have a certain orientation, here is where to set it.
-        :param: rpy_array: Its an array with Roll Pitch and Yaw in place 0, 1 and 2
-            respectively.
-        :return:
+
+        Args:
+            rpy_array: Its an array with Roll Pitch and Yaw in place 0, 1 and 2
+                respectively.
+            weight: The reward weighting factor.
+
+        Returns:
+            float: The reward.
         """
 
         yaw_displacement = rpy_array[2] - self.desired_yaw
@@ -713,10 +731,14 @@ class HopperStayUpEnv(hopper_env.HopperEnv):
 
     def calculate_reward_distance_from_des_point(self, current_position, weight=1.0):
         """
-        We calculate the distance from the desired point.
-        The closser the better
-        :param weight:
-        :return:reward
+        We calculate the distance from the desired point. The closser the better.
+
+        Args:
+            current_position: The current position.
+            weight: The reward weight factor.
+
+        Returns:
+            float: The reward.
         """
         distance = self.get_distance_from_desired_point(current_position)
         reward = weight * distance

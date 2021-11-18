@@ -19,10 +19,11 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
 
         To check any topic we need to have the simulations running, we need to do two
         things:
-        1) Un-pause the simulation: without that th stream of data doesn't flow. This is
-           for simulations that are pause for whatever the reason
-        2) If the simulation was running already for some reason, we need to reset the
-           controllers.
+            1. Un-pause the simulation: without that th stream of data doesn't flow.
+               This is for simulations that are pause for whatever the reason
+            2. If the simulation was running already for some reason, we need to reset
+               the controllers.
+
         This has to do with the fact that some plugins with tf, don't understand the
         reset of the simulation and need to be reset to work properly.
 
@@ -30,20 +31,23 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
         learning.
 
         Sensor Topic List:
-        * /drone/down_camera/image_raw: RGB Camera facing down.
-        * /drone/front_camera/image_raw: RGB Camera facing front.
-        * /drone/imu: IMU of the drone giving acceleration and orientation relative to
-          world.
-        * /drone/sonar: Sonar readings facing front
-        * /drone/gt_pose: Get position and orientation in Global space
-        * /drone/gt_vel: Get the linear velocity , the angular doesn't record anything.
+            * /drone/down_camera/image_raw: RGB Camera facing down.
+            * /drone/front_camera/image_raw: RGB Camera facing front.
+            * /drone/imu: IMU of the drone giving acceleration and orientation relative
+              to world.
+            * /drone/sonar: Sonar readings facing front
+            * /drone/gt_pose: Get position and orientation in Global space
+            * /drone/gt_vel: Get the linear velocity , the angular doesn't record
+              anything.
 
         Actuators Topic List:
-        * /cmd_vel: Move the Drone Around when you have taken off.
-        * /drone/takeoff: Publish into it to take off
-        * /drone/land: Publish to make ParrotDrone Land
+            * /cmd_vel: Move the Drone Around when you have taken off.
+            * /drone/takeoff: Publish into it to take off
+            * /drone/land: Publish to make ParrotDrone Land
 
         Args:
+            workspace_path (str, optional): The path of the workspace in which the
+                hopper_env_gazebo package should be found. Defaults to ``None``.
         """
         rospy.logdebug("Start HopperEnv INIT...")
 
@@ -216,7 +220,6 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
     def _check_all_publishers_ready(self):
         """
         Checks that all the publishers are working
-        :return:
         """
         rospy.logdebug("START ALL SENSORS READY")
         for publisher_object in self.publishers_array:
@@ -245,7 +248,7 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
     # ----------------------------
 
     def _set_init_pose(self):
-        """Sets the Robot in its init pose"""
+        """Sets the Robot in its initial pose."""
         raise NotImplementedError()
 
     def _init_env_variables(self):
@@ -297,12 +300,16 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def wait_time_for_execute_movement(self, joints_array, epsilon, update_rate):
         """
-        We wait until Joints are where we asked them to be based on the joints_states
-        :param joints_array:Joints Values in radians of each of the three joints of
-            hopper leg.
-        :param epsilon: Error acceptable in odometry readings.
-        :param update_rate: Rate at which we check the joint_states.
-        :return:
+        We wait until Joints are where we asked them to be based on the joints_states.
+
+        Args:
+            joints_array:Joints Values in radians of each of the three joints of hopper
+                leg.
+            epsilon: Error acceptable in odometry readings.
+            update_rate: Rate at which we check the joint_states.
+
+        Returns:
+            The waiting time.
         """
         rospy.logdebug("START wait_until_twist_achieved...")
 

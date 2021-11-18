@@ -18,10 +18,11 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
 
         To check any topic we need to have the simulations running, we need to do two
         things:
-        1)  the simulation: without that th stream of data doesn't flow. This is
-           for simulations that are pause for whatever the reason.
-        2) If the simulation was running already for some reason, we need to reset the
-           controllers.
+            1. Un-pause the simulation:  without that th stream of data doesn't flow.
+               This is for simulations that are pause for whatever the reason.
+            2. If the simulation was running already for some reason, we need to reset
+               the controllers.
+
         This has to do with the fact that some plugins with tf, don't understand the
         reset of the simulation and need to be reset to work properly.
 
@@ -29,20 +30,23 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         learning.
 
         Sensor Topic List:
-        * /drone/down_camera/image_raw: RGB Camera facing down.
-        * /drone/front_camera/image_raw: RGB Camera facing front.
-        * /drone/imu: IMU of the drone giving acceleration and orientation relative to
-          world.
-        * /drone/sonar: Sonar readings facing front
-        * /drone/gt_pose: Get position and orientation in Global space
-        * /drone/gt_vel: Get the linear velocity , the angular doesn't record anything.
+            * /drone/down_camera/image_raw: RGB Camera facing down.
+            * /drone/front_camera/image_raw: RGB Camera facing front.
+            * /drone/imu: IMU of the drone giving acceleration and orientation relative
+              to world.
+            * /drone/sonar: Sonar readings facing front
+            * /drone/gt_pose: Get position and orientation in Global space
+            * /drone/gt_vel: Get the linear velocity , the angular doesn't record
+              anything.
 
         Actuators Topic List:
-        * /cmd_vel: Move the Drone Around when you have taken off.
-        * /drone/takeoff: Publish into it to take off
-        * /drone/land: Publish to make ParrotDrone Land
+            * /cmd_vel: Move the Drone Around when you have taken off.
+            * /drone/takeoff: Publish into it to take off
+            * /drone/land: Publish to make ParrotDrone Land
 
         Args:
+            workspace_path (str, optional): The path of the workspace in which the
+                parrotdrone_env_gazebo package should be found. Defaults to ``None``.
         """
         rospy.logdebug("Start ParrotDroneEnv INIT...")
 
@@ -241,7 +245,6 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
     def _check_all_publishers_ready(self):
         """
         Checks that all the publishers are working
-        :return:
         """
         rospy.logdebug("START ALL SENSORS READY")
         self._check_cmd_vel_pub_connection()
@@ -296,7 +299,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
     # TrainingEnvironment.
     # ----------------------------
     def _set_init_pose(self):
-        """Sets the Robot in its init pose"""
+        """Sets the Robot in its initial pose."""
         raise NotImplementedError()
 
     def _init_env_variables(self):
@@ -362,9 +365,11 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def wait_for_height(self, heigh_value_to_check, smaller_than, epsilon, update_rate):
         """
-        Checks if current height is smaller or bigger than a value
-        :param: smaller_than: If True, we will wait until value is smaller than the one
-            given.
+        Checks if current height is smaller or bigger than a value.
+
+        Args:
+            smaller_than: If True, we will wait until value is smaller than the one
+                given.
         """
 
         rate = rospy.Rate(update_rate)
@@ -407,14 +412,15 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         It will move the base based on the linear and angular speeds given.
         It will wait untill those twists are achived reading from the odometry topic.
-        :param linear_speed_vector: Speed in the XYZ axis of the robot base frame,
-            because drones can move in any direction
-        :param angular_speed: Speed of the angular turning of the robot base frame,
-            because this drone only turns on the Z axis.
-        :param epsilon: Acceptable difference between the speed asked and the odometry
-            readings
-        :param update_rate: Rate at which we check the odometry.
-        :return:
+
+        Args:
+            linear_speed_vector: Speed in the XYZ axis of the robot base frame,
+                because drones can move in any direction
+            angular_speed: Speed of the angular turning of the robot base frame,
+                because this drone only turns on the Z axis.
+            epsilon: Acceptable difference between the speed asked and the odometry
+                readings
+            update_rate: Rate at which we check the odometry.
         """
         cmd_vel_value = Twist()
         cmd_vel_value.linear.x = linear_speed_vector.x
@@ -444,10 +450,14 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         # TODO: Make it work using TF conversions
         We wait for the cmd_vel twist given to be reached by the robot reading
         from the odometry.
-        :param cmd_vel_value: Twist we want to wait to reach.
-        :param epsilon: Error acceptable in odometry readings.
-        :param update_rate: Rate at which we check the odometry.
-        :return:
+
+        Args:
+            cmd_vel_value: Twist we want to wait to reach.
+            epsilon: Error acceptable in odometry readings.
+            update_rate: Rate at which we check the odometry.
+
+        Returns:
+            float: The time that has passed.
         """
         rospy.logwarn("START wait_until_twist_achieved...")
 

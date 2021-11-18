@@ -17,10 +17,11 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
 
         To check any topic we need to have the simulations running, we need to do two
         things:
-        1) Un-pause the simulation: without that th stream of data doesn't flow. This is
-           for simulations that are pause for whatever the reason
-        2) If the simulation was running already for some reason, we need to reset the
-           controllers.
+            1. Un-pause the simulation: without that th stream of data doesn't flow.
+               This is for simulations that are pause for whatever the reason
+            2. If the simulation was running already for some reason, we need to reset
+               the controllers.
+
         This has to do with the fact that some plugins with tf, don't understand the
         reset of the simulation and need to be reset to work properly.
 
@@ -28,13 +29,15 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         learning.
 
         Sensor Topic List:
-        * /robot/joint_limits: Odometry of the Base of Wamv
+            * /robot/joint_limits: Odometry of the Base of Wamv
 
         Actuators Topic List:
-        * As actuator we will use a class to interface with the movements through
-          commands.
+            * As actuator we will use a class to interface with the movements through
+              commands.
 
         Args:
+            workspace_path (str, optional): The path of the workspace in which the
+                sawyer_env_gazebo package should be found. Defaults to ``None``.
         """
         rospy.logdebug("Start SawyerEnv INIT...")
         # Variables that we give through the constructor.
@@ -169,7 +172,6 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
     def _setup_movement_system(self):
         """
         Setup of the movement system.
-        :return:
         """
         rp = intera_interface.RobotParams()
         valid_limbs = rp.get_limb_names()
@@ -306,7 +308,7 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
     # ----------------------------
 
     def _set_init_pose(self):
-        """Sets the Robot in its init pose"""
+        """Sets the Robot in its initial pose."""
         raise NotImplementedError()
 
     def _init_env_variables(self):
@@ -336,26 +338,28 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         It executed the command given through an id. This will move any joint
         of Sawyer, including the gripper if it has it.
-        :param: action_id: These are the possible action_id values and the action
-            associated.
 
-        self.joints[0]+"_increase",
-        self.joints[0]+_decrease,
-        self.joints[1]+"_increase",
-        self.joints[1]+"_decrease",
-        self.joints[2]+"_increase",
-        self.joints[2]+"_decrease",
-        self.joints[3]+"_increase",
-        self.joints[3]+"_decrease",
-        self.joints[4]+"_increase",
-        self.joints[4]+"_decrease",
-        self.joints[5]+"_increase",
-        self.joints[5]+"_decrease",
-        self.joints[6]+"_increase",
-        self.joints[6]+"_decrease",
-        gripper_close,
-        gripper_open,
-        gripper_calibrate
+        Args:
+            action_id: These are the possible action_id values and the action
+                associated.
+
+                self.joints[0]+"_increase",
+                self.joints[0]+_decrease,
+                self.joints[1]+"_increase",
+                self.joints[1]+"_decrease",
+                self.joints[2]+"_increase",
+                self.joints[2]+"_decrease",
+                self.joints[3]+"_increase",
+                self.joints[3]+"_decrease",
+                self.joints[4]+"_increase",
+                self.joints[4]+"_decrease",
+                self.joints[5]+"_increase",
+                self.joints[5]+"_decrease",
+                self.joints[6]+"_increase",
+                self.joints[6]+"_decrease",
+                gripper_close,
+                gripper_open,
+                gripper_calibrate
         """
 
         if action_id in self.bindings:
@@ -430,9 +434,15 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         It will only return something different to None if the TFs of the Two frames
         are in TF topic
         published and are connected through the TF tree.
-        :param: start_frame_name: Start Frame of the TF transform
+
+        Args:
+            start_frame_name: Start Frame of the TF transform
                 end_frame_name: End Frame of the TF transform
-        :return: trans,rot of the transform between the start and end frames.
+
+        Returns:
+            tuple containing:
+                - translation between the start and end frames.
+                - rotation between the start and end frames.
         """
         start_frame = "/" + start_frame_name
         end_frame = "/" + end_frame_name
@@ -482,9 +492,11 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
     def init_joint_limits(self):
         """
         Get the Joint Limits, in the init fase where we need to unpause the simulation
-        to get them
-        :return: joint_limits: The Joint Limits Dictionary, with names, angles, vel and
-        effort limits.
+        to get them.
+
+        Returns:
+            joint_limits: The Joint Limits Dictionary, with names, angles, vel and
+                effort limits.
         """
         self.gazebo.unpause_sim()
         joint_limits = self.check_joint_limits_ready()

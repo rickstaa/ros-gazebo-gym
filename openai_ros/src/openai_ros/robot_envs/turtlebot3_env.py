@@ -30,11 +30,10 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
 
         To check any topic we need to have the simulations running, we need to do two
         things:
-
-        1. Un-pause the simulation: without that th stream of data doesn't flow. This is
-           for simulations that are pause for whatever the reason
-        2. If the simulation was running already for some reason, we need to reset the
-           controllers.
+            1. Un-pause the simulation: without that th stream of data doesn't flow.
+               This is for simulations that are pause for whatever the reason
+            2. If the simulation was running already for some reason, we need to reset
+               the controllers.
 
         This has to do with the fact that some plugins with tf, don't understand the
         reset of the simulation and need to be reset to work properly.
@@ -43,10 +42,10 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         learning.
 
         Sensor Topic List:
-        * /odom: Odometry readings of the base of the Robot.
-        * /imu: Inertial Measuring Unit that gives relative accelerations and
-          orientations.
-        * /scan: Laser readings.
+            * /odom: Odometry readings of the base of the Robot.
+            * /imu: Inertial Measuring Unit that gives relative accelerations and
+              orientations.
+            * /scan: Laser readings.
 
         Actuators Topic List: /cmd_vel
 
@@ -176,8 +175,8 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
         """Laser scanner subscriber callback function.
 
         Args:
-            data (:obj:`sensor_msgs.msg._LaserScan.LaserScan`): The data that is returned by
-                the subscriber.
+            data (:obj:`sensor_msgs.msg._LaserScan.LaserScan`): The data that is
+                returned by the subscriber.
         """
         self.laser_scan = data
 

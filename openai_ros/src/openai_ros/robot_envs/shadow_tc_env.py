@@ -15,10 +15,11 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
 
         To check any topic we need to have the simulations running, we need to do two
         things:
-        1) Un-pause the simulation: without that th stream of data doesn't flow. This is
-           for simulations that are pause for whatever the reason
-        2) If the simulation was running already for some reason, we need to reset the
-           controllers.
+            1. Un-pause the simulation: without that th stream of data doesn't flow.
+               This is for simulations that are pause for whatever the reason
+            2. If the simulation was running already for some reason, we need to reset
+               the controllers.
+
         This has to do with the fact that some plugins with tf, don't understand the
         reset of the simulation and need to be reset to work properly.
 
@@ -26,16 +27,18 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         learning.
 
         Sensor Topic List:
-        * /imu/data
-        * /joint_states
+            * /imu/data
+            * /joint_states
 
 
         Actuators Topic List:
-        * As actuator we will use a class SmartGrasper to interface.
-        We use smart_grasping_sandbox smart_grasper.py, to move and get the pose
-        of the ball and the tool tip.
+            * As actuator we will use a class SmartGrasper to interface.
+              We use smart_grasping_sandbox smart_grasper.py, to move and get the pose
+              of the ball and the tool tip.
 
         Args:
+            workspace_path (str, optional): The path of the workspace in which the
+                shadow_env_gazebo package should be found. Defaults to ``None``.
         """
         rospy.logdebug("Start ShadowTcEnv INIT...")
         # Variables that we give through the constructor.
@@ -171,7 +174,6 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
     def _setup_smart_grasper(self):
         """
         Setup of the movement system.
-        :return:
         """
         rospy.logdebug("START _setup_smart_grasper")
         # We need to tell it to not start a node
@@ -185,7 +187,7 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
     # TrainingEnvironment.
     # ----------------------------
     def _set_init_pose(self):
-        """Sets the Robot in its init pose"""
+        """Sets the Robot in its initial pose."""
         raise NotImplementedError()
 
     def _init_env_variables(self):
@@ -257,9 +259,10 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def move_tcp_world_frame(self, desired_pose):
         """
-        Moves the Tool tip TCP to the pose given
-        Its relative pose to world frame
-        :param: desired_pose: Pose where you want the TCP to move next
+        Moves the Tool tip TCP to the pose given. Its relative pose to world frame.
+
+        Args:
+            desired_pose: Pose where you want the TCP to move next
         """
         self.sgs.move_tip_absolute(desired_pose)
 
@@ -279,10 +282,11 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         H1_F3J3, elbow_joint, shoulder_lift_joint, shoulder_pan_joint, wrist_1_joint,
         wrist_2_joint, wrist_3_joint]
 
-        :param command: a dictionnary of joint names associated with a target:
-                        {"H1_F1J1": -1.0, "shoulder_pan_joint": 1.0}
-        :param duration: the amount of time it will take to get there in seconds. Needs
-            to be bigger than 0.0
+        Args:
+            command: a dictionnary of joint names associated with a target:
+                {"H1_F1J1": -1.0, "shoulder_pan_joint": 1.0}
+            duration: the amount of time it will take to get there in seconds. Needs
+                to be bigger than 0.0
         """
         self.sgs.send_command(command, duration)
 

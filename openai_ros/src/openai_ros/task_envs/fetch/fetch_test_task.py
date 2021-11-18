@@ -91,7 +91,8 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         self.gripper_rotation = [1.0, 0.0, 1.0, 0.0]
 
     def _set_init_pose(self):
-        """Sets the Robot in its init pose
+        """Sets the Robot in its initial pose.
+
         The Simulation will be un-paused for this purpose.
         """
         # Check because it seems its not being used
@@ -144,7 +145,6 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         The simulation will be paused, therefore all the data retrieved has to be
         from a system that doesn't need the simulation running, like variables where the
         callbackas have stored last know sesnor data.
-        :return:
         """
         rospy.logdebug("Init Env Variables...")
         rospy.logdebug("Init Env Variables...END")
@@ -198,8 +198,9 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         And the distance from the desired point
         Orientation for the moment is not considered
         """
-
+        self.gazebo.unpause_sim()
         grip_pos = self.get_ee_pose()
+        self.gazebo.unpause_sim()
         grip_pos_array = [
             grip_pos.pose.position.x,
             grip_pos.pose.position.y,

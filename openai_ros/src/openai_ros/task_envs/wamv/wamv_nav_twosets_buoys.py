@@ -144,7 +144,6 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         """
         Inits variables needed to be initialised each time we reset at the start
         of an episode.
-        :return:
         """
 
         # For Info Purposes
@@ -162,7 +161,9 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         """
         It sets the joints of wamv based on the action integer given
         based on the action number given.
-        :param action: The action integer that sets what movement to do next.
+
+        Args:
+            action (int): The action integer that sets what movement to do next.
         """
 
         rospy.logdebug("Start Set Action ==>" + str(action))
@@ -195,7 +196,9 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
         Here we define what sensor data defines our robots observations
         To know which Variables we have access to, we need to read the
         WamvEnv API DOCS.
-        :return: observation
+
+        Returns:
+            list: The observation.
         """
         rospy.logdebug("Start Get Observation ==>")
 
@@ -251,8 +254,10 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
     def _compute_reward(self, observations, done):
         """
         We Base the rewards in if its done or not and we base it on
-        if the distance to the desired point has increased or not
-        :return:
+        if the distance to the desired point has increased or not.
+
+        Returns:
+            float: The reward.
         """
 
         # We only consider the plane, the fluctuation in z is due mainly to wave
@@ -334,9 +339,13 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
 
     def get_distance_from_desired_point(self, current_position):
         """
-        Calculates the distance from the current position to the desired point
-        :param start_point:
-        :return:
+        Calculates the distance from the current position to the desired point.
+
+        Args:
+            current_position: The current position.
+
+        Returns:
+            float: The distance between the current and desired position.
         """
         distance = self.get_distance_from_point(current_position, self.desired_point)
 
@@ -344,9 +353,15 @@ class WamvNavTwoSetsBuoysEnv(wamv_env.WamvEnv):
 
     def get_distance_from_point(self, pstart, p_end):
         """
-        Given a Vector3 Object, get distance from current position
-        :param p_end:
-        :return:
+        Given a Vector3 Object, get distance from current position.
+
+
+        Args:
+            pstart: The start position.
+            p_end: The end position.
+
+        Returns:
+            float: The distance between the start and end positions.
         """
         a = numpy.array((pstart.x, pstart.y, pstart.z))
         b = numpy.array((p_end.x, p_end.y, p_end.z))

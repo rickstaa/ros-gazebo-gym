@@ -1,7 +1,9 @@
-"""Environment for the 3D CartPole stay up task. In this task environment the agent has
-to learn to keep the pole upright. This task was based on the
+"""Environment for the 3D CartPole stay up task. This task was based on the
 CartPole-v1 environment found in the
-`OpenAi gym package<https://gym.openai.com/envs/CartPole-v1/>`_.
+`OpenAi gym package <https://gym.openai.com/envs/CartPole-v1/>`_.
+
+Goal:
+    In this environment the agent has to learn to keep the CartPole upright.
 """
 
 import os
@@ -11,14 +13,16 @@ import rospy
 from gym import spaces
 from openai_ros.core import ROSLauncher
 from openai_ros.core.helpers import load_ros_params_from_yaml
-from openai_ros.robot_envs import cartpole_env
+from openai_ros.robot_envs.cartpole_env import CartPoleEnv
 
 
-class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
+class CartPoleStayUpEnv(CartPoleEnv):
     """3D task environment in which the agent has to keep the CartPole upright."""
 
     def __init__(self):
         """Initiate CartPoleStayUp task environment instance."""
+        rospy.logdebug("Initialize CartPoleStayUpEnv task environment...")
+
         # This is the path where the simulation files, the Task and the Robot gits will
         # be downloaded if not there
         workspace_path = rospy.get_param("/cartpole_v0/workspace_path", None)
@@ -61,12 +65,14 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
         )
         self.observation_space = spaces.Box(-high, high)
 
-    #############################################
-    # Task environment internal methods #########
-    #############################################
+        rospy.logdebug("CartPoleStayUpEnv task environment initialized.")
+
+    ################################################
+    # Task environment internal methods ############
+    ################################################
     # NOTE: Here you can add additional helper methods that are used in the task env
     def _get_params(self):
-        """Retrieve task environment configuration parameters from the parameter server."""
+        """Retrieve task environment configuration parameters from parameter server."""
         self.n_actions = rospy.get_param("/cartpole_v0/n_actions")
         self.min_pole_angle = rospy.get_param("/cartpole_v0/min_pole_angle")
         self.max_pole_angle = rospy.get_param("/cartpole_v0/max_pole_angle")
@@ -79,9 +85,9 @@ class CartPoleStayUpEnv(cartpole_env.CartPoleEnv):
         self.wait_time = rospy.get_param("/cartpole_v0/wait_time")
         self.control_type = rospy.get_param("/cartpole_v0/control_type")
 
-    #############################################
-    # Overload Robot env virtual methods ########
-    #############################################
+    ################################################
+    # Overload Robot env virtual methods ###########
+    ################################################
     # NOTE: Methods that need to be implemented as they are called by the robot and
     # gazebo environments.
     def _set_init_pose(self):

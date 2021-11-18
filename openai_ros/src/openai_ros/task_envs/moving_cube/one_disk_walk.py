@@ -120,7 +120,7 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         super(MovingCubeOneDiskWalkEnv, self).__init__(workspace_path)
 
     def _set_init_pose(self):
-        """Sets the Robot in its init pose"""
+        """Sets the Robot in its initial pose."""
         self.move_joints(self.init_roll_vel)
 
         return True
@@ -129,7 +129,6 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         """
         Inits variables needed to be initialised each time we reset at the start
         of an episode.
-        :return:
         """
         self.total_distance_moved = 0.0
         self.current_y_distance = self.get_y_dir_distance_from_start_point(
@@ -172,8 +171,10 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         """
         Here we define what sensor data defines our robots observations
         To know which Variables we have acces to, we need to read the
-        MyCubeSingleDiskEnv API DOCS
-        :return:
+        MyCubeSingleDiskEnv API DOCS.
+
+        Returns:
+            list: The observation.
         """
 
         # We get the orientation of the cube in RPY
@@ -287,8 +288,12 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
         """
         Calculates the distance from the given point and the current position
         given by odometry. In this case the increase or decrease in y.
-        :param start_point:
-        :return:
+
+        Args:
+            start_point: The start point.
+
+        Returns:
+            float: The distance between the current and the start point.
         """
         y_dist_dir = self.odom.pose.pose.position.y - start_point.y
 
@@ -297,9 +302,13 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
     def get_distance_from_start_point(self, start_point):
         """
         Calculates the distance from the given point and the current position
-        given by odometry
-        :param start_point:
-        :return:
+        given by odometry.
+
+        Args:
+            start_point. The start point.
+
+        Returns:
+            float: The distance between the current and the start point.
         """
         distance = self.get_distance_from_point(
             start_point, self.odom.pose.pose.position
@@ -309,9 +318,14 @@ class MovingCubeOneDiskWalkEnv(cube_single_disk_env.CubeSingleDiskEnv):
 
     def get_distance_from_point(self, pstart, p_end):
         """
-        Given a Vector3 Object, get distance from current position
-        :param p_end:
-        :return:
+        Given a Vector3 Object, get distance from current position.
+
+        Args:
+            pstart: The start position.
+            p_end: The end position.
+
+        Returns:
+            float: The distance between the start and end positions.
         """
         a = numpy.array((pstart.x, pstart.y, pstart.z))
         b = numpy.array((p_end.x, p_end.y, p_end.z))

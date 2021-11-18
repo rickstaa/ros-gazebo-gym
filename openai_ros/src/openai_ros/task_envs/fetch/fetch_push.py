@@ -97,7 +97,8 @@ class FetchPushEnv(fetch_env.FetchEnv, utils.EzPickle):
 
     def _set_init_pose(self):
         """
-        Sets the Robot in its init pose
+        Sets the Robot in its initial pose.
+
         The Simulation will be un-paused for this purpose.
         """
         if not self.set_trajectory_joints(self.init_pos):
@@ -110,7 +111,6 @@ class FetchPushEnv(fetch_env.FetchEnv, utils.EzPickle):
         The simulation will be paused, therefore all the data retrieved has to be
         from a system that doesn't need the simulation running, like variables where the
         callbackas have stored last know sesnor data.
-        :return:
         """
         rospy.logdebug("Init Env Variables...")
         rospy.logdebug("Init Env Variables...END")

@@ -132,7 +132,6 @@ class ShadowTcGetBallEnv(shadow_tc_env.ShadowTcEnv):
         """
         Inits variables needed to be initialised each time we reset at the start
         of an episode.
-        :return:
         """
         rospy.logdebug("START TaskEnv _init_env_variables")
         # For Info Purposes
@@ -151,7 +150,9 @@ class ShadowTcGetBallEnv(shadow_tc_env.ShadowTcEnv):
         """
         It sets the joints of shadow_tc based on the action integer given
         based on the action number given.
-        :param action: The action integer that sets what movement to do next.
+
+        Args:
+            action (int): The action integer that sets what movement to do next.
         """
 
         rospy.logdebug("Start Set Action ==>" + str(action))
@@ -210,7 +211,9 @@ class ShadowTcGetBallEnv(shadow_tc_env.ShadowTcEnv):
         Here we define what sensor data defines our robots observations
         To know which Variables we have access to, we need to read the
         shadow_tcEnv API DOCS.
-        :return: observation
+
+        Returns:
+            list: The observation.
         """
         rospy.logdebug("Start Get Observation ==>")
 
@@ -281,7 +284,9 @@ class ShadowTcGetBallEnv(shadow_tc_env.ShadowTcEnv):
         """
         We Base the rewards in if its done or not and we base it on
         if the distance to the ball has increased or not.
-        :return:
+
+        Reward:
+            float: The reward.
         """
 
         tcp_pos = Vector3()
@@ -360,9 +365,14 @@ class ShadowTcGetBallEnv(shadow_tc_env.ShadowTcEnv):
 
     def get_distance_from_point(self, pstart, p_end):
         """
-        Given a Vector3 Object, get distance from current position
-        :param p_end:
-        :return:
+        Given a Vector3 Object, get distance from current position.
+
+        Args:
+            pstart: The start position.
+            p_end: The end position.
+
+        Returns:
+            float: The distance between the start and end positions.
         """
         a = numpy.array((pstart.x, pstart.y, pstart.z))
         b = numpy.array((p_end.x, p_end.y, p_end.z))

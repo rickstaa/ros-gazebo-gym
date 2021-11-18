@@ -15,6 +15,8 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
         """Initializes a new CubeSingleDisk environment.
 
         Args:
+            workspace_path (str, optional): The path of the workspace in which the
+                cube_single_disk_gazebo package should be found. Defaults to ``None``.
         """
         # We launch the ROSlaunch that spawns the robot into the world
         ROSLauncher(
@@ -118,7 +120,6 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
     def _check_publishers_connection(self):
         """
         Checks that all the publishers are working
-        :return:
         """
         rate = rospy.Rate(10)  # 10hz
         while self._roll_vel_pub.get_num_connections() == 0 and not rospy.is_shutdown():

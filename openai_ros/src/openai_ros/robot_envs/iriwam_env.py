@@ -2,9 +2,11 @@ import actionlib
 import numpy
 import rospy
 import tf
-from control_msgs.msg import (FollowJointTrajectoryAction,
-                              FollowJointTrajectoryGoal,
-                              JointTrajectoryControllerState)
+from control_msgs.msg import (
+    FollowJointTrajectoryAction,
+    FollowJointTrajectoryGoal,
+    JointTrajectoryControllerState,
+)
 from moveit_msgs.msg import JointLimits
 from openai_ros import robot_gazebo_env
 from openai_ros.core import ROSLauncher
@@ -21,10 +23,11 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
 
         To check any topic we need to have the simulations running, we need to do two
         things:
-        1) Un-pause the simulation: without that th stream of data doesn't flow. This is
-           for simulations that are pause for whatever the reason
-        2) If the simulation was running already for some reason, we need to reset the
-           controllers.
+            1. Un-pause the simulation: without that th stream of data doesn't flow.
+               This is for simulations that are pause for whatever the reason
+            2. If the simulation was running already for some reason, we need to reset
+               the controllers.
+
         This has to do with the fact that some plugins with tf, don't understand the
         reset of the simulation and need to be reset to work properly.
 
@@ -32,18 +35,20 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
         learning.
 
         Sensor Topic List:
-        * /camera/depth/image_raw
-        * /camera/depth/points
-        * /camera/rgb/image_raw
-        * /laser_scan: Laser scan of the TCP
-        * /iri_wam/iri_wam_controller/state, control_msgs/
-          JointTrajectoryControllerState: Gives desired, actual and error.
+            * /camera/depth/image_raw
+            * /camera/depth/points
+            * /camera/rgb/image_raw
+            * /laser_scan: Laser scan of the TCP
+            * /iri_wam/iri_wam_controller/state, control_msgs/
+              JointTrajectoryControllerState: Gives desired, actual and error.
 
         Actuators Topic List:
-        * We publish int the action: /iri_wam/iri_wam_controller/
-          follow_joint_trajectory/goal
+            * We publish int the action: /iri_wam/iri_wam_controller/
+              follow_joint_trajectory/goal
 
         Args:
+            workspace_path (str, optional): The path of the workspace in which the
+                iriwam_env_gazebo package should be found. Defaults to ``None``.
         """
         rospy.logdebug("Start IriWamEnv INIT...")
         # Variables that we give through the constructor.
@@ -231,7 +236,6 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
     def _setup_movement_system(self):
         """
         Setup of the movement system.
-        :return:
         """
         self.traj_object = IriWamExecTrajectory()
 
@@ -241,7 +245,7 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
     # ----------------------------
 
     def _set_init_pose(self):
-        """Sets the Robot in its init pose"""
+        """Sets the Robot in its initial pose."""
         raise NotImplementedError()
 
     def _init_env_variables(self):
@@ -270,18 +274,18 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
     def move_joints_to_angle_blocking(self, joints_positions_array):
         """
         It moves all the joints to the given position and doesn't exit until it reaches
-            that position
-        :param: joints_positions_array: Its an array that ahas the desired joint
-            positions in radians. The order of the
-        joints is:
-            [   "iri_wam_joint_1",
-                "iri_wam_joint_2",
-                "iri_wam_joint_3",
-                "iri_wam_joint_4",
-                "iri_wam_joint_5",
-                "iri_wam_joint_6",
-                "iri_wam_joint_7"]
+        that position
 
+        Args:
+            joints_positions_array: Its an array that ahas the desired joint positions
+                in radians. The order of the joints is:
+                [   "iri_wam_joint_1",
+                    "iri_wam_joint_2",
+                    "iri_wam_joint_3",
+                    "iri_wam_joint_4",
+                    "iri_wam_joint_5",
+                    "iri_wam_joint_6",
+                    "iri_wam_joint_7"]
         """
         self.traj_object.send_joints_positions(joints_positions_array)
 
@@ -290,9 +294,15 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
         Given two frames, it returns the transform from the start_frame_name to the
         end_frame_name. It will only return something different to None if the TFs of
         the Two frames are in TF topic published and are connected through the TF tree.
-        :param: start_frame_name: Start Frame of the TF transform
-                end_frame_name: End Frame of the TF transform
-        :return: trans,rot of the transform between the start and end frames.
+
+        Args:
+            start_frame_name: Start Frame of the TF transform
+            end_frame_name: End Frame of the TF transform
+
+        Returns:
+            tuple containing:
+                - translation between the start and end frame.
+                - rotation between the start and end frame.
         """
         start_frame = "/" + start_frame_name
         end_frame = "/" + end_frame_name
@@ -365,8 +375,10 @@ class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         Get the Joint Limits, in the init fase where we need to unpause the simulation
         to get them
-        :return: joint_limits: The Joint Limits Dictionary, with names, angles, vel and
-        effort limits.
+
+        Returns:
+            joint_limits: The Joint Limits Dictionary, with names, angles, vel and
+                effort limits.
         """
         joint_limits = self.get_joint_limits()
         return joint_limits

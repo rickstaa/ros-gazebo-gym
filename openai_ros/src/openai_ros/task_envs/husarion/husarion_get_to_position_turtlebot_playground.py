@@ -138,7 +138,7 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         )
 
     def _set_init_pose(self):
-        """Sets the Robot in its init pose"""
+        """Sets the Robot in its initial pose."""
         self.move_base(
             self.init_linear_forward_speed,
             self.init_linear_turn_speed,
@@ -152,7 +152,6 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         """
         Inits variables needed to be initialised each time we reset at the start
         of an episode.
-        :return:
         """
         # For Info Purposes
         self.cumulated_reward = 0.0
@@ -168,7 +167,9 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         """
         This set action will Set the linear and angular speed of the SumitXl
         based on the action number given.
-        :param action: The action integer that set s what movement to do next.
+
+        Args:
+            action: The action integer that set s what movement to do next.
         """
 
         rospy.logdebug("Start Set Action ==>" + str(action))
@@ -208,7 +209,6 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
         Here we define what sensor data defines our robots observations
         To know which Variables we have acces to, we need to read the
         HusarionEnv API DOCS
-        :return:
         """
         rospy.logdebug("Start Get Observation ==>")
         # We get the laser scan data
@@ -443,10 +443,14 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
 
     def get_distance_from_desired_point(self, current_position, desired_position):
         """
-        Calculates the distance from the current position to the desired point
-        :param current_position:
-        :param desired_position:
-        :return:
+        Calculates the distance from the current position to the desired point.
+
+        Args:
+            current_position: The current position.
+            desired_position: The desired position.
+
+        Returns:
+            float: The distance between the current and desired position.
         """
         distance = self.get_distance_from_point(current_position, desired_position)
 
@@ -454,9 +458,14 @@ class HusarionGetToPosTurtleBotPlayGroundEnv(husarion_env.HusarionEnv):
 
     def get_distance_from_point(self, pstart, p_end):
         """
-        Given a Vector3 Object, get distance from current position
-        :param p_end:
-        :return:
+        Given a Vector3 Object, get distance from current position.
+
+        Args:
+            pstart: The start position.
+            p_end: The end position.
+
+        Returns:
+            float: The distance between the start and end positions.
         """
         a = numpy.array((pstart.x, pstart.y, pstart.z))
         b = numpy.array((p_end.x, p_end.y, p_end.z))

@@ -325,9 +325,10 @@ class FetchSimpleMove(object):
         delta_array = [bellows_joint, elbow_flex_joint, forearm_roll_joint,
         head_pan_joint, head_tilt_joint, l_gripper_finger_joint, r_gripper_finger_joint,
         shoulder_lift_joint, shoulder_pan_joint, torso_lift_joint, upperarm_roll_joint,
-        wrist_flex_joint, wrist_roll_joint]
-        :param delta_array:
-        :return:
+        wrist_flex_joint, wrist_roll_joint].
+
+        Args:
+            delta_array (numpy.ndarray): The delta array.
         """
         new_pos_array = len(delta_array) * [0.0]
         i = 0

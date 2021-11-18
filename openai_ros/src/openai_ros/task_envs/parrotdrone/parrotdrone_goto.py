@@ -155,7 +155,6 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         """
         Inits variables needed to be initialised each time we reset at the start
         of an episode.
-        :return:
         """
         # input("TakeOFF PRESS")
         # We TakeOff before sending any movement commands
@@ -173,7 +172,9 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         """
         This set action will Set the linear and angular speed of the drone
         based on the action number given.
-        :param action: The action integer that set s what movement to do next.
+
+        Args:
+            action (int): The action integer that set s what movement to do next.
         """
 
         rospy.logdebug("Start Set Action ==>" + str(action))
@@ -210,8 +211,10 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         """
         Here we define what sensor data defines our robots observations
         To know which Variables we have acces to, we need to read the
-        droneEnv API DOCS
-        :return:
+        droneEnv API DOCS.
+
+        Returns:
+            list: The observation.
         """
         rospy.logdebug("Start Get Observation ==>")
         # We get the laser scan data
@@ -272,9 +275,9 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
         sonar_value = observations[6]
 
         is_inside_workspace_now = self.is_inside_workspace(current_position)
-        sonar_detected_something_too_close_now = self.sonar_detected_something_too_close(  # noqa: E501
-            sonar_value
-        )
+        sonar_detected_something_too_close_now = (
+            self.sonar_detected_something_too_close(sonar_value)
+        )  # noqa: E501
         drone_flipped = self.drone_has_flipped(current_orientation)
         has_reached_des_point = self.is_in_desired_position(
             current_position, self.desired_point_epsilon
@@ -493,9 +496,13 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
 
     def get_distance_from_desired_point(self, current_position):
         """
-        Calculates the distance from the current position to the desired point
-        :param start_point:
-        :return:
+        Calculates the distance from the current position to the desired point.
+
+        Args:
+            start_position: The start position.
+
+        Returns:
+            float: The distance between the current and start positions.
         """
         distance = self.get_distance_from_point(current_position, self.desired_point)
 
@@ -503,9 +510,14 @@ class ParrotDroneGotoEnv(parrotdrone_env.ParrotDroneEnv):
 
     def get_distance_from_point(self, pstart, p_end):
         """
-        Given a Vector3 Object, get distance from current position
-        :param p_end:
-        :return:
+        Given a Vector3 Object, get distance from current position.
+
+        Args:
+            pstart: The start position.
+            p_end: The end position.
+
+        Returns:
+            float: The distance between the start and end positions.
         """
         a = numpy.array((pstart.x, pstart.y, pstart.z))
         b = numpy.array((p_end.x, p_end.y, p_end.z))

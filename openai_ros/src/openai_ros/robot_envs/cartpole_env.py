@@ -27,13 +27,13 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
         learning.
 
         Sensor Topic List:
-        * /cartpole_v0/joint_states: Joint state reading that come from the sensors.
+            * /cartpole_v0/joint_states: Joint state reading that come from the sensors.
 
         Actuators Topic List:
-        * /cartpole_v0/foot_joint_velocity_controller/command: Foot velocity command
-            topic.
-        * /cartpole_v0/pole_joint_velocity_controller/command: Pole velocity command
-            topic.
+            * /cartpole_v0/foot_joint_velocity_controller/command: Foot velocity command
+                topic.
+            * /cartpole_v0/pole_joint_velocity_controller/command: Pole velocity command
+                topic.
 
         Args:
             workspace_path (str, optional): The path of the workspace in which the
@@ -97,7 +97,7 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
 
         # Setup initial environment state
         self._env_setup()
-        rospy.logdebug("CartPoleEnv environment initialized.")
+        rospy.logdebug("CartPoleEnv robot environment initialized.")
 
     #############################################
     # Robot environment internal methods ########
@@ -106,8 +106,8 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
         """Joint states subscriber callback function.
 
         Args:
-            data (:obj:`sensor_msgs.msg._JointState.JointState`): The data that is
-                returned by the subscriber.
+            data (:obj:`sensor_msgs.msg.JointState`): The data that is returned by the
+                subscriber.
         """
         self.joints = data
 
@@ -207,6 +207,7 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
     def _check_all_systems_ready(self):
         """Checks that all the sensors, publishers and other simulation systems are
         operational.
+
         Returns:
             bool: Whether the systems are ready. Will not return if the systems are not
                 yet ready.

@@ -96,7 +96,8 @@ class FetchPickAndPlaceEnv(fetchsimple_env.FetchSimpleEnv, utils.EzPickle):
         self.n_observations = len(self.upper_array_observations)
 
     def _set_init_pose(self):
-        """Sets the Robot in its init pose
+        """Sets the Robot in its initial pose.
+
         The Simulation will be un-paused for this purpose.
         """
         # Check because it seems its not being used
@@ -125,7 +126,6 @@ class FetchPickAndPlaceEnv(fetchsimple_env.FetchSimpleEnv, utils.EzPickle):
         The simulation will be paused, therefore all the data retrieved has to be
         from a system that doesn't need the simulation running, like variables where the
         callbackas have stored last know sesnor data.
-        :return:
         """
         rospy.logdebug("Init Env Variables...")
         self.interations_done = 0

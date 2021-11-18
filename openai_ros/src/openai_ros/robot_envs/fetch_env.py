@@ -4,7 +4,6 @@ import geometry_msgs.msg
 import moveit_commander
 import numpy as np
 import rospy
-from gazebo_msgs.msg import ModelStates
 from gazebo_msgs.srv import GetModelState, GetWorldProperties
 from openai_ros import robot_gazebo_env
 from openai_ros.core import ROSLauncher

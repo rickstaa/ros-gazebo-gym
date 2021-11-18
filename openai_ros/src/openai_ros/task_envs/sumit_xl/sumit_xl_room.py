@@ -124,7 +124,7 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         self.cumulated_steps = 0.0
 
     def _set_init_pose(self):
-        """Sets the Robot in its init pose"""
+        """Sets the Robot in its initial pose."""
         self.move_base(
             self.init_linear_forward_speed,
             self.init_linear_turn_speed,
@@ -138,7 +138,6 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         """
         Inits variables needed to be initialised each time we reset at the start
         of an episode.
-        :return:
         """
         # For Info Purposes
         self.cumulated_reward = 0.0
@@ -154,7 +153,9 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         """
         This set action will Set the linear and angular speed of the SumitXl
         based on the action number given.
-        :param action: The action integer that set s what movement to do next.
+
+        Args:
+            action: The action integer that set s what movement to do next.
         """
 
         rospy.logdebug("Start Set Action ==>" + str(action))
@@ -197,7 +198,8 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
 
         0 in reality is arround front 0.4, back 0.5, sides 0.3
 
-        :return:
+        Returns:
+            list: The observations.
         """
         rospy.logdebug("Start Get Observation ==>")
         # We get the laser scan data
@@ -383,8 +385,10 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
         """
         It calculated the magnitude of the Vector3 given.
         This is usefull for reading imu accelerations and knowing if there has been
-        a crash
-        :return:
+        a crash.
+
+        Returns:
+            float: The force magnitude.
         """
         contact_force_np = numpy.array((vector.x, vector.y, vector.z))
         force_magnitude = numpy.linalg.norm(contact_force_np)
@@ -406,8 +410,12 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
     def get_distance_from_desired_point(self, current_position):
         """
         Calculates the distance from the current position to the desired point
-        :param start_point:
-        :return:
+
+        Args:
+            current_position: The current position.
+
+        Returns:
+            float: The distance between the current and desired position.
         """
         distance = self.get_distance_from_point(current_position, self.desired_point)
 
@@ -415,9 +423,14 @@ class SumitXlRoom(sumitxl_env.SumitXlEnv):
 
     def get_distance_from_point(self, pstart, p_end):
         """
-        Given a Vector3 Object, get distance from current position
-        :param p_end:
-        :return:
+        Given a Vector3 Object, get distance from current position.
+
+        Args:
+            pstart: The start position.
+            p_end: The end position.
+
+        Returns:
+            float: The distance between the start and end positions.
         """
         a = numpy.array((pstart.x, pstart.y, pstart.z))
         b = numpy.array((p_end.x, p_end.y, p_end.z))

@@ -123,7 +123,7 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         )
 
     def _set_init_pose(self):
-        """Sets the Robot in its init pose"""
+        """Sets the Robot in its initial pose."""
         self.move_base(
             self.init_linear_forward_speed,
             self.init_linear_turn_speed,
@@ -138,7 +138,6 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         """
         Inits variables needed to be initialised each time we reset at the start
         of an episode.
-        :return:
         """
         # For Info Purposes
         self.cumulated_reward = 0.0
@@ -161,7 +160,9 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
         """
         This set action will Set the linear and angular speed of the turtlebot2
         based on the action number given.
-        :param action: The action integer that set s what movement to do next.
+
+        Args:
+            action (int): The action integer that set s what movement to do next.
         """
 
         rospy.logdebug("Start Set Action ==>" + str(action))
@@ -196,9 +197,11 @@ class TurtleBot2MazeEnv(turtlebot2_env.TurtleBot2Env):
     def _get_obs(self):
         """
         Here we define what sensor data defines our robots observations
-        To know which Variables we have acces to, we need to read the
-        TurtleBot2Env API DOCS
-        :return:
+        To know which Variables we have access to, we need to read the
+        TurtleBot2Env API DOCS.
+
+        Returns:
+            list: The discretized observations.
         """
         rospy.logdebug("Start Get Observation ==>")
         # We get the laser scan data

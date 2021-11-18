@@ -62,7 +62,6 @@ class CubeRLUtils(object):
     def check_publishers_connection(self):
         """
         Checks that all the publishers are working
-        :return:
         """
         rate = rospy.Rate(10)  # 10hz
         while self._roll_vel_pub.get_num_connections() == 0 and not rospy.is_shutdown():
@@ -138,9 +137,14 @@ class CubeRLUtils(object):
 
     def get_distance_from_point(self, pstart, p_end):
         """
-        Given a Vector3 Object, get distance from current position
-        :param p_end:
-        :return:
+        Given a Vector3 Object, get distance from current position.
+
+        Args:
+            pstart): The start position.
+            p_end: The end position.
+
+        Returns:
+            float: The distance between the begin and end points.
         """
         a = numpy.array((pstart.x, pstart.y, pstart.z))
         b = numpy.array((p_end.x, p_end.y, p_end.z))
