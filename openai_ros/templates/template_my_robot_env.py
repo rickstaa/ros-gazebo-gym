@@ -19,6 +19,8 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
         # Initialize the Gazebo parent environment
 
         # Setup internal robot environment variables (controllers, namespace ect.)
+        # NOTE: If the controllers_list is not set all the currently running controllers
+        # will be reset by the ControllersList class.
         # TODO: Change the controller list and robot namespace
         self.controllers_list = [
             "my_robot_controller1",
@@ -29,31 +31,31 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
         self.robot_name_space = "my_robot_namespace"
         reset_controls_bool = True or False
 
-        # Initialze the gazebo environment
+        # Initialize the gazebo environment
         super(MyRobotEnv, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,
             reset_controls=reset_controls_bool,
         )
 
-    #############################################
-    # Overload Gazebo env virtual methods #######
-    #############################################
+    ################################################
+    # Overload Gazebo env virtual methods ##########
+    ################################################
     # NOTE: Methods that need to be implemented as they are called by the robot and
     # Gazebo environment.
     def _check_all_systems_ready(self):
         """Checks that all the sensors, publishers and other simulation systems are
         operational.
         """
-        # TODO
+        # TODO: Implement the logic that checks if all sensors and actuators are ready.
         return True
 
-    #############################################
-    # Robot environment internal methods ########
-    #############################################
+    ################################################
+    # Robot environment internal methods ###########
+    ################################################
     # NOTE: Here you can add additional helper methods that are used in the robot env
 
-    #############################################
-    # Robot env main methods ####################
-    #############################################
+    ################################################
+    # Robot env main methods #######################
+    ################################################
     # NOTE: Contains methods that the TrainingEnvironment will need.

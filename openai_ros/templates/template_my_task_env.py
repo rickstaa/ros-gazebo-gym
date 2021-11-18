@@ -50,13 +50,20 @@ class MyTaskEnv(MyRobotEnv):
         # Initiate the Robot environment
         super(MyTaskEnv, self).__init__()
 
-    #############################################
-    # Overload Robot env virtual methods ########
-    #############################################
+    ################################################
+    # Overload Robot env virtual methods ###########
+    ################################################
     # NOTE: Methods that need to be implemented as they are called by the robot and
     # gazebo environments.
+    def _set_init_gazebo_variables(self):
+        """Initializes variables that need to be initialized at the start of the gazebo
+        simulation.
+        """
+        # TODO: Implement the logic that sets initial gazebo physics engine parameters
+        raise NotImplementedError()
+
     def _set_init_pose(self):
-        """Sets the Robot in its init pose."""
+        """Sets the Robot in its initial pose."""
         # TODO: Implement the logic that sets the robot to it's initial position
         return True
 
@@ -110,11 +117,11 @@ class MyTaskEnv(MyRobotEnv):
         Returns:
             float: The step reward.
         """
-        # TODO: Implement logic that is used to calculate th reward.
+        # TODO: Implement logic that is used to calculate the reward.
         reward = 1e6
         return reward
 
-    #############################################
-    # Task environment internal methods #########
-    #############################################
+    ################################################
+    # Task environment internal methods ############
+    ################################################
     # NOTE: Here you can add additional helper methods that are used in the task env
