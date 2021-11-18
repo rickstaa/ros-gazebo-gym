@@ -18,6 +18,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   openai_ros_common
    openai_ros_core
    robot_environments
 
@@ -27,4 +28,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

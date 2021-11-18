@@ -1,13 +1,13 @@
-openai_ros.moving_cube package
-==============================
+openai_ros.task_envs.moving_cube package
+========================================
 
 Submodules
 ----------
 
-openai_ros.moving_cube.one_disk_walk module
--------------------------------------------
+openai_ros.task_envs.moving_cube.one_disk_walk module
+-----------------------------------------------------
 
-.. automodule:: openai_ros.moving_cube.one_disk_walk
+.. automodule:: openai_ros.task_envs.moving_cube.one_disk_walk
     :members:
     :undoc-members:
     :show-inheritance:
@@ -16,7 +16,7 @@ openai_ros.moving_cube.one_disk_walk module
 Module contents
 ---------------
 
-.. automodule:: openai_ros.moving_cube
+.. automodule:: openai_ros.task_envs.moving_cube
     :members:
     :undoc-members:
     :show-inheritance:

@@ -12,23 +12,24 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import os
+import os.path as osp
 import sys
 
 import catkin_pkg.package
 
-catkin_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+catkin_dir = osp.dirname(osp.dirname(osp.abspath(__file__)))
 catkin_package = catkin_pkg.package.parse_package(
-    os.path.join(catkin_dir, catkin_pkg.package.PACKAGE_MANIFEST_FILENAME)
+    osp.join(catkin_dir, catkin_pkg.package.PACKAGE_MANIFEST_FILENAME)
 )
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath("../src"))
-sys.path.insert(
-    0, os.path.abspath("/home/rdaneel/catkin_ws/devel/lib/python2.7/dist-packages/")
-)
+# sys.path.insert(0, os.path.abspath("../src"))
+# sys.path.insert(
+#     0, os.path.abspath("/home/rdaneel/catkin_ws/devel/lib/python2.7/dist-packages/")
+# )
+sys.path.insert(0, osp.abspath("../.."))
 
 
 # -- General configuration ------------------------------------------------
@@ -63,6 +64,8 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.ifconfig",
     "sphinx.ext.viewcode",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.extlinks",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -176,8 +179,12 @@ html_theme = "default"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = [".static"]
+html_static_path = ["_static"]
 
+# Css style overloads
+html_css_files = [
+    "css/custom.css",
+]
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
 # directly to the root of the documentation.
@@ -327,6 +334,18 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 # texinfo_no_detailmenu = False
 
-
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {"https://docs.python.org/": None}
+
+# -- External links dictionary -----------------------------------------------
+# Here you will find some often used global url definitions.
+extlinks = {
+    "openai_ros": (
+        "https://bitbucket.org/rickstaa/openai_ros/src/noetic/%s",
+        None,
+    ),
+    "task_envs_code": (
+        "https://bitbucket.org/rickstaa/openai_ros/src/noetic/openai_ros/src/openai_ros/task_envs/%s",  # noqa: E501
+        None,
+    ),
+}

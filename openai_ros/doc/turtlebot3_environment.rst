@@ -1,10 +1,10 @@
 Turtlebot3 Environment
 ======================
 
-Turtlebot3_ is the new version of the classic Turtlebot3 created by ROBOTIS_. It has configurable systems.
+Turtlebot3_ is the new version of the classic Turtlebot3 created by
+`ROBOTIS <http://www.robotis.us/>`__. It has configurable systems.
 
 .. _Turtlebot3: http://www.robotis.us/turtlebot-3/
-.. _ROBOTIS: http://www.robotis.us/
 
 .. figure:: img/turtlebot3.png
    :scale: 100 %

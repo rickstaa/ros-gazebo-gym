@@ -4,10 +4,10 @@ openai_ros.cartpole_stay_up package
 Submodules
 ----------
 
-openai_ros.cartpole_stay_up.stay_up module
-------------------------------------------
+openai_ros.task_envs.cartpole_stay_up.stay_up module
+----------------------------------------------------
 
-.. automodule:: openai_ros.cartpole_stay_up.stay_up
+.. automodule:: openai_ros.task_envs.cartpole_stay_up.stay_up
     :members:
     :undoc-members:
     :show-inheritance:
@@ -16,7 +16,7 @@ openai_ros.cartpole_stay_up.stay_up module
 Module contents
 ---------------
 
-.. automodule:: openai_ros.cartpole_stay_up
+.. automodule:: openai_ros.task_envs.cartpole_stay_up
     :members:
     :undoc-members:
     :show-inheritance:
