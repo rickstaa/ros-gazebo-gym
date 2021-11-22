@@ -4,8 +4,8 @@ original `CartPole-v1 <https://gym.openai.com/envs/CartPole-v1/>`_ OpenAi gym
 environment.
 """
 import rospy
-from openai_ros import robot_gazebo_env
 from openai_ros.core import ROSLauncher
+from openai_ros import robot_gazebo_env
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64
 
@@ -99,9 +99,25 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
         self._env_setup()
         rospy.logdebug("CartPoleEnv robot environment initialized.")
 
-    #############################################
-    # Robot environment internal methods ########
-    #############################################
+    ################################################
+    # Robot env main methods #######################
+    ################################################
+    # NOTE: Contains methods that the TrainingEnvironment will need.
+    def move_joints(self, joints_array):
+        """Move the cartpole joints.
+
+        Args:
+            joints_array (numpy.ndarray): The array of joints.
+        """
+        joint_value = Float64()
+        joint_value.data = joints_array[0]
+        rospy.logdebug("Single Base JointsPos>>" + str(joint_value))
+        self._check_publishers_connection()
+        self._base_pub.publish(joint_value)
+
+    ################################################
+    # Panda Robot env helper methods ###############
+    ################################################
     def _joints_callback(self, data):
         """Joint states subscriber callback function.
 
@@ -184,26 +200,10 @@ class CartPoleEnv(robot_gazebo_env.RobotGazeboEnv):
         self._set_init_pose()
         self._check_all_systems_ready()
 
-    #############################################
-    # Robot env main methods ####################
-    #############################################
-    # NOTE: Contains methods that the TrainingEnvironment will need.
-    def move_joints(self, joints_array):
-        """Move the cartpole joints.
-
-        Args:
-            joints_array (numpy.ndarray): The
-        """
-        joint_value = Float64()
-        joint_value.data = joints_array[0]
-        rospy.logdebug("Single Base JointsPos>>" + str(joint_value))
-        self._check_publishers_connection()
-        self._base_pub.publish(joint_value)
-
-    #############################################
-    # Overload Gazebo env virtual methods #######
-    #############################################
-    # NOTE: Methods needed by the Robot or gazebo environments
+    ################################################
+    # Overload Gazebo env virtual methods ##########
+    ################################################
+    # NOTE: Methods needed by the gazebo environment
     def _check_all_systems_ready(self):
         """Checks that all the sensors, publishers and other simulation systems are
         operational.
