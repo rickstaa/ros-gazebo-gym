@@ -32,6 +32,7 @@ class RobotGazeboEnv(gym.Env):
         robot_name_space,
         reset_controls,
         controllers_list=None,
+        reset_robot_pose=False,
         reset_world_or_sim="SIMULATION",
         pause_simulation=False,
     ):
@@ -44,6 +45,8 @@ class RobotGazeboEnv(gym.Env):
             controllers_list (list, optional): A list with currently available
                 controllers to look for. Defaults to ``None``, which means that the
                 class will try to retrieve all the running controllers.
+            reset_robot_pose (bool): Boolean specifying whether to reset the robot pose
+                when the simulation is reset.
             reset_world_or_sim (str, optional): Whether you want to reset the whole
                 simulation "SIMULATION" at startup or only the world "WORLD" (object
                 positions). Defaults to "SIMULATION".
@@ -56,6 +59,7 @@ class RobotGazeboEnv(gym.Env):
             namespace=robot_name_space, controllers_list=controllers_list
         )
         self._reset_controls = reset_controls
+        self._reset_robot_pose = reset_robot_pose
         self._pause_simulation = pause_simulation
         self.seed()
 
@@ -194,7 +198,8 @@ class RobotGazeboEnv(gym.Env):
             self.gazebo.unpause_sim()
             self._controllers_object.reset_controllers()
             self._check_all_systems_ready()
-            self._set_init_pose()
+            if self._reset_robot_pose:
+                self._set_init_pose()
             self.gazebo.pause_sim()
             self.gazebo.reset_sim()
             self.gazebo.unpause_sim()
@@ -204,7 +209,8 @@ class RobotGazeboEnv(gym.Env):
             rospy.logwarn("DON'T RESET CONTROLLERS")
             self.gazebo.unpause_sim()
             self._check_all_systems_ready()
-            self._set_init_pose()
+            if self._reset_robot_pose:
+                self._set_init_pose()
             self.gazebo.pause_sim()
             self.gazebo.reset_sim()
             self.gazebo.unpause_sim()
