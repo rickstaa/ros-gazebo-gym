@@ -69,6 +69,12 @@ class RobotGazeboEnv(gym.Env):
             "/openai/reward", RLExperimentInfo, queue_size=1, latch=True
         )
 
+        # Set physics engine properties when the are specified by the user
+        try:
+            self._set_init_gazebo_variables()
+        except NotImplementedError:
+            pass
+
         # Un-pause the simulation and reset the controllers if needed
         """To check any topic we need to have the simulations running, we need to do
         two things:
@@ -216,6 +222,22 @@ class RobotGazeboEnv(gym.Env):
     ################################################
     # NOTE: These methods CAN be overloaded by robot or task env)
     # - Task environment methods -
+    def _set_init_gazebo_variables(self):
+        """Initializes variables that need to be initialized at the start of the gazebo
+        simulation. This function can for example be used to change the physics
+        properties of the physics engine by using
+        :obj:`~openai_ros.core.gazebo_connection.set_physics_properties` method.
+
+        .. note::
+            This function is only run once when the :class:`RobotGazeboEnv` class
+            is initialized. Please use the :meth:`RobotGazeboEnv,_init_env_variables`
+            method if you need to initialize variables at the start of each episode.
+
+        Raises:
+            NotImplementedError: Thrown when not overloaded by the task environment.
+        """
+        raise NotImplementedError()
+
     def _set_init_pose(self):
         """Sets the Robot in its init pose.
 
