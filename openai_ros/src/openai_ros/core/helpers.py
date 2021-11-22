@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Contains several helper functions that are used in the openai_ros package.
+"""Contains several helper functions that are used in the openai_ros package to setup
+the gym environments.
 """
 
 import os
@@ -46,13 +47,6 @@ class GitProgressCallback(pygit2.RemoteCallbacks):
 
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via raw_input() and return their answer.
-
-    "question" is a string that is presented to the user.
-    "default" is the presumed answer if the user just hits <Enter>.
-            It must be "yes" (the default), "no" or None (meaning
-            an answer is required of the user).
-
-    The "answer" return value is True for "yes" or False for "no".
 
     Args:
         question (str): String presented to the user.
@@ -169,11 +163,11 @@ def get_global_pkg_path(package_name, workspace_path=None):
         )
         # NOTE: Bash prefix needed since sourcing setup.sh doesn't seem to work
         bash_prefix = '/bin/bash -c "'
-        source_command = ". {}{};".format(
+        source_cmd = ". {}{};".format(
             workspace_path, Path("/devel/setup.bash").resolve()
         )
-        package_command = f"rospack find {package_name}"
-        command = bash_prefix + source_command + package_command + '"'
+        package_cmd = f"rospack find {package_name}"
+        command = bash_prefix + source_cmd + package_cmd + '"'
         try:
             global_pkg_path = subprocess.check_output(
                 command,
@@ -262,27 +256,27 @@ def build_catkin_ws(workspace_path, install_ros_deps=True):
         )
         if answer:
             rospy.logwarn(
-                "Installing ROS system dependencies. If asked please supply your root "
-                "password:"
+                "Installing ROS system dependencies using rosdep. If asked please "
+                "supply your root password:"
             )
-            rosdep_command = (
+            rosdep_cmd = (
                 f"sudo -S rosdep install --from-paths {workspace_path}/src "
                 + "--ignore-src -r -y --rosdistro {}".format(
                     os.environ.get("ROS_DISTRO")
                 )
             )
-            p = subprocess.call(rosdep_command, shell=True, cwd=workspace_path)
+            p = subprocess.call(rosdep_cmd, shell=True, cwd=workspace_path)
 
     # Build workspace
     if catkin_make_used:  # Use catkin_make
-        rosbuild_command = "catkin_make"
-        rosbuild_clean_command = "rm -r devel logs build -y"
+        rosbuild_cmd = "catkin_make"
+        rosbuild_clean_cmd = "rm -r devel logs build -y"
     else:  # Use catkin build
-        rosbuild_command = "catkin build"
-        rosbuild_clean_command = "catkin clean -y"
-    rosbuild_command = "catkin build"
+        rosbuild_cmd = "catkin build"
+        rosbuild_clean_cmd = "catkin clean -y"
+    rosbuild_cmd = "catkin build"
     rospy.logwarn("Re-building catkin workspace.")
-    p = subprocess.call(rosbuild_command, shell=True, cwd=workspace_path)
+    p = subprocess.call(rosbuild_cmd, shell=True, cwd=workspace_path)
 
     # Catch result, clean workspace and try again on fail
     if p != 0:
@@ -295,14 +289,14 @@ def build_catkin_ws(workspace_path, install_ros_deps=True):
         )
         if answer:
             rospy.logwarn("Cleaning the catkin workspace.")
-            p = subprocess.call(rosbuild_clean_command, shell=True, cwd=workspace_path)
+            p = subprocess.call(rosbuild_clean_cmd, shell=True, cwd=workspace_path)
             if p != 0:
                 rospy.logwarn(
                     "Something went wrong while trying to clean the catkin workspace."
                 )
             else:
                 rospy.logwarn("Re-building catkin workspace.")
-                p = subprocess.call(rosbuild_command, shell=True, cwd=workspace_path)
+                p = subprocess.call(rosbuild_cmd, shell=True, cwd=workspace_path)
 
         # Throw warning if something went wrong
         if p != 0:
@@ -357,7 +351,6 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
             "the workspace before calling the package_installer function or supply the "
             "function with a workspace_path."
         )
-        rospy.signal_shutdown("Workspace path could not be found.")
         sys.exit(0)
 
     # Retrieve package paths
@@ -487,7 +480,6 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
                 "Something went wrong while trying to re-build the catkin workspace. "
                 "Please build the catkin workspace manually and try again."
             )
-            rospy.signal_shutdown("Shutting down ROS launch file.")
             sys.exit(0)
 
     # Return package path
