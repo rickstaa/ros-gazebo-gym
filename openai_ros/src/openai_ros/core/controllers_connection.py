@@ -4,7 +4,16 @@
 """
 
 import rospy
-from controller_manager_msgs.srv import SwitchController, SwitchControllerRequest
+from controller_manager_msgs.srv import (
+    SwitchController,
+    SwitchControllerRequest,
+    ListControllers,
+    ListControllersRequest,
+)
+from rospy.exceptions import ROSException, ROSInterruptException
+
+# Script settings
+CONNECTION_TIMEOUT = 10
 
 
 class ControllersConnection:
@@ -13,27 +22,65 @@ class ControllersConnection:
 
     Attributes:
         controllers_list (list): List with currently available controllers.
+        list_service_name (str): The name of the controller list service.
+        list_service (:obj:`rospy.impl.tcpros_service.ServiceProxy`): The controller
+            list service.
         switch_service_name (str): The name of the controller switch service.
         switch_service (:obj:`rospy.impl.tcpros_service.ServiceProxy`): The controller
             switch service.
     """
 
-    def __init__(self, namespace, controllers_list):
+    def __init__(self, namespace, controllers_list=None):
         """Initialize the ControllersConnection instance.
 
         Args:
             namespace (str): The namespace on which the robot controllers can be found.
-            controllers_list (list): A list with currently available controllers to
-                look for.
+            controllers_list (list, optional): A list with currently available
+                controllers to look for. Defaults to ``None``, which means that the class
+                will try to retrieve all the running controllers.
         """
         rospy.logwarn("Start Init ControllersConnection")
         self.controllers_list = controllers_list
+        self.list_controllers_service_name = (
+            "/" + namespace + "/controller_manager/list_controllers"
+        )
+        try:
+            rospy.logdebug(
+                "Connecting to '%s' service." % self.list_controllers_service_name
+            )
+            rospy.wait_for_service(
+                self.list_controllers_service_name,
+                timeout=CONNECTION_TIMEOUT,
+            )
+            self.list_service = rospy.ServiceProxy(
+                self.list_controllers_service_name, ListControllers
+            )
+            rospy.logdebug(
+                "Connected to '%s' service!" % self.list_controllers_service_name
+            )
+        except (rospy.ServiceException, ROSException, ROSInterruptException):
+            rospy.logwarn(
+                "Failed to connect to '%s' service!"
+                % self.list_controllers_service_name
+            )
         self.switch_service_name = (
             "/" + namespace + "/controller_manager/switch_controller"
         )
-        self.switch_service = rospy.ServiceProxy(
-            self.switch_service_name, SwitchController
-        )
+        try:
+            rospy.logdebug("Connecting to '%s' service." % self.switch_service_name)
+            rospy.wait_for_service(
+                self.switch_service_name,
+                timeout=CONNECTION_TIMEOUT,
+            )
+            self.switch_service = rospy.ServiceProxy(
+                self.switch_service_name, SwitchController
+            )
+            rospy.logdebug("Connected to '%s' service!" % self.switch_service_name)
+        except (rospy.ServiceException, ROSException, ROSInterruptException):
+            rospy.logwarn(
+                "Failed to connect to '%s' service!" % self.switch_service_name
+            )
+
         rospy.logwarn("END Init ControllersConnection")
 
     def switch_controllers(self, controllers_on, controllers_off, strictness=1):
@@ -62,7 +109,17 @@ class ControllersConnection:
             return None
 
     def reset_controllers(self):
-        """Resets the currently used controllers by turning them off and on."""
+        """Resets the currently running controllers by turning them off and on."""
+        # Try to find all running controllers controller_list was not supplied
+        if self.controllers_list is None:
+            list_controllers_msg = self.list_service.call(ListControllersRequest())
+            self.controllers_list = [
+                controller.name
+                for controller in list_controllers_msg.controller
+                if controller.state == "running"
+            ]
+
+        # Reset the running controllers
         reset_result = False
         result_off_ok = self.switch_controllers(
             controllers_on=[], controllers_off=self.controllers_list

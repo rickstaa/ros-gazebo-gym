@@ -6,6 +6,7 @@ resets of the controllers (if needed), it also takes care of all the steps that 
 be done on the simulator when doing a training step or a training reset (typical steps
 in the reinforcement learning loop).
 """
+
 import gym
 import rospy
 from gym.utils import seeding
@@ -16,65 +17,77 @@ from openai_ros.msg import RLExperimentInfo
 
 
 class RobotGazeboEnv(gym.Env):
-    """Connects the simulated environment to the gazebo simulator."""
+    """Connects the simulated environment to the gazebo simulator.
+
+    Attributes:
+        gazebo (:class:`~openai_ros.core.gazebo_connection.GazeboConnection`): Gazebo
+            connector which can be used to interact with the gazebo simulation.
+        episode_num (int): The current episode.
+        step_num (int): The current step.
+        cumulated_episode_reward (float): The cumulated episode reward.
+    """
 
     def __init__(
         self,
         robot_name_space,
-        controllers_list,
         reset_controls,
-        start_init_physics_parameters=True,
+        controllers_list=None,
         reset_world_or_sim="SIMULATION",
+        pause_simulation=False,
     ):
         """Initiate the RobotGazebo environment instance.
 
         Args:
             robot_name_space (str): The namespace the robot is on.
-            controllers_list (list): List with controllers used to control the robot.
             reset_controls (bool): Whether the controllers should be reset when the
                 :meth:`RobotGazeboEnv.reset` method is called.
-            start_init_physics_parameters (bool, optional): Wether you want to
-                initialize the simulation parameters. Defaults to True.
-            reset_world_or_sim (str, optional): Wether you want to reset the whole
+            controllers_list (list, optional): A list with currently available
+                controllers to look for. Defaults to ``None``, which means that the
+                class will try to retrieve all the running controllers.
+            reset_world_or_sim (str, optional): Whether you want to reset the whole
                 simulation "SIMULATION" at startup or only the world "WORLD" (object
                 positions). Defaults to "SIMULATION".
+            pause_sim (bool, optional): Whether the simulation should be paused after it
+                has been reset.
         """
-        # To reset Simulations
         rospy.logdebug("START init RobotGazeboEnv")
-        self.gazebo = GazeboConnection(
-            start_init_physics_parameters, reset_world_or_sim
-        )
-        self.controllers_object = ControllersConnection(
+        self.gazebo = GazeboConnection(reset_world_or_sim)
+        self._controllers_object = ControllersConnection(
             namespace=robot_name_space, controllers_list=controllers_list
         )
-        self.reset_controls = reset_controls
+        self._reset_controls = reset_controls
+        self._pause_simulation = pause_simulation
         self.seed()
 
         # Set up ROS related variables
         self.episode_num = 0
+        self.step_num = 0
         self.cumulated_episode_reward = 0
-        self.reward_pub = rospy.Publisher(
-            "/openai/reward", RLExperimentInfo, queue_size=1
+
+        # Create training info publishers
+        self._reward_pub = rospy.Publisher(
+            "/openai/reward", RLExperimentInfo, queue_size=1, latch=True
         )
 
         # Un-pause the simulation and reset the controllers if needed
         """To check any topic we need to have the simulations running, we need to do
         two things:
-            1) Un-pause the simulation: without that th stream of data doesn't flow.
+            1) Un-pause the simulation: without that the stream of data doesn't flow.
                 This is for simulations that are pause for whatever the reason.
             2) If the simulation was running already for some reason, we need to reset
                 the controllers. This has to do with the fact that some plugins with tf,
                 don't understand the reset of the simulation and need to be reset to
                 work properly.
         """
+        if self._reset_controls:
+            self.gazebo.pause_sim()  # Done to prevent robot movement
+            self._controllers_object.reset_controllers()
         self.gazebo.unpause_sim()
-        if self.reset_controls:
-            self.controllers_object.reset_controllers()
         rospy.logdebug("END init RobotGazeboEnv")
 
-    #############################################
-    # Main environment methods ##################
-    #############################################
+    ################################################
+    # Main environment methods #####################
+    ################################################
     def seed(self, seed=None):
         """Sets the random seeds used in the gym environment.
 
@@ -107,37 +120,35 @@ class RobotGazeboEnv(gym.Env):
             Here we should convert the action num to movement action, execute the action
             in the simulation and get the observations result of performing that action.
         """
-        rospy.logdebug("START STEP OpenAI ROS")
+        rospy.logdebug(f">> START STEP {self.step_num}")
         self.gazebo.unpause_sim()
         self._set_action(action)
-        self.gazebo.pause_sim()
         obs = self._get_obs()
+        if self._pause_simulation:
+            self.gazebo.pause_sim()
         done = self._is_done(obs)
         info = {}
         reward = self._compute_reward(obs, done)
         self.cumulated_episode_reward += reward
-        rospy.logdebug("END STEP OpenAI ROS")
+        self.step_num += 1
+
+        rospy.logdebug("END STEP")
         return obs, reward, done, info
 
-    def _publish_reward_topic(self, reward, episode_number=1):
+    def _publish_reward_topic(self):
         """This function publishes the given reward in the reward topic for
         easy access from ROS infrastructure.
-
-        Args:
-            reward (float): The reward that was received by taking a given action from
-                a given state.
-            episode_number (int, optional): The episode number. Defaults to 1.
         """
         reward_msg = RLExperimentInfo()
-        reward_msg.episode_number = episode_number
-        reward_msg.episode_reward = reward
-        self.reward_pub.publish(reward_msg)
+        reward_msg.episode_number = self.episode_num
+        reward_msg.episode_reward = self.cumulated_episode_reward
+        self._reward_pub.publish(reward_msg)
 
     def _update_episode(self):
         """Publishes the cumulated reward of the episode and
         increases the episode number by one.
         """
-        rospy.logwarn("PUBLISHING REWARD...")
+        rospy.logwarn(f"PUBLISHING EPISODE {self.episode_num} REWARD...")
         self._publish_reward_topic(self.cumulated_episode_reward, self.episode_num)
         rospy.logwarn(
             "PUBLISHING REWARD...DONE="
@@ -147,6 +158,7 @@ class RobotGazeboEnv(gym.Env):
         )
 
         self.episode_num += 1
+        self.step_num = 1
         self.cumulated_episode_reward = 0
 
     def reset(self):
@@ -156,7 +168,9 @@ class RobotGazeboEnv(gym.Env):
         self._init_env_variables()
         self._update_episode()
         obs = self._get_obs()
-        rospy.logdebug("END Reseting RobotGazeboEnvironment")
+        if self._pause_simulation:
+            self.gazebo.pause_sim()
+        rospy.logdebug("END reseting RobotGazeboEnvironment")
         return obs
 
     def close(self):
@@ -169,19 +183,17 @@ class RobotGazeboEnv(gym.Env):
     def _reset_sim(self):
         """Resets a simulation."""
         rospy.logdebug("RESET SIM START")
-        if self.reset_controls:
+        if self._reset_controls:
             rospy.logdebug("RESET CONTROLLERS")
             self.gazebo.unpause_sim()
-            self.controllers_object.reset_controllers()
+            self._controllers_object.reset_controllers()
             self._check_all_systems_ready()
             self._set_init_pose()
             self.gazebo.pause_sim()
             self.gazebo.reset_sim()
             self.gazebo.unpause_sim()
-            self.controllers_object.reset_controllers()
+            self._controllers_object.reset_controllers()
             self._check_all_systems_ready()
-            self.gazebo.pause_sim()
-
         else:
             rospy.logwarn("DON'T RESET CONTROLLERS")
             self.gazebo.unpause_sim()
@@ -191,18 +203,17 @@ class RobotGazeboEnv(gym.Env):
             self.gazebo.reset_sim()
             self.gazebo.unpause_sim()
             self._check_all_systems_ready()
-            self.gazebo.pause_sim()
 
         rospy.logdebug("RESET SIM END")
         return True
 
-    def render(self, *args, **kwargs):
+    def render(self):
         """Overload render method since rendering is handled in Gazebo."""
         pass
 
-    #############################################
-    # Extension methods #########################
-    #############################################
+    ################################################
+    # Extension methods ############################
+    ################################################
     # NOTE: These methods CAN be overloaded by robot or task env)
     # - Task environment methods -
     def _set_init_pose(self):
