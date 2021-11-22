@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Contains several core openai_ros functions. These functions can be used to setup
-the openai_ros gym environments for training.
+"""Utility function that can be used to start a openai_ros environment.
 """
 
 import gym
@@ -8,8 +7,8 @@ import rospy
 from openai_ros.core.helpers import register_openai_ros_env
 
 
-def start_openai_ros_env(task_environment):
-    """Starts a openai_ros gym environment
+def start_openai_ros_env(task_environment, max_episode_steps=None, **kwargs):
+    """Starts a openai_ros gym environment.
 
     It automates stuff that normally the would have to do:
 
@@ -22,6 +21,10 @@ def start_openai_ros_env(task_environment):
 
     Args:
         task_environment (str): The name of the openai_ros task environment.
+        max_episode_steps (int, optional): The max episode step you want to set for the
+            environment. Defaults to ``None`` meaning the value in the config file will
+            be used (i.e. :obj:`openai_ros.task_envs.task_envs_list`).
+        **kwargs: All kwargs to pass to the gym environment.
 
     Returns:
         gym.env: The openai_ros task gym environment.
@@ -29,13 +32,15 @@ def start_openai_ros_env(task_environment):
 
     rospy.loginfo(f"Registering '{task_environment}' openai_ros gym environment...")
     try:
-        register_openai_ros_env(task_env=task_environment, max_episode_steps=10000)
+        register_openai_ros_env(
+            task_env=task_environment, max_episode_steps=max_episode_steps
+        )
     except Exception as e:
         rospy.logwarn(e.args[0])
 
     rospy.loginfo(f"Creating '{task_environment}' openai_ros gym environment...")
     try:
-        env = gym.make(task_environment)
+        env = gym.make(task_environment, **kwargs)
     except Exception as e:
         rospy.logwarn(
             "Something went wrong while trying make the "
