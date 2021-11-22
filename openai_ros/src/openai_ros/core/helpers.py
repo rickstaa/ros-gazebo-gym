@@ -207,7 +207,9 @@ def get_local_pkg_path(package_name, catkin_workspace):
     return local_pkg_path
 
 
-def clone_dependency_repo(package_name, workspace_path, git_src, branch=None):
+def clone_dependency_repo(
+    package_name, workspace_path, git_src, branch=None, recursive=True
+):
     """Clones the repository of the dependency.
 
     Args:
@@ -216,15 +218,22 @@ def clone_dependency_repo(package_name, workspace_path, git_src, branch=None):
         rosdep_index (dict): The openai_ros dependency index dictionary.
         git_src (str): The git repository url.
         branch(str, optional): The branch to checkout. Defaults to ``None``.
+        recursive(bool, optional): After the clone is created, initialize and clone
+            submodules within based on the provided pathspec. Defaults to ``True``.
     """
     pathstr = str(Path(workspace_path).joinpath("src", "rosdeps", package_name))
     try:
-        pygit2.clone_repository(
+        rospy.logdebug(f"Cloning '{git_src}' into {pathstr}.")
+        repo = pygit2.clone_repository(
             git_src,
             pathstr,
             checkout_branch=branch,
             callbacks=GitProgressCallback(),
         )
+        if recursive:
+            rospy.logdebug("Pulling submodules.")
+            repo.init_submodules()
+            repo.update_submodules()
     except Exception as e:
         rospy.logwarn(
             f"Could no clone the '{package_name}' package repository as {e.args[0]}."
