@@ -26,26 +26,26 @@
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>controller_manager_msgs</exec_depend>
+  <exec_depend>std_srvs</exec_depend>
+  <exec_depend>tf</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
 
   <!-- Environment dependencies
     NOTE: Only needed for certain environments-->
   <!--FETCH env dependencies-->
-  <exec_depend>moveit_commander</exec_depend>
-  <!-- Other envs-->
-  <!---
-  <exec_depend>std_srvs</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>trajectory_msgs</exec_depend>
-  <exec_depend>rosgraph_msgs</exec_depend>
-  <exec_depend>nav_msgs</exec_depend>
-  <exec_depend>tf</exec_depend>
-  <exec_depend>intera_interface</exec_depend>
-  <exec_depend>intera_core_msgs</exec_depend>
-  <exec_depend>smart_grasping_sandbox</exec_depend>
-  <exec_depend>moveit_msgs</exec_depend>
-  <exec_depend>robotx_gazebo</exec_depend>
-  <exec_depend>python-numpy</exec_depend>
-  -->
+  <!-- <exec_depend>moveit_commander</exec_depend> -->
+  <!--Iriwam env dependencies-->
+  <!-- <exec_depend>trajectory_msgs</exec_depend> -->
+  <!-- <exec_depend>moveit_msgs</exec_depend> -->
+  <!--Sawyer env dependencies-->
+  <!-- <exec_depend>intera_interface</exec_depend> -->
+  <!-- <exec_depend>intera_core_msgs</exec_depend> -->
+  <!--Shadow env dependencies-->
+  <!-- <exec_depend>smart_grasping_sandbox</exec_depend> -->
+  <!-- <exec_depend>moveit_msgs</exec_depend> -->
+  <!---Wamv env dependencies-->
+  <!-- <exec_depend>robotx_gazebo</exec_depend> -->
 
   <!-- Python dependencies -->
   <exec_depend>gym-pip</exec_depend>
