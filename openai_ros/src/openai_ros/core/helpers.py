@@ -85,22 +85,26 @@ def query_yes_no(question, default="yes"):
             sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
 
 
-def register_openai_ros_env(task_env, max_episode_steps=10000):
+def register_openai_ros_env(task_env, max_episode_steps=None):
     """Register a given openai_ros task environment.
 
     Args:
         task_env (str): The openai_ros task environment you want to register.
         max_episode_steps (int, optional): The max episode step you want to set for the
-            environment. Defaults to 10000.
+            environment. Defaults to ``None`` meaning the value in the config file will
+            be used (i.e. :obj:`openai_ros.task_envs.task_envs_list`).
 
     Raises:
         Exception: When something went wrong during the registration.
     """
     if task_env in ENVS.keys():
         # Register gym environment
-        max_episode_steps = (
-            max_episode_steps if max_episode_steps else ENVS[task_env]["max_steps"]
-        )
+        try:
+            max_episode_steps = (
+                max_episode_steps if max_episode_steps else ENVS[task_env]["max_steps"]
+            )
+        except KeyError:
+            max_episode_steps = 1000
         try:
             register(
                 id=task_env,
