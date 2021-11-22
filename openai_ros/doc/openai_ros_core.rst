@@ -3,7 +3,6 @@ OpenAI ROS Core
 
 This is the heart of OpenAI ROS. Here you can find the classes that tie ROS, Gazebo and OpenAi together.
 
-
 openai_ros.robot_gazebo_env module
 ----------------------------------
 

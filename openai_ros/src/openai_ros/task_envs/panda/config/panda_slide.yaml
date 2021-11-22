@@ -1,0 +1,216 @@
+# This config file contains the configuration values that are used by the Panda slide task.
+panda_slide:
+  ########################################
+  # Control settings #####################
+  ########################################
+  control:
+    direct_control: True # Directly control the panda robot by publishing on the controller command topics (FAST). When ``False`` the 'panda_gazebo' control services will be used (SLOWER).
+    ee_link: "panda_link8" # Link that is specified as the end effector.
+    # ee_link: "panda_hand_tcp" # Link that is specified as the end effector.
+    # NOTE: We don't load the gripper since the gravity compensation currently does not work with the hand attached (see https://github.com/frankaemika/franka_ros/issues/160#issuecomment-992776684).
+    load_gripper: False # Whether you want to load the gripper.
+    block_gripper: True # Whether the gripper control should be blocked.
+    grasping: False # Whether the gripper should grasp objects.
+    arm_wait: False # Wait for the arm control to complete before continuing to the next step.
+    hand_wait: False # Wait for the hand control to complete before continuing to the next step.
+    ee_control_coordinates: # Control variables used during ee-control.
+      - "x"
+      - "y"
+      - "z"
+      - "rx"
+      - "ry"
+      - "rz"
+      - "rw"
+    controlled_joints: # Joints that are controlled during joint position/effort control.
+      - "panda_joint1"
+      - "panda_joint2"
+      - "panda_joint3"
+      - "panda_joint4"
+      - "panda_joint5"
+      - "panda_joint6"
+      - "panda_joint7"
+      # NOTE: The current implementation only accepts gripper_width not individual finger joints.
+      - "gripper_width"
+      # NOTE: When uncommented the robot also tries to control the max gripper effort
+      - "gripper_max_effort"
+
+  ########################################
+  # Sampling settings ####################
+  ########################################
+  # Initial pose (i.e. given in generalized coordinates q)
+  pose_sampling:
+    visualize_init_pose_bounds: True # RViz pose sampling region visualization.
+    reset_init_pose: True # Reset the initial pose when resetting the simulation.
+    random_init_pose: True # Use a random initial pose.
+    randomize_first_episode: True #  Also randomize the pose in the first episode.
+    offset: # Initial pose offset
+      x: 0.0
+      y: 0.0
+      z: 0.0
+
+    # The initial robot pose (used when random is disabled).
+    init_pose:
+      x: 0.23
+      y: 0.29
+      z: 0.35
+      rx: 0.78
+      ry: 0.62
+      rz: -0.0
+      rw: 4.42
+      gripper_width: 0.001
+
+    # Init pose sampling bounds
+    # NOTE: Comment out if you don't want to clip the initial pose sampling.
+    bounds:
+      x_min: -0.6
+      x_max: 0.6
+      y_min: -0.6
+      y_max: 0.6
+      z_min: 0.0
+      z_max: 1.2
+      gripper_width_min: 0.0
+      gripper_width_max: 0.08
+
+  # Target sampling settings
+  target_sampling:
+    strategy: "global" # Options are: `global` and `fixed`.
+    visualize_target: True # RViz target visualization.
+    visualize_target_bounds: True # RViz target sampling region visualization.
+    offset: # A additional offset applied to the target
+      x: 0.0
+      y: 0.0
+      z: 0.0
+
+    # Fixed target
+    # NOTE: Used when strategy is set to `fixed`.
+    fixed_target:
+      x: 0.4
+      y: 0.0
+      z: 0.8
+
+    # Random target sampling bounds
+    bounds:
+      global: # Relative to the world frame
+        x_min: 0.7
+        x_max: 1.306314
+        y_min: -0.3210245
+        y_max: 0.3210245
+        z_min: 0.419823 # NOTE: Starts from the platform
+        z_max: 0.444823 # NOTE: Ends at max z of TargetMarker
+
+  # Object pose pose sampling settings
+  object_sampling:
+    strategy: "global" # Options are: `global` and `fixed`.
+    distance_threshold: 0.1 # Threshold for determining whether new object pose is far enough from old obj pose.
+    visualize_object_bounds: True # Turn object sampling region visualization on and off.
+
+    # The pose of the grasp object
+    # NOTE: Used when strategy is set to `fixed`.
+    fixed_pose:
+      x: 0.4
+      y: 0.0
+      z: 0.0
+      rx: 0.0
+      ry: 0.0
+      rz: 0.0
+      rw: 1.0
+
+    # Object sampling bounds
+    bounds:
+      x_min: 0.1734215
+      x_max: 0.6265785
+      y_min: -0.3210245
+      y_max: 0.2610245
+
+  ########################################
+  # Training settings ####################
+  ########################################
+  training:
+    object_name: puck # The name of the object the robot has to slide.
+    platform_name: long platform # The name of the platform present in the Gazebo environment.
+    platform_size: [1.1328925, 0.642049, 0.419823] # The size of the platform
+    reward_type: "dense" # The reward type used in the reward function ("sparse" or "dense").
+    target_hold: True # Hold the target position for N samples before done.
+    hold_samples: 2 # The number of samples for which a agent should hold a target position.
+    distance_threshold: 0.05 # The threshold for determining a target has been reached.
+
+  ########################################
+  # Environment settings #################
+  ########################################
+  environment:
+    # The environment action space
+    action_space:
+      bounds:
+        ee_pose:
+          low:
+            x: -1.3
+            y: -1.3
+            z: 0.0
+            rx: 0
+            ry: 0
+            rz: 0
+            rw: 0
+          high:
+            x: 1.3
+            y: 1.3
+            z: 1.3
+            rx: 1
+            ry: 1
+            rz: 1
+            rw: 1
+        joint_positions: # NOTE: Limits were taken from the robot urdf file (see franka_description).
+          low:
+            panda_joint1: -2.8973
+            panda_joint2: -1.7628
+            panda_joint3: -2.8973
+            panda_joint4: -3.0718
+            panda_joint5: -2.8973
+            panda_joint6: -0.0175
+            panda_joint7: -2.8973
+            gripper_width: 0.0
+          high:
+            panda_joint1: 2.8973
+            panda_joint2: 1.7628
+            panda_joint3: 2.8973
+            panda_joint4: -0.0698
+            panda_joint5: 2.8973
+            panda_joint6: 3.7525
+            panda_joint7: 2.8973
+            gripper_width: 0.08
+        joint_efforts:
+          low:
+            panda_joint1: -87
+            panda_joint2: -87
+            panda_joint3: -87
+            panda_joint4: -87
+            panda_joint5: -12
+            panda_joint6: -12
+            panda_joint7: -12
+            gripper_max_effort: 0.0
+          high:
+            panda_joint1: 87
+            panda_joint2: 87
+            panda_joint3: 87
+            panda_joint4: 87
+            panda_joint5: 12
+            panda_joint6: 12
+            panda_joint7: 12
+            gripper_max_effort: 140
+
+  ########################################
+  # Other slide environment settings #####
+  ########################################
+  physics: "dart" # The physics engine you want to use: dart|ode
+  load_rviz: True # Whether Rviz should be loaded.
+  rviz_file: config/panda_slide.rviz # Rviz config file. Path is relative to parent folder.
+  load_gazebo_gui: True # Whether the gazebo GUI should be shown.
+  log_reset: False # Whether we want to print a log statement when the world/simulation is reset.
+  log_step_debug_info: False # Whether debug info about the step should be logged (i.e. reward, is_done, action ect.).
+  franka_gazebo_logging: False # Whether you want to display the log info of the franka_gazebo package.
+##########################################
+# Other settings #########################
+##########################################
+# NOTE: The settings below can be used to overwrite settings of other ROS nodes.
+# panda_moveit_planner_server: # Scale the Moveit control speed/ acceleration.
+#   max_velocity_scaling_factor: 0.5
+#   max_acceleration_scaling_factor: 0.5

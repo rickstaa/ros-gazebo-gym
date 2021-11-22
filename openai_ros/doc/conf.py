@@ -341,11 +341,11 @@ intersphinx_mapping = {"https://docs.python.org/": None}
 # Here you will find some often used global url definitions.
 extlinks = {
     "openai_ros": (
-        "https://bitbucket.org/rickstaa/openai_ros/src/noetic/%s",
+        "https://bitbucket.org/rickstaa/openai_ros/src/add_panda_env/%s",
         None,
     ),
     "task_envs_code": (
-        "https://bitbucket.org/rickstaa/openai_ros/src/noetic/openai_ros/src/openai_ros/task_envs/%s",  # noqa: E501
+        "https://bitbucket.org/rickstaa/openai_ros/src/add_panda_env/openai_ros/src/openai_ros/task_envs/%s",  # noqa: E501
         None,
     ),
 }

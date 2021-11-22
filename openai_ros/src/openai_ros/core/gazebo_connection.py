@@ -3,22 +3,39 @@
 simulator.
 """
 
+import numpy as np
 import rospy
+from gazebo_msgs.msg import ModelStates
 from gazebo_msgs.srv import (
+    GetLinkState,
+    GetModelState,
     GetPhysicsProperties,
     GetPhysicsPropertiesRequest,
     SetModelConfiguration,
     SetModelConfigurationRequest,
+    SetModelState,
+    SetModelStateRequest,
     SetPhysicsProperties,
     SetPhysicsPropertiesRequest,
+    SpawnModel,
+    SpawnModelRequest,
 )
+from geometry_msgs.msg import Pose
 from openai_ros.common.functions import (
     deep_update,
+    find_gazebo_model_path,
+    lower_first_char,
+    model_state_msg_2_link_state_dict,
+    normalize_quaternion,
 )
 from openai_ros.exceptions import (
+    GetLinkStateError,
+    GetModelStateError,
     GetPhysicsPropertiesError,
     SetModelConfigurationError,
+    SetModelStateError,
     SetPhysicsPropertiesError,
+    SpawnModelError,
 )
 from rosgraph_msgs.msg import Clock
 from rospy.exceptions import ROSException, ROSInterruptException
@@ -32,6 +49,13 @@ GAZEBO_UNPAUSE_PHYSICS_TOPIC = "/gazebo/unpause_physics"
 GAZEBO_RESET_SIM_TOPIC = "/gazebo/reset_simulation"
 GAZEBO_RESET_WORLD_TOPIC = "/gazebo/reset_world"
 GAZEBO_CLOCK_TOPIC = "/clock"
+GAZEBO_SPAWN_SDF_MODEL_TOPIC = "/gazebo/spawn_sdf_model"
+GAZEBO_SPAWN_URDF_MODEL_TOPIC = "/gazebo/spawn_urdf_model"
+GAZEBO_LINK_STATES_TOPIC = "/gazebo/link_states"
+GAZEBO_MODEL_STATES_TOPIC = "/gazebo/model_states"
+GAZEBO_GET_MODEL_STATE_TOPIC = "/gazebo/get_model_state"
+GAZEBO_SET_MODEL_STATE_TOPIC = "/gazebo/set_model_state"
+GAZEBO_GET_LINK_STATE_TOPIC = "/gazebo/get_link_state"
 GAZEBO_SET_MODEL_CONFIGURATION_TOPIC = "/gazebo/set_model_configuration"
 GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC = "/gazebo/get_physics_properties"
 GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC = "/gazebo/set_physics_properties"
@@ -54,6 +78,18 @@ class GazeboConnection:
             service that resets the gazebo simulator.
         reset_world_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS service
             that resets the gazebo world.
+        spawn_sdf_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros service
+            that spawns a sdf model.
+        spawn_urdf_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros service
+            that spawns a urdf model.
+        get_model_state_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros
+            service used to set get model states.
+        set_model_state_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros
+            service used to set the model state of a object.
+        set_link_state_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros
+            service used to set the link states.
+        get_link_state_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros
+            service used to get the link states.
         set_model_configuration_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`):
             ROS service that sets the configuration of a model.
         get_physics_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros
@@ -82,6 +118,14 @@ class GazeboConnection:
         self._max_retry = max_retry
         self._physics_update_rate = Float64(PHYSICS_UPDATE_RATE)
         self.__time = 0.0
+
+        # Connect to link_state and model_state topics
+        rospy.Subscriber(
+            GAZEBO_LINK_STATES_TOPIC, ModelStates, self._link_states_cb, queue_size=1
+        )
+        rospy.Subscriber(
+            GAZEBO_MODEL_STATES_TOPIC, ModelStates, self._model_states_cb, queue_size=1
+        )
 
         # Connect to gazebo services
         try:
@@ -131,6 +175,78 @@ class GazeboConnection:
         except (rospy.ServiceException, ROSException, ROSInterruptException):
             rospy.logwarn(
                 "Failed to connect to '%s' service!" % GAZEBO_RESET_WORLD_TOPIC
+            )
+        try:
+            rospy.logdebug("Connecting to '%s' service." % GAZEBO_SPAWN_SDF_MODEL_TOPIC)
+            rospy.wait_for_service(
+                GAZEBO_SPAWN_SDF_MODEL_TOPIC,
+                timeout=SERVICES_CONNECTION_TIMEOUTS,
+            )
+            self.spawn_sdf_proxy = rospy.ServiceProxy(
+                GAZEBO_SPAWN_SDF_MODEL_TOPIC, SpawnModel
+            )
+            rospy.logdebug("Connected to '%s' service!" % GAZEBO_SPAWN_SDF_MODEL_TOPIC)
+        except (rospy.ServiceException, ROSException, ROSInterruptException):
+            rospy.logwarn(
+                "Failed to connect to '%s' service!" % GAZEBO_SPAWN_SDF_MODEL_TOPIC
+            )
+        try:
+            rospy.logdebug(
+                "Connecting to '%s' service." % GAZEBO_SPAWN_URDF_MODEL_TOPIC
+            )
+            rospy.wait_for_service(
+                GAZEBO_SPAWN_URDF_MODEL_TOPIC,
+                timeout=SERVICES_CONNECTION_TIMEOUTS,
+            )
+            self.spawn_urdf_proxy = rospy.ServiceProxy(
+                GAZEBO_SPAWN_URDF_MODEL_TOPIC, SpawnModel
+            )
+            rospy.logdebug("Connected to '%s' service!" % GAZEBO_SPAWN_URDF_MODEL_TOPIC)
+        except (rospy.ServiceException, ROSException, ROSInterruptException):
+            rospy.logwarn(
+                "Failed to connect to '%s' service!" % GAZEBO_SPAWN_URDF_MODEL_TOPIC
+            )
+        try:
+            rospy.logdebug("Connecting to '%s' service." % GAZEBO_GET_MODEL_STATE_TOPIC)
+            rospy.wait_for_service(
+                GAZEBO_GET_MODEL_STATE_TOPIC,
+                timeout=SERVICES_CONNECTION_TIMEOUTS,
+            )
+            self.get_model_state_proxy = rospy.ServiceProxy(
+                GAZEBO_GET_MODEL_STATE_TOPIC, GetModelState
+            )
+            rospy.logdebug("Connected to '%s' service!" % GAZEBO_GET_MODEL_STATE_TOPIC)
+        except (rospy.ServiceException, ROSException, ROSInterruptException):
+            rospy.logwarn(
+                "Failed to connect to '%s' service!" % GAZEBO_GET_MODEL_STATE_TOPIC
+            )
+        try:
+            rospy.logdebug("Connecting to '%s' service." % GAZEBO_SET_MODEL_STATE_TOPIC)
+            rospy.wait_for_service(
+                GAZEBO_SET_MODEL_STATE_TOPIC,
+                timeout=SERVICES_CONNECTION_TIMEOUTS,
+            )
+            self.set_model_state_proxy = rospy.ServiceProxy(
+                GAZEBO_SET_MODEL_STATE_TOPIC, SetModelState
+            )
+            rospy.logdebug("Connected to '%s' service!" % GAZEBO_SET_MODEL_STATE_TOPIC)
+        except (rospy.ServiceException, ROSException, ROSInterruptException):
+            rospy.logwarn(
+                "Failed to connect to '%s' service!" % GAZEBO_SET_MODEL_STATE_TOPIC
+            )
+        try:
+            rospy.logdebug("Connecting to '%s' service." % GAZEBO_GET_LINK_STATE_TOPIC)
+            rospy.wait_for_service(
+                GAZEBO_GET_LINK_STATE_TOPIC,
+                timeout=SERVICES_CONNECTION_TIMEOUTS,
+            )
+            self.get_link_state_proxy = rospy.ServiceProxy(
+                GAZEBO_GET_LINK_STATE_TOPIC, GetLinkState
+            )
+            rospy.logdebug("Connected to '%s' service!" % GAZEBO_GET_LINK_STATE_TOPIC)
+        except (rospy.ServiceException, ROSException, ROSInterruptException):
+            rospy.logwarn(
+                "Failed to connect to '%s' service!" % GAZEBO_GET_LINK_STATE_TOPIC
             )
         try:
             rospy.logdebug(
@@ -329,10 +445,204 @@ class GazeboConnection:
         self._gravity.z = z
         self._update_gravity_call()
 
+    def spawn_object(  # noqa: C901
+        self,
+        object_name,
+        model_name,
+        models_folder_path,
+        pose=None,
+    ):
+        """Spawns a object from the model directory into gazebo.
+
+        Args:
+            object_name (str): The name you want the model to have.
+            model_name (str): The model type (The name of the xml file you want to use).
+            models_folder_path (str): The folder in which you want to search for the
+                models.
+            pose (:obj:`geometry_msgs.msg.Pose`, optional): The pose of the model, by
+                default :py:class:`geometry_msgs.msg.Pose`.
+
+        Returns:
+            bool: A boolean specifying whether the model was successfully spawned.
+
+        Raises:
+            :obj:`openai_ros.exceptions.SpawnModelError`: When model was not spawned
+                successfully.
+        """
+        # Initiate default model pose
+        if not pose:
+            pose = Pose()
+            pose.orientation = normalize_quaternion(pose.orientation)
+
+        # Check if model is already present
+        if object_name in self.model_states.keys():
+            rospy.logwarn(
+                "A model with model name '%s' already exists. Please check if this is "
+                "the right model." % (model_name)
+            )
+            return False
+
+        # Find model xml
+        rospy.logdebug("Looking for '%s' model file." % model_name)
+        model_xml, extension = find_gazebo_model_path(model_name, models_folder_path)
+        if not model_xml:  # If model file was not found
+            logwarn_msg = (
+                "Spawning model '%s' as '%s' failed since the sdf/urd model file "
+                "was not found. Please make sure you added the model sdf/urdf file "
+                "to the '%s' folder." % (model_name, object_name, models_folder_path)
+            )
+            rospy.logwarn(logwarn_msg)
+            raise SpawnModelError(message=logwarn_msg)
+
+        # Load content from the model xml file
+        xml_file = open(model_xml, "r")
+        model_xml_content = xml_file.read()
+
+        # Create spawn model request message
+        rospy.logdebug("Spawning '%s' model as '%s'." % (model_name, object_name))
+        spawn_model_req = SpawnModelRequest(
+            model_name=object_name,
+            model_xml=model_xml_content,
+            initial_pose=pose,
+            reference_frame="world",
+        )
+
+        # Request model spawn from sdf or urdf spawn service
+        rospy.logdebug("Spawning model '%s' as '%s'." % (model_name, object_name))
+        spawn_done = False
+        counter = 0
+        if extension == "sdf":  # Use sdf service
+            while not spawn_done and not rospy.is_shutdown():
+                if counter < self._max_retry:
+                    try:
+                        rospy.logdebug("SPAWNING service calling...")
+                        retval = self.spawn_sdf_proxy.call(spawn_model_req)
+                        spawn_done = True
+                        rospy.logdebug("SPAWNING service calling...DONE")
+                        return retval
+                    except rospy.ServiceException as e:
+                        logwarn_msg = "Spawning model '%s' as '%s' failed since %s." % (
+                            model_name,
+                            object_name,
+                            lower_first_char(e.args[0]),
+                        )
+                        rospy.logwarn(logwarn_msg)
+                        raise SpawnModelError(
+                            message=logwarn_msg, details={"exception": e}
+                        )
+        else:
+            while not spawn_done and not rospy.is_shutdown():
+                if counter < self._max_retry:
+                    try:
+                        rospy.logdebug("SPAWNING service calling...")
+                        retval = self.spawn_urdf_proxy.call(spawn_model_req)
+                        spawn_done = True
+                        rospy.logdebug("SPAWNING service calling...DONE")
+                        return retval
+                    except rospy.ServiceException as e:
+                        logwarn_msg = "Spawning model '%s' as '%s' failed since %s." % (
+                            model_name,
+                            object_name,
+                            lower_first_char(e.args[0]),
+                        )
+                        rospy.logwarn(logwarn_msg)
+                        raise SpawnModelError(
+                            message=logwarn_msg, details={"exception": e}
+                        )
+
     #############################################
     # Properties/functions for retrieving #######
     # gazebo env information ####################
     #############################################
+    def get_model_state(self, model_name):
+        """Retrieve the current state of a model.
+
+        Args:
+            model_name (str): The name of the model for which you want to retrieve the
+                state.
+
+        Returns:
+            :obj:`numpy.ndarray`: The pose of the model.
+
+        Raises:
+            :obj:`openai_ros.exceptions.GetModelStateError`: Thrown when the model
+                state retrieval failed.
+        """
+        model_state = self.get_model_state_proxy(model_name, "world")
+        if model_state.success:
+            return np.array(
+                [
+                    model_state.pose.position.x,
+                    model_state.pose.position.y,
+                    model_state.pose.position.z,
+                    model_state.pose.orientation.x,
+                    model_state.pose.orientation.y,
+                    model_state.pose.orientation.z,
+                ]
+            )
+        else:
+            logwarn_msg = "Model state of '%s' model could not be retrieved." % (
+                model_name,
+            )
+            rospy.logwarn(logwarn_msg)
+            raise GetModelStateError(
+                message=logwarn_msg, details=model_state.status_message
+            )
+
+    def set_model_state(self, model_state):
+        """Sets the state of a model.
+
+        Args:
+            model_state (:obj:`gazebo_msgs.msg.SetModelState`): The model_state object.
+
+        Returns:
+            bool: Boolean specifying whether the model state was set successfully.
+
+        Raises:
+            :obj:`openai_ros.exceptions.SetModelStateError`: Thrown when the model state
+                could not be set.
+        """
+        rospy.logdebug("setting '%s' model state." % model_state.model_name)
+        retval = self.set_model_state_proxy.call(SetModelStateRequest(model_state))
+        if not retval.success:
+            logwarn_msg = "Model state model could not be set."
+            rospy.logwarn(logwarn_msg)
+            raise SetModelStateError(logwarn_msg)
+        return retval.success
+
+    def get_link_state(self, link_name):
+        """Retrieve the current state of a model.
+
+        Args:
+            link_name (str): The name of the robot link.
+
+        Returns:
+            :obj:`numpy.ndarray`: The pose of the robot link.
+
+        Raises:
+            GetLinkStateError: Thrown when the link state retrieval failed.
+        """
+        link_state = self.get_link_state_proxy(link_name, "world")
+        if link_state.success:
+            return np.array(
+                [
+                    link_state.pose.position.x,
+                    link_state.pose.position.y,
+                    link_state.pose.position.z,
+                    link_state.pose.orientation.x,
+                    link_state.pose.orientation.y,
+                    link_state.pose.orientation.z,
+                ]
+            )
+        else:
+            logwarn_msg = "Model state of '%s' model could not be retrieved." % (
+                link_name,
+            )
+            rospy.logwarn(logwarn_msg)
+            raise GetLinkStateError(
+                message=logwarn_msg, details=link_state.status_message
+            )
+
     def set_model_configuration(
         self, model_name, joint_names, joint_positions, pause=True
     ):
@@ -437,6 +747,24 @@ class GazeboConnection:
             raise SetPhysicsPropertiesError(
                 message=logwarn_msg, details=retval.status_message
             )
+
+    def _link_states_cb(self, data):
+        """Link states subscriber callback function.
+
+        Args:
+            data (:obj:`gazebo_msgs.msg.ModelStates`): The data that is
+                returned by the subscriber.
+        """
+        self.link_states = model_state_msg_2_link_state_dict(data)
+
+    def _model_states_cb(self, data):
+        """Model states subscriber callback function.
+
+        Args:
+            data (:obj:`gazebo_msgs.msg.ModelStates`): The data that is
+                returned by the subscriber.
+        """
+        self.model_states = model_state_msg_2_link_state_dict(data)
 
     def _clock_cb(self, data):
         """Gazebo clock subscriber callback function.
