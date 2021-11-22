@@ -71,7 +71,6 @@ class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,
             reset_controls=False,
-            start_init_physics_parameters=False,
         )
 
         # Un-pause simulations, reset controllers and check robot sensors

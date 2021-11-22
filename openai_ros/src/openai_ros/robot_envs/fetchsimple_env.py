@@ -41,7 +41,6 @@ class FetchSimpleEnv(robot_gazebo_env.RobotGazeboEnv):
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,
             reset_controls=self.reset_controls,
-            start_init_physics_parameters=False,
             reset_world_or_sim="WORLD",
         )
 

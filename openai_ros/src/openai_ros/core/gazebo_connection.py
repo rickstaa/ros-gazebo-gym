@@ -4,11 +4,31 @@ simulator.
 """
 
 import rospy
-from gazebo_msgs.msg import ODEPhysics
-from gazebo_msgs.srv import SetPhysicsProperties, SetPhysicsPropertiesRequest
-from geometry_msgs.msg import Vector3
+from gazebo_msgs.srv import (
+    GetPhysicsProperties,
+    GetPhysicsPropertiesRequest,
+    SetPhysicsProperties,
+    SetPhysicsPropertiesRequest,
+)
+from openai_ros.common.functions import (
+    deep_update,
+)
+from openai_ros.exceptions import (
+    GetPhysicsPropertiesError,
+    SetPhysicsPropertiesError,
+)
+from rospy.exceptions import ROSException, ROSInterruptException
+from rospy_message_converter import message_converter
 from std_msgs.msg import Float64
 from std_srvs.srv import Empty
+
+# Specify gazebo service topics
+GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC = "/gazebo/get_physics_properties"
+GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC = "/gazebo/set_physics_properties"
+
+# Script variables
+PHYSICS_UPDATE_RATE = 1000
+SERVICES_CONNECTION_TIMEOUTS = 5
 
 
 class GazeboConnection:
@@ -24,14 +44,16 @@ class GazeboConnection:
             service that resets the gazebo simulator.
         reset_world_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS service
             that resets the gazebo world.
+        get_physics_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros
+            service used to retrieve the physics properties.
+        set_physics_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros
+            service used to set the physics properties.
     """
 
-    def __init__(self, start_init_physics_parameters, reset_world_or_sim, max_retry=20):
+    def __init__(self, reset_world_or_sim, max_retry=20):
         """Initiate the GazeboConnection instance.
 
         Args:
-            start_init_physics_parameters (bool, optional): Wether you want to
-                initialize the simulation parameters. Defaults to True.
             reset_world_or_sim (str, optional): Wether you want to reset the whole
                 simulation "SIMULATION" at startup or only the world "WORLD" (object
                 positions). Defaults to "SIMULATION".
@@ -44,17 +66,52 @@ class GazeboConnection:
             "/gazebo/reset_simulation", Empty
         )
         self.reset_world_proxy = rospy.ServiceProxy("/gazebo/reset_world", Empty)
-        self._max_retry = max_retry
-
-        # Setup the physics properties controle system
-        service_name = "/gazebo/set_physics_properties"
-        rospy.logdebug("Waiting for service " + str(service_name))
-        rospy.wait_for_service(service_name)
-        rospy.logdebug("Service Found " + str(service_name))
-        self.set_physics = rospy.ServiceProxy(service_name, SetPhysicsProperties)
-        self.start_init_physics_parameters = start_init_physics_parameters
         self.reset_world_or_sim = reset_world_or_sim
-        self.init_values()
+        self._max_retry = max_retry
+        self._physics_update_rate = Float64(PHYSICS_UPDATE_RATE)
+
+        # Setup physics properties control service
+        try:
+            rospy.logdebug(
+                "Connecting to '%s' service." % GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC
+            )
+            rospy.wait_for_service(
+                GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC,
+                timeout=SERVICES_CONNECTION_TIMEOUTS,
+            )
+            self.get_physics_proxy = rospy.ServiceProxy(
+                GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC, GetPhysicsProperties
+            )
+            rospy.logdebug(
+                "Connected to '%s' service!" % GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC
+            )
+        except (rospy.ServiceException, ROSException, ROSInterruptException):
+            rospy.logwarn(
+                "Failed to connect to '%s' service!"
+                % GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC
+            )
+        try:
+            rospy.logdebug(
+                "Connecting to '%s' service." % GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC
+            )
+            rospy.wait_for_service(
+                GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC,
+                timeout=SERVICES_CONNECTION_TIMEOUTS,
+            )
+            self.set_physics_proxy = rospy.ServiceProxy(
+                GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC, SetPhysicsProperties
+            )
+            rospy.logdebug(
+                "Connected to '%s' service!" % GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC
+            )
+        except (rospy.ServiceException, ROSException, ROSInterruptException):
+            rospy.logwarn(
+                "Failed to connect to '%s' service!"
+                % GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC
+            )
+
+        # Reset the simulation
+        self.reset_sim()
 
         # We always pause the simulation, important for legged robots learning
         self.pause_sim()
@@ -149,62 +206,26 @@ class GazeboConnection:
         else:
             rospy.logerr("WRONG Reset Option:" + str(self.reset_world_or_sim))
 
-    def _init_physics_parameters(self):
-        """Initialise the physics parameters of the simulation, like gravity,
-        friction coefficients and so on.
-        """
-        self._time_step = Float64(0.001)
-        self._max_update_rate = Float64(1000.0)
-
-        self._gravity = Vector3()
-        self._gravity.x = 0.0
-        self._gravity.y = 0.0
-        self._gravity.z = -9.81
-
-        self._ode_config = ODEPhysics()
-        self._ode_config.auto_disable_bodies = False
-        self._ode_config.sor_pgs_precon_iters = 0
-        self._ode_config.sor_pgs_iters = 50
-        self._ode_config.sor_pgs_w = 1.3
-        self._ode_config.sor_pgs_rms_error_tol = 0.0
-        self._ode_config.contact_surface_layer = 0.001
-        self._ode_config.contact_max_correcting_vel = 0.0
-        self._ode_config.cfm = 0.0
-        self._ode_config.erp = 0.2
-        self._ode_config.max_contacts = 20
-
-        self._update_gravity_call()
-
-    def init_values(self):
-        """Sets the initial simulator parameter values."""
-        self.reset_sim()
-        if self.start_init_physics_parameters:
-            rospy.logdebug("Initialising simulation Physics Parameters")
-            self._init_physics_parameters()
-        else:
-            rospy.logerr("NOT Initialising simulation Physics Parameters")
-
     def _update_gravity_call(self):
         """Updates the simulator gravity property."""
         self.pause_sim()
 
         # Create physic change message
         set_physics_request = SetPhysicsPropertiesRequest()
-        set_physics_request.time_step = self._time_step.data
-        set_physics_request.max_update_rate = self._max_update_rate.data
+        set_physics_request.time_step = 1 / self._physics_update_rate.data
+        set_physics_request.max_update_rate = self._physics_update_rate.data
         set_physics_request.gravity = self._gravity
         set_physics_request.ode_config = self._ode_config
         rospy.logdebug(str(set_physics_request.gravity))
 
         # Send physic change request
-        result = self.set_physics(set_physics_request)
+        result = self.set_physics_proxy(set_physics_request)
         rospy.logdebug(
             "Gravity Update Result=="
             + str(result.success)
             + ",message=="
             + str(result.status_message)
         )
-
         self.unpause_sim()
 
     def change_gravity(self, x, y, z):
@@ -219,3 +240,69 @@ class GazeboConnection:
         self._gravity.y = y
         self._gravity.z = z
         self._update_gravity_call()
+
+    #############################################
+    # Properties/functions for retrieving #######
+    # gazebo env information ####################
+    #############################################
+    def get_physics_properties(self):
+        """Retrieve physics properties from gazebo.
+
+        Returns:
+            :obj:`gazebo_msgs.srv.GetPhysicsPropertiesResponse`: Physics properties
+                message.
+
+        Raises:
+            :obj:`openai_ros.errors.GetPhysicsPropertiesError`: Thrown when something
+                goes wrong while trying to retrieve the physics properties.
+        """
+        physics_properties_msg = self.physics_properties
+        if not physics_properties_msg.success:
+            logwarn_msg = "Physics properties could not be retrieved."
+            rospy.logwarn(logwarn_msg)
+            raise GetPhysicsPropertiesError(
+                message=logwarn_msg, details=physics_properties_msg.status_message
+            )
+        return physics_properties_msg
+
+    def set_physics_properties(self, **kwargs):
+        """Change physics properties of the gazebo physics engine. These properties have
+        to be supplied as a keyword argument.
+
+        .. tip::
+            You can use the `:obj:`GazeboConnection.` If you want to send a
+            :obj:`gazebo_msgs.srv.SetPhysicsProperties` message directly.
+
+        Args:
+            **kwargs: Keyword arguments specifying the physics properties you want to
+                set.
+
+        Raises:
+            SetPhysicsPropertiesError: Thrown when something goes wrong while setting
+                the physics properties.
+        """
+        physics_properties_dict = message_converter.convert_ros_message_to_dictionary(
+            self.physics_properties
+        )
+        del (
+            physics_properties_dict["pause"],
+            physics_properties_dict["success"],
+            physics_properties_dict["status_message"],
+        )
+        physics_properties_msg = message_converter.convert_dictionary_to_ros_message(
+            "gazebo_msgs/SetPhysicsProperties",
+            deep_update(physics_properties_dict, fixed=True, **kwargs),
+            kind="request",
+        )
+        retval = self.set_physics_proxy.call(physics_properties_msg)
+        if not retval.success:
+            logwarn_msg = "Physics engine could not be updated."
+            rospy.logwarn(logwarn_msg)
+            raise SetPhysicsPropertiesError(
+                message=logwarn_msg, details=retval.status_message
+            )
+
+    @property
+    def physics_properties(self):
+        """Retrieves the physics properties from gazebo."""
+        return self.get_physics_proxy(GetPhysicsPropertiesRequest())

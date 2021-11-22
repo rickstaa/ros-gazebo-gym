@@ -30,6 +30,7 @@
   <exec_depend>tf</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>rospy_message_converter</exec_depend>
 
   <!-- Environment dependencies
     NOTE: Only needed for certain environments-->
