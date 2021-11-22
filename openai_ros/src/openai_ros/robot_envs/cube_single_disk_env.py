@@ -2,13 +2,13 @@
 
 import rospy
 from nav_msgs.msg import Odometry
-from openai_ros import robot_gazebo_env
 from openai_ros.core import ROSLauncher
+from openai_ros.robot_gazebo_env import RobotGazeboEnv
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64
 
 
-class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
+class CubeSingleDiskEnv(RobotGazeboEnv):
     """Superclass for all CubeSingleDisk environments."""
 
     def __init__(self, workspace_path):
@@ -36,7 +36,7 @@ class CubeSingleDiskEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self.robot_name_space = "moving_cube"
 
-        # Launch the init function of the parent class robot_gazebo_env.RobotGazeboEnv
+        # Launch the init function of the parent class RobotGazeboEnv
         super(CubeSingleDiskEnv, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,

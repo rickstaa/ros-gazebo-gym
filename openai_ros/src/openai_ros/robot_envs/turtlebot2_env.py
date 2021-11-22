@@ -4,12 +4,12 @@ import numpy
 import rospy
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
-from openai_ros import robot_gazebo_env
 from openai_ros.core import ROSLauncher
+from openai_ros.robot_gazebo_env import RobotGazeboEnv
 from sensor_msgs.msg import Image, LaserScan, PointCloud2
 
 
-class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
+class TurtleBot2Env(RobotGazeboEnv):
     """Superclass for all CubeSingleDisk environments."""
 
     def __init__(self, workspace_path):
@@ -63,7 +63,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         self.robot_name_space = ""
 
         # We launch the init function of the parent class
-        # robot_gazebo_env.RobotGazeboEnv
+        # RobotGazeboEnv
         super(TurtleBot2Env, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,

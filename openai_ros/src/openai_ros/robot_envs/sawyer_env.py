@@ -3,12 +3,12 @@ import rospy
 import tf
 from intera_core_msgs.msg import JointLimits
 from intera_interface import CHECK_VERSION
-from openai_ros import robot_gazebo_env
 from openai_ros.core import ROSLauncher
+from openai_ros.robot_gazebo_env import RobotGazeboEnv
 from sensor_msgs.msg import Image
 
 
-class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
+class SawyerEnv(RobotGazeboEnv):
     """Superclass for all SawyerEnv environments."""
 
     def __init__(self, workspace_path):
@@ -58,7 +58,7 @@ class SawyerEnv(robot_gazebo_env.RobotGazeboEnv):
         self.robot_name_space = ""
 
         # We launch the init function of the parent class
-        # robot_gazebo_env.RobotGazeboEnv
+        # RobotGazeboEnv
         super(SawyerEnv, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,

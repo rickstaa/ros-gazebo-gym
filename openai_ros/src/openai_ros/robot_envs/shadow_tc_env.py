@@ -1,12 +1,12 @@
 import rospy
 import tf
 from moveit_msgs.msg import PlanningScene
-from openai_ros import robot_gazebo_env
 from openai_ros.core import ROSLauncher
+from openai_ros.robot_gazebo_env import RobotGazeboEnv
 from sensor_msgs.msg import Imu, JointState
 
 
-class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
+class ShadowTcEnv(RobotGazeboEnv):
     """Superclass for all ShadowTcEnv environments."""
 
     def __init__(self, workspace_path):
@@ -59,7 +59,7 @@ class ShadowTcEnv(robot_gazebo_env.RobotGazeboEnv):
         self.robot_name_space = ""
 
         # We launch the init function of the parent class
-        # robot_gazebo_env.RobotGazeboEnv
+        # RobotGazeboEnv
         super(ShadowTcEnv, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,

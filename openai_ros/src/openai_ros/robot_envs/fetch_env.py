@@ -5,12 +5,12 @@ import moveit_commander
 import numpy as np
 import rospy
 from gazebo_msgs.srv import GetModelState, GetWorldProperties
-from openai_ros import robot_gazebo_env
 from openai_ros.core import ROSLauncher
+from openai_ros.robot_gazebo_env import RobotGazeboEnv
 from sensor_msgs.msg import JointState
 
 
-class FetchEnv(robot_gazebo_env.RobotGazeboEnv):
+class FetchEnv(RobotGazeboEnv):
     def __init__(self, workspace_path=None):
         rospy.logdebug("Initialize FetchEnv robot environment...")
 

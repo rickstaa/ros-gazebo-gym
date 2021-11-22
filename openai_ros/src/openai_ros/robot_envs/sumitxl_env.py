@@ -3,12 +3,12 @@ import time
 import rospy
 from geometry_msgs.msg import Twist, Vector3Stamped
 from nav_msgs.msg import Odometry
-from openai_ros import robot_gazebo_env
 from openai_ros.core import ROSLauncher
+from openai_ros.robot_gazebo_env import RobotGazeboEnv
 from sensor_msgs.msg import Image, Imu, LaserScan, NavSatFix, PointCloud2
 
 
-class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
+class SumitXlEnv(RobotGazeboEnv):
     """Superclass for all CubeSingleDisk environments."""
 
     def __init__(self, workspace_path):
@@ -71,7 +71,7 @@ class SumitXlEnv(robot_gazebo_env.RobotGazeboEnv):
         # It doesn't use namespace
         self.robot_name_space = "summit_xl"
 
-        # Launch the init function of the parent class robot_gazebo_env.RobotGazeboEnv
+        # Launch the init function of the parent class RobotGazeboEnv
         print("START OpenAIROS CORE SumitXlEnv INIT...")
         super(SumitXlEnv, self).__init__(
             controllers_list=self.controllers_list,

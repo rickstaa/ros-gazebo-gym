@@ -8,11 +8,11 @@ import rospy
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from openai_ros.core import ROSLauncher
-from openai_ros import robot_gazebo_env
+from openai_ros.robot_gazebo_env import RobotGazeboEnv
 from sensor_msgs.msg import Imu, LaserScan
 
 
-class TurtleBot3Env(robot_gazebo_env.RobotGazeboEnv):
+class TurtleBot3Env(RobotGazeboEnv):
     """Turtlebot3 robot environment class.
 
     Attributes:

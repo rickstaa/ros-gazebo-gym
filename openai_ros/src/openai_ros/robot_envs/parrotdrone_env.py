@@ -3,13 +3,13 @@ import time
 import numpy
 import rospy
 from geometry_msgs.msg import Pose, Twist
-from openai_ros import robot_gazebo_env
 from openai_ros.core import ROSLauncher
+from openai_ros.robot_gazebo_env import RobotGazeboEnv
 from sensor_msgs.msg import Image, Imu, Range
 from std_msgs.msg import Empty
 
 
-class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
+class ParrotDroneEnv(RobotGazeboEnv):
     """Superclass for all CubeSingleDisk environments."""
 
     def __init__(self, workspace_path):
@@ -61,7 +61,7 @@ class ParrotDroneEnv(robot_gazebo_env.RobotGazeboEnv):
         self.robot_name_space = ""
 
         # We launch the init function of the parent class
-        # robot_gazebo_env.RobotGazeboEnv
+        # RobotGazeboEnv
         super(ParrotDroneEnv, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,

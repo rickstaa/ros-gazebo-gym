@@ -7,10 +7,10 @@ or sending *ACTIONS* to it are ROS transparent to the OpenAI algorithms and to y
 developer. For more information see the `openai_ros <https://wiki.ros.org/openai_ros>`_
 documentation.
 """
-from openai_ros import robot_gazebo_env
+from openai_ros.robot_gazebo_env import RobotGazeboEnv
 
 
-class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
+class MyRobotEnv(RobotGazeboEnv):
     """Superclass for all Robot environments."""
 
     def __init__(self):

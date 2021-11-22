@@ -4,13 +4,13 @@ import numpy
 import rospy
 from gazebo_msgs.msg import ContactsState
 from nav_msgs.msg import Odometry
-from openai_ros import robot_gazebo_env
 from openai_ros.core import ROSLauncher
+from openai_ros.robot_gazebo_env import RobotGazeboEnv
 from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import Float64
 
 
-class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
+class HopperEnv(RobotGazeboEnv):
     """Superclass for all HopperEnv environments."""
 
     def __init__(self, workspace_path):
@@ -74,7 +74,7 @@ class HopperEnv(robot_gazebo_env.RobotGazeboEnv):
         self.robot_name_space = "monoped"
 
         # We launch the init function of the parent class
-        # robot_gazebo_env.RobotGazeboEnv
+        # RobotGazeboEnv
         super(HopperEnv, self).__init__(
             controllers_list=self.controllers_list,
             robot_name_space=self.robot_name_space,
