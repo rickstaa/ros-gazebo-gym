@@ -54,11 +54,7 @@ class GazeboConnection:
             service used to set the physics properties.
     """
 
-    def __init__(  # noqa: C901
-        self,
-        reset_world_or_sim="WORLD",
-        max_retry=20
-    ):
+    def __init__(self, reset_world_or_sim="WORLD", max_retry=20):  # noqa: C901
         """Initiate the GazeboConnection instance.
 
         Args:
