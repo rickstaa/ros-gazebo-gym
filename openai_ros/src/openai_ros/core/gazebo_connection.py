@@ -23,6 +23,10 @@ from std_msgs.msg import Float64
 from std_srvs.srv import Empty
 
 # Specify gazebo service topics
+GAZEBO_PAUSE_PHYSICS_TOPIC = "/gazebo/pause_physics"
+GAZEBO_UNPAUSE_PHYSICS_TOPIC = "/gazebo/unpause_physics"
+GAZEBO_RESET_SIM_TOPIC = "/gazebo/reset_simulation"
+GAZEBO_RESET_WORLD_TOPIC = "/gazebo/reset_world"
 GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC = "/gazebo/get_physics_properties"
 GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC = "/gazebo/set_physics_properties"
 
@@ -50,25 +54,73 @@ class GazeboConnection:
             service used to set the physics properties.
     """
 
-    def __init__(self, reset_world_or_sim, max_retry=20):
+    def __init__(  # noqa: C901
+        self,
+        reset_world_or_sim="WORLD",
+        max_retry=20
+    ):
         """Initiate the GazeboConnection instance.
 
         Args:
             reset_world_or_sim (str, optional): Wether you want to reset the whole
                 simulation "SIMULATION" at startup or only the world "WORLD" (object
-                positions). Defaults to "SIMULATION".
+                positions). Defaults to "WORLD".
             max_retry (int, optional): How many times a command to the simulator is
-                retried before giving up. Defaults to 20.
+                retried before giving up. Defaults to ``20``.
         """
-        self.pause_proxy = rospy.ServiceProxy("/gazebo/pause_physics", Empty)
-        self.unpause_proxy = rospy.ServiceProxy("/gazebo/unpause_physics", Empty)
-        self.reset_simulation_proxy = rospy.ServiceProxy(
-            "/gazebo/reset_simulation", Empty
-        )
-        self.reset_world_proxy = rospy.ServiceProxy("/gazebo/reset_world", Empty)
-        self.reset_world_or_sim = reset_world_or_sim
+        self._reset_world_or_sim = reset_world_or_sim
         self._max_retry = max_retry
         self._physics_update_rate = Float64(PHYSICS_UPDATE_RATE)
+
+        # Connect to gazebo services
+        try:
+            rospy.logdebug("Connecting to '%s' service." % GAZEBO_PAUSE_PHYSICS_TOPIC)
+            rospy.wait_for_service(
+                GAZEBO_PAUSE_PHYSICS_TOPIC,
+                timeout=SERVICES_CONNECTION_TIMEOUTS,
+            )
+            self.pause_proxy = rospy.ServiceProxy(GAZEBO_PAUSE_PHYSICS_TOPIC, Empty)
+            rospy.logdebug("Connected to '%s' service!" % GAZEBO_PAUSE_PHYSICS_TOPIC)
+        except (rospy.ServiceException, ROSException, ROSInterruptException):
+            rospy.logwarn(
+                "Failed to connect to '%s' service!" % GAZEBO_PAUSE_PHYSICS_TOPIC
+            )
+        try:
+            rospy.logdebug("Connecting to '%s' service." % GAZEBO_UNPAUSE_PHYSICS_TOPIC)
+            rospy.wait_for_service(
+                GAZEBO_UNPAUSE_PHYSICS_TOPIC,
+                timeout=SERVICES_CONNECTION_TIMEOUTS,
+            )
+            self.unpause_proxy = rospy.ServiceProxy(GAZEBO_UNPAUSE_PHYSICS_TOPIC, Empty)
+            rospy.logdebug("Connected to '%s' service!" % GAZEBO_UNPAUSE_PHYSICS_TOPIC)
+        except (rospy.ServiceException, ROSException, ROSInterruptException):
+            rospy.logwarn(
+                "Failed to connect to '%s' service!" % GAZEBO_UNPAUSE_PHYSICS_TOPIC
+            )
+        try:
+            rospy.logdebug("Connecting to '%s' service." % GAZEBO_RESET_SIM_TOPIC)
+            rospy.wait_for_service(
+                GAZEBO_RESET_SIM_TOPIC,
+                timeout=SERVICES_CONNECTION_TIMEOUTS,
+            )
+            self.reset_simulation_proxy = rospy.ServiceProxy(
+                GAZEBO_RESET_SIM_TOPIC, Empty
+            )
+            rospy.logdebug("Connected to '%s' service!" % GAZEBO_RESET_SIM_TOPIC)
+        except (rospy.ServiceException, ROSException, ROSInterruptException):
+            rospy.logwarn("Failed to connect to '%s' service!" % GAZEBO_RESET_SIM_TOPIC)
+        try:
+            rospy.logdebug("Connecting to '%s' service." % GAZEBO_RESET_WORLD_TOPIC)
+            rospy.wait_for_service(
+                GAZEBO_RESET_WORLD_TOPIC,
+                timeout=SERVICES_CONNECTION_TIMEOUTS,
+            )
+            self.reset_world_proxy = rospy.ServiceProxy(GAZEBO_RESET_WORLD_TOPIC, Empty)
+            rospy.logdebug("Connected to '%s' service!" % GAZEBO_RESET_WORLD_TOPIC)
+        except (rospy.ServiceException, ROSException, ROSInterruptException):
+            rospy.logwarn(
+                "Failed to connect to '%s' service!" % GAZEBO_RESET_WORLD_TOPIC
+            )
 
         # Setup physics properties control service
         try:
@@ -144,7 +196,7 @@ class GazeboConnection:
 
     def unpause_sim(self):
         """Unpauses the simulation."""
-        rospy.logdebug("UNPAUSING service found...")
+        rospy.logdebug("UNPAUSING start")
         unpaused_done = False
         counter = 0
         while not unpaused_done and not rospy.is_shutdown():
@@ -168,7 +220,6 @@ class GazeboConnection:
                 )
                 rospy.logerr(error_message)
                 assert False, error_message
-
         rospy.logdebug("UNPAUSING finished")
 
     def _reset_simulation(self):
@@ -195,16 +246,16 @@ class GazeboConnection:
             the systems that work with TF break. In this case we ONLY resets the object
             position, not the entire simulation.
         """
-        if self.reset_world_or_sim == "SIMULATION":
+        if self._reset_world_or_sim == "SIMULATION":
             rospy.logerr("SIMULATION RESET")
             self._reset_simulation()
-        elif self.reset_world_or_sim == "WORLD":
+        elif self._reset_world_or_sim == "WORLD":
             rospy.logerr("WORLD RESET")
             self._reset_world()
-        elif self.reset_world_or_sim == "NO_RESET_SIM":
+        elif self._reset_world_or_sim == "NO_RESET_SIM":
             rospy.logerr("NO RESET SIMULATION SELECTED")
         else:
-            rospy.logerr("WRONG Reset Option:" + str(self.reset_world_or_sim))
+            rospy.logerr("WRONG Reset Option:" + str(self._reset_world_or_sim))
 
     def _update_gravity_call(self):
         """Updates the simulator gravity property."""
