@@ -278,7 +278,54 @@ def build_catkin_ws(workspace_path, install_ros_deps=True):
                     os.environ.get("ROS_DISTRO")
                 )
             )
-            p = subprocess.call(rosdep_cmd, shell=True, cwd=workspace_path)
+
+            # Try to install the system dependencies
+            p = subprocess.Popen(rosdep_cmd, shell=True, cwd=workspace_path)
+
+            # Check exit code and try again if error is known
+            p.communicate()
+            if p.returncode:
+                rospy.logwarn(
+                    "Something went wrong while trying to install the system "
+                    "dependencies. Trying again while updating rosdep as the root "
+                    "user."
+                )
+                p1 = subprocess.Popen(
+                    "sudo -S rosdep update",
+                    shell=True,
+                    cwd=workspace_path,
+                )
+                p1.communicate()
+                p2 = subprocess.Popen(
+                    rosdep_cmd,
+                    shell=True,
+                    cwd=workspace_path,
+                )
+                p2.communicate()
+                rospy.logwarn("Repairing permissions...")
+                p3 = subprocess.Popen(
+                    "sudo -S rosdep fix-permissions",
+                    shell=True,
+                    cwd=workspace_path,
+                )
+                p3.communicate()
+                rospy.logwarn("Updating rosdep...")
+                p4 = subprocess.Popen(
+                    "rosdep update",
+                    shell=True,
+                    cwd=workspace_path,
+                )
+                p4.communicate()
+
+                # Throw error if something went wrong
+                if p1.returncode | p2.returncode | p3.returncode | p4.returncode:
+                    rospy.logerr(
+                        "System dependencies could not be installed automatically. "
+                        "Please run:\n\n\t rosdep install --from-path src --ignore-src "
+                        "-r -y\n\nin the catkin workspace and try again (i.e. "
+                        f"'{workspace_path}')."
+                    )
+                    sys.exit(0)
 
     # Build workspace
     if catkin_make_used:  # Use catkin_make
