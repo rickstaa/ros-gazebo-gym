@@ -7,6 +7,8 @@ be done on the simulator when doing a training step or a training reset (typical
 in the reinforcement learning loop).
 """
 
+import sys
+
 import gym
 import rospy
 from gym.utils import seeding
@@ -188,7 +190,7 @@ class RobotGazeboEnv(gym.Env):
         other systems that need closing.
         """
         rospy.logdebug("Closing RobotGazeboEnvironment")
-        rospy.signal_shutdown("Closing RobotGazeboEnvironment")
+        sys.exit(0)
 
     def _reset_sim(self):
         """Resets a simulation."""

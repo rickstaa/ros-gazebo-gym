@@ -4,6 +4,7 @@
 import atexit
 import subprocess
 import sys
+import psutil
 from pathlib import Path
 
 import catkin
@@ -21,6 +22,18 @@ class ROSLauncher(object):
     """
 
     launched = {}  # Stores all processes that were launched
+
+    @classmethod
+    def kill_process(cls, process_name):
+        """Kill a running process and its child processes.
+
+        Args:
+            process_name (str): The process name.
+        """
+        process = psutil.Process(cls.launched[process_name].pid)
+        for proc in process.children(recursive=True):
+            proc.kill()
+        process.kill()
 
     @classmethod
     def launch(cls, package_name, launch_file_name, workspace_path=None, **kwargs):
@@ -49,7 +62,6 @@ class ROSLauncher(object):
                 "the workspace before calling the ROSLauncher or supply it with a "
                 "workspace_path."
             )
-            rospy.signal_shutdown("Workspace path could not be found.")
             sys.exit(0)
 
         # Install launch file dependencies if they are not present
@@ -98,8 +110,10 @@ class ROSLauncher(object):
             state = p.poll()
             if state is None:
                 rospy.logdebug("Launch file successfully launched.")
-                cls.launched[launch_file_name] = p
-                atexit.register(p.kill)  # Make sure process dies when parent dies
+                cls.launched[launch_file_name] = p  # Store a reference to the process
+                atexit.register(
+                    cls.kill_process, process_name=launch_file_name
+                )  # Make sure process dies when parent dies
             elif state < 0:
                 rospy.logerror(
                     "Something went wrong while trying to launch the "

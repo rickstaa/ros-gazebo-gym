@@ -3,6 +3,7 @@
 `ros_control <https://wiki.ros.org/ros_control>` controllers.
 """
 
+import sys
 import rospy
 from controller_manager_msgs.srv import (
     SwitchController,
@@ -59,10 +60,11 @@ class ControllersConnection:
                 "Connected to '%s' service!" % self.list_controllers_service_name
             )
         except (rospy.ServiceException, ROSException, ROSInterruptException):
-            rospy.logwarn(
-                "Failed to connect to '%s' service!"
-                % self.list_controllers_service_name
+            rospy.logerr(
+                f"Shutting down '{rospy.get_name()}' since no connection could be "
+                f"established with the {self.list_controllers_service_name} service!"
             )
+            sys.exit(0)
         self.switch_service_name = (
             "/" + namespace + "/controller_manager/switch_controller"
         )
@@ -77,9 +79,11 @@ class ControllersConnection:
             )
             rospy.logdebug("Connected to '%s' service!" % self.switch_service_name)
         except (rospy.ServiceException, ROSException, ROSInterruptException):
-            rospy.logwarn(
-                "Failed to connect to '%s' service!" % self.switch_service_name
+            rospy.logerr(
+                f"Shutting down '{rospy.get_name()}' since no connection could be "
+                f"established with the {self.list_controllers_service_name} service!"
             )
+            sys.exit(0)
 
         rospy.logwarn("END Init ControllersConnection")
 
