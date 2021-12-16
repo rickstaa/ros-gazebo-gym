@@ -220,19 +220,19 @@ class GazeboConnection:
 
     def _reset_simulation(self):
         """Calls the ROS reset simulation service."""
-        rospy.wait_for_service("/gazebo/reset_simulation")
+        rospy.wait_for_service(GAZEBO_RESET_SIM_TOPIC)
         try:
             self.reset_simulation_proxy()
         except rospy.ServiceException:
-            print("/gazebo/reset_simulation service call failed")
+            print(f"{self.reset_simulation_proxy.resolved_name} service call failed")
 
     def _reset_world(self):
         """Resets the world (NOT THE WHOLE SIMULATION)."""
-        rospy.wait_for_service("/gazebo/reset_world")
+        rospy.wait_for_service(GAZEBO_RESET_WORLD_TOPIC)
         try:
             self.reset_world_proxy()
         except rospy.ServiceException:
-            print("/gazebo/reset_world service call failed")
+            print(f"{self.reset_world_proxy.resolved_name} service call failed")
 
     def reset_sim(self):
         """Reset the simulation or the world.
