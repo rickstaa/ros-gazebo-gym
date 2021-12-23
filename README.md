@@ -8,10 +8,4 @@ Execute the following commands:<br>
 `source devel/setup.bash`<br>
 `rosdep install openai_ros`<br>
 
-
 ## Use
-
-
-
-
-
