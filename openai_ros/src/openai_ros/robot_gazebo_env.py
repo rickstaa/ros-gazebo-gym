@@ -194,28 +194,40 @@ class RobotGazeboEnv(gym.Env):
 
     def _reset_sim(self):
         """Resets a simulation."""
+        end_joint_states = list(self.joint_states.position)
         rospy.logdebug("RESET SIM START")
         if self._reset_controls:
             rospy.logdebug("RESET CONTROLLERS")
-            self.gazebo.unpause_sim()
-            self._controllers_object.reset_controllers()
-            self._check_all_systems_ready()
-            if self._reset_robot_pose:
-                self._set_init_pose()
             self.gazebo.pause_sim()
             self.gazebo.reset_sim()
             self.gazebo.unpause_sim()
+            # NOTE: The code below is needed since the reset behaviour differs between
+            # physics engines (see https://github.com/osrf/gazebo/issues/3150)
+            self.gazebo.set_model_configuration(
+                model_name="panda",
+                joint_names=self.joints["both"],
+                joint_positions=end_joint_states,
+            )
+            self._check_all_systems_ready()
+            if self._reset_robot_pose:
+                self._set_init_pose()
             self._controllers_object.reset_controllers()
             self._check_all_systems_ready()
         else:
             rospy.logwarn("DON'T RESET CONTROLLERS")
-            self.gazebo.unpause_sim()
-            self._check_all_systems_ready()
-            if self._reset_robot_pose:
-                self._set_init_pose()
             self.gazebo.pause_sim()
             self.gazebo.reset_sim()
             self.gazebo.unpause_sim()
+            # NOTE: The code below is needed since the reset behaviour differs between
+            # physics engines (see https://github.com/osrf/gazebo/issues/3150)
+            self.gazebo.set_model_configuration(
+                model_name="panda",
+                joint_names=self.joints["both"],
+                joint_positions=end_joint_states,
+            )
+            self._check_all_systems_ready()
+            if self._reset_robot_pose:
+                self._set_init_pose()
             self._check_all_systems_ready()
 
         rospy.logdebug("RESET SIM END")

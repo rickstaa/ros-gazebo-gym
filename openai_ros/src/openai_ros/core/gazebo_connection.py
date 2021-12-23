@@ -7,6 +7,8 @@ import rospy
 from gazebo_msgs.srv import (
     GetPhysicsProperties,
     GetPhysicsPropertiesRequest,
+    SetModelConfiguration,
+    SetModelConfigurationRequest,
     SetPhysicsProperties,
     SetPhysicsPropertiesRequest,
 )
@@ -15,6 +17,7 @@ from openai_ros.common.functions import (
 )
 from openai_ros.exceptions import (
     GetPhysicsPropertiesError,
+    SetModelConfigurationError,
     SetPhysicsPropertiesError,
 )
 from rospy.exceptions import ROSException, ROSInterruptException
@@ -27,6 +30,7 @@ GAZEBO_PAUSE_PHYSICS_TOPIC = "/gazebo/pause_physics"
 GAZEBO_UNPAUSE_PHYSICS_TOPIC = "/gazebo/unpause_physics"
 GAZEBO_RESET_SIM_TOPIC = "/gazebo/reset_simulation"
 GAZEBO_RESET_WORLD_TOPIC = "/gazebo/reset_world"
+GAZEBO_SET_MODEL_CONFIGURATION_TOPIC = "/gazebo/set_model_configuration"
 GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC = "/gazebo/get_physics_properties"
 GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC = "/gazebo/set_physics_properties"
 
@@ -48,6 +52,8 @@ class GazeboConnection:
             service that resets the gazebo simulator.
         reset_world_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS service
             that resets the gazebo world.
+        set_model_configuration_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`):
+            ROS service that sets the configuration of a model.
         get_physics_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros
             service used to retrieve the physics properties.
         set_physics_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros
@@ -116,6 +122,25 @@ class GazeboConnection:
         except (rospy.ServiceException, ROSException, ROSInterruptException):
             rospy.logwarn(
                 "Failed to connect to '%s' service!" % GAZEBO_RESET_WORLD_TOPIC
+            )
+        try:
+            rospy.logdebug(
+                "Connecting to '%s' service." % GAZEBO_SET_MODEL_CONFIGURATION_TOPIC
+            )
+            rospy.wait_for_service(
+                GAZEBO_SET_MODEL_CONFIGURATION_TOPIC,
+                timeout=SERVICES_CONNECTION_TIMEOUTS,
+            )
+            self.set_model_configuration_proxy = rospy.ServiceProxy(
+                GAZEBO_SET_MODEL_CONFIGURATION_TOPIC, SetModelConfiguration
+            )
+            rospy.logdebug(
+                "Connected to '%s' service!" % GAZEBO_SET_MODEL_CONFIGURATION_TOPIC
+            )
+        except (rospy.ServiceException, ROSException, ROSInterruptException):
+            rospy.logwarn(
+                "Failed to connect to '%s' service!"
+                % GAZEBO_SET_MODEL_CONFIGURATION_TOPIC
             )
 
         # Setup physics properties control service
@@ -292,6 +317,54 @@ class GazeboConnection:
     # Properties/functions for retrieving #######
     # gazebo env information ####################
     #############################################
+    def set_model_configuration(
+        self, model_name, joint_names, joint_positions, pause=True
+    ):
+        """Sets the configuration of a model.
+
+        Args:
+            model_name (string): Model to set the configuration for.
+            joint_names (list): The joint names for which you want to set the
+                configuration.
+            joint_positions (list): The joint positions you want to set.
+            pause (bool, optional): Pause the simulation while setting the model pose.
+                Defaults to ``True``.
+
+        Returns:
+            bool: Boolean specifying whether the model configuration was set
+                successfully.
+
+        Raises:
+            :obj:`openai_ros.exceptions.SetModelConfigurationError`: Thrown when the
+                model configuration could not be set.
+        """
+        rospy.logdebug("setting '%s' model state." % model_name)
+        if len(joint_names) != len(joint_positions):
+            logwarn_msg = (
+                "Model configuration model could not be set since the 'joint_names' "
+                "and 'joint_position' are unequal in length."
+            )
+            rospy.logwarn(logwarn_msg)
+            raise SetModelConfigurationError(logwarn_msg)
+
+        # Set joint position
+        if pause:
+            self.pause_sim()
+        retval = self.set_model_configuration_proxy.call(
+            SetModelConfigurationRequest(
+                model_name=model_name,
+                joint_names=joint_names,
+                joint_positions=joint_positions,
+            )
+        )
+        if pause:
+            self.unpause_sim()
+        if not retval.success:
+            logwarn_msg = "Model configuration model could not be set."
+            rospy.logwarn(logwarn_msg)
+            raise SetModelConfigurationError(logwarn_msg)
+        return retval.success
+
     def get_physics_properties(self):
         """Retrieve physics properties from gazebo.
 
