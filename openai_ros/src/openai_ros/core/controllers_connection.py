@@ -103,7 +103,7 @@ class ControllersConnection:
         try:
             switch_request_object = SwitchControllerRequest()
             switch_request_object.start_controllers = controllers_on
-            switch_request_object.start_controllers = controllers_off
+            switch_request_object.stop_controllers = controllers_off
             switch_request_object.strictness = strictness
             switch_result = self.switch_service(switch_request_object)
             rospy.logdebug("Switch Result==>" + str(switch_result.ok))
