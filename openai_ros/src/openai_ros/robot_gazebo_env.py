@@ -194,10 +194,15 @@ class RobotGazeboEnv(gym.Env):
 
     def _reset_sim(self):
         """Resets a simulation."""
-        end_joint_states = list(self.joint_states.position)
+        # NOTE: Controllers are reset two times to make sure that control commands of
+        # the previous episode are not applied to the new episode.
         rospy.logdebug("RESET SIM START")
         if self._reset_controls:
             rospy.logdebug("RESET CONTROLLERS")
+            self.gazebo.unpause_sim()
+            self._controllers_object.reset_controllers()
+            self._check_all_systems_ready()
+            end_joint_states = list(self.joint_states.position)
             self.gazebo.pause_sim()
             self.gazebo.reset_sim()
             self.gazebo.unpause_sim()
@@ -215,6 +220,9 @@ class RobotGazeboEnv(gym.Env):
             self._check_all_systems_ready()
         else:
             rospy.logwarn("DON'T RESET CONTROLLERS")
+            self.gazebo.unpause_sim()
+            self._check_all_systems_ready()
+            end_joint_states = list(self.joint_states.position)
             self.gazebo.pause_sim()
             self.gazebo.reset_sim()
             self.gazebo.unpause_sim()
