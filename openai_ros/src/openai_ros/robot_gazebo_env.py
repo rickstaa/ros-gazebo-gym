@@ -53,7 +53,7 @@ class RobotGazeboEnv(gym.Env):
                 simulation "SIMULATION" at startup or only the world "WORLD" (object
                 positions). Defaults to "SIMULATION".
             pause_sim (bool, optional): Whether the simulation should be paused after it
-                has been reset.
+                has been reset. Defaults to ``False``.
         """
         rospy.logdebug("START init RobotGazeboEnv")
         self.gazebo = GazeboConnection(reset_world_or_sim)
