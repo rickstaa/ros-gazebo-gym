@@ -114,12 +114,7 @@ class ROSLauncher(object):
                 atexit.register(
                     cls.kill_process, process_name=launch_file_name
                 )  # Make sure process dies when parent dies
-            elif state < 0:
-                rospy.logerror(
-                    "Something went wrong while trying to launch the "
-                    f"{path_launch_file_name} launch file."
-                )
-            elif state > 0:
+            elif state != 0:
                 rospy.logerror(
                     "Something went wrong while trying to launch the "
                     f"{path_launch_file_name} launch file."

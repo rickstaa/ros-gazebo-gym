@@ -37,8 +37,8 @@ class ControllersConnection:
         Args:
             namespace (str): The namespace on which the robot controllers can be found.
             controllers_list (list, optional): A list with currently available
-                controllers to look for. Defaults to ``None``, which means that the class
-                will try to retrieve all the running controllers.
+                controllers to look for. Defaults to ``None``, which means that the
+                class will try to retrieve all the running controllers.
         """
         rospy.logwarn("Start Init ControllersConnection")
         self.controllers_list = controllers_list
@@ -117,25 +117,27 @@ class ControllersConnection:
         # Try to find all running controllers controller_list was not supplied
         if self.controllers_list is None:
             list_controllers_msg = self.list_service.call(ListControllersRequest())
-            self.controllers_list = [
+            controllers_list = [
                 controller.name
                 for controller in list_controllers_msg.controller
                 if controller.state == "running"
             ]
+        else:
+            controllers_list = self.controllers_list
 
         # Reset the running controllers
         reset_result = False
         result_off_ok = self.switch_controllers(
-            controllers_on=[], controllers_off=self.controllers_list
+            controllers_on=[], controllers_off=controllers_list
         )
         rospy.logdebug("Deactivated controllers")
         if result_off_ok:
             rospy.logdebug("Activating controllers")
             result_on_ok = self.switch_controllers(
-                controllers_on=self.controllers_list, controllers_off=[]
+                controllers_on=controllers_list, controllers_off=[]
             )
             if result_on_ok:
-                rospy.logdebug("Controllers reset==>" + str(self.controllers_list))
+                rospy.logdebug("Controllers reset==>" + str(controllers_list))
                 reset_result = True
             else:
                 rospy.logdebug("result_on_ok==>" + str(result_on_ok))
