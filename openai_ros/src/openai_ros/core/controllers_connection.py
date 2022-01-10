@@ -31,11 +31,12 @@ class ControllersConnection:
             switch service.
     """
 
-    def __init__(self, namespace, controllers_list=None):
+    def __init__(self, namespace="", controllers_list=None):
         """Initialize the ControllersConnection instance.
 
         Args:
-            namespace (str): The namespace on which the robot controllers can be found.
+            namespace (str, optional): The namespace on which the robot controllers can
+                be found. Defaults to ````.
             controllers_list (list, optional): A list with currently available
                 controllers to look for. Defaults to ``None``, which means that the
                 class will try to retrieve all the running controllers.
@@ -43,7 +44,7 @@ class ControllersConnection:
         rospy.logwarn("Start Init ControllersConnection")
         self.controllers_list = controllers_list
         self.list_controllers_service_name = (
-            "/" + namespace + "/controller_manager/list_controllers"
+            f"{namespace}/controller_manager/list_controllers"
         )
         try:
             rospy.logdebug(
@@ -65,9 +66,7 @@ class ControllersConnection:
                 f"established with the {self.list_controllers_service_name} service!"
             )
             sys.exit(0)
-        self.switch_service_name = (
-            "/" + namespace + "/controller_manager/switch_controller"
-        )
+        self.switch_service_name = f"{namespace}/controller_manager/switch_controller"
         try:
             rospy.logdebug("Connecting to '%s' service." % self.switch_service_name)
             rospy.wait_for_service(
