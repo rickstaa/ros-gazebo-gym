@@ -210,7 +210,7 @@ class RobotGazeboEnv(gym.Env):
             # physics engines (see https://github.com/osrf/gazebo/issues/3150)
             self.gazebo.set_model_configuration(
                 model_name="panda",
-                joint_names=self.joints["both"],
+                joint_names=self.joint_states.name,
                 joint_positions=end_joint_states,
             )
             self._check_all_systems_ready()
@@ -230,7 +230,7 @@ class RobotGazeboEnv(gym.Env):
             # physics engines (see https://github.com/osrf/gazebo/issues/3150)
             self.gazebo.set_model_configuration(
                 model_name="panda",
-                joint_names=self.joints["both"],
+                joint_names=self.joint_states.name,
                 joint_positions=end_joint_states,
             )
             self._check_all_systems_ready()
