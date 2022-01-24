@@ -28,13 +28,27 @@ def start_openai_ros_env(task_environment, max_episode_steps=None, **kwargs):
 
     Returns:
         gym.env: The openai_ros task gym environment.
-    """
 
+    .. important::
+        This method of starting the :module:`openai_ros` task environments has been
+        deprecated and will be removed in the future. Please import the
+        :module:`openai_ros` package and use the :meth:`gym.make` method instead. See
+        `the gym documentation <https://gym.openai.com/docs/>`_ for more information.
+    """
+    rospy.logwarn(
+        "Starting the openai_ros task environments using the `start_openai_ros_env` "
+        "method has been deprecated and will be removed in the future. Please import "
+        "the `openai_ros` package and use the `gym.make` method instead See the openai "
+        "gym documentation https://gym.openai.com/docs/ for more information."
+    )
     rospy.loginfo(f"Registering '{task_environment}' openai_ros gym environment...")
     try:
-        register_openai_ros_env(
-            task_env=task_environment, max_episode_steps=max_episode_steps
-        )
+        if (
+            task_environment not in gym.envs.registry.env_specs
+        ):
+            register_openai_ros_env(
+                task_env=task_environment, max_episode_steps=max_episode_steps
+            )
     except Exception as e:
         rospy.logwarn(e.args[0])
 
