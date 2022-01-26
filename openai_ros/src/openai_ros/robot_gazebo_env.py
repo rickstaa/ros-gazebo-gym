@@ -36,6 +36,7 @@ class RobotGazeboEnv(gym.Env):
         controllers_list=None,
         reset_robot_pose=False,
         reset_world_or_sim="SIMULATION",
+        log_reset=True,
         pause_simulation=False,
     ):
         """Initiate the RobotGazebo environment instance.
@@ -52,11 +53,13 @@ class RobotGazeboEnv(gym.Env):
             reset_world_or_sim (str, optional): Whether you want to reset the whole
                 simulation "SIMULATION" at startup or only the world "WORLD" (object
                 positions). Defaults to "SIMULATION".
+            log_reset (bool, optional): Whether we want to print a log statement when
+                the world/simulation is reset. Defaults to ``True``.
             pause_sim (bool, optional): Whether the simulation should be paused after it
                 has been reset. Defaults to ``False``.
         """
         rospy.logdebug("START init RobotGazeboEnv")
-        self.gazebo = GazeboConnection(reset_world_or_sim)
+        self.gazebo = GazeboConnection(reset_world_or_sim, log_reset=log_reset)
         self._controllers_object = ControllersConnection(
             namespace=robot_name_space, controllers_list=controllers_list
         )
@@ -241,7 +244,7 @@ class RobotGazeboEnv(gym.Env):
         rospy.logdebug("RESET SIM END")
         return True
 
-    def render(self):
+    def render(self, mode="human"):
         """Overload render method since rendering is handled in Gazebo."""
         pass
 

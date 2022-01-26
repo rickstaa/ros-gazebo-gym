@@ -20,6 +20,7 @@ from openai_ros.exceptions import (
     SetModelConfigurationError,
     SetPhysicsPropertiesError,
 )
+from rosgraph_msgs.msg import Clock
 from rospy.exceptions import ROSException, ROSInterruptException
 from rospy_message_converter import message_converter
 from std_msgs.msg import Float64
@@ -30,6 +31,7 @@ GAZEBO_PAUSE_PHYSICS_TOPIC = "/gazebo/pause_physics"
 GAZEBO_UNPAUSE_PHYSICS_TOPIC = "/gazebo/unpause_physics"
 GAZEBO_RESET_SIM_TOPIC = "/gazebo/reset_simulation"
 GAZEBO_RESET_WORLD_TOPIC = "/gazebo/reset_world"
+GAZEBO_CLOCK_TOPIC = "/clock"
 GAZEBO_SET_MODEL_CONFIGURATION_TOPIC = "/gazebo/set_model_configuration"
 GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC = "/gazebo/get_physics_properties"
 GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC = "/gazebo/set_physics_properties"
@@ -60,7 +62,9 @@ class GazeboConnection:
             service used to set the physics properties.
     """
 
-    def __init__(self, reset_world_or_sim="WORLD", max_retry=20):  # noqa: C901
+    def __init__(  # noqa: C901
+        self, reset_world_or_sim="WORLD", max_retry=20, log_reset=True
+    ):
         """Initiate the GazeboConnection instance.
 
         Args:
@@ -69,10 +73,15 @@ class GazeboConnection:
                 positions). Defaults to "WORLD".
             max_retry (int, optional): How many times a command to the simulator is
                 retried before giving up. Defaults to ``20``.
+            log_reset (bool, optional): Whether we want to print a log statement when
+                the world/simulation is reset. Defaults to ``True``.
         """
+        rospy.logwarn("Start Init GazeboConnection")
         self._reset_world_or_sim = reset_world_or_sim
+        self._log_reset = log_reset
         self._max_retry = max_retry
         self._physics_update_rate = Float64(PHYSICS_UPDATE_RATE)
+        self.__time = 0.0
 
         # Connect to gazebo services
         try:
@@ -183,11 +192,16 @@ class GazeboConnection:
                 % GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC
             )
 
+        # Connect to clock
+        rospy.Subscriber(GAZEBO_CLOCK_TOPIC, Clock, self._clock_cb, queue_size=1)
+
         # Reset the simulation
         self.reset_sim()
 
         # We always pause the simulation, important for legged robots learning
         self.pause_sim()
+
+        rospy.logwarn("END Init GazeboConnection")
 
     def pause_sim(self):
         """Pause the simulation."""
@@ -268,10 +282,12 @@ class GazeboConnection:
             position, not the entire simulation.
         """
         if self._reset_world_or_sim == "SIMULATION":
-            rospy.logerr("SIMULATION RESET")
+            if self._log_reset:
+                rospy.logwarn("SIMULATION RESET")
             self._reset_simulation()
         elif self._reset_world_or_sim == "WORLD":
-            rospy.logerr("WORLD RESET")
+            if self._log_reset:
+                rospy.logwarn("WORLD RESET")
             self._reset_world()
         elif self._reset_world_or_sim == "NO_RESET_SIM":
             rospy.logerr("NO RESET SIMULATION SELECTED")
@@ -422,7 +438,21 @@ class GazeboConnection:
                 message=logwarn_msg, details=retval.status_message
             )
 
+    def _clock_cb(self, data):
+        """Gazebo clock subscriber callback function.
+
+        Args:
+            data (:obj:`gazebo_msgs.msg.ModelStates`): The data that is
+                returned by the subscriber.
+        """
+        self.__time = data.clock.to_time()
+
     @property
     def physics_properties(self):
         """Retrieves the physics properties from gazebo."""
         return self.get_physics_proxy(GetPhysicsPropertiesRequest())
+
+    @property
+    def time(self):
+        """Retrieves the Gazebo time."""
+        return self.__time

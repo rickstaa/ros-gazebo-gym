@@ -10,7 +10,7 @@ from gym.utils import colorize as gym_colorize
 #################################################
 # List dict and text manipulation functions #####
 #################################################
-def colorize(string, color, bold=False, highlight=False):
+def colorize(string, color="white", bold=False, highlight=False):
     """Colorize a string.
 
     .. seealso::
