@@ -43,9 +43,7 @@ def start_openai_ros_env(task_environment, max_episode_steps=None, **kwargs):
     )
     rospy.loginfo(f"Registering '{task_environment}' openai_ros gym environment...")
     try:
-        if (
-            task_environment not in gym.envs.registry.env_specs
-        ):
+        if task_environment not in gym.envs.registry.env_specs:
             register_openai_ros_env(
                 task_env=task_environment, max_episode_steps=max_episode_steps
             )

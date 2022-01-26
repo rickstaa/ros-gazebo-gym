@@ -6,10 +6,13 @@ import subprocess
 import sys
 import psutil
 from pathlib import Path
+import rosgraph
+import socket
 
 import catkin
 import rospy
 from openai_ros.core.helpers import get_global_pkg_path, package_installer
+from openai_ros.common.functions import colorize
 
 
 class ROSLauncher(object):
@@ -22,6 +25,57 @@ class ROSLauncher(object):
     """
 
     launched = {}  # Stores all processes that were launched
+
+    @classmethod
+    def initialize(cls):
+        """Make sure a ros master is running and ROS is
+        initialized.
+        """
+        # Make sure ROS master is running
+        try:
+            if not rosgraph.is_master_online():
+                print(
+                    colorize(
+                        "WARNING: No ROS master was found. Starting one in a "
+                        "subprocess.",
+                        color="yellow",
+                        bold=True,
+                    )
+                )
+                p = subprocess.Popen("roscore")
+                state = p.poll()
+                if state is None:
+                    print(colorize("INFO: ROS master successfully started."))
+                    cls.launched["roscore"] = p  # Store a reference to the process
+                    atexit.register(
+                        cls.kill_process, process_name="roscore"
+                    )  # Make sure the roscore dies when parent dies
+                elif state != 0:
+                    print(
+                        colorize(
+                            "ERROR: Something went wrong while trying to launch the "
+                            "ROS master.",
+                            color="red",
+                            bold=True,
+                        )
+                    )
+                    sys.exit(0)
+        except socket.error:
+            print(
+                colorize(
+                    "ERROR: No ROS master was found and none could be started "
+                    "please check your system and try again.",
+                    color="red",
+                    bold=True,
+                )
+            )
+            sys.exit(0)
+
+        # Make sure init_node has been called
+        if not rospy.rostime.is_rostime_initialized():
+            rospy.init_node(
+                "openai_roslauncher_node", anonymous=True, log_level=rospy.WARN
+            )
 
     @classmethod
     def kill_process(cls, process_name):
