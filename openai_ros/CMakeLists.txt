@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(openai_ros)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
@@ -103,7 +103,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   CATKIN_DEPENDS rospy gazebo_msgs std_msgs geometry_msgs controller_manager_msgs message_runtime
-    rospy_message_converter
+    rospy_message_converter actionlib_msgs jsk_rviz_plugins tf2_geometry_msgs
   # system_lib
 )
 

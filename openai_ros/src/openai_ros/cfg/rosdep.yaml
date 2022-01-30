@@ -225,3 +225,8 @@ robotx_gazebo:
       binary: False
       git: https://bitbucket.org/theconstructcore/spawn_robot_tools.git
       branch: master
+# Panda env
+panda_gazebo:
+  binary: False
+  git: https://github.com/rickstaa/panda_gazebo.git
+  branch: noetic-devel

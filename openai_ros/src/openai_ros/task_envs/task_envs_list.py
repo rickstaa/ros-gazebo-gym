@@ -104,4 +104,25 @@ ENVS = {
         "max_steps": 10000,
         "reward_threshold": 300,
     },
+    # Panda task envs
+    "PandaReach-v0": {
+        "module": "openai_ros.task_envs.panda.panda_reach:PandaReachEnv",
+        "max_steps": 100,
+        "reward_threshold": 300,
+    },
+    "PandaPickAndPlace-v0": {
+        "module": "openai_ros.task_envs.panda.panda_pick_and_place:PandaPickAndPlaceEnv",
+        "max_steps": 100,
+        "reward_threshold": 300,
+    },
+    "PandaPush-v0": {
+        "module": "openai_ros.task_envs.panda.panda_push:PandaPushEnv",
+        "max_steps": 100,
+        "reward_threshold": 300,
+    },
+    "PandaSlide-v0": {
+        "module": "openai_ros.task_envs.panda.panda_slide:PandaSlideEnv",
+        "max_steps": 100,
+        "reward_threshold": 300,
+    },
 }  # noqa: E501
