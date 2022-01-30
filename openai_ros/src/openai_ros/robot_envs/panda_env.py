@@ -37,6 +37,7 @@ try:
     import panda_gazebo.core as pg_core
     import panda_gazebo.msg as pg_msg
     import panda_gazebo.srv as pg_srv
+    from franka_msgs.msg import FrankaState
     from panda_gazebo.exceptions import InputMessageInvalidError
 
     PANDA_GAZEBO_IMPORTED = True
@@ -59,6 +60,7 @@ SET_GRIPPER_WIDTH_TOPIC = "panda_control_server/panda_hand/set_gripper_width"
 SET_JOINT_TRAJECTORY_TOPIC = "panda_control_server/panda_arm/follow_joint_trajectory"
 FRANKA_GRIPPER_COMMAND_TOPIC = "franka_gripper/gripper_action"
 JOINT_STATES_TOPIC = "joint_states"
+FRANKA_STATES_TOPIC = "franka_state_controller/franka_states"
 
 # Other script variables
 AVAILABLE_CONTROL_TYPES = [
@@ -127,6 +129,8 @@ class PandaEnv(RobotGazeboGoalEnv):
         block_gripper (bool): Whether the gripper was blocked.
         robot_control_type (str): The robot control type.
         joint_states (:obj:`sensor_msgs.msg.JointState`): The current joint states.
+        franka_states (:obj:`franka_msgs.msg.FrankaState`): The current franka states.
+            These give robot specific information about the panda robot.
         joints (dict): The joint that can be controlled.
         gripper_width (float): The gripper width.
         tf_buffer (:obj:`tf2_ros.buffer.Buffer`): Tf buffer object can be used to
@@ -304,11 +308,17 @@ class PandaEnv(RobotGazeboGoalEnv):
         # Connect to sensors ###################
         ########################################
 
-        # Create joint_state subscriber
+        # Create joint state and franka state subscriber
         rospy.Subscriber(
             f"{self.robot_name_space}/{JOINT_STATES_TOPIC}",
             JointState,
             self._joint_states_cb,
+            queue_size=1,
+        )
+        rospy.Subscriber(
+            FRANKA_STATES_TOPIC,
+            FrankaState,
+            self._franka_states_cb,
             queue_size=1,
         )
 
@@ -1449,7 +1459,7 @@ class PandaEnv(RobotGazeboGoalEnv):
             )
             grad_threshold = ARM_JOINT_VELOCITY_WAIT_THRESHOLD
             joint_setpoint_tmp = np.append(
-                np.array(joint_setpoint), joint_states[len(joint_setpoint):]
+                np.array(joint_setpoint), joint_states[len(joint_setpoint) :]
             )
 
             # Add current state to state_buffer and delete oldest entry
@@ -1493,6 +1503,16 @@ class PandaEnv(RobotGazeboGoalEnv):
         """
         # Retrieve launch robot start joint position
         self.joint_states = data
+
+    def _franka_states_cb(self, data):
+        """Franka states subscriber callback function.
+
+        Args:
+            data (:obj:`franka_msgs.msg.FrankaState`): The data that is returned by the
+                subscriber.
+        """
+        # Retrieve launch robot start joint position
+        self.franka_states = data
 
     def _check_all_sensors_ready(self):
         """Checks whether we are receiving sensor data."""

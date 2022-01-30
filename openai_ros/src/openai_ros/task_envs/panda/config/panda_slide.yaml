@@ -102,6 +102,7 @@ panda_slide:
   object_sampling:
     strategy: "global" # Options are: `global` and `fixed`.
     distance_threshold: 0.1 # Threshold for determining whether new object pose is far enough from old obj pose.
+    collision_penalty: 1.0 # The penalty given for when the robot is in collision.
     visualize_object_bounds: True # Turn object sampling region visualization on and off.
 
     # The pose of the grasp object

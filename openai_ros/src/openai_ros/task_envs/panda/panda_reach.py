@@ -561,6 +561,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             except KeyError:
                 self._distance_threshold = 0.05
             try:
+                self._collision_penalty = rospy.get_param(
+                    f"/{ns}/training/collision_penalty"
+                )
+            except KeyError:
+                self._collision_penalty = 0.0
+            try:
                 self._ee_frame_offset = rospy.get_param(
                     f"/{ns}/training/ee_frame_offset"
                 )
@@ -1082,6 +1088,8 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
         d = self._goal_distance(observations["achieved_goal"], self.goal)
         if self._reward_type == "sparse":
             reward = -(d > self._distance_threshold).astype(np.float32)
+            if self._collision_penalty != 0.0:
+                reward = -1.0 if any(self.franka_states.cartesian_contact) else reward
             self._step_debug_logger("=Reward info=")
             self._step_debug_logger("Reward type: Non sparse")
             self._step_debug_logger("Goal: %s", self.goal)
@@ -1101,7 +1109,10 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             self._step_debug_logger("Perpendicular distance: %s", d)
             self._step_debug_logger("Threshold: %s", self._distance_threshold)
             self._step_debug_logger("Received reward: %s", -d)
-            return -d
+            reward = -d
+            if self._collision_penalty != 0.0:
+                reward += -self._collision_penalty
+            return reward
 
     def _get_obs(self):
         """Get robot state observation.
