@@ -1,8 +1,37 @@
-*.pyc
-.~*
+# Logs and data
+control/logs
+data/
+logs/*
+*.pnpm-error.log
+*.pnpm-debug.log
+*.log
 
-# IDE folders/files
-openai_ros/doc/.idea/
+# Docs
+_autosummary/
+
+# Cache
+__pycache__/
+*.pyc
+
+# Tests
+pytest/
+*.pytest_cache/
+.coverage
+pytest-coverage.txt
+
+# Dist
+build/
+dist/
+.eggs/
+*.egg-info/
+
+# node related
+node_modules/
+
+# IDE files to ignore
 .vscode
-compile_commands.json
 *.code-workspace
+compile_commands.json
+
+# Other
+docs/build
