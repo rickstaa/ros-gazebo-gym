@@ -11,7 +11,8 @@
     "ros",
     "gym",
     "gazebo",
-    "gym-environments"
+    "gym-environments",
+    "environments"
   ],
   "homepage": "https://github.com/rickstaa/ros-gazebo-gym#readme",
   "bugs": {

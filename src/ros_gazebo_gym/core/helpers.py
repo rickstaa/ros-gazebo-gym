@@ -10,7 +10,6 @@ from pathlib import Path
 
 import catkin
 import catkin_pkg
-import numpy as np
 import pygit2
 import rosparam
 import rospkg

@@ -1,6 +1,6 @@
 """Class used for displaying a marker for the object frame origin in rviz. This class
-overloads the :obj:`ros_gazebo_gym.common.markers.target_marker.TargetMarker` class in order to
-pre-initialize some of its attributes.
+overloads the :obj:`ros_gazebo_gym.common.markers.target_marker.TargetMarker` class in
+order to pre-initialize some of its attributes.
 """
 
 from ros_gazebo_gym.common.markers import TargetMarker
@@ -38,9 +38,11 @@ class FrameOriginMarker(TargetMarker):
 
         Args:
             *args: Arguments passed to the
-                :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super class.
+                :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super
+                    class.
             **kwargs: Keyword arguments that are passed to the
-                :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super class.
+                :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super
+                    class.
         """
         super().__init__(*args, **kwds)
 

@@ -1,7 +1,7 @@
 """Class used for displaying a marker for the puck object in rviz. This class overloads
-the :obj:`ros_gazebo_gym.common.markers.target_marker.TargetMarker` class in order to pre-initialize
-some of its attributes. Most importantly, a pose offset was applied to align the marker
-frame with the object frame.
+the :obj:`ros_gazebo_gym.common.markers.target_marker.TargetMarker` class in order to
+pre-initialize some of its attributes. Most importantly, a pose offset was applied to
+align the marker frame with the object frame.
 """
 
 from geometry_msgs.msg import Vector3
@@ -42,9 +42,11 @@ class PuckMarker(TargetMarker):
 
         Args:
             *args: Arguments passed to the
-                :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super class.
+                :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super
+                    class.
             **kwargs: Keyword arguments that are passed to the
-                :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super class.
+                :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super
+                    class.
         """
         super().__init__(*args, **kwds)
 

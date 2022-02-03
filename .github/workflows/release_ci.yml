@@ -53,7 +53,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           branch: noetic
-          file_pattern: src/ros_gazebo_gym/version.py package.xml package.json
+          file_pattern: package.json ros_gazebo_gym_panda_example/package.xml
           commit_message: "chore(release): updates code version to ${{ steps.get_semver.outputs.current_version }}"
   create-release:
     # NOTE: Drafts a release for the new tag
