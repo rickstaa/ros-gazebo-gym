@@ -1,6 +1,6 @@
 # Github action that updates the code version tags, adds a changelog and drafts a release when
 # a new version tag is added.
-name: Ros-gazebo-gym release CI
+name: ros-gazebo-gym release CI
 on:
   push:
     tags:
