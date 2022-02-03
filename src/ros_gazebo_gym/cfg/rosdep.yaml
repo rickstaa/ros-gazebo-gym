@@ -6,7 +6,7 @@
 panda_gazebo: # NOTE: The package name of the main environment dependency
   binary: False # NOTE: Whether the package can also be installed as a system binary
   git: https://github.com/rickstaa/panda_gazebo.git # NOTE: The repository that contains the package
-  branch: noetic-devel # NOTE: The branch of this repository you want to used
+  branch: noetic # NOTE: The branch of this repository you want to used
   deps: # NOTE: Other system or repository dependencies
     libfranka:
       binary: True

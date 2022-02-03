@@ -3,7 +3,7 @@ name: ros-gazebo-gym CI
 on:
   push:
     branches:
-      - noetic-devel
+      - noetic
   pull_request:
 jobs:
   spell-check:

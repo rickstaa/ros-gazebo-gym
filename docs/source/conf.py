@@ -126,7 +126,7 @@ html_context = {
     "display_github": True,  # Add 'Edit on Github' link instead of 'View page source'
     "github_user": git_user_name,
     "github_repo": project,
-    "github_version": "main",
+    "github_version": "noetic",
     "conf_py_path": "/docs/source/",  # needs leading and trailing slashes!
 }
 
@@ -191,7 +191,7 @@ intersphinx_mapping = {"https://docs.python.org/": None}
 
 extlinks = {
     "panda_gazebo": (
-        "https://github.com/rickstaa/panda-gazebo/tree/noetic-devel/%s",
+        "https://github.com/rickstaa/panda-gazebo/tree/noetic/%s",
         None,
     ),
     "ros_gazebo_gym": (
