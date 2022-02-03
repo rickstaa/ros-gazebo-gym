@@ -6,7 +6,7 @@ SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = ROS Gazebo Gym
 SOURCEDIR     = source
 BUILDDIR      = build
-GH_PAGES_SOURCES = docs ros_gazebo_gym
+GH_PAGES_SOURCES = docs src/ros_gazebo_gym
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)

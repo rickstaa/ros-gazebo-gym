@@ -1,5 +1,5 @@
-# Main Panda-gazebo github action. Performs linting and formatting checks. It also runs tests.
-name: Panda-gazebo CI
+# Main ROS-gazebo-gym github action. Performs linting and formatting checks. It also runs tests.
+name: ros-gazebo-gym CI
 on:
   push:
     branches:
