@@ -2,7 +2,17 @@
 """Contains a list of the available :ros_gazebo_gym:`ros_gazebo_gym <>` gym
 environments.
 
-NOTE: Here is where you have to PLACE YOUR NEW TASK ENV
+.. important::
+    This is where you can register new environments such that they are found inside the
+    openai Gym namespace.
+
+Source code
+-----------
+
+.. literalinclude:: ../../../../../src/ros_gazebo_gym/task_envs/task_envs_list.py
+   :language: python
+   :linenos:
+   :lines: 18-
 """
 
 # NOTE: Each environment should contain a 'name', 'module' and default 'max_steps' key.

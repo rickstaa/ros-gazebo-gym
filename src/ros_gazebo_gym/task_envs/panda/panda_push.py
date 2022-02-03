@@ -1,6 +1,6 @@
 """An Openai gym ROS Panda push environment.
 
-.. figure:: ../../../images/panda/panda_push_env.png
+.. figure:: /images/panda/panda_push_env.png
    :alt: Panda push environment
 
 Goal:

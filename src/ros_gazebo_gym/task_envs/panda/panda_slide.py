@@ -1,6 +1,6 @@
 """An Openai gym ROS Panda slide environment.
 
-.. figure:: ../../../images/panda/panda_slide_env.png
+.. figure:: /images/panda/panda_slide_env.png
    :alt: Panda slide environment
 
 Goal:

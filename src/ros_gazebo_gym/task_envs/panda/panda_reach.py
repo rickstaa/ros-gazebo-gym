@@ -1,6 +1,6 @@
 """An Openai gym ROS Panda reach environment.
 
-.. figure:: ../../../images/panda/panda_reach_env.png
+.. figure:: /images/panda/panda_reach_env.png
    :alt: Panda reach environment
 
 Goal:
@@ -1348,9 +1348,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             offset (list): Position offset for visualizing the goal.
         """
         goal = self.goal + offset
-        goal_marker_msg = TargetMarker(
-            x=goal[0], y=goal[1], z=goal[2], id=3
-        )
+        goal_marker_msg = TargetMarker(x=goal[0], y=goal[1], z=goal[2], id=3)
         self._target_pose_marker_pub.publish(goal_marker_msg)
 
     def _set_init_pose(self):  # noqa: C901

@@ -4,8 +4,6 @@
 Code API
 ========
 
-.. contents:: Table of Contents
-
 Python Code API
 ===============
 

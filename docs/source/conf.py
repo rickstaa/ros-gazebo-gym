@@ -55,6 +55,9 @@ extensions = [
 autosummary_generate = True
 autosummary_generate_overwrite = True
 autodoc_member_order = "bysource"
+autodoc_default_options = {
+    "private-members": True,
+}
 
 # imgmath settings
 imgmath_image_format = "svg"
@@ -193,6 +196,10 @@ extlinks = {
     ),
     "ros_gazebo_gym": (
         "https://github.com/rickstaa/ros-gazebo-gym/tree/noetic/%s",
+        None,
+    ),
+    "issues": (
+        "https://github.com/rickstaa/ros-gazebo-gym/issues/%s",
         None,
     ),
 }

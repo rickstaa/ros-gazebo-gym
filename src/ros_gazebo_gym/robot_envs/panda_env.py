@@ -153,7 +153,7 @@ class PandaEnv(RobotGazeboGoalEnv):
 
         Args:
             robot_name_space (str, optional): The namespace the robot is on. Defaults to
-                ````.
+                ``""``.
             robot_EE_link (str, optional): Robot end effector link name. Defaults to
                 ``panda_link8``.
             load_gripper (bool, optional): Whether we want to load the parallel-jaw

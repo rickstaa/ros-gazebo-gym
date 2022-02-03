@@ -1,6 +1,6 @@
 """An Openai gym ROS Panda pick and place environment.
 
-.. figure:: ../../../images/panda/panda_pick_and_place_env.png
+.. figure:: /images/panda/panda_pick_and_place_env.png
    :alt: Panda pick and place environment
 
 Goal:

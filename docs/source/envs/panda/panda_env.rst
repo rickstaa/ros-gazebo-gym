@@ -1,6 +1,11 @@
 Panda Environment
 =================
 
+.. important::
+
+   This environment requires the `libfranka`_ library to be installed to work. You are recommended to build this
+   library from source according to the `frankaemika documentation`_.
+
 The Panda robot is a high-performance 7DOF research robot created by `Franka Emika`_. It
 is very sensitive, agile and contains torque sensors at each joint, allowing
 adjustable stiffness/compliance and advanced torque control.
@@ -31,7 +36,7 @@ seamlessly with the real robot.
 .. _franka_gazebo: https://frankaemika.github.io/docs/franka_ros.html#franka-gazebo
 
 Control types
-*************
+-------------
 
 The :ros_gazebo_gym:`ros_gazebo_gym <>` version of the Panda environment allows for four types of control: ``effort``, ``position``, ``trajectory`` and
 ``end-effector`` control. End-effector control is implemented through `MoveIt`_.
@@ -46,18 +51,30 @@ The :ros_gazebo_gym:`ros_gazebo_gym <>` version of the Panda environment allows 
 .. _panda-gazebo: https://github.com/rickstaa/panda-gazebo
 
 Task environments
-*****************
+-----------------
 
 The tasks environments that are in the panda :ros_gazebo_gym:`ros_gazebo_gym <>` package were based on the fetch environments that are found in the `openai gym`_
 package. It currently contains the following task environments:
 
-- :class:`PandaReach-v0 <ros_gazebo_gym.task_envs.panda.panda_reach>`: Move Panda to a goal position.
-- :class:`PandaPickAndPlace-v0 <ros_gazebo_gym.task_envs.panda.panda_pick_and_place>`: Lift a block into the air.
-- :class:`PandaPush-v0 <ros_gazebo_gym.task_envs.panda.panda_push>`: Push a block to a goal position.
-- :class:`PandaSlide-v0 <ros_gazebo_gym.task_envs.panda.panda_slide>`: Slide a puck to a goal position.
+* :class:`PandaReach-v0 <ros_gazebo_gym.task_envs.panda.panda_reach>`: Move Panda to a goal position.
+* :class:`PandaPickAndPlace-v0 <ros_gazebo_gym.task_envs.panda.panda_pick_and_place>`: Lift a block into the air.
+* :class:`PandaPush-v0 <ros_gazebo_gym.task_envs.panda.panda_push>`: Push a block to a goal position.
+* :class:`PandaSlide-v0 <ros_gazebo_gym.task_envs.panda.panda_slide>`: Slide a puck to a goal position.
+
+
+System dependencies
+-------------------
+
+The Panda task environments require the following system dependencies to be installed. These dependencies should have been fetched and install by the :ros_gazebo_gym:`ros_gazebo_gym <>` package
+the first time a task environment is imported:
+
+* `ROS noetic <http://wiki.ros.org/noetic>`_.
+* The :panda_gazebo:`panda_gazebo <>` package.
+* The `libfranka`_ library.
 
 .. _`Franka Emika`: https://www.franka.de
 .. _`Franka Control Interface`: https://frankaemika.github.io/docs/
 .. _`libfranka`: https://frankaemika.github.io/docs/libfranka.html
 .. _`franka_ros`: https://frankaemika.github.io/docs/franka_ros.html
 .. _`openai gym`: https://gym.openai.com/envs/#robotics
+.. _`frankaemika documentation`: https://frankaemika.github.io/docs/installation_linux.html

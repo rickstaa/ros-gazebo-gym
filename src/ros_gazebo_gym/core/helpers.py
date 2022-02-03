@@ -16,9 +16,6 @@ import rosparam
 import rospkg
 import rospy
 import ruamel.yaml as yaml
-from gym import envs
-from gym.envs.registration import register
-from ros_gazebo_gym.task_envs.task_envs_list import ENVS
 from tqdm import tqdm
 
 # Dependency index
@@ -83,63 +80,6 @@ def query_yes_no(question, default="yes"):
             return valid[choice]
         else:
             sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
-
-
-def register_ros_gazebo_gym_env(task_env, max_episode_steps=None):
-    """Register a given :ros_gazebo_gym:`ros_gazebo_gym <>` task environment.
-
-    Args:
-        task_env (str): The :ros_gazebo_gym:`ros_gazebo_gym <>` task environment you
-            want to register.
-        max_episode_steps (int, optional): The max episode step you want to set for the
-            environment. Defaults to ``None`` meaning the value in the config file will
-            be used (i.e. :obj:`ros_gazebo_gym.task_envs.task_envs_list`).
-
-    Raises:
-        Exception: When something went wrong during the registration.
-    """
-    if task_env in ENVS.keys():
-        # Register gym environment
-        try:
-            max_episode_steps = (
-                max_episode_steps if max_episode_steps else ENVS[task_env]["max_steps"]
-            )
-        except KeyError:
-            max_episode_steps = 1000
-        try:
-            register(
-                id=task_env,
-                entry_point=ENVS[task_env]["module"],
-                max_episode_steps=max_episode_steps,
-            )
-        except Exception:
-            raise Exception(
-                f"Something went wrong while trying to register the '{task_env}' gym "
-                "environment."
-            )
-    else:
-        env_not_found_msg = (
-            f"Gym environment '{task_env}' could not be registered. As it is not "
-            "implemented in the 'ros_gazebo_gym' package. Implemented environment are:"
-        )
-        for key in ENVS:
-            env_not_found_msg += f"\t\n - {key}"
-        raise Exception(env_not_found_msg)
-
-    # Double check if the environment was really registered
-    assert task_env in get_registered_gym_envs(), (
-        f"Something went wrong while trying to register the '{task_env}' gym "
-        "environment."
-    )
-
-
-def get_registered_gym_envs():
-    """Retrieve all currently registered gym environments.
-
-    Returns:
-        list: List with all the gym environments that are registered.
-    """
-    return [env_spec.id for env_spec in envs.registry.all()]
 
 
 def get_global_pkg_path(package_name, workspace_path=None):
@@ -565,17 +505,3 @@ def load_ros_params_from_yaml(
     paramlist = rosparam.load_file(path_config_file)
     for params, ns in paramlist:
         rosparam.upload_params(ns, params)
-
-
-def get_vector_magnitude(vector):
-    """Calculates the force magnitude.
-
-    Args:
-        vector (numpy.ndarray): The input vector. [description]
-
-    Returns:
-        float: The magnitude of the vector.
-    """
-    contact_force_np = np.array((vector.x, vector.y, vector.z))
-    force_magnitude = np.linalg.norm(contact_force_np)
-    return force_magnitude

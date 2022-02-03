@@ -1,9 +1,14 @@
 # Archive with git urls the ROS dependencies that are used in the ros_gazebo_gym environments
-# Moving Cube env
 # NOTE: Here you add information about the dependencies of a new ros_gazebo_gym environment.
-# NOTE: Use din the ROSLauncher class
-# Panda env
-panda_gazebo:
-  binary: False
-  git: https://github.com/rickstaa/panda_gazebo.git
-  branch: noetic-devel
+# NOTE: Used in the ROSLauncher class
+
+# == Panda env ==
+panda_gazebo: # NOTE: The package name of the main environment dependency
+  binary: False # NOTE: Whether the package can also be installed as a system binary
+  git: https://github.com/rickstaa/panda_gazebo.git # NOTE: The repository that contains the package
+  branch: noetic-devel # NOTE: The branch of this repository you want to used
+  deps: # NOTE: Other system or repository dependencies
+    libfranka:
+      binary: True
+      # git: https://github.com/frankaemika/libfranka
+      # branch: master

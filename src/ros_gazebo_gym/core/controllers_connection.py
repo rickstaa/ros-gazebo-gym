@@ -40,7 +40,7 @@ class ControllersConnection:
 
         Args:
             namespace (str, optional): The namespace on which the robot controllers can
-                be found. Defaults to ````.
+                be found. Defaults to ``""``.
             controllers_list (list, optional): A list with currently available
                 controllers to look for. Defaults to ``None``, which means that the
                 class will try to retrieve all the running controllers.
