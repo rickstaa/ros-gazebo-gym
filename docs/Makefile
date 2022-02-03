@@ -29,10 +29,9 @@ clean:
 .PHONY: gh-pages
 gh-pages:
 	cd .. && \
-	git submodule update --recursive && \
 	git checkout gh-pages && \
 	git rm -rf . && git clean -fxd && \
-	git checkout main $(GH_PAGES_SOURCES) && \
+	git checkout noetic $(GH_PAGES_SOURCES) && \
 	git reset HEAD && \
 	cd docs && \
 	make clean && \
