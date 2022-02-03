@@ -43,10 +43,9 @@ gh-pages:
 	mv -fv docs/build/html/.[!.]* ./ && \
 	rm -rf $(GH_PAGES_SOURCES) && \
 	git add -A && \
-	git commit -m "docs: Generated gh-pages for `git log main -1 --pretty=short --abbrev-commit`" && \
+	git commit -m "docs: Generated gh-pages for `git log noetic -1 --pretty=short --abbrev-commit`" && \
 	git push origin gh-pages && \
-	git checkout main && \
-	git submodule update --recursive && \
+	git checkout noetic && \
 	pnpm install && \
 	pnpm run prepare && \
 	git restore pnpm-lock.yaml
