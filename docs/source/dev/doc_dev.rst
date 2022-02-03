@@ -18,13 +18,13 @@ To successfully deploy your new documentation, you have to follow the following 
 #. Create a new branch for the changes you want to make to the documentation (e.g. ``docs_change`` branch).
 #. Make your changes to this branch.
 #. Commit your changes. This will trigger the `docs_check_ci`_ action to run.
-#. Create a pull request into the main branch if this action ran without errors.
+#. Create a pull request into the noetic branch if this action ran without errors.
 #. Add a version bump label (``bump:patch``, ``bump:minor`` or ``bump:major``) to the pull request.
-#. Merge the pull request into the main branch. The documentation will now be deployed using the `docs_publish_ci`_ action.
+#. Merge the pull request into the noetic branch. The documentation will now be deployed using the `docs_publish_ci`_ action.
 
 .. _`Github actions`: https://github.com/features/actions
-.. _`docs_check_ci`: https://github.com/rickstaa/bayesian-learning-control/blob/main/.github/workflows/docs_check_ci.yml
-.. _`docs_publish_ci`: https://github.com/rickstaa/bayesian-learning-control/blob/main/.github/workflows/docs_publish_ci.yml
+.. _`docs_check_ci`: https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/.github/workflows/docs_check_ci.yml
+.. _`docs_publish_ci`: https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/.github/workflows/docs_publish_ci.yml
 
 .. tip::
 
@@ -82,13 +82,13 @@ Deploying
 ---------
 
 To deploy documentation to the Github Pages site for the repository,
-push the documentation to the `main`_ branch and run the
+push the documentation to the `noetic`_ branch and run the
 ``make gh-pages`` command inside the `docs/`_ directory.
 
 .. warning::
 
-    Please make sure you are on the `main`_ branch while building the documentation. Otherwise,
+    Please make sure you are on the `noetic`_ branch while building the documentation. Otherwise,
     errors will greet you.
 
-.. _`docs/`: https://github.com/rickstaa/bayesian-learning-control/tree/main/docs
-.. _`main`: https://github.com/rickstaa/bayesian-learning-control/tree/main
+.. _`docs/`: https://github.com/rickstaa/ros-gazebo-gym/tree/noetic/docs
+.. _`noetic`: https://github.com/rickstaa/ros-gazebo-gym/tree/noetic

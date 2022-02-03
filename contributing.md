@@ -11,7 +11,7 @@ Projects that are open for contributions can be found on the [issue tab](https:
 
 ## Forking process
 
-1.  Fork the main [repository](https://github.com/rickstaa/ros-gazebo-gym/)
+1.  Fork the noetic branch of the [repository](https://github.com/rickstaa/ros-gazebo-gym/)
 2.  Create your feature branch `git checkout -b feature/fooBar`
 3.  Commit your changes `git commit -am 'Add some fooBar'`
 4.  Push to the branch `git push origin feature/fooBar`
@@ -36,7 +36,7 @@ We use husky pre-commit hooks to ensure code quality. To enable these hooks plea
 
 ### Versioning instructions
 
-We use the [standard-version](https://github.com/conventional-changelog/standard-version) package for versioning. This tool will automatically increase the version and create a changelog by parsing your commits using the [conventional Commits](https://conventionalcommits.org/). This package can be invoked using the `npm run release` command. After you cut a release, you can push the new git tag using the `git push --follow-tags origin main` command.
+We use the [standard-version](https://github.com/conventional-changelog/standard-version) package for versioning. This tool will automatically increase the version and create a changelog by parsing your commits using the [conventional Commits](https://conventionalcommits.org/). This package can be invoked using the `npm run release` command. After you cut a release, you can push the new git tag using the `git push --follow-tags origin noetic` command.
 
 ### Linting instructions
 

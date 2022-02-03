@@ -30,7 +30,7 @@ Markdown guidelines:
     or your code structure doesn't allow you to respect the guideline, please state so in the
     pull request.
 
-.. _`Github Actions`: https://github.com/rickstaa/bayesian-learning-control/actions
+.. _`Github Actions`: https://github.com/rickstaa/ros-gazebo-gym/actions
 
 
 Pre-commit hooks
@@ -57,10 +57,10 @@ Before releasing the package, make sure the following steps are performed:
     #. Create a pull request to pull the changes of your development branch onto the master branch.
     #. Make sure that all the `pull request checks`_ were successful.
     #. Add a version label to (``bump:patch``, ``bump:minor`` or ``bump:major``) to the pull request.
-    #. Squash and merge your branch with the main branch.
+    #. Squash and merge your branch with the noetic branch.
     #. Create a release using the GitHub draft release tool.
 
-.. _`pull request checks`: https://github.com/rickstaa/bayesian-learning-control/actions
+.. _`pull request checks`: https://github.com/rickstaa/ros-gazebo-gym/actions
 
 Commit guidelines
 -----------------
