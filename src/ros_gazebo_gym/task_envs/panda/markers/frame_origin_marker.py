@@ -30,7 +30,8 @@ class FrameOriginMarker(TargetMarker):
             mesh.
 
     .. important::
-        If both the x,y,z positions and a Pose is supplied the x,y,z positions are used.
+        If both the ``x``, ``y``, ``z`` positions and a Pose is supplied the
+        ``x``, ``y``, ``z`` positions are used.
     """
 
     def __init__(self, *args, **kwds):
@@ -39,10 +40,10 @@ class FrameOriginMarker(TargetMarker):
         Args:
             *args: Arguments passed to the
                 :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super
-                    class.
+                class.
             **kwargs: Keyword arguments that are passed to the
                 :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super
-                    class.
+                class.
         """
         super().__init__(*args, **kwds)
 
