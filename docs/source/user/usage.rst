@@ -6,7 +6,7 @@ General usage instructions
 --------------------------
 
 All of the :ros_gazebo_gym:`ros_gazebo_gym <>` environments can be imported like any other `Openai gym`_ environment (see the `gym documentation`_). The environments will be
-registered under the `Openai gym`_ namespace when the ``ros_gazebo_gym.task_envs`` module or any of its submodules are imported.
+registered under the `Openai gym`_ namespace when the ``ros_gazebo_gym`` package or any of its submodules are imported.
 Since ROS is used, please be aware that you have to make sure that you first build and source the :ros_gazebo_gym:`ros_gazebo_gym <>` catkin workspace (i.e. ``./develop/setup.bash``).
 
 Usage example
