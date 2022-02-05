@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.3.1...v1.4.0) (2022-02-05)
+
+
+### Features
+
+* improve panda rviz 'visualize' argument ([5257269](https://github.com/rickstaa/ros-gazebo-gym/commit/5257269dceb05a933bbba2328c3ff55f10479aad))
+
 ### [1.3.1](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.3.0...v1.3.1) (2022-02-05)
 
 ## [1.3.0](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.2.0...v1.3.0) (2022-02-05)
