@@ -62,12 +62,12 @@ panda_reach:
     # Init pose sampling bounds
     # NOTE: Comment out if you don't want to clip the initial pose sampling.
     bounds:
-      x_min: -0.6
-      x_max: 0.6
-      y_min: -0.6
-      y_max: 0.6
-      z_min: 0.0
-      z_max: 1.2
+      x_min: 0.1
+      x_max: 0.8
+      y_min: -0.4
+      y_max: 0.4
+      z_min: 0.1
+      z_max: 1.0
       gripper_width_min: 0.0
       gripper_width_max: 0.08
 
@@ -91,12 +91,12 @@ panda_reach:
     # Random target sampling bounds
     bounds:
       global: # Relative to the world frame
-        x_min: -0.6
-        x_max: 0.6
-        y_min: -0.6
-        y_max: 0.6
-        z_min: 0.0
-        z_max: 1.2
+        x_min: 0.1
+        x_max: 0.8
+        y_min: -0.4
+        y_max: 0.4
+        z_min: 0.1
+        z_max: 1.0
       local: # Relative to the current ee_pose.
         x_min: -0.15
         x_max: 0.15
