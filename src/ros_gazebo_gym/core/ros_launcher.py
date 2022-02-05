@@ -175,7 +175,7 @@ class ROSLauncher(object):
                 os.makedirs(Path(log_file).parent, exist_ok=True)
                 log_file = open(log_file, "w")
             p = subprocess.Popen(
-                command, shell=True, cwd=workspace_path, stdout=log_file
+                command, shell=True, cwd=workspace_path, stdout=log_file, stderr=log_file
             )
             state = p.poll()
             if state is None:

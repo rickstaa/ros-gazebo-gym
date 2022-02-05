@@ -5,7 +5,7 @@
     `this stackoverflow question <https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python?page=1&tab=active#tab-top>`_.
 """  # noqa: E501
 
-from bayesian_learning_control.utils.log_utils import colorize
+from ros_gazebo_gym.common.functions import colorize
 
 
 class Singleton(type):
