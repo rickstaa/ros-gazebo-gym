@@ -101,6 +101,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
         control_type="effort",
         config_path=CONFIG_FILE_PATH,
         gazebo_world_launch_file="start_reach_world.launch",
+        visualize=None,
     ):
         """Initializes a Panda Task Environment.
 
@@ -115,6 +116,9 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
                 the gazebo world. Currently only the launch files inside the
                 `panda_gazebo <https://github.com/rickstaa/panda-gazebo>`_ package are
                 supported. Defaults to ``start_reach_world.launch``.
+            visualize (bool, optional): Whether you want to show the RVIZ and Gazebo
+                visualizations. Defaults to ``None`` meaning the task configuration file
+                values will be used.
 
         .. important::
             In this environment, the joint trajectory control is not implemented yet for
@@ -183,7 +187,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             package_name="panda_gazebo",
             launch_file_name=gazebo_world_launch_file,
             workspace_path=workspace_path,
-            gazebo_gui=self._gazebo_gui,
+            gazebo_gui=visualize if visualize is not None else self._gazebo_gui,
             pause=True,
             physics=self._physics,
             log_file=launch_log_file,
@@ -217,6 +221,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             control_type=control_type,
             workspace_path=workspace_path,
             log_reset=self._log_reset,
+            visualize=visualize,
         )
 
         # Initialize task environment objects

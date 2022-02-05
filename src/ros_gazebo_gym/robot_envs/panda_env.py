@@ -150,6 +150,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         reset_robot_pose=True,
         workspace_path=None,
         log_reset=True,
+        visualize=None,
     ):
         """Initializes a new Panda Robot environment.
 
@@ -171,6 +172,9 @@ class PandaEnv(RobotGazeboGoalEnv):
                 panda_gazebo package should be found. Defaults to ``None``.
             log_reset (bool, optional): Whether we want to print a log statement when
                 the world/simulation is reset. Defaults to ``True``.
+            visualize (bool, optional): Whether you want to show the RVIZ visualization.
+                Defaults to ``None`` meaning the task configuration file values will be
+                used.
         """
         rospy.logdebug("Initialize PandaEnv robot environment...")
 
@@ -273,6 +277,11 @@ class PandaEnv(RobotGazeboGoalEnv):
             )
             else None
         )
+        show_rviz = (
+            visualize
+            if visualize is not None
+            else (self._load_rviz if hasattr(self, "_load_rviz") else True)
+        )
         ROSLauncher.launch(
             package_name="panda_gazebo",
             launch_file_name="put_robot_in_world.launch",
@@ -280,7 +289,7 @@ class PandaEnv(RobotGazeboGoalEnv):
             control_type=control_type_group,
             end_effector=self.robot_EE_link,
             load_gripper=self.load_gripper,
-            rviz=self._load_rviz if hasattr(self, "_load_rviz") else True,
+            rviz=show_rviz,
             rviz_file=self._rviz_file if hasattr(self, "_rviz_file") else "",
             disable_franka_gazebo_logs=True,
             log_file=launch_log_file,
