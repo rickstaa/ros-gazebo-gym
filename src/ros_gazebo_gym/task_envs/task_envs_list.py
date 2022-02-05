@@ -20,22 +20,22 @@ ENVS = {
     # Panda task envs
     "PandaReach-v1": {
         "module": "ros_gazebo_gym.task_envs.panda.panda_reach:PandaReachEnv",
-        "max_steps": 100,
-        "reward_threshold": 300,
+        "max_steps": 500,
+        "reward_threshold": -20,
     },
     "PandaPickAndPlace-v1": {
         "module": "ros_gazebo_gym.task_envs.panda.panda_pick_and_place:PandaPickAndPlaceEnv",
-        "max_steps": 100,
-        "reward_threshold": 300,
+        "max_steps": 1000,
+        "reward_threshold": -20,
     },
     "PandaPush-v1": {
         "module": "ros_gazebo_gym.task_envs.panda.panda_push:PandaPushEnv",
-        "max_steps": 100,
-        "reward_threshold": 300,
+        "max_steps": 1000,
+        "reward_threshold": -20,
     },
     "PandaSlide-v1": {
         "module": "ros_gazebo_gym.task_envs.panda.panda_slide:PandaSlideEnv",
-        "max_steps": 100,
-        "reward_threshold": 300,
+        "max_steps": 1000,
+        "reward_threshold": -20,
     },
 }  # noqa: E501

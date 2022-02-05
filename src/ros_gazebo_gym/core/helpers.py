@@ -504,3 +504,12 @@ def load_ros_params_from_yaml(
     paramlist = rosparam.load_file(path_config_file)
     for params, ns in paramlist:
         rosparam.upload_params(ns, params)
+
+
+def get_log_path():
+    """Returns the package log folder path.
+
+    Returns:
+        :obj:`pathlib.Path`: The package log folder path.
+    """
+    return Path(__file__).joinpath("../../../../logs").resolve()

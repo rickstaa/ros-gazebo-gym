@@ -9,6 +9,7 @@ import psutil
 from pathlib import Path
 import rosgraph
 import socket
+import os
 
 import catkin
 import rospy
@@ -91,7 +92,14 @@ class ROSLauncher(object):
         process.kill()
 
     @classmethod
-    def launch(cls, package_name, launch_file_name, workspace_path=None, **kwargs):
+    def launch(
+        cls,
+        package_name,
+        launch_file_name,
+        workspace_path=None,
+        log_file=None,
+        **kwargs,
+    ):
         """Launch a given launchfile while also installing the launchfile package and or
         dependencies. This is done by using the ros_gazebo_gym dependency index.
 
@@ -100,6 +108,8 @@ class ROSLauncher(object):
             launch_file_name (str): The launchfile name.
             workspace_path (str, optional): The path of the catkin workspace. Defaults
                 to ``None`` meaning the path will be determined.
+            log_file(str, optional): The log file to write the ``stdout`` to. Defaults
+                to ``None`` meaning the ``stdout`` will be written to console.
             **kwargs: Keyword arguments you want to pass to the launchfile.
 
         Raises:
@@ -161,7 +171,12 @@ class ROSLauncher(object):
             # Launch the launchfile using a subprocess.
             # NOTE: I also tried using the roslaunch python api but I could not find a
             # way to first source the catkin workspace.
-            p = subprocess.Popen(command, shell=True, cwd=workspace_path)
+            if log_file is not None:
+                os.makedirs(Path(log_file).parent, exist_ok=True)
+                log_file = open(log_file, "w")
+            p = subprocess.Popen(
+                command, shell=True, cwd=workspace_path, stdout=log_file
+            )
             state = p.poll()
             if state is None:
                 rospy.logdebug("Launch file successfully launched.")

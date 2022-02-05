@@ -14,6 +14,7 @@
 """  # noqa: E501
 
 import sys
+from datetime import datetime
 from itertools import compress
 
 import actionlib
@@ -30,6 +31,7 @@ from ros_gazebo_gym.common.functions import (
     normalize_quaternion,
 )
 from ros_gazebo_gym.core import ROSLauncher
+from ros_gazebo_gym.core.helpers import get_log_path
 from ros_gazebo_gym.exceptions import EePoseLookupError, EeRpyLookupError
 from ros_gazebo_gym.robot_gazebo_goal_env import RobotGazeboGoalEnv
 
@@ -259,6 +261,18 @@ class PandaEnv(RobotGazeboGoalEnv):
             if self.robot_control_type == "end_effector"
             else self.robot_control_type
         )  # NOTE: Ee control uses the trajectory controllers
+        launch_log_file = str(
+            get_log_path().joinpath(
+                "put_robot_in_world_launch_{}.log".format(
+                    datetime.now().strftime("%d_%m_%Y_%H_%M_%S"),
+                )
+            )
+            if (
+                hasattr(self, "_roslaunch_log_to_console")
+                and not self._roslaunch_log_to_console
+            )
+            else None
+        )
         ROSLauncher.launch(
             package_name="panda_gazebo",
             launch_file_name="put_robot_in_world.launch",
@@ -268,9 +282,8 @@ class PandaEnv(RobotGazeboGoalEnv):
             load_gripper=self.load_gripper,
             rviz=self._load_rviz if hasattr(self, "_load_rviz") else True,
             rviz_file=self._rviz_file if hasattr(self, "_rviz_file") else "",
-            disable_franka_gazebo_logging=not self._franka_gazebo_logging
-            if hasattr(self, "_franka_gazebo_logging")
-            else False,
+            disable_franka_gazebo_logs=True,
+            log_file=launch_log_file,
         )
 
         # Throw error if the panda_gazebo package was downloaded in the same run

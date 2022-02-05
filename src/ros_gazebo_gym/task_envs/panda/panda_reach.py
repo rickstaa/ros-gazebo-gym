@@ -18,6 +18,7 @@ Goal:
 
 import os
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -40,7 +41,7 @@ from ros_gazebo_gym.common.functions import (
 )
 from ros_gazebo_gym.common.markers import SampleRegionMarker, TargetMarker
 from ros_gazebo_gym.core import ROSLauncher
-from ros_gazebo_gym.core.helpers import load_ros_params_from_yaml
+from ros_gazebo_gym.core.helpers import get_log_path, load_ros_params_from_yaml
 from ros_gazebo_gym.exceptions import (
     EePoseLookupError,
     RandomEePoseError,
@@ -95,7 +96,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
         goal (:obj:`geometry_msgs.PoseStamped`): The current goal.
     """
 
-    def __init__(
+    def __init__(  # noqa: C901
         self,
         control_type="effort",
         config_path=CONFIG_FILE_PATH,
@@ -118,11 +119,11 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
         .. important::
             In this environment, the joint trajectory control is not implemented yet for
             multiple waypoints. This is because the action space only contains one
-            waypoint. The :obj:`~PandaEnv.set_arm_joint_trajectory` method, however, already
-            accepts multiple waypoints. As a result, task environment can be easily
-            extended to work with multiple waypoints by modifying the
+            waypoint. The :obj:`~PandaEnv.set_arm_joint_trajectory` method, however,
+            already accepts multiple waypoints. As a result, task environment can be
+            easily extended to work with multiple waypoints by modifying the
             :obj:`PandaReachEnv~._create_action_space` method.
-        """  # noqa: E501
+        """
         utils.EzPickle.__init__(
             **locals()
         )  # Makes sure the env is pickable when it wraps C++ code.
@@ -151,8 +152,33 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
         )
         self._get_params()
 
+        # Thrown warning if gazebo is already running
+        if any(
+            ["/gazebo" in topic for topic in flatten_list(rospy.get_published_topics())]
+        ):
+            rospy.logerr(
+                f"Shutting down '{rospy.get_name()}' since a Gazebo instance is "
+                "already running. Unfortunately, spawning multiple Panda simulations "
+                "is not yet supported. Please shut down this instance and try again."
+            )
+            sys.exit(0)
+
         # Launch the panda task gazebo environment (Doesn't yet add the robot)
         # NOTE: This downloads and builds the required ROS packages if not found
+        launch_log_file = (
+            str(
+                get_log_path()
+                .joinpath(
+                    "{}_{}.log".format(
+                        gazebo_world_launch_file.replace(".", "_"),
+                        datetime.now().strftime("%d_%m_%Y_%H_%M_%S"),
+                    )
+                )
+                .resolve()
+            )
+            if not self._roslaunch_log_to_console
+            else None
+        )
         ROSLauncher.launch(
             package_name="panda_gazebo",
             launch_file_name=gazebo_world_launch_file,
@@ -160,6 +186,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             gazebo_gui=self._gazebo_gui,
             pause=True,
             physics=self._physics,
+            log_file=launch_log_file,
         )
 
         # Throw error if the panda_gazebo package was downloaded in the same run
@@ -638,11 +665,11 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             except KeyError:
                 self._log_step_debug_info = False
             try:
-                self._franka_gazebo_logging = rospy.get_param(
-                    f"/{ns}/franka_gazebo_logging"
+                self._roslaunch_log_to_console = rospy.get_param(
+                    f"/{ns}/roslaunch_log_to_console"
                 )
             except KeyError:
-                self._franka_gazebo_logging = True
+                self._roslaunch_log_to_console = False
         except KeyError as e:
             rospy.logerr(
                 f"Parameter '{e.args[0]}' could not be retrieved from the parameter "

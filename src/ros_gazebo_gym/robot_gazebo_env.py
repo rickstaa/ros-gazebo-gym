@@ -22,8 +22,8 @@ class RobotGazeboEnv(gym.Env):
     """Connects the simulated environment to the gazebo simulator.
 
     Attributes:
-        gazebo (:class:`~ros_gazebo_gym.core.gazebo_connection.GazeboConnection`): Gazebo
-            connector which can be used to interact with the gazebo simulation.
+        gazebo (:class:`~ros_gazebo_gym.core.gazebo_connection.GazeboConnection`):
+            Gazebo connector which can be used to interact with the gazebo simulation.
         episode_num (int): The current episode.
         step_num (int): The current step.
         cumulated_episode_reward (float): The cumulated episode reward.
