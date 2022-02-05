@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.1](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.4.0...v1.4.1) (2022-02-05)
+
+
+### Bug Fixes
+
+* fixes some small bugs ([9259649](https://github.com/rickstaa/ros-gazebo-gym/commit/9259649c130d479c39b7caf7adfd994cf6f099b1))
+
 ## [1.4.0](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.3.1...v1.4.0) (2022-02-05)
 
 
