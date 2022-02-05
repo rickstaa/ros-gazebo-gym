@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.1.10...v1.2.0) (2022-02-05)
+
+
+### Features
+
+* add roslaunch log disable arg and gazebo running warning ([131884b](https://github.com/rickstaa/ros-gazebo-gym/commit/131884be7752aae389b49f4ee928a83f02679f49))
+
 ### [1.1.10](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.1.9...v1.1.10) (2022-02-04)
 
 ### [1.1.9](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.1.8...v1.1.9) (2022-02-04)
