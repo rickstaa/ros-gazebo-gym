@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.2.0...v1.3.0) (2022-02-05)
+
+
+### Features
+
+* add ability to disable panda visualization ([0a654bf](https://github.com/rickstaa/ros-gazebo-gym/commit/0a654bf00e293fc8a766e16991058186d3e487f3))
+
 ## [1.2.0](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.1.10...v1.2.0) (2022-02-05)
 
 
