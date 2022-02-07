@@ -59,7 +59,7 @@ Build the documentation
 Build HTML documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-To build the `HTML`_ documentation, go into the `docs/`_ directory and run the
+To build the `HTML`_ documentation, go into the :ros_gazebo_gym:`docs/ <tree/noetic/docs>` directory and run the
 ``make html`` command. This command will generate the html documentation
 inside the ``docs/build/html`` directory.
 
@@ -72,7 +72,7 @@ inside the ``docs/build/html`` directory.
 Build LATEX documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To build the `LATEX`_ documentation, go into the `docs/`_ directory and run the
+To build the `LATEX`_ documentation, go into the :ros_gazebo_gym:`docs/ <tree/noetic/docs>` directory and run the
 ``make latex`` command. This command will generate the html documentation
 inside the ``docs/build/latex`` directory.
 
@@ -82,13 +82,10 @@ Deploying
 ---------
 
 To deploy documentation to the Github Pages site for the repository,
-push the documentation to the `noetic`_ branch and run the
-``make gh-pages`` command inside the `docs/`_ directory.
+push the documentation to the :ros_gazebo_gym:`noetic <tree/noetic>` branch and run the
+``make gh-pages`` command inside the :ros_gazebo_gym:`docs/ <tree/noetic/docs>` directory.
 
 .. warning::
 
-    Please make sure you are on the `noetic`_ branch while building the documentation. Otherwise,
+    Please make sure you are on the :ros_gazebo_gym:`noetic <tree/noetic>` branch while building the documentation. Otherwise,
     errors will greet you.
-
-.. _`docs/`: https://github.com/rickstaa/ros-gazebo-gym/tree/noetic/docs
-.. _`noetic`: https://github.com/rickstaa/ros-gazebo-gym/tree/noetic

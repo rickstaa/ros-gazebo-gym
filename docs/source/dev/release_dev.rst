@@ -22,16 +22,13 @@ Markdown guidelines:
 .. _`remark-lint`: https://github.com/remarkjs/remark-lint
 
 .. note::
-    The ROS Gazebo Gym framework contains several `GitHub actions`_, which check code changes
+    The ROS Gazebo Gym framework contains several :ros_gazebo_gym:`GitHub actions <actions>`, which check code changes
     against these coding guidelines. As a result, when the above guidelines are not met, you will
     receive an error/warning when you create a pull request. Some of these actions will create pull requests
     which you can use to fix some of these violations. For other errors/warning, you are expected to handle
     them yourself before merging them into the master branch. If you think a code guideline is not correct
     or your code structure doesn't allow you to respect the guideline, please state so in the
     pull request.
-
-.. _`Github Actions`: https://github.com/rickstaa/ros-gazebo-gym/actions
-
 
 Pre-commit hooks
 ----------------
@@ -42,7 +39,6 @@ The ROS Gazebo Gym package also contains several pre-commit hooks that can be us
 2.  Install `python <https://www.python.org/downloads>`_.
 3.  Run ``npm install -D`` and ``pip install .[dev]`` to install husky and the required linters.
 4.  Run ``npm run prepare`` to setup the pre-commit hooks.
-
 
 General guidelines
 ==================
@@ -55,12 +51,10 @@ Before releasing the package, make sure the following steps are performed:
     #. Create a new branch on which you implement your changes.
     #. Commit your changes.
     #. Create a pull request to pull the changes of your development branch onto the master branch.
-    #. Make sure that all the `pull request checks`_ were successful.
+    #. Make sure that all the :ros_gazebo_gym:`pull request checks <actions>` were successful.
     #. Add a version label to (``bump:patch``, ``bump:minor`` or ``bump:major``) to the pull request.
     #. Squash and merge your branch with the noetic branch.
     #. Create a release using the GitHub draft release tool.
-
-.. _`pull request checks`: https://github.com/rickstaa/ros-gazebo-gym/actions
 
 Commit guidelines
 -----------------
