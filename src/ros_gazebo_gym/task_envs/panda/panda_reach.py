@@ -504,6 +504,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             except KeyError:
                 self._randomize_first_episode = True
             try:
+                self._random_ee_pose_attempts = rospy.get_param(
+                    f"/{ns}/pose_sampling/attempts"
+                )
+            except KeyError:
+                self._random_ee_pose_attempts = 10
+            try:
                 self._visualize_init_pose_bounds = rospy.get_param(
                     f"/{ns}/pose_sampling/visualize_init_pose_bounds"
                 )
@@ -773,6 +779,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
         """
         if hasattr(self, "_moveit_get_random_ee_pose_client"):
             req = pg_srv.GetRandomEePoseRequest()
+            req.attempts = self._random_ee_pose_attempts
 
             # Apply pose bounding region
             if hasattr(self, "_init_pose_sampling_bounds"):
@@ -781,7 +788,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
                 )
                 req.bounding_region = pg_msg.BoundingRegion(**ee_pose_bound_region)
 
-            # Retrieve random joint pose and return
+            # Retrieve ra   ndom joint pose and return
             resp = self._moveit_get_random_ee_pose_client.call(req)
 
             # Convert to joint_position dictionary and return

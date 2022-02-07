@@ -42,7 +42,8 @@ panda_push:
     visualize_init_pose_bounds: True # RViz pose sampling region visualization.
     reset_init_pose: True # Reset the initial pose when resetting the simulation.
     random_init_pose: True # Use a random initial pose.
-    randomize_first_episode: True #  Also randomize the pose in the first episode.
+    randomize_first_episode: True # Also randomize the pose in the first episode.
+    attempts: 10 # Maximum number of attempts for finding a random ee pose within bounds.
     offset: # Initial pose offset
       x: 0.0
       y: 0.0
@@ -134,6 +135,7 @@ panda_push:
     target_hold: True # Hold the target position for N samples before done.
     hold_samples: 2 # The number of samples for which a agent should hold a target position.
     distance_threshold: 0.05 # The threshold for determining a target has been reached.
+    collision_penalty: 1.0 # The penalty given for when the robot is in collision.
 
   ########################################
   # Environment settings #################

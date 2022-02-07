@@ -280,7 +280,7 @@ class RobotGazeboGoalEnv(gym.GoalEnv):
         rospy.logdebug("RESET SIM END")
         return True
 
-    def render(self):
+    def render(self, mode="human"):
         """Overload render method since rendering is handled in Gazebo."""
         pass
 

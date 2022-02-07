@@ -42,7 +42,8 @@ panda_reach:
     visualize_init_pose_bounds: True # RViz pose sampling region visualization.
     reset_init_pose: True # Reset the initial pose when resetting the simulation.
     random_init_pose: True # Use a random initial pose.
-    randomize_first_episode: True #  Also randomize the pose in the first episode.
+    randomize_first_episode: True # Also randomize the pose in the first episode.
+    attempts: 10 # Maximum number of attempts for finding a random ee pose within bounds.
     offset: # Initial pose offset
       x: 0.0
       y: 0.0

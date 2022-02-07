@@ -1,9 +1,9 @@
 # Ros\_gazebo\_gym
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/rickstaa/ros-gazebo-gym)](https://github.com/rickstaa/ros-gazebo-gym/releases)
-[![Python 3](https://img.shields.io/badge/Python-3.8%20%7C%203.7%20%7C%203.6-green)](https://www.python.org/)
+[![Python 3](https://img.shields.io/badge/Python-3.8%20%7C%203.7%20%7C%203.6-brightgreen)](https://www.python.org/)
 [![ROS version](https://img.shields.io/badge/ROS%20versions-Noetic-brightgreen)](https://wiki.ros.org)
-[![Contributions](https://img.shields.io/badge/contributions-welcome-orange.svg)](contributing.md)
+[![Contributions](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](contributing.md)
 
 The ROS Gazebo gym framework provides all the tools required to create open gym compatible ROS based [openai gym](https://gym.openai.com/) robot environments.
 
