@@ -1403,6 +1403,13 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             ) and self._random_init_pose:
                 rospy.logdebug("Retrieve random end effector pose.")
                 try:
+                    self.gazebo.set_model_configuration(
+                        model_name="panda",
+                        joint_names=self.joints["both"],
+                        joint_positions=PANDA_REST_CONFIGURATION[
+                            : len(self.joints["both"])
+                        ],
+                    )  # NOTE: Done since joint conflicts prevent configuration planning
                     init_ee_pose = self._get_random_ee_pose()
                     init_ee_pose = pose_msg_2_pose_dict(
                         init_ee_pose
@@ -1460,30 +1467,18 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             rospy.logdebug("Init ee pose:")
             rospy.logdebug(pose_dict_2_pose_msg(init_ee_pose))
             if self._random_init_pose or self._init_pose_model_joint_config is None:
-                old_config = list(self.joint_states.position)
-                self.gazebo.set_model_configuration(
-                    model_name="panda",
-                    joint_names=self.joints["both"],
-                    joint_positions=PANDA_REST_CONFIGURATION[
-                        : len(self.joints["both"])
-                    ],
-                )  # NOTE: Done since joint conflicts prevent configuration planning
                 (
-                    self._init_pose_model_joint_config,
+                    init_pose_model_joint_config,
                     ee_pose_retval,
                 ) = self.get_ee_pose_joint_config(init_ee_pose)
                 if not ee_pose_retval:
                     rospy.logwarn(
                         "Could not retrieve arm joint configurations for random ee "
-                        "pose. As a result the arm position is not randomized."
+                        "pose. As a result the init pose of the previous episode was "
+                        "used. "
                     )
-                    self._init_pose_model_joint_config = {
-                        key: val
-                        for key, val in dict(
-                            zip(self.joint_states.name, old_config)
-                        ).items()
-                        if key in self.joints["arm"]
-                    }  # Reset to old configuration
+                else:
+                    self._init_pose_model_joint_config = init_pose_model_joint_config
                 if self._load_gripper:
                     rospy.logdebug("Init gripper width: %s" % init_gripper_width)
                     self._init_pose_model_joint_config.update(
@@ -1494,11 +1489,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
                             )
                         )
                     )
-            init_pose_retval = self.gazebo.set_model_configuration(
-                model_name="panda",
-                joint_names=self._init_pose_model_joint_config.keys(),
-                joint_positions=self._init_pose_model_joint_config.values(),
-            )
+            if self._init_pose_model_joint_config is not None:
+                init_pose_retval = self.gazebo.set_model_configuration(
+                    model_name="panda",
+                    joint_names=self._init_pose_model_joint_config.keys(),
+                    joint_positions=self._init_pose_model_joint_config.values(),
+                )
 
             # Return result
             if not init_pose_retval:
