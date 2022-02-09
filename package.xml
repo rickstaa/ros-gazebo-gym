@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>ros_gazebo_gym</name>
-  <version>1.4.4</version>
+  <version>1.4.5</version>
   <description>The ros_gazebo_gym package</description>
   <maintainer email="rick.staa@outlook.com">rickstaa</maintainer>
   <license>MIT</license>

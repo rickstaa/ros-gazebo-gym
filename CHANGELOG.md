@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.5](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.4.4...v1.4.5) (2022-02-09)
+
+
+### Bug Fixes
+
+* **panda:** fix another bug that caused the panda to get stuck ([021391c](https://github.com/rickstaa/ros-gazebo-gym/commit/021391c43a52e156c955d3bf826497859fdcfac5))
+
 ### [1.4.4](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.4.3...v1.4.4) (2022-02-07)
 
 
