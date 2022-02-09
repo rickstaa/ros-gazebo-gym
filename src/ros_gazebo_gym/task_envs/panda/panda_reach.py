@@ -226,7 +226,8 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
 
         # Initialize task environment objects
         self._is_done_samples = 0
-        self._init_pose_model_joint_config = None
+        self._init_ee_pose = {}
+        self._init_pose_model_joint_config = {}
 
         ########################################
         # Connect to required services, ########
@@ -658,7 +659,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             except KeyError:
                 self._rviz_file = Path(__file__).parent.joinpath("config/moveit.rviz")
             try:
-                self._physics = rospy.get_param(f"/{ns}/physics")
+                self._physics = rospy.get_param(f"/{ns}/physics").lower()
             except KeyError:
                 self._physics = "dart"
             try:
@@ -727,7 +728,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
         Raises:
             :obj:`ros_gazebo_gym.error.RandomJointPositionsError`: Error thrown when
                 something went wrong why trying to retrieve a random joint pose through
-                the 'get_random_joint_positions' servive.
+                the 'get_random_joint_positions' service.
         """
         if hasattr(self, "_moveit_get_random_joint_positions_client"):
             req = pg_srv.GetRandomJointPositionsRequest()
@@ -1402,101 +1403,132 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
                 self._randomize_first_episode or self.episode_num != 0
             ) and self._random_init_pose:
                 rospy.logdebug("Retrieve random end effector pose.")
+                self.gazebo.set_model_configuration(
+                    model_name="panda",
+                    joint_names=self.joints["both"],
+                    joint_positions=PANDA_REST_CONFIGURATION[
+                        : len(self.joints["both"])
+                    ],
+                )  # NOTE: Done since joint conflicts prevent configuration planning
                 try:
-                    self.gazebo.set_model_configuration(
-                        model_name="panda",
-                        joint_names=self.joints["both"],
-                        joint_positions=PANDA_REST_CONFIGURATION[
-                            : len(self.joints["both"])
-                        ],
-                    )  # NOTE: Done since joint conflicts prevent configuration planning
-                    init_ee_pose = self._get_random_ee_pose()
-                    init_ee_pose = pose_msg_2_pose_dict(
-                        init_ee_pose
-                    )  # Convert to pose dict
+                    self._init_ee_pose = pose_msg_2_pose_dict(
+                        self._get_random_ee_pose()
+                    )  # Retrieve random EE pose and Convert to pose dict
                 except (RandomEePoseError) as e:
-                    logwarn_msg = (
-                        "Random ee_pose could not be retrieved as %s. Initial pose "
-                        "used instead." % lower_first_char(e.args[0])
-                    )
-                    rospy.logwarn(logwarn_msg)
-                    init_ee_pose, _ = split_pose_dict(self._init_pose)
+                    if self._init_ee_pose:
+                        rospy.logwarn(
+                            "Random ee_pose could not be retrieved as %s. Initial pose "
+                            "of the previous episode used instead."
+                            % lower_first_char(e.args[0])
+                        )
+                    else:
+                        rospy.logwarn(
+                            "Random ee_pose could not be retrieved as %s. Fixed "
+                            "initial pose from the task configuration used instead."
+                            % lower_first_char(e.args[0])
+                        )
+                        self._init_ee_pose, _ = split_pose_dict(self._init_pose)
 
                 if self._load_gripper:
                     rospy.logdebug("Retrieve random gripper pose.")
                     try:
-                        init_joints_pose = self._get_random_joint_positions()
-                        init_gripper_width = (
-                            init_joints_pose[self.joints["hand"][0]] * 2
-                        )
+                        #  Retrieve random gripper pose
+                        if not self._block_gripper:
+                            init_joints_pose = self._get_random_joint_positions()
+                            init_gripper_width = (
+                                init_joints_pose.pop(self.joints["hand"][0], 0.0) * 2
+                            )
+                        else:  # Block gripper
+                            _, init_joints_pose = split_pose_dict(self._init_pose)
+                            init_gripper_width = init_joints_pose["gripper_width"]
+                        self._init_ee_pose["gripper_width"] = init_gripper_width
                     except (RandomJointPositionsError) as e:
-                        logwarn_msg = (
-                            "Random gripper pose could not be retrieved as %s. Initial "
-                            "pose used instead." % lower_first_char(e.args[0])
-                        )
-                        rospy.logwarn(logwarn_msg)
-                        _, init_joints_pose = split_pose_dict(self._init_pose)
-                        init_gripper_width = init_joints_pose["gripper_width"]
+                        if self._init_ee_pose:
+                            rospy.logwarn(
+                                "Random gripper width could not be retrieved as %s. "
+                                "Initial gripper width of the previous episode used "
+                                "instead." % lower_first_char(e.args[0])
+                            )
+                        else:
+                            rospy.logwarn(
+                                "Random gripper width could not be retrieved as %s. "
+                                "Fixed gripper width from the task configuration used "
+                                "instead." % lower_first_char(e.args[0])
+                            )
+                            _, init_joints_pose = split_pose_dict(self._init_pose)
+                            self._init_ee_pose["gripper_width"] = init_joints_pose[
+                                "gripper_width"
+                            ]
             else:
                 rospy.logdebug("Retrieving initial end effector pose.")
-                init_ee_pose, init_joints_pose = split_pose_dict(self._init_pose)
+                self._init_ee_pose, init_joints_pose = split_pose_dict(self._init_pose)
                 if self._load_gripper:
-                    init_gripper_width = init_joints_pose["gripper_width"]
+                    self._init_ee_pose["gripper_width"] = init_joints_pose[
+                        "gripper_width"
+                    ]
 
             # Limit init pose within bounds
             if hasattr(self, "_init_pose_sampling_bounds"):  # Clip if requested
-                if self._load_gripper:
-                    init_ee_pose["gripper_width"] = init_gripper_width
-                init_ee_pose = self._clip_init_pose(init_ee_pose)
-                if self._load_gripper:
-                    init_gripper_width = init_ee_pose.pop("gripper_width", None)
-
-            # Block gripper if requested
-            if self._load_gripper and self._block_gripper:
-                _, init_joints_pose = split_pose_dict(self._init_pose)
-                init_gripper_width = init_joints_pose["gripper_width"]
+                self._init_ee_pose = self._clip_init_pose(self._init_ee_pose)
 
             # Apply init pose offset
-            init_ee_pose["x"] += self._init_pose_offset["x"]
-            init_ee_pose["y"] += self._init_pose_offset["y"]
-            init_ee_pose["z"] += self._init_pose_offset["z"]
+            self._init_ee_pose["x"] += self._init_pose_offset["x"]
+            self._init_ee_pose["y"] += self._init_pose_offset["y"]
+            self._init_ee_pose["z"] += self._init_pose_offset["z"]
 
             # Setting initial ee and gripper pose and return result
             # NOTE: We use /gazebo/set_model_configuration service since it is faster.
             rospy.loginfo("Setting initial robot pose.")
             rospy.logdebug("Init ee pose:")
-            rospy.logdebug(pose_dict_2_pose_msg(init_ee_pose))
-            if self._random_init_pose or self._init_pose_model_joint_config is None:
+            rospy.logdebug(pose_dict_2_pose_msg(self._init_ee_pose))
+            if self._random_init_pose or not self._init_pose_model_joint_config:
                 (
-                    init_pose_model_joint_config,
-                    ee_pose_retval,
-                ) = self.get_ee_pose_joint_config(init_ee_pose)
-                if not ee_pose_retval:
-                    rospy.logwarn(
-                        "Could not retrieve arm joint configurations for random ee "
-                        "pose. As a result the init pose of the previous episode was "
-                        "used. "
-                    )
+                    init_ee_pose_model_joint_config,
+                    ee_pose_model_joint_config_retval,
+                ) = self.get_ee_pose_joint_config(self._init_ee_pose)
+                if not ee_pose_model_joint_config_retval:
+                    if self._init_pose_model_joint_config:
+                        rospy.logwarn(
+                            "Could not retrieve arm joint configurations for random ee "
+                            "pose. As a result the init pose of the previous episode "
+                            "was used."
+                        )
+                    else:
+                        self._init_pose_model_joint_config = dict(
+                            zip(
+                                self.joints["both"],
+                                PANDA_REST_CONFIGURATION[: len(self.joints["both"])],
+                            )
+                        )
+                        rospy.logwarn(
+                            "Could not retrieve arm joint configurations for random ee "
+                            "pose. As a result the fallback configuration was used "
+                            "'{}'.".format(self._init_pose_model_joint_config)
+                        )
                 else:
-                    self._init_pose_model_joint_config = init_pose_model_joint_config
+                    self._init_pose_model_joint_config = init_ee_pose_model_joint_config
                 if self._load_gripper:
-                    rospy.logdebug("Init gripper width: %s" % init_gripper_width)
+                    rospy.logdebug(
+                        "Init gripper width: %s" % self._init_ee_pose["gripper_width"]
+                    )
                     self._init_pose_model_joint_config.update(
                         dict(
                             zip(
                                 self.joints["hand"],
-                                [init_gripper_width / 2, init_gripper_width / 2],
+                                [
+                                    self._init_ee_pose["gripper_width"] / 2,
+                                    self._init_ee_pose["gripper_width"] / 2,
+                                ],
                             )
                         )
                     )
-            if self._init_pose_model_joint_config is not None:
-                init_pose_retval = self.gazebo.set_model_configuration(
-                    model_name="panda",
-                    joint_names=self._init_pose_model_joint_config.keys(),
-                    joint_positions=self._init_pose_model_joint_config.values(),
-                )
 
-            # Return result
+            # Set initial configuration and return result
+            init_pose_retval = self.gazebo.set_model_configuration(
+                model_name="panda",
+                joint_names=self._init_pose_model_joint_config.keys(),
+                joint_positions=self._init_pose_model_joint_config.values(),
+            )
             if not init_pose_retval:
                 rospy.logwarn("Setting initial robot pose failed.")
             return init_pose_retval

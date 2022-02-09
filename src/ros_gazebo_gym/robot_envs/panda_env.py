@@ -706,7 +706,8 @@ class PandaEnv(RobotGazeboGoalEnv):
         return gripper_rpy
 
     def get_ee_pose_joint_config(self, ee_pose):
-        """Returns a set of possible joint configurations for a given end-effector pose.
+        """Returns a set of possible arm joint configurations for a given end-effector
+        pose.
 
         Args:
             ee_pose (union[:obj:`geometry_msgs.msg.Pose`, list]): A list or pose message
