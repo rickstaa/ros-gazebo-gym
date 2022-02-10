@@ -48,7 +48,7 @@ except ImportError:
     PANDA_GAZEBO_IMPORTED = False
 from rospy.exceptions import ROSException, ROSInterruptException
 from sensor_msgs.msg import JointState
-from std_msgs.msg import Float64
+from std_msgs.msg import Float64, Float32
 
 # Specify topics and connection timeouts
 CONNECTION_TIMEOUT = 5  # Timeout for connecting to services or topics
@@ -136,6 +136,7 @@ class PandaEnv(RobotGazeboGoalEnv):
             These give robot specific information about the panda robot.
         joints (dict): The joint that can be controlled.
         gripper_width (float): The gripper width.
+        in_collision(bool): Whether the robot is in collision.
         tf_buffer (:obj:`tf2_ros.buffer.Buffer`): Tf buffer object can be used to
             request transforms.
     """
@@ -203,6 +204,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         self._fetched_joints = False
         self.__robot_control_type = control_type.lower()
         self.__joints = {}
+        self.__in_collision = False
 
         # Thrown control warnings
         if self._direct_control and self.robot_control_type in [
@@ -330,6 +332,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         ########################################
         # Connect to sensors ###################
         ########################################
+        rospy.logdebug("Connecting to sensors.")
 
         # Create joint state and franka state subscriber
         rospy.Subscriber(
@@ -348,6 +351,11 @@ class PandaEnv(RobotGazeboGoalEnv):
         # Create transform listener
         self.tf_buffer = tf2_ros.Buffer()
         self._tf_listener = tf2_ros.TransformListener(self.tf_buffer)
+
+        # Create publishers
+        self._in_collision_pub = rospy.Publisher(
+            "/ros_gazebo_gym/in_collision", Float32, queue_size=1, latch=True
+        )
 
         ########################################
         # Connect to control services ##########
@@ -738,6 +746,11 @@ class PandaEnv(RobotGazeboGoalEnv):
             # Request and return pose
             req = pg_srv.GetEePoseJointConfigRequest()
             req.pose = ee_target_pose
+            req.attempts = (
+                self._pose_sampling_attempts
+                if hasattr(self, "_pose_sampling_attemps")
+                else 10
+            )
             resp = self._moveit_get_ee_pose_joint_config_client.call(req)
             joint_configuration_dict = dict(zip(resp.joint_names, resp.joint_positions))
             if not resp.success:
@@ -1526,7 +1539,6 @@ class PandaEnv(RobotGazeboGoalEnv):
             data (:obj:`sensor_msgs.msg.JointState`): The data that is returned by the
                 subscriber.
         """
-        # Retrieve launch robot start joint position
         self.joint_states = data
 
     def _franka_states_cb(self, data):
@@ -1536,8 +1548,11 @@ class PandaEnv(RobotGazeboGoalEnv):
             data (:obj:`franka_msgs.msg.FrankaState`): The data that is returned by the
                 subscriber.
         """
-        # Retrieve launch robot start joint position
         self.franka_states = data
+        self.__in_collision = any(self.franka_states.cartesian_contact)
+        self._in_collision_pub.publish(
+            Float32(np.float32(self._PandaEnv__in_collision))
+        )
 
     def _check_all_sensors_ready(self):
         """Checks whether we are receiving sensor data."""
@@ -1657,6 +1672,11 @@ class PandaEnv(RobotGazeboGoalEnv):
                 "were not loaded successfully." % (rospy.get_name(), control_type)
             )
             sys.exit(0)
+
+    @property
+    def in_collision(self):
+        """Whether the robot is in collision."""
+        return self.__in_collision
 
     ################################################
     # Overload Gazebo env virtual methods ##########

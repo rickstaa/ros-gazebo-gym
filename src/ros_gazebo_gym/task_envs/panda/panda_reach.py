@@ -505,11 +505,11 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             except KeyError:
                 self._randomize_first_episode = True
             try:
-                self._random_ee_pose_attempts = rospy.get_param(
+                self._pose_sampling_attempts = rospy.get_param(
                     f"/{ns}/pose_sampling/attempts"
                 )
             except KeyError:
-                self._random_ee_pose_attempts = 10
+                self._pose_sampling_attempts = 10
             try:
                 self._visualize_init_pose_bounds = rospy.get_param(
                     f"/{ns}/pose_sampling/visualize_init_pose_bounds"
@@ -732,6 +732,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
         """
         if hasattr(self, "_moveit_get_random_joint_positions_client"):
             req = pg_srv.GetRandomJointPositionsRequest()
+            req.attempts = self._pose_sampling_attempts
 
             # Apply pose bounding region
             if hasattr(self, "_init_pose_sampling_bounds"):
@@ -780,7 +781,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
         """
         if hasattr(self, "_moveit_get_random_ee_pose_client"):
             req = pg_srv.GetRandomEePoseRequest()
-            req.attempts = self._random_ee_pose_attempts
+            req.attempts = self._pose_sampling_attempts
 
             # Apply pose bounding region
             if hasattr(self, "_init_pose_sampling_bounds"):
@@ -1137,9 +1138,10 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
         # Calculate the rewards based on the distance from the goal
         d = self._goal_distance(observations["achieved_goal"], self.goal)
         if self._reward_type == "sparse":
-            reward = -(d > self._distance_threshold).astype(np.float32)
-            if self._collision_penalty != 0.0:
-                reward = -1.0 if any(self.franka_states.cartesian_contact) else reward
+            if self._collision_penalty != 0.0 and self.in_collision:
+                reward = np.float32(-1.0)
+            else:
+                reward = -(d > self._distance_threshold).astype(np.float32)
             self._step_debug_logger("=Reward info=")
             self._step_debug_logger("Reward type: Non sparse")
             self._step_debug_logger("Goal: %s", self.goal)
@@ -1160,8 +1162,8 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             self._step_debug_logger("Threshold: %s", self._distance_threshold)
             self._step_debug_logger("Received reward: %s", -d)
             reward = -d
-            if self._collision_penalty != 0.0:
-                reward += -self._collision_penalty
+            if self._collision_penalty != 0.0 and self.in_collision:
+                reward -= np.float64(self._collision_penalty)
             return reward
 
     def _get_obs(self):
@@ -1467,14 +1469,11 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
                         "gripper_width"
                     ]
 
-            # Limit init pose within bounds
-            if hasattr(self, "_init_pose_sampling_bounds"):  # Clip if requested
-                self._init_ee_pose = self._clip_init_pose(self._init_ee_pose)
-
             # Apply init pose offset
-            self._init_ee_pose["x"] += self._init_pose_offset["x"]
-            self._init_ee_pose["y"] += self._init_pose_offset["y"]
-            self._init_ee_pose["z"] += self._init_pose_offset["z"]
+            if sum(self._init_pose_offset.values()) != 0.0:
+                self._init_ee_pose["x"] += self._init_pose_offset["x"]
+                self._init_ee_pose["y"] += self._init_pose_offset["y"]
+                self._init_ee_pose["z"] += self._init_pose_offset["z"]
 
             # Setting initial ee and gripper pose and return result
             # NOTE: We use /gazebo/set_model_configuration service since it is faster.
