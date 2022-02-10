@@ -169,7 +169,7 @@ class RobotGazeboEnv(gym.Env):
         """
         reward_msg = RLExperimentInfo()
         reward_msg.episode_number = self.episode_num
-        reward_msg.episode_reward = self.cumulated_episode_reward
+        reward_msg.reward = self.cumulated_episode_reward
         self._reward_pub.publish(reward_msg)
 
     def _publish_rviz_info_overlay(self):

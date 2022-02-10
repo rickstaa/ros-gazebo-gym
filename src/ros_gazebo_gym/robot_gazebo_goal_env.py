@@ -193,7 +193,7 @@ class RobotGazeboGoalEnv(gym.GoalEnv):
         reward_msg = RLExperimentInfo()
         reward_msg.episode_number = self.episode_num
         reward_msg.step_number = self.step_num
-        reward_msg.episode_reward = self.step_reward
+        reward_msg.reward = self.step_reward
         self._reward_pub.publish(reward_msg)
 
     def _publish_rviz_info_overlay(self):
