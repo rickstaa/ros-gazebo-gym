@@ -37,17 +37,13 @@ panda_pick_and_place:
   ########################################
   # Sampling settings ####################
   ########################################
-  # Initial pose (i.e. given in generalized coordinates q)
+  # Initial pose
   pose_sampling:
     visualize_init_pose_bounds: True # RViz pose sampling region visualization.
     reset_init_pose: True # Reset the initial pose when resetting the simulation.
-    random_init_pose: True # Use a random initial pose.
+    random_init_pose: True # Use a random initial pose. The 'init_pose' field below will be used if set to `False`.
     randomize_first_episode: True # Also randomize the pose in the first episode.
-    attempts: 10 # Maximum number of attempts for finding a random ee pose within bounds.
-    offset: # Initial pose offset
-      x: 0.0
-      y: 0.0
-      z: 0.0
+    attempts: 10 # Maximum number of attempts for sampling a random initial pose within the set bounds.
 
     # The initial robot pose (used when random is disabled).
     init_pose:
@@ -60,6 +56,12 @@ panda_pick_and_place:
       rw: 4.42
       gripper_width: 0.001
 
+    # Initial ee pose offset
+    offset:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+
     # Init pose sampling bounds
     # NOTE: Comment out if you don't want to clip the initial pose sampling.
     bounds:
@@ -69,8 +71,8 @@ panda_pick_and_place:
       y_max: 0.6
       z_min: 0.0
       z_max: 1.2
-      gripper_width_min: 0.0
-      gripper_width_max: 0.08
+      gripper_width_min: 0.0 # Min: 0.0
+      gripper_width_max: 0.08 # Max: 0.08
 
   # Target sampling settings
   target_sampling:

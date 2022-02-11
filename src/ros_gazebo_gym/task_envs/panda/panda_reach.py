@@ -227,7 +227,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
         # Initialize task environment objects
         self._is_done_samples = 0
         self._init_ee_pose = {}
-        self._init_pose_model_joint_config = {}
+        self._init_model_configuration = {}
 
         ########################################
         # Connect to required services, ########
@@ -390,8 +390,8 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
 
         # Add initial pose sampling region to rviz
         if (
-            self._init_pose_sampling_bounds
-            and self._load_rviz
+            self._load_rviz
+            and self._visualize_init_pose_bounds
             and self._init_pose_sampling_bounds
         ):
             init_pose_sample_region_marker_msg = SampleRegionMarker(
@@ -487,6 +487,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
                 self._ee_control_coordinates = None
             # Retrieve sampling variables
             try:
+                self._visualize_init_pose_bounds = rospy.get_param(
+                    f"/{ns}/pose_sampling/visualize_init_pose_bounds"
+                )
+            except KeyError:
+                self._visualize_init_pose_bounds = True
+            try:
                 self._reset_init_pose = rospy.get_param(
                     f"/{ns}/pose_sampling/reset_init_pose"
                 )
@@ -511,16 +517,6 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             except KeyError:
                 self._pose_sampling_attempts = 10
             try:
-                self._visualize_init_pose_bounds = rospy.get_param(
-                    f"/{ns}/pose_sampling/visualize_init_pose_bounds"
-                )
-            except KeyError:
-                self._visualize_init_pose_bounds = True
-            try:
-                self._init_pose_offset = rospy.get_param(f"/{ns}/pose_sampling/offset")
-            except KeyError:
-                self._init_pose_offset = {"x": 0.0, "y": 0.0, "z": 0.0}
-            try:
                 self._init_pose = rospy.get_param(f"/{ns}/pose_sampling/init_pose")
             except KeyError:
                 self._init_pose = {
@@ -533,6 +529,10 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
                     "rw": 4.42,
                     "gripper_width": 0.001,
                 }
+            try:
+                self._init_pose_offset = rospy.get_param(f"/{ns}/pose_sampling/offset")
+            except KeyError:
+                self._init_pose_offset = {"x": 0.0, "y": 0.0, "z": 0.0}
             try:
                 self._init_pose_sampling_bounds = rospy.get_param(
                     f"/{ns}/pose_sampling/bounds"
@@ -790,10 +790,8 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
                 )
                 req.bounding_region = pg_msg.BoundingRegion(**ee_pose_bound_region)
 
-            # Retrieve ra   ndom joint pose and return
+            # Retrieve random ee pose and return result
             resp = self._moveit_get_random_ee_pose_client.call(req)
-
-            # Convert to joint_position dictionary and return
             if resp.success:
                 return resp.ee_pose
             else:
@@ -832,33 +830,6 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             )
             rospy.logdebug("New goal pose: %s" % clipped_goal_pose)
         return clipped_goal_pose
-
-    def _clip_init_pose(self, init_pose):
-        """Limit the possible initial end effector (EE) and the gripper to a certain
-            range.
-
-        Args:
-            init_pose (dict): A dictionary containing the init ee pose and the gripper
-                width.
-        """
-        if hasattr(self, "_init_pose_sampling_bounds"):
-            init_pose_clipped = {}
-            for key, val in init_pose.items():
-                try:
-                    init_pose_clipped[key] = np.clip(
-                        val,
-                        self._init_pose_sampling_bounds[key + "_min"],
-                        self._init_pose_sampling_bounds[key + "_max"],
-                    )
-                except KeyError:
-                    init_pose_clipped[key] = val
-        else:
-            rospy.logwarn(
-                "Init pose could not be clipped since no 'pose_sampling.bounds' were "
-                "set in the environment config."
-            )
-            init_pose_clipped = init_pose
-        return init_pose_clipped
 
     def _check_config_action_space_joints(self):  # noqa: C901
         """Validates whether the 'ee_control_coordinates' and 'controlled_joints' fields
@@ -1394,17 +1365,17 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
         self._target_pose_marker_pub.publish(goal_marker_msg)
 
     def _set_init_pose(self):  # noqa: C901
-        """Sets the Robot in its (random) initial pose.
+        """Sets the Robot in its (random) initial pose. This pose is sampled based on
+        the
 
         Returns:
             bool: Boolean specifying whether the initial pose was successfully set.
         """
         if self._reset_init_pose:
-            # Retrieve random initial pose
             if (
                 self._randomize_first_episode or self.episode_num != 0
-            ) and self._random_init_pose:
-                rospy.logdebug("Retrieve random end effector pose.")
+            ) and self._random_init_pose:  # Retrieve random arm/hand initial EE pose
+                rospy.logdebug("Retrieve random EE/gripper pose.")
                 self.gazebo.set_model_configuration(
                     model_name="panda",
                     joint_names=self.joints["both"],
@@ -1430,20 +1401,17 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
                             % lower_first_char(e.args[0])
                         )
                         self._init_ee_pose, _ = split_pose_dict(self._init_pose)
-
                 if self._load_gripper:
-                    rospy.logdebug("Retrieve random gripper pose.")
                     try:
-                        #  Retrieve random gripper pose
-                        if not self._block_gripper:
-                            init_joints_pose = self._get_random_joint_positions()
-                            init_gripper_width = (
-                                init_joints_pose.pop(self.joints["hand"][0], 0.0) * 2
+                        # Retrieve initial gripper width. Use fixed width when blocked
+                        self._init_ee_pose["gripper_width"] = (
+                            split_pose_dict(self._init_pose)[1]["gripper_width"]
+                            if self._block_gripper
+                            else self._get_random_joint_positions().pop(
+                                self.joints["hand"][0], 0.0
                             )
-                        else:  # Block gripper
-                            _, init_joints_pose = split_pose_dict(self._init_pose)
-                            init_gripper_width = init_joints_pose["gripper_width"]
-                        self._init_ee_pose["gripper_width"] = init_gripper_width
+                            * 2
+                        )
                     except (RandomJointPositionsError) as e:
                         if self._init_ee_pose:
                             rospy.logwarn(
@@ -1457,11 +1425,10 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
                                 "Fixed gripper width from the task configuration used "
                                 "instead." % lower_first_char(e.args[0])
                             )
-                            _, init_joints_pose = split_pose_dict(self._init_pose)
-                            self._init_ee_pose["gripper_width"] = init_joints_pose[
-                                "gripper_width"
-                            ]
-            else:
+                            self._init_ee_pose["gripper_width"] = split_pose_dict(
+                                self._init_pose
+                            )[1]["gripper_width"]
+            else:  # Use fixed initial arm/hand initial EE pose
                 rospy.logdebug("Retrieving initial end effector pose.")
                 self._init_ee_pose, init_joints_pose = split_pose_dict(self._init_pose)
                 if self._load_gripper:
@@ -1475,42 +1442,37 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
                 self._init_ee_pose["y"] += self._init_pose_offset["y"]
                 self._init_ee_pose["z"] += self._init_pose_offset["z"]
 
-            # Setting initial ee and gripper pose and return result
-            # NOTE: We use /gazebo/set_model_configuration service since it is faster.
-            rospy.loginfo("Setting initial robot pose.")
-            rospy.logdebug("Init ee pose:")
-            rospy.logdebug(pose_dict_2_pose_msg(self._init_ee_pose))
-            if self._random_init_pose or not self._init_pose_model_joint_config:
+            # Retrieve model configuration for the chosen init pose
+            if self._random_init_pose or not self._init_model_configuration:
                 (
-                    init_ee_pose_model_joint_config,
-                    ee_pose_model_joint_config_retval,
+                    init_model_joint_config,
+                    joint_config_retval,
                 ) = self.get_ee_pose_joint_config(self._init_ee_pose)
-                if not ee_pose_model_joint_config_retval:
-                    if self._init_pose_model_joint_config:
+                if not joint_config_retval:
+                    if self._init_model_configuration:
                         rospy.logwarn(
-                            "Could not retrieve arm joint configurations for random ee "
-                            "pose. As a result the init pose of the previous episode "
-                            "was used."
+                            "Could not retrieve arm joint configurations for the "
+                            "chosen initial ee pose. As a result the init pose of the "
+                            "previous episode was used."
                         )
                     else:
-                        self._init_pose_model_joint_config = dict(
+                        self._init_model_configuration = dict(
                             zip(
                                 self.joints["both"],
                                 PANDA_REST_CONFIGURATION[: len(self.joints["both"])],
                             )
                         )
                         rospy.logwarn(
-                            "Could not retrieve arm joint configurations for random ee "
-                            "pose. As a result the fallback configuration was used "
-                            "'{}'.".format(self._init_pose_model_joint_config)
+                            "Could not retrieve arm joint configurations for the "
+                            "chosen initial ee pose. As a result the fallback "
+                            "configuration was used '{}'.".format(
+                                self._init_model_configuration
+                            )
                         )
                 else:
-                    self._init_pose_model_joint_config = init_ee_pose_model_joint_config
+                    self._init_model_configuration = init_model_joint_config
                 if self._load_gripper:
-                    rospy.logdebug(
-                        "Init gripper width: %s" % self._init_ee_pose["gripper_width"]
-                    )
-                    self._init_pose_model_joint_config.update(
+                    self._init_model_configuration.update(
                         dict(
                             zip(
                                 self.joints["hand"],
@@ -1522,11 +1484,17 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
                         )
                     )
 
-            # Set initial configuration and return result
+            # Set initial model configuration and return result
+            # NOTE: We use /gazebo/set_model_configuration service since it is faster.
+            rospy.loginfo("Setting initial robot pose.")
+            rospy.logdebug("Init ee pose:")
+            rospy.logdebug(pose_dict_2_pose_msg(self._init_ee_pose))
+            rospy.logdebug("Init ee pose joint configuration:")
+            rospy.logdebug(self._init_model_configuration)
             init_pose_retval = self.gazebo.set_model_configuration(
                 model_name="panda",
-                joint_names=self._init_pose_model_joint_config.keys(),
-                joint_positions=self._init_pose_model_joint_config.values(),
+                joint_names=self._init_model_configuration.keys(),
+                joint_positions=self._init_model_configuration.values(),
             )
             if not init_pose_retval:
                 rospy.logwarn("Setting initial robot pose failed.")

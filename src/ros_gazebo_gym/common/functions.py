@@ -242,12 +242,19 @@ def split_bounds_dict(bounds_dict):
         ["x_min", "x_max", "y_min", "y_max", "z_min", "z_max"],
         [
             "panda_joint1_min",
+            "panda_joint1_max",
             "panda_joint2_min",
+            "panda_joint2_max",
             "panda_joint3_min",
+            "panda_joint3_max",
             "panda_joint4_min",
+            "panda_joint4_max",
             "panda_joint5_min",
+            "panda_joint5_max",
             "panda_joint6_min",
+            "panda_joint6_max",
             "panda_joint7_min",
+            "panda_joint7_max",
             "panda_finger_joint1_min",
             "panda_finger_joint1_max",
             "panda_finger_joint2_min",
@@ -269,12 +276,14 @@ def gripper_width_bounds_2_finger_joint_bounds(gripper_width_bounds, joints):
     Returns:
         dict: The finger joint bound dictionary.
     """
-    finger_bounds = {}
+    output_bounds = {}
     for joint in joints:
         for key, val in gripper_width_bounds.items():
             if "gripper_width" in key:
-                finger_bounds[key.replace("gripper_width", joint)] = val / 2
-    return finger_bounds
+                output_bounds[key.replace("gripper_width", joint)] = val / 2
+            else:
+                output_bounds[key] = val
+    return output_bounds
 
 
 def split_pose_dict(pose_dict):
@@ -295,7 +304,18 @@ def split_pose_dict(pose_dict):
     split_dict_list = split_dict(
         pose_dict,
         ["x", "y", "z", "rx", "ry", "rz", "rw"],
-        ["panda_finger_joint1", "panda_finger_joint2", "gripper_width"],
+        [
+            "panda_joint1",
+            "panda_joint2",
+            "panda_joint3",
+            "panda_joint4",
+            "panda_joint5",
+            "panda_joint6",
+            "panda_joint7",
+            "panda_finger_joint1",
+            "panda_finger_joint2",
+            "gripper_width",
+        ],
     )
     return split_dict_list[0], split_dict_list[1]
 
