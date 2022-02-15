@@ -39,11 +39,12 @@ panda_slide:
   ########################################
   # Initial pose
   pose_sampling:
-    visualize_init_pose_bounds: True # RViz pose sampling region visualization.
+    visualize_init_pose_bounds: True # RViz pose sampling region visualization. Only works for 'pose_sampling_type` is 'ee_pose'.
     reset_init_pose: True # Reset the initial pose when resetting the simulation.
     random_init_pose: True # Use a random initial pose. The 'init_pose' field below will be used if set to `False`.
     randomize_first_episode: True # Also randomize the pose in the first episode.
     attempts: 10 # Maximum number of attempts for sampling a random initial pose within the set bounds.
+    pose_sampling_type: "end_effector_pose" # From which set we should sample the initial pose. Options: 'end_effector_pose' and 'joint_positions'.
 
     # The initial robot pose (used when random is disabled).
     init_pose:
@@ -54,16 +55,24 @@ panda_slide:
       ry: 0.62
       rz: -0.0
       rw: 4.42
+      panda_joint1: 0.0
+      panda_joint2: 0.0
+      panda_joint3: 0.0
+      panda_joint4: -1.57079632679
+      panda_joint5: 0.0
+      panda_joint6: 1.57079632679
+      panda_joint7: 0.785398163397
       gripper_width: 0.001
 
     # Initial ee pose offset
+    # NOTE: Ignored when 'random_init_pose' is `False` and 'pose_sampling_type' is `joint_positions`.
     offset:
       x: 0.0
       y: 0.0
       z: 0.0
 
     # Init pose sampling bounds
-    # NOTE: Comment out if you don't want to clip the initial pose sampling.
+    # NOTE: Comment out if you don't want to clip the EE pose or joint positions during sampling.
     bounds:
       x_min: -0.6
       x_max: 0.6
@@ -71,6 +80,20 @@ panda_slide:
       y_max: 0.6
       z_min: 0.0
       z_max: 1.2
+      panda_joint1_min: -2.8973 # Min: -2.8973
+      panda_joint1_max: 2.8973 # Max: 2.8973
+      panda_joint2_min: -1.7628 # Min: -1.7628
+      panda_joint2_max: 1.7628 # Max: 1.7628
+      panda_joint3_min: -2.8973 # Min: -2.8973
+      panda_joint3_max: 2.8973 # Max: 2.8973
+      panda_joint4_min: -3.0718 # Min: -3.0718
+      panda_joint4_max: -0.0698 # Max: -0.0698
+      panda_joint5_min: -2.8973 # Min: -2.8973
+      panda_joint5_max: 2.8973 # Max: 2.8973
+      panda_joint6_min: -0.0175 # Min: -0.0175
+      panda_joint6_max: 3.7525 # Max: 3.7525
+      panda_joint7_min: -2.8973 # Min: -2.8973
+      panda_joint7_max: 2.8973 # Max: 2.8973
       gripper_width_min: 0.0 # Min: 0.0
       gripper_width_max: 0.08 # Max: 0.08
 

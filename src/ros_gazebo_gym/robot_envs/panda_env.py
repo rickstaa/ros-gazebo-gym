@@ -723,11 +723,8 @@ class PandaEnv(RobotGazeboGoalEnv):
                 (x, y, z, w).
 
         Returns:
-            tuple containing:
-                - joint_config (obj:`dict`): Dictionary with the joint positions that
-                    correspons for a given end-effector pose.
-                - retval (obj:`bool`): Boolean that specifies whether a set of joint
-                    configurations was successfully retrieved.
+            obj:`dict`: Dictionary with joint positions that result in a given EE pose.
+                Empty dictionary is returned if no joint positions could be found.
         """
         if self._moveit_get_ee_pose_joint_config_client_connected:
             ee_target_pose = Pose()
@@ -759,16 +756,16 @@ class PandaEnv(RobotGazeboGoalEnv):
                     + lower_first_char(resp.message)
                 )
                 rospy.logwarn(logdebug_msg)
-                return {}, False
+                return {}
             else:
-                return joint_configuration_dict, True
+                return joint_configuration_dict
         else:
             rospy.logwarn_once(
                 "Joint configuration can not be retrieved as the "
                 f"{self.robot_name_space}/{MOVEIT_GET_EE_POSE_JOINT_CONFIG_TOPIC} is "
                 "not available."
             )
-            return {}, False
+            return {}
 
     def set_ee_pose(self, ee_pose):  # noqa: C901
         """Sets the Panda end effector pose.

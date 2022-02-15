@@ -8,7 +8,6 @@ import os
 
 import rospy
 from actionlib_msgs.msg import GoalStatusArray
-from geometry_msgs.msg import Pose
 from gym.utils import colorize as gym_colorize
 from numpy import linalg, nan
 from ros_gazebo_gym.common.euler_angles import EulerAngles
@@ -38,28 +37,6 @@ def model_state_msg_2_link_state_dict(link_state_msgs):
         model_state_dict[joint_name]["pose"] = copy.deepcopy(position)
         model_state_dict[joint_name]["twist"] = copy.deepcopy(twist)
     return model_state_dict
-
-
-def pose_dict_2_pose_msg(pose_dict):
-    """Create a `geometry_msgs.msg.Pose <https://docs.ros.org/en/noetic/api/geometry_msgs/html/msg/Pose.html>`_
-    message out of a panda_gazebo pose dictionary ``{x, y, z, rx, ry, rz, rw}``.
-
-    Args:
-        pose_dict )dict): Dict containing the object position ``{x, y, z}`` and
-            orientation ``{rx, ry, rz, rw}``.
-
-    Returns:
-        :obj:`geometry_msgs.msg.Pose`: Pose message.
-    """  # noqa: E501
-    pose_msg = Pose()
-    pose_msg.position.x = pose_dict["x"]
-    pose_msg.position.y = pose_dict["y"]
-    pose_msg.position.z = pose_dict["z"]
-    pose_msg.orientation.x = pose_dict["rx"]
-    pose_msg.orientation.y = pose_dict["ry"]
-    pose_msg.orientation.z = pose_dict["rz"]
-    pose_msg.orientation.w = pose_dict["rw"]
-    return pose_msg
 
 
 def pose_msg_2_pose_dict(pose_msg):
@@ -266,24 +243,25 @@ def split_bounds_dict(bounds_dict):
     return split_dict_list[0], split_dict_list[1]
 
 
-def gripper_width_bounds_2_finger_joint_bounds(gripper_width_bounds, joints):
-    """Replaces gripper width joint boundaries with finger joint joint boundaries.
+def gripper_width_2_finger_joints_positions(input_dict, joints):
+    """Replaces a 'gripper_width' key in a dictionary with corresponding finger joint
+    position keys.
 
     Args:
-        gripper_width_bounds (dict): The gripper with max and min bound.
-        joints (list): The finger joints.
+        input_dict (dict): The dictionary that contains the 'gripper_Width'.
+        joints (list): The available finger joints.
 
     Returns:
-        dict: The finger joint bound dictionary.
+        dict: The new dictionary that contains the finger joint positions.
     """
-    output_bounds = {}
-    for joint in joints:
-        for key, val in gripper_width_bounds.items():
-            if "gripper_width" in key:
-                output_bounds[key.replace("gripper_width", joint)] = val / 2
-            else:
-                output_bounds[key] = val
-    return output_bounds
+    output_dict = {}
+    for key, val in input_dict.items():
+        if key == "gripper_width":
+            for joint in joints:
+                output_dict[key.replace("gripper_width", joint)] = val / 2
+        else:
+            output_dict[key] = val
+    return output_dict
 
 
 def split_pose_dict(pose_dict):

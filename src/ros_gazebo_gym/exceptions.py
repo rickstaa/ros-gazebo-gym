@@ -51,58 +51,6 @@ class EeRpyLookupError(Exception):
         self.details = details
 
 
-class RandomJointPositionsError(Exception):
-    """Custom exception that is raised when an error occurred while trying to retrieve
-    random joint positions.
-
-    Attributes:
-        log_message (str): The full log message.
-        details (dict): Dictionary containing extra Exception information.
-    """
-
-    def __init__(self, message="", log_message="", **details):
-        """Initializes the RandomJointPositionsError exception object.
-
-        Args:
-            message (str, optional): Exception message specifying whether the exception
-                occurred. Defaults to ``""``.
-            log_message (str, optional): Full log message. Defaults to ``""``.
-            details (dict): Additional dictionary that can be used to supply the user
-                with more details about why the exception occurred.
-        """
-        super().__init__(message)
-
-        # Set attributes
-        self.log_message = log_message
-        self.details = details
-
-
-class RandomEePoseError(Exception):
-    """Custom exception that is raised when an error occurred while trying to retrieve
-    random end effector pose.
-
-    Attributes:
-        log_message (str): The full log message.
-        details (dict): Dictionary containing extra Exception information.
-    """
-
-    def __init__(self, message="", log_message="", **details):
-        """Initializes the RandomEePoseError exception object.
-
-        Args:
-            message (str, optional): Exception message specifying whether the exception
-                occurred. Defaults to ``""``.
-            log_message (str, optional): Full log message. Defaults to ``""``.
-            details (dict): Additional dictionary that can be used to supply the user
-                with more details about why the exception occurred.
-        """
-        super().__init__(message)
-
-        # Set attributes
-        self.log_message = log_message
-        self.details = details
-
-
 class SpawnModelError(Exception):
     """Custom exception that is raised when an error occurred while trying to spawn a
     Gazebo model.
