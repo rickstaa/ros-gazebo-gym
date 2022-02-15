@@ -225,7 +225,7 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
                     model_name=self._object_name,
                     models_folder_path=Path(__file__)
                     .joinpath(
-                        "../../../../../../../"
+                        "../../../../../../"
                         "rosdeps/panda_gazebo/panda_gazebo/resources/models"
                     )
                     .resolve(),

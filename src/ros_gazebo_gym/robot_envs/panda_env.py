@@ -334,6 +334,11 @@ class PandaEnv(RobotGazeboGoalEnv):
         ########################################
         rospy.logdebug("Connecting to sensors.")
 
+        # Create publishers
+        self._in_collision_pub = rospy.Publisher(
+            "/ros_gazebo_gym/in_collision", Float32, queue_size=1, latch=True
+        )
+
         # Create joint state and franka state subscriber
         rospy.Subscriber(
             f"{self.robot_name_space}/{JOINT_STATES_TOPIC}",
@@ -351,11 +356,6 @@ class PandaEnv(RobotGazeboGoalEnv):
         # Create transform listener
         self.tf_buffer = tf2_ros.Buffer()
         self._tf_listener = tf2_ros.TransformListener(self.tf_buffer)
-
-        # Create publishers
-        self._in_collision_pub = rospy.Publisher(
-            "/ros_gazebo_gym/in_collision", Float32, queue_size=1, latch=True
-        )
 
         ########################################
         # Connect to control services ##########
