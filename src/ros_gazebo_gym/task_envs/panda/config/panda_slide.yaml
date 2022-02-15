@@ -45,6 +45,7 @@ panda_slide:
     randomize_first_episode: True # Also randomize the pose in the first episode.
     attempts: 10 # Maximum number of attempts for sampling a random initial pose within the set bounds.
     pose_sampling_type: "end_effector_pose" # From which set we should sample the initial pose. Options: 'end_effector_pose' and 'joint_positions'.
+    moveit_control: True # Use MoveIt to set the initial pose. If `false` the Gazebo `set_model_configuration` service will be used.
 
     # The initial robot pose (used when random is disabled).
     init_pose:

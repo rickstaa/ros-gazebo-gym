@@ -63,6 +63,7 @@ CONNECTION_TIMEOUT = 5  # Timeout for connecting to services or topics
 MOVEIT_GET_RANDOM_JOINT_POSITIONS_TOPIC = (
     "panda_moveit_planner_server/get_random_joint_positions"
 )
+MOVEIT_SET_JOINT_POSITIONS_TOPIC = "panda_moveit_planner_server/set_joint_positions"
 MOVEIT_GET_RANDOM_EE_POSE_TOPIC = "panda_moveit_planner_server/get_random_ee_pose"
 MOVEIT_ADD_PLANE_TOPIC = "panda_moveit_planner_server/planning_scene/add_plane"
 VALID_EE_CONTROL_JOINTS = ["x", "y", "z", "rx", "ry", "rz", "rw"]
@@ -300,6 +301,31 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
                 "Failed to connect to '%s' service!" % moveit_add_plane_srv_topic
             )
 
+        # Connect to MoveIt 'planning_scene/set_joint_positions' service
+        if self._moveit_init_pose_control:
+            try:
+                moveit_set_joint_positions_srv_topic = (
+                    f"{self.robot_name_space}/{MOVEIT_SET_JOINT_POSITIONS_TOPIC}"
+                )
+                rospy.logdebug(
+                    "Connecting to '%s' service." % moveit_set_joint_positions_srv_topic
+                )
+                rospy.wait_for_service(
+                    moveit_set_joint_positions_srv_topic,
+                    timeout=CONNECTION_TIMEOUT,
+                )
+                self._moveit_set_joint_positions_srv = rospy.ServiceProxy(
+                    moveit_set_joint_positions_srv_topic, pg_srv.SetJointPositions
+                )
+                rospy.logdebug(
+                    "Connected to '%s' service!" % moveit_set_joint_positions_srv_topic
+                )
+            except (rospy.ServiceException, ROSException, ROSInterruptException):
+                rospy.logwarn(
+                    "Failed to connect to '%s' service!"
+                    % moveit_set_joint_positions_srv_topic
+                )
+
         # Create current target publisher
         rospy.logdebug("Creating target pose publisher.")
         self._target_pose_marker_pub = rospy.Publisher(
@@ -519,6 +545,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
                 ).lower()
             except KeyError:
                 self._pose_sampling_type = "end_effector_pose"
+            try:
+                self._moveit_init_pose_control = rospy.get_param(
+                    f"/{ns}/pose_sampling/moveit_control"
+                )
+            except KeyError:
+                self._moveit_init_pose_control = False
             try:
                 self._init_pose = rospy.get_param(f"/{ns}/pose_sampling/init_pose")
             except KeyError:
@@ -1528,17 +1560,40 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
                 )
 
             # Set initial model configuration and return result
-            # NOTE: The '/gazebo/set_model_configuration' service was used because of
-            # its speed.
-            rospy.loginfo("Setting initial robot pose.")
-            init_pose_retval = self.gazebo.set_model_configuration(
-                model_name="panda",
-                joint_names=self._init_model_configuration.keys(),
-                joint_positions=self._init_model_configuration.values(),
-            )
-            if not init_pose_retval:
-                rospy.logwarn("Setting initial robot pose failed.")
-            return init_pose_retval
+            # NOTE: Here two modes can be used: MoveIT or the set_model_configuration
+            # service.
+            # IMPROVE: The MoveIt method can be removed if #TODO is fixed.
+            if not self._moveit_init_pose_control:  # Use Gazebo service
+                rospy.loginfo("Setting initial robot pose.")
+                init_pose_retval = self.gazebo.set_model_configuration(
+                    model_name="panda",
+                    joint_names=self._init_model_configuration.keys(),
+                    joint_positions=self._init_model_configuration.values(),
+                )
+                if not init_pose_retval:
+                    rospy.logwarn("Setting initial robot pose failed.")
+                return init_pose_retval
+            else:  # Use MoveIt
+                if hasattr(self, "_moveit_set_joint_positions_srv"):
+                    prev_control_type = self.robot_control_type
+                    self.robot_control_type = "trajectory"
+                    resp = self._moveit_set_joint_positions_srv.call(
+                        pg_srv.SetJointPositionsRequest(
+                            joint_names=self._init_model_configuration.keys(),
+                            joint_positions=self._init_model_configuration.values(),
+                            wait=True,
+                        )
+                    )
+                    self.robot_control_type = prev_control_type
+                    if not resp.success:
+                        rospy.logwarn("Setting initial robot pose failed.")
+                    return resp.success
+                else:
+                    rospy.logwarn(
+                        "The initial pose failed since the {} service was not "
+                        "available.".format(MOVEIT_SET_JOINT_POSITIONS_TOPIC)
+                    )
+                    return False
         else:
             return True
 

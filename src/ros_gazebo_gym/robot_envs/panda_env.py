@@ -1655,7 +1655,7 @@ class PandaEnv(RobotGazeboGoalEnv):
     @robot_control_type.setter
     def robot_control_type(self, control_type):
         """Sets the robot control type while making sure the required controllers are
-        loaded.
+        loaded. Options are: ``trajectory``, ``position`` and ``effort``.
         """
         # Make sure the controller are running
         resp = self._controller_switcher.switch(
