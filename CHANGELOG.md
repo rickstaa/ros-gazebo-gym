@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.4.5...v1.5.0) (2022-02-16)
+
+
+### Features
+
+* **panda:** add MoveIt init pose set option ([67602f4](https://github.com/rickstaa/ros-gazebo-gym/commit/67602f4d5f5087110c60393472ca079271bf7353))
+* **panda:** improve init pose sampling code ([f3790d1](https://github.com/rickstaa/ros-gazebo-gym/commit/f3790d1717db6ca0b90ad1ddb98b507703255143))
+* **panda:** improve init pose set behavoir ([f769ab1](https://github.com/rickstaa/ros-gazebo-gym/commit/f769ab116938d629a2c702c03eb84596b5b304da))
+
+
+### Bug Fixes
+
+* apply fix for 'set_model_configuration' joint limit bug ([7a991cf](https://github.com/rickstaa/ros-gazebo-gym/commit/7a991cf4bc2246383ccacf570ae8d4fe9b0c0784))
+* fix collision penalty bug ([526a585](https://github.com/rickstaa/ros-gazebo-gym/commit/526a585fae03182f511d8fd997915faad4993021))
+* **panda:** fix several small bugs ([71554dd](https://github.com/rickstaa/ros-gazebo-gym/commit/71554dd3035d5520fbd3bb3ce5ba0a117e74b3da))
+
 ### [1.4.5](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.4.4...v1.4.5) (2022-02-09)
 
 
