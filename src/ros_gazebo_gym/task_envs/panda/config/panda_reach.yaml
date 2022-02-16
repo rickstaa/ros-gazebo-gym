@@ -140,7 +140,7 @@ panda_reach:
     target_hold: True # Hold the target position for N samples before done.
     hold_samples: 2 # The number of samples for which a agent should hold a target position.
     distance_threshold: 0.05 # The threshold for determining a target has been reached.
-    collision_penalty: 1.0 # The penalty given for when the robot is in collision.
+    collision_penalty: 1.0 # The penalty given for when the robot is in collision. Set to `0.0` if you don't want to use a collision penalty.
 
     # Reward frame offset (Only used in REACH environment)
     # NOTE: Normally, the distance between the `ee_frame` and the `target` is used to

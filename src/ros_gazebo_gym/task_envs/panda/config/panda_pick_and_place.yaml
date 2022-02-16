@@ -129,7 +129,6 @@ panda_pick_and_place:
   object_sampling:
     strategy: "global" # Options are: `global` and `fixed`.
     distance_threshold: 0.1 # Threshold for determining whether new object pose is far enough from old obj pose.
-    collision_penalty: 1.0 # The penalty given for when the robot is in collision.
     visualize_object_bounds: True # Turn object sampling region visualization on and off.
 
     # The pose of the grasp object
@@ -161,7 +160,7 @@ panda_pick_and_place:
     target_hold: True # Hold the target position for N samples before done.
     hold_samples: 2 # The number of samples for which a agent should hold a target position.
     distance_threshold: 0.05 # The threshold for determining a target has been reached.
-    collision_penalty: 1.0 # The penalty given for when the robot is in collision.
+    collision_penalty: 1.0 # The penalty given for when the robot is in collision. Set to `0.0` if you don't want to use a collision penalty.
 
   ########################################
   # Environment settings #################
