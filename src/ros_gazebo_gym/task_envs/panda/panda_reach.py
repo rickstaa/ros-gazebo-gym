@@ -1104,7 +1104,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
         Returns:
             bool: Whether the panda configuration was successfully set.
 
-        .. info::
+        .. note::
             This method was implemented to ensure that the joint positions stay inside
             the joint_limits when Gazebo's ``set_model_configuration`` service is used.
             For more information, see
@@ -1467,7 +1467,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
         Returns:
             bool: Boolean specifying whether the initial pose was successfully set.
 
-        .. info::
+        .. note::
            The pose is sampled based on the ``pose_sampling_type`` variable set in the
            task environment configuration file. Options are ``end_effector_pose``,
            which creates a random pose by sampling EE poses, and ``joint_positions``,
