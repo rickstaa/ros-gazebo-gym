@@ -21,7 +21,9 @@ class Singleton(type):
         when somebody tries to create another instance.
         """
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            kwargs.pop("__class__", None)  # NOTE: Done to make the singleton pickable
+            instance = super().__call__(*args, **kwargs)
+            cls._instances[cls] = instance
         else:
             if not cls._was_warned:
                 print(
