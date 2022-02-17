@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.5.3](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.5.2...v1.5.3) (2022-02-17)
+
+
+### Bug Fixes
+
+* make singleton pickable ([857f0c4](https://github.com/rickstaa/ros-gazebo-gym/commit/857f0c43be5009211a3a0a36ee3a7e58edb13a4f))
+
 ### [1.5.2](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.5.1...v1.5.2) (2022-02-16)
 
 ### [1.5.1](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.5.0...v1.5.1) (2022-02-16)
