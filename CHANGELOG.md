@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.5.3...v1.6.0) (2022-02-18)
+
+
+### Features
+
+* migrate to 'set_franka_model_configuration' service ([b6f78cd](https://github.com/rickstaa/ros-gazebo-gym/commit/b6f78cd69266d20edf644ceba5b12e60037288c1))
+
 ### [1.5.3](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.5.2...v1.5.3) (2022-02-17)
 
 
