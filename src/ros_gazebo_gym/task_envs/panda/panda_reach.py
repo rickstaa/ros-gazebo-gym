@@ -24,7 +24,6 @@ from pathlib import Path
 import numpy as np
 import rospy
 import tf2_geometry_msgs
-from franka_msgs.srv import ResetJointStates, ResetJointStatesRequest
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Vector3
 from gym import spaces, utils
 from ros_gazebo_gym.common import Singleton
@@ -45,12 +44,14 @@ from ros_gazebo_gym.core.helpers import get_log_path, load_ros_params_from_yaml
 from ros_gazebo_gym.exceptions import EePoseLookupError
 from ros_gazebo_gym.robot_envs.panda_env import PandaEnv
 from rospy.exceptions import ROSException, ROSInterruptException
+from sensor_msgs.msg import JointState
 from std_msgs.msg import ColorRGBA, Header
 from tf2_ros import ConnectivityException, ExtrapolationException, LookupException
 
 try:
     import panda_gazebo.msg as pg_msg
     import panda_gazebo.srv as pg_srv
+    from franka_msgs.srv import SetJointConfiguration, SetJointConfigurationRequest
 
     PANDA_GAZEBO_IMPORTED = True
 except ImportError:
@@ -65,7 +66,7 @@ MOVEIT_GET_RANDOM_JOINT_POSITIONS_TOPIC = (
 MOVEIT_SET_JOINT_POSITIONS_TOPIC = "panda_moveit_planner_server/set_joint_positions"
 MOVEIT_GET_RANDOM_EE_POSE_TOPIC = "panda_moveit_planner_server/get_random_ee_pose"
 MOVEIT_ADD_PLANE_TOPIC = "panda_moveit_planner_server/planning_scene/add_plane"
-FRANKA_GAZEBO_RESET_JOINT_STATES_TOPIC = "reset_joint_states"
+SET_FRANKA_MODEL_CONFIGURATION_TOPIC = "set_franka_model_configuration"
 VALID_EE_CONTROL_JOINTS = ["x", "y", "z", "rx", "ry", "rz", "rw"]
 CONFIG_FILE_PATH = "config/panda_reach.yaml"
 PANDA_REST_CONFIGURATION = [
@@ -328,28 +329,28 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
         else:
             # Connect to franka_gazebo's 'reset_joint_positions' service
             try:
-                franka_gazebo_reset_joint_states_srv_topic = (
-                    f"{self.robot_name_space}/{FRANKA_GAZEBO_RESET_JOINT_STATES_TOPIC}"
+                set_franka_model_configuration_srv_topic = (
+                    f"{self.robot_name_space}/{SET_FRANKA_MODEL_CONFIGURATION_TOPIC}"
                 )
                 rospy.logdebug(
                     "Connecting to '%s' service."
-                    % franka_gazebo_reset_joint_states_srv_topic
+                    % set_franka_model_configuration_srv_topic
                 )
                 rospy.wait_for_service(
-                    franka_gazebo_reset_joint_states_srv_topic,
+                    set_franka_model_configuration_srv_topic,
                     timeout=CONNECTION_TIMEOUT,
                 )
-                self._franka_gazebo_reset_joint_states_srv = rospy.ServiceProxy(
-                    franka_gazebo_reset_joint_states_srv_topic, ResetJointStates
+                self._set_franka_model_configuration_srv = rospy.ServiceProxy(
+                    set_franka_model_configuration_srv_topic, SetJointConfiguration
                 )
                 rospy.logdebug(
                     "Connected to '%s' service!"
-                    % franka_gazebo_reset_joint_states_srv_topic
+                    % set_franka_model_configuration_srv_topic
                 )
             except (rospy.ServiceException, ROSException, ROSInterruptException):
                 rospy.logwarn(
                     "Failed to connect to '%s' service!"
-                    % franka_gazebo_reset_joint_states_srv_topic
+                    % set_franka_model_configuration_srv_topic
                 )
 
         # Create current target publisher
@@ -1105,22 +1106,17 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             bool: Whether the panda configuration was successfully set.
 
         .. note::
-            This method was implemented to ensure that the joint positions stay inside
-            the joint_limits when Gazebo's ``set_model_configuration`` service is used.
-            For more information, see
+            Here we use the ``/set_franka_model_configuration`` service instead of the
+            Gazebo's ``set_model_configuration``. This was done because the latter
+            causes the reported joint positions outside the joint limits. For more
+            information, see
             `https://github.com/frankaemika/franka_ros/issues/225 <https://github.com/frankaemika/franka_ros/issues/225>`_.
         """  # noqa: E501
-        retval = self.gazebo.set_model_configuration(
-            model_name="panda",
-            joint_names=joint_names,
-            joint_positions=joint_positions,
-        )
-
-        # Reset the franka joint positions
-        # NOTE: Needed because https://github.com/frankaemika/franka_ros/issues/225
-        if hasattr(self, "_franka_gazebo_reset_joint_states_srv"):
-            resp = self._franka_gazebo_reset_joint_states_srv.call(
-                ResetJointStatesRequest()
+        if hasattr(self, "_set_franka_model_configuration_srv"):
+            resp = self._set_franka_model_configuration_srv.call(
+                SetJointConfigurationRequest(
+                    configuration=JointState(name=joint_names, position=joint_positions)
+                )
             )
             retval = resp.success
         else:
