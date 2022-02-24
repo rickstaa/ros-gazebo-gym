@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.1](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.6.0...v1.6.1) (2022-02-24)
+
 ## [1.6.0](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.5.3...v1.6.0) (2022-02-18)
 
 
