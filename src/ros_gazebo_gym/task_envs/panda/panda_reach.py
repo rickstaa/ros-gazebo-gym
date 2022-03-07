@@ -223,6 +223,9 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             visualize=visualize,
         )
 
+        # Disable visualize argument so that config can be used during inference
+        self._ezpickle_kwargs["visualize"] = None
+
         # Initialize task environment objects
         self._is_done_samples = 0
         self._init_model_configuration = {}
