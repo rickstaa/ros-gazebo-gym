@@ -26,9 +26,9 @@ After the system dependencies are installed, you can build the :ros_gazebo_gym:`
 
         .. code:: bash
 
-            python -m venv ./blc --system-site-packages
+            python -m venv ./slc --system-site-packages
 
-    You can then source this environment using the ``. ./blc/bin/activate`` command. The  ``--system-site-packages`` flag makes sure that
+    You can then source this environment using the ``. ./slc/bin/activate`` command. The  ``--system-site-packages`` flag makes sure that
     the virtual environment has access to the system site-packages. Alternatively, you can also use the
     `RoboStack ros-noetic <https://github.com/RoboStack/ros-noetic>`_ `conda-forge <https://conda-forge.org/>`_ packages
     (see this `blog post <https://medium.com/robostack/cross-platform-conda-packages-for-ros-fa1974fd1de3>`_ for more
