@@ -26,7 +26,6 @@ import rospy
 import tf2_geometry_msgs
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Vector3
 from gym import spaces, utils
-from ros_gazebo_gym.common import Singleton
 from ros_gazebo_gym.common.functions import (
     flatten_list,
     gripper_width_2_finger_joints_positions,
@@ -86,7 +85,7 @@ LOG_STEP_DEBUG_INFO = False
 #################################################
 # Panda reach environment class #################
 #################################################
-class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
+class PandaReachEnv(PandaEnv, utils.EzPickle):
     """Class that provides all the methods used for the algorithm training.
 
     Attributes:
@@ -94,6 +93,8 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
         observation_space (:obj:`gym.spaces.dict.Dict`): Gym observation space object.
         goal (:obj:`geometry_msgs.PoseStamped`): The current goal.
     """
+
+    _instance_count = 0  # Counts the number of instances that were created.
 
     def __init__(  # noqa: C901
         self,
@@ -127,6 +128,16 @@ class PandaReachEnv(PandaEnv, utils.EzPickle, metaclass=Singleton):
             easily extended to work with multiple waypoints by modifying the
             :obj:`PandaReachEnv~._create_action_space` method.
         """
+        self.__class__._instance_count += 1
+        if self.__class__._instance_count > 1:
+            rospy.logwarn(
+                "You are trying to create multiple instances of the "
+                f"{self.__class__.__name__} class. Unfortunately, this is not yet "
+                "been implemented and will cause unexpected behaviour. As a result, "
+                "the script will be shut down. Feel free to open a pull request if "
+                "you want to implement this functionality."
+            )
+
         utils.EzPickle.__init__(
             **locals()
         )  # Makes sure the env is pickable when it wraps C++ code.
