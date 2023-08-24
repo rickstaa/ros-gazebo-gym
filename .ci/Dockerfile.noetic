@@ -1,0 +1,17 @@
+FROM osrf/ros:noetic-desktop-full
+
+# Install system dependencies + preknown ROS dependencies.
+# NOTE: dependencies are found using the `rosdep install --from-path src --ignore-src -r -y --simulate --reinstall .` command.
+RUN apt-get update && apt-get install -y \
+    libgtest-dev \
+    ros-noetic-libfranka \
+    libeigen3-dev \
+    python3-pip \
+    python3-numpy \
+    python3-catkin-pkg \
+    python3-catkin-tools \
+    python3-setuptools \
+    python3-pygit2 \
+    python3-ruamel.yaml \
+    python3-tqdm \
+    && rm -rf /var/lib/apt/lists/*
