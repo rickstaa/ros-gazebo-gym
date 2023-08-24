@@ -230,10 +230,10 @@ panda_slide:
   ########################################
   physics: "dart" # The physics engine you want to use: dart|ode
   load_rviz: True # Whether Rviz should be loaded.
-  rviz_file: config/panda_slide.rviz # Rviz config file. Path is relative to parent folder.
+  rviz_file: config/panda_slide.rviz # RViz config file. Path is relative to parent folder.
   load_gazebo_gui: False # Whether the gazebo GUI should be shown.
   log_reset: False # Whether we want to print a log statement when the world/simulation is reset.
-  log_step_debug_info: False # Whether debug info about the step should be logged (i.e. reward, is_done, action ect.).
+  log_step_debug_info: False # Whether debug info about the step should be logged (i.e. reward, is_done, action etc.).
   roslaunch_log_to_console: False # Whether to write the log statements of the ROS launch files to the console.
 ##########################################
 # Other settings #########################

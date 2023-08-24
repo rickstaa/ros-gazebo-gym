@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Contains a list of the available :ros_gazebo_gym:`ros_gazebo_gym <>` gym
+"""Contains a list of available :ros-gazebo-gym:`ros_gazebo_gym <>` gymnasium
 environments.
 
 .. important::
-    This is where you can register new environments such that they are found inside the
-    openai Gym namespace.
+    This is where you put new environments such that they are registered inside the
+    gymnasium namespace.
 
 Source code
 -----------
@@ -15,27 +15,28 @@ Source code
    :lines: 18-
 """
 
-# NOTE: Each environment should contain a 'name', 'module' and default 'max_steps' key.
+# Available environments.
+# TODO: Update reward thresholds.
 ENVS = {
-    # Panda task envs
+    # Panda task envs.
     "PandaReach-v1": {
-        "module": "ros_gazebo_gym.task_envs.panda.panda_reach:PandaReachEnv",
+        "entry_point": "ros_gazebo_gym.task_envs.panda.panda_reach:PandaReachEnv",
+        "reward_threshold": -20,  # FIXME: Should not be negative!
         "max_steps": 500,
-        "reward_threshold": -20,
     },
     "PandaPickAndPlace-v1": {
-        "module": "ros_gazebo_gym.task_envs.panda.panda_pick_and_place:PandaPickAndPlaceEnv",
-        "max_steps": 1000,
+        "entry_point": "ros_gazebo_gym.task_envs.panda.panda_pick_and_place:PandaPickAndPlaceEnv",  # noqa: E501
         "reward_threshold": -20,
+        "max_steps": 1000,
     },
     "PandaPush-v1": {
-        "module": "ros_gazebo_gym.task_envs.panda.panda_push:PandaPushEnv",
-        "max_steps": 1000,
+        "entry_point": "ros_gazebo_gym.task_envs.panda.panda_push:PandaPushEnv",
         "reward_threshold": -20,
+        "max_steps": 1000,
     },
     "PandaSlide-v1": {
-        "module": "ros_gazebo_gym.task_envs.panda.panda_slide:PandaSlideEnv",
-        "max_steps": 1000,
+        "entry_point": "ros_gazebo_gym.task_envs.panda.panda_slide:PandaSlideEnv",
         "reward_threshold": -20,
+        "max_steps": 1000,
     },
-}  # noqa: E501
+}

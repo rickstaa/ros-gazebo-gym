@@ -1,11 +1,10 @@
-﻿"""Class used for displaying a target marker in rviz. This class overloads the
+﻿"""Class used for displaying a target marker in RViz. This class overloads the
 :obj:`visualization_msgs.msgs.Marker` class in order to pre-initialize some of its
 attributes.
 """
-
 import rospy
 from geometry_msgs.msg import Pose, Vector3
-from ros_gazebo_gym.common.functions import normalize_quaternion
+from ros_gazebo_gym.common.helpers import normalize_quaternion
 from rospy.exceptions import ROSInitException
 from std_msgs.msg import ColorRGBA, Header
 from visualization_msgs.msg import Marker
@@ -13,7 +12,7 @@ import tf
 
 
 class TargetMarker(Marker):
-    """Class used to create an rviz target goal marker.
+    """Class used to create an RViz target goal marker.
 
     Attributes:
         x (int): The marker x position.
@@ -66,11 +65,11 @@ class TargetMarker(Marker):
         self.__pose = Pose()
         super().__init__(*args, **kwds)
 
-        # Overwrite attributes with defaults if not supplied in the constructor
+        # Overwrite attributes with defaults if not supplied in the constructor.
         if "header" not in kwds.keys():
-            # Pre-initialize header
+            # Pre-initialize header.
             self.header = Header()
-            try:  # Check if rostime was initialized
+            try:  # Check if rostime was initialized.
                 self.header.stamp = rospy.Time.now()
             except ROSInitException:
                 raise Exception(
@@ -94,7 +93,7 @@ class TargetMarker(Marker):
             rospy.Duration(0) if "lifetime" not in kwds.keys() else self.lifetime
         )
 
-        # Set marker positions
+        # Set marker positions.
         self.x = x
         self.y = y
         self.z = z

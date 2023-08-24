@@ -1,0 +1,55 @@
+# Runs tests after a pull request is merged.
+name: ROS Gazebo Gym
+on:
+  push:
+    branches:
+      - noetic
+    tags-ignore:
+      - v*.*.*
+jobs:
+  markdown-lint: # Lints the markdown code.
+    name: runner / remark-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check markdown code quality using remark-lint
+        uses: reviewdog/action-remark-lint@v5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-check
+          level: warning
+  black: # Check python code format.
+    name: runner / black
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: reviewdog/action-black@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-check
+          level: warning
+  flake8: # Lints python code.
+    name: runner / flake8
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+          cache: "pip"
+          cache-dependency-path: |
+            **/requirements.txt
+            **/requirements/dev_requirements.txt
+      - name: Install the ros_gazebo_gym package with its dependencies
+        run: |
+          pip install -r requirements/dev_requirements.txt
+      - name: flake8 Lint
+        uses: reviewdog/action-flake8@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-check
+          level: warning

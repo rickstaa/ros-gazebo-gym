@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Contains a small python API class that makes it easier to interact with the Gazebo
-simulator.
+"""Contains a small python utility class that makes it easier to interact with the
+Gazebo simulator.
 """
-
 import numpy as np
 import rospy
+import time
 from gazebo_msgs.msg import ModelStates
 from gazebo_msgs.srv import (
     GetLinkState,
@@ -21,7 +21,7 @@ from gazebo_msgs.srv import (
     SpawnModelRequest,
 )
 from geometry_msgs.msg import Pose
-from ros_gazebo_gym.common.functions import (
+from ros_gazebo_gym.common.helpers import (
     deep_update,
     find_gazebo_model_path,
     lower_first_char,
@@ -38,12 +38,14 @@ from ros_gazebo_gym.exceptions import (
     SpawnModelError,
 )
 from rosgraph_msgs.msg import Clock
+from rospy import ServiceException
 from rospy.exceptions import ROSException, ROSInterruptException
 from rospy_message_converter import message_converter
 from std_msgs.msg import Float64
 from std_srvs.srv import Empty
+from geometry_msgs.msg import Vector3
 
-# Specify gazebo service topics
+# Specify gazebo service topics.
 GAZEBO_PAUSE_PHYSICS_TOPIC = "/gazebo/pause_physics"
 GAZEBO_UNPAUSE_PHYSICS_TOPIC = "/gazebo/unpause_physics"
 GAZEBO_RESET_SIM_TOPIC = "/gazebo/reset_simulation"
@@ -60,7 +62,7 @@ GAZEBO_SET_MODEL_CONFIGURATION_TOPIC = "/gazebo/set_model_configuration"
 GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC = "/gazebo/get_physics_properties"
 GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC = "/gazebo/set_physics_properties"
 
-# Script variables
+# Script variables.
 PHYSICS_UPDATE_RATE = 1000
 SERVICES_CONNECTION_TIMEOUTS = 5
 
@@ -78,23 +80,23 @@ class GazeboConnection:
             service that resets the gazebo simulator.
         reset_world_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS service
             that resets the gazebo world.
-        spawn_sdf_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros service
+        spawn_sdf_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS service
             that spawns a sdf model.
-        spawn_urdf_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros service
+        spawn_urdf_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS service
             that spawns a urdf model.
-        get_model_state_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros
+        get_model_state_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS
             service used to set get model states.
-        set_model_state_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros
+        set_model_state_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS
             service used to set the model state of a object.
-        set_link_state_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros
+        set_link_state_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS
             service used to set the link states.
-        get_link_state_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros
+        get_link_state_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS
             service used to get the link states.
         set_model_configuration_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`):
             ROS service that sets the configuration of a model.
-        get_physics_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros
+        get_physics_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS
             service used to retrieve the physics properties.
-        set_physics_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): Ros
+        set_physics_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS
             service used to set the physics properties.
     """
 
@@ -104,7 +106,7 @@ class GazeboConnection:
         """Initiate the GazeboConnection instance.
 
         Args:
-            reset_world_or_sim (str, optional): Wether you want to reset the whole
+            reset_world_or_sim (str, optional): Whether you want to reset the whole
                 simulation "SIMULATION" at startup or only the world "WORLD" (object
                 positions). Defaults to "WORLD".
             max_retry (int, optional): How many times a command to the simulator is
@@ -112,14 +114,14 @@ class GazeboConnection:
             log_reset (bool, optional): Whether we want to print a log statement when
                 the world/simulation is reset. Defaults to ``True``.
         """
-        rospy.logwarn("Start Init GazeboConnection")
+        rospy.logwarn("Initialize GazeboConnection utility class...")
         self._reset_world_or_sim = reset_world_or_sim
         self._log_reset = log_reset
         self._max_retry = max_retry
         self._physics_update_rate = Float64(PHYSICS_UPDATE_RATE)
         self.__time = 0.0
 
-        # Connect to link_state and model_state topics
+        # Connect to link_state and model_state topics.
         rospy.Subscriber(
             GAZEBO_LINK_STATES_TOPIC, ModelStates, self._link_states_cb, queue_size=1
         )
@@ -127,7 +129,7 @@ class GazeboConnection:
             GAZEBO_MODEL_STATES_TOPIC, ModelStates, self._model_states_cb, queue_size=1
         )
 
-        # Connect to gazebo services
+        # Connect to gazebo services.
         try:
             rospy.logdebug("Connecting to '%s' service." % GAZEBO_PAUSE_PHYSICS_TOPIC)
             rospy.wait_for_service(
@@ -268,7 +270,7 @@ class GazeboConnection:
                 % GAZEBO_SET_MODEL_CONFIGURATION_TOPIC
             )
 
-        # Setup physics properties control service
+        # Setup physics properties control service.
         try:
             rospy.logdebug(
                 "Connecting to '%s' service." % GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC
@@ -308,16 +310,16 @@ class GazeboConnection:
                 % GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC
             )
 
-        # Connect to clock
+        # Connect to clock.
         rospy.Subscriber(GAZEBO_CLOCK_TOPIC, Clock, self._clock_cb, queue_size=1)
 
-        # Reset the simulation
+        # Reset the simulation.
         self.reset_sim()
 
-        # We always pause the simulation, important for legged robots learning
+        # We always pause the simulation, important for legged robots learning.
         self.pause_sim()
 
-        rospy.logwarn("END Init GazeboConnection")
+        rospy.logwarn("GazeboConnection utility class initialised.")
 
     def pause_sim(self):
         """Pause the simulation."""
@@ -334,9 +336,10 @@ class GazeboConnection:
                 except rospy.ServiceException:
                     counter += 1
                     rospy.logerr("/gazebo/pause_physics service call failed")
+                    time.sleep(0.2)
             else:
                 error_message = (
-                    "Maximum retries done"
+                    "Maximum retries done "
                     + str(self._max_retry)
                     + ", please check Gazebo pause service"
                 )
@@ -410,149 +413,9 @@ class GazeboConnection:
         else:
             rospy.logerr("WRONG Reset Option:" + str(self._reset_world_or_sim))
 
-    def _update_gravity_call(self):
-        """Updates the simulator gravity property."""
-        self.pause_sim()
-
-        # Create physic change message
-        set_physics_request = SetPhysicsPropertiesRequest()
-        set_physics_request.time_step = 1 / self._physics_update_rate.data
-        set_physics_request.max_update_rate = self._physics_update_rate.data
-        set_physics_request.gravity = self._gravity
-        set_physics_request.ode_config = self._ode_config
-        rospy.logdebug(str(set_physics_request.gravity))
-
-        # Send physic change request
-        result = self.set_physics_proxy(set_physics_request)
-        rospy.logdebug(
-            "Gravity Update Result=="
-            + str(result.success)
-            + ",message=="
-            + str(result.status_message)
-        )
-        self.unpause_sim()
-
-    def change_gravity(self, x, y, z):
-        """Changes the gravity vector
-
-        Args:
-            x (float): Gravity vector x coordinate.
-            y (float): Gravity vector y coordinate.
-            z (float): Gravity vector z coordinate.
-        """
-        self._gravity.x = x
-        self._gravity.y = y
-        self._gravity.z = z
-        self._update_gravity_call()
-
-    def spawn_object(  # noqa: C901
-        self,
-        object_name,
-        model_name,
-        models_folder_path,
-        pose=None,
-    ):
-        """Spawns a object from the model directory into gazebo.
-
-        Args:
-            object_name (str): The name you want the model to have.
-            model_name (str): The model type (The name of the xml file you want to use).
-            models_folder_path (str): The folder in which you want to search for the
-                models.
-            pose (:obj:`geometry_msgs.msg.Pose`, optional): The pose of the model, by
-                default :py:class:`geometry_msgs.msg.Pose`.
-
-        Returns:
-            bool: A boolean specifying whether the model was successfully spawned.
-
-        Raises:
-            :obj:`ros_gazebo_gym.exceptions.SpawnModelError`: When model was not spawned
-                successfully.
-        """
-        # Initiate default model pose
-        if not pose:
-            pose = Pose()
-            pose.orientation = normalize_quaternion(pose.orientation)
-
-        # Check if model is already present
-        if object_name in self.model_states.keys():
-            rospy.logwarn(
-                "A model with model name '%s' already exists. Please check if this is "
-                "the right model." % (model_name)
-            )
-            return False
-
-        # Find model xml
-        rospy.logdebug("Looking for '%s' model file." % model_name)
-        model_xml, extension = find_gazebo_model_path(model_name, models_folder_path)
-        if not model_xml:  # If model file was not found
-            logwarn_msg = (
-                "Spawning model '%s' as '%s' failed since the sdf/urd model file "
-                "was not found. Please make sure you added the model sdf/urdf file "
-                "to the '%s' folder." % (model_name, object_name, models_folder_path)
-            )
-            rospy.logwarn(logwarn_msg)
-            raise SpawnModelError(message=logwarn_msg)
-
-        # Load content from the model xml file
-        xml_file = open(model_xml, "r")
-        model_xml_content = xml_file.read()
-
-        # Create spawn model request message
-        rospy.logdebug("Spawning '%s' model as '%s'." % (model_name, object_name))
-        spawn_model_req = SpawnModelRequest(
-            model_name=object_name,
-            model_xml=model_xml_content,
-            initial_pose=pose,
-            reference_frame="world",
-        )
-
-        # Request model spawn from sdf or urdf spawn service
-        rospy.logdebug("Spawning model '%s' as '%s'." % (model_name, object_name))
-        spawn_done = False
-        counter = 0
-        if extension == "sdf":  # Use sdf service
-            while not spawn_done and not rospy.is_shutdown():
-                if counter < self._max_retry:
-                    try:
-                        rospy.logdebug("SPAWNING service calling...")
-                        retval = self.spawn_sdf_proxy.call(spawn_model_req)
-                        spawn_done = True
-                        rospy.logdebug("SPAWNING service calling...DONE")
-                        return retval
-                    except rospy.ServiceException as e:
-                        logwarn_msg = "Spawning model '%s' as '%s' failed since %s." % (
-                            model_name,
-                            object_name,
-                            lower_first_char(e.args[0]),
-                        )
-                        rospy.logwarn(logwarn_msg)
-                        raise SpawnModelError(
-                            message=logwarn_msg, details={"exception": e}
-                        )
-        else:
-            while not spawn_done and not rospy.is_shutdown():
-                if counter < self._max_retry:
-                    try:
-                        rospy.logdebug("SPAWNING service calling...")
-                        retval = self.spawn_urdf_proxy.call(spawn_model_req)
-                        spawn_done = True
-                        rospy.logdebug("SPAWNING service calling...DONE")
-                        return retval
-                    except rospy.ServiceException as e:
-                        logwarn_msg = "Spawning model '%s' as '%s' failed since %s." % (
-                            model_name,
-                            object_name,
-                            lower_first_char(e.args[0]),
-                        )
-                        rospy.logwarn(logwarn_msg)
-                        raise SpawnModelError(
-                            message=logwarn_msg, details={"exception": e}
-                        )
-
     #############################################
-    # Properties/functions for retrieving #######
-    # gazebo env information ####################
+    # Properties/functions for retrieving/ ######
+    # setting gazebo environment properties #####
     #############################################
     def get_model_state(self, model_name):
         """Retrieve the current state of a model.
@@ -673,7 +536,7 @@ class GazeboConnection:
             rospy.logwarn(logwarn_msg)
             raise SetModelConfigurationError(logwarn_msg)
 
-        # Set joint position
+        # Set joint position.
         if pause:
             self.pause_sim()
         retval = self.set_model_configuration_proxy.call(
@@ -747,6 +610,167 @@ class GazeboConnection:
             raise SetPhysicsPropertiesError(
                 message=logwarn_msg, details=retval.status_message
             )
+
+    def _update_gravity_call(self, x, y, z):
+        """Updates the simulator gravity.
+
+        Args:
+            x (float): Gravity vector x coordinate.
+            y (float): Gravity vector y coordinate.
+            z (float): Gravity vector z coordinate.
+
+        Raises:
+            :obj:`ros_gazebo_gym.exceptions.SetPhysicsPropertiesError`: Thrown when the
+                physics properties could not be set.
+        """
+        self.pause_sim()
+
+        # Retrieve current physics properties.
+        try:
+            get_physics_properties = self.physics_properties
+        except ServiceException:
+            logwarn_msg = (
+                "Failed to retrieve physics properties when trying to update gravity. "
+                "As a result, gravity was not updated."
+            )
+            rospy.logwarn(logwarn_msg)
+            return
+
+        # Create set physics properties request message.
+        set_physics_request = SetPhysicsPropertiesRequest()
+        for key in [
+            attr for attr in dir(get_physics_properties) if not attr.startswith("_")
+        ]:  # Set all properties to the current physics properties.
+            try:
+                setattr(set_physics_request, key, getattr(get_physics_properties, key))
+            except AttributeError:
+                pass
+        set_physics_request.gravity = Vector3(x=x, y=y, z=z)
+        rospy.logdebug(str(set_physics_request.gravity))
+
+        # Send physic change request.
+        result = self.set_physics_proxy(set_physics_request)
+        rospy.logdebug(
+            "Gravity Update Result=="
+            + str(result.success)
+            + ",message=="
+            + str(result.status_message)
+        )
+        self.unpause_sim()
+
+    def change_gravity(self, x, y, z):
+        """Changes the gravity vector
+
+        Args:
+            x (float): Gravity vector x coordinate.
+            y (float): Gravity vector y coordinate.
+            z (float): Gravity vector z coordinate.
+        """
+        self._update_gravity_call(x, y, z)
+
+    def spawn_object(  # noqa: C901
+        self,
+        object_name,
+        model_name,
+        models_folder_path,
+        pose=None,
+    ):
+        """Spawns a object from the model directory into gazebo.
+
+        Args:
+            object_name (str): The name you want the model to have.
+            model_name (str): The model type (The name of the xml file you want to use).
+            models_folder_path (str): The folder in which you want to search for the
+                models.
+            pose (:obj:`geometry_msgs.msg.Pose`, optional): The pose of the model, by
+                default :py:class:`geometry_msgs.msg.Pose`.
+
+        Returns:
+            bool: A boolean specifying whether the model was successfully spawned.
+
+        Raises:
+            :obj:`ros_gazebo_gym.exceptions.SpawnModelError`: When model was not spawned
+                successfully.
+        """
+        if not pose:  # Use default pose if none was given.
+            pose = Pose()
+            pose.orientation = normalize_quaternion(pose.orientation)
+
+        # Check if model is already present.
+        if object_name in self.model_states.keys():
+            rospy.logwarn(
+                "A model with model name '%s' already exists. Please check if this is "
+                "the right model." % (model_name)
+            )
+            return False
+
+        # Find model xml.
+        rospy.logdebug("Looking for '%s' model file." % model_name)
+        model_xml, extension = find_gazebo_model_path(model_name, models_folder_path)
+        if not model_xml:  # If model file was not found.
+            logwarn_msg = (
+                "Spawning model '%s' as '%s' failed since the sdf/urd model file "
+                "was not found. Please make sure you added the model sdf/urdf file "
+                "to the '%s' folder." % (model_name, object_name, models_folder_path)
+            )
+            rospy.logwarn(logwarn_msg)
+            raise SpawnModelError(message=logwarn_msg)
+
+        # Load content from the model xml file.
+        xml_file = open(model_xml, "r")
+        model_xml_content = xml_file.read()
+
+        # Create spawn model request message.
+        rospy.logdebug("Spawning '%s' model as '%s'." % (model_name, object_name))
+        spawn_model_req = SpawnModelRequest(
+            model_name=object_name,
+            model_xml=model_xml_content,
+            initial_pose=pose,
+            reference_frame="world",
+        )
+
+        # Request model spawn from sdf or urdf spawn service.
+        rospy.logdebug("Spawning model '%s' as '%s'." % (model_name, object_name))
+        spawn_done = False
+        counter = 0
+        if extension == "sdf":  # Use sdf service.
+            while not spawn_done and not rospy.is_shutdown():
+                if counter < self._max_retry:
+                    try:
+                        rospy.logdebug("SPAWNING service calling...")
+                        retval = self.spawn_sdf_proxy.call(spawn_model_req)
+                        spawn_done = True
+                        rospy.logdebug("SPAWNING service calling...DONE")
+                        return retval
+                    except rospy.ServiceException as e:
+                        logwarn_msg = "Spawning model '%s' as '%s' failed since %s." % (
+                            model_name,
+                            object_name,
+                            lower_first_char(e.args[0]),
+                        )
+                        rospy.logwarn(logwarn_msg)
+                        raise SpawnModelError(
+                            message=logwarn_msg, details={"exception": e}
+                        )
+        else:
+            while not spawn_done and not rospy.is_shutdown():
+                if counter < self._max_retry:
+                    try:
+                        rospy.logdebug("SPAWNING service calling...")
+                        retval = self.spawn_urdf_proxy.call(spawn_model_req)
+                        spawn_done = True
+                        rospy.logdebug("SPAWNING service calling...DONE")
+                        return retval
+                    except rospy.ServiceException as e:
+                        logwarn_msg = "Spawning model '%s' as '%s' failed since %s." % (
+                            model_name,
+                            object_name,
+                            lower_first_char(e.args[0]),
+                        )
+                        rospy.logwarn(logwarn_msg)
+                        raise SpawnModelError(
+                            message=logwarn_msg, details={"exception": e}
+                        )
 
     def _link_states_cb(self, data):
         """Link states subscriber callback function.

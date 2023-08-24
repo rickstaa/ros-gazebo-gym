@@ -1,0 +1,20 @@
+# Github action that uses the 'release-please' tool to update the version, changelog
+# and create new releases.
+name: ROS Gazebo Gym release
+on:
+  push:
+    branches:
+      - noetic
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/release-please-action@v3
+        with:
+          token: ${{ secrets.PLEASE_RELEASE_PAT }}
+          command: manifest

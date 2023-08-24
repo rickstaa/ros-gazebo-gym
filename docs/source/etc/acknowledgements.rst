@@ -4,7 +4,7 @@ Acknowledgements
 
 We gratefully acknowledge the contributions of the `The Construct team`_ in creating the
 `openai_ros`_ package. It provided us with a great template to build our new framework.
-Maybe in the future features found in the :ros_gazebo_gym:`ros_gazebo_gym <>` package can
+Maybe in the future features found in the :ros-gazebo-gym:`ros_gazebo_gym <>` package can
 be backported into the `openai_ros`_ package or even better combined into a new package
 under the `ros-simulation`_ organization.
 

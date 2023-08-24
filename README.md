@@ -1,15 +1,15 @@
-# Ros\_gazebo\_gym
+# ROS-gazebo-gym
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/rickstaa/ros-gazebo-gym)](https://github.com/rickstaa/ros-gazebo-gym/releases)
 [![Python 3](https://img.shields.io/badge/Python-3.8%20%7C%203.7%20%7C%203.6-brightgreen)](https://www.python.org/)
 [![ROS version](https://img.shields.io/badge/ROS%20versions-Noetic-brightgreen)](https://wiki.ros.org)
 [![Contributions](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](contributing.md)
 
-The ROS Gazebo gym framework provides all the tools required to create open gym compatible ROS based [openai gym](https://gym.openai.com/) robot environments.
+The ROS Gazebo Gym framework provides all the tools required to create ROS based [gymnasium](https://gymnasium.farama.org/) robot environments.
 
-RL algorithms have achieved impressive results in games and simulated environments in the last few years. For example, the Deep-mind team was able to train an RL algorithm that outperforms humans on all of the [Atari games](https://arxiv.org/abs/2003.13350) and [another one that even beat professional dota 2 players](https://arxiv.org/abs/1912.06680). However, much work needs to be done to translate these results to real-world robots. Due to safety and time constraints, most RL algorithms can not be directly trained on real robots. As a result, people have to rely on simulations. [Openai gym](https://gym.openai.com/) provides a valuable toolkit for developing and comparing reinforcement learning algorithms. This toolkit, however, is not directly compatible with the simulated environments often used in robotics research.
+RL algorithms have achieved impressive results in games and simulated environments in the last few years. For example, the Deep-mind team was able to train an RL algorithm that outperforms humans on all of the [Atari games](https://arxiv.org/abs/2003.13350) and [another one that even beat professional dota 2 players](https://arxiv.org/abs/1912.06680). However, much work needs to be done to translate these results to real-world robots. Due to safety and time constraints, most RL algorithms can not be directly trained on real robots. As a result, people have to rely on simulations. [Gymnasium](https://gymnasium.farama.org/) provides a valuable toolkit for developing and comparing reinforcement learning algorithms. This toolkit, however, is not directly compatible with the simulated environments often used in robotics research.
 
-The [ros-gazebo-gym](https://github.com/rickstaa/ros-gazebo-gym) framework provides a way to translate ROS Gazebo simulations into Openai gym environments easily. While doing this, the focus lies on delivering real-world ready solutions, meaning algorithms trained in simulation can readily be applied to the Real robot. We hope to create a common ground for people who use RL with real robots and accelerate the research in this area.
+The [ros-gazebo-gym](https://github.com/rickstaa/ros-gazebo-gym) framework provides a way to translate ROS Gazebo simulations into gymnasium environments easily. While doing this, the focus lies on delivering real-world ready solutions, meaning algorithms trained in simulation can readily be applied to the Real robot. We hope to create a common ground for people who use RL with real robots and accelerate the research in this area.
 
 ## Clone instructions
 

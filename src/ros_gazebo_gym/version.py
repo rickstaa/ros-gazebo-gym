@@ -1,6 +1,3 @@
-# coding: utf-8
-"""The ros_gazebo_gym version."""
-version = "1.7.0"
-__version__ = version
-# format:
-# ('mlc_major', 'mlc_minor', 'mlc_patch')
+# Stores the package version number so that it can be accessed from other modules.
+__version__ = "1.7.0"
+__version_tuple__ = __version__.split(".")

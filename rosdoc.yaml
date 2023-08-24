@@ -1,2 +1,2 @@
 - builder: sphinx
-  sphinx_root_dir: docs
+  sphinx_root_dir: docs/source

@@ -1,12 +1,12 @@
-"""An Openai gym ROS Panda slide environment.
+"""An ROS Panda slide gymnasium environment.
 
 .. figure:: /images/panda/panda_slide_env.png
    :alt: Panda slide environment
 
 Goal:
     In this environment the agent has to learn to slide a puck to a desired goal
-    position. Based on the `FetchSlide-v1 <https://gym.openai.com/envs/FetchSlide-v1>`_
-    Openai gym environment.
+    position. Based on the :gymnasium-robotics:`FetchSlide-v2 <envs/fetch/slide/>`
+    gymnasium environment.
 
 .. admonition:: Configuration
     :class: important
@@ -14,12 +14,12 @@ Goal:
     The configuration files for this environment are found in the
     `panda task environment config folder <../config/panda_slide.yaml>`_).
 """
+from gymnasium import utils
 
-from gym import utils
 from ros_gazebo_gym.task_envs.panda import PandaPickAndPlaceEnv
 from ros_gazebo_gym.task_envs.panda.markers import PuckMarker
 
-# Specify topics and other script variables
+# Specify topics and other script variables.
 CONFIG_FILE_PATH = "config/panda_slide.yaml"
 
 
@@ -49,7 +49,7 @@ class PandaSlideEnv(PandaPickAndPlaceEnv, utils.EzPickle):
             **kwargs,
         )
 
-        # Change object marker properties
+        # Change object marker properties.
         self.object_marker_class = PuckMarker
         self.object_frame_name = "puck"
 
@@ -66,12 +66,12 @@ class PandaSlideEnv(PandaPickAndPlaceEnv, utils.EzPickle):
         """
         self._set_init_obj_pose()
 
-        # Sample and visualize goal
+        # Sample and visualize goal.
         self.goal = self._sample_goal()
         self.goal[-1] = (
             self.object_position[-1] - 0.02
-        )  # Make sure object stays in contact with the platform
+        )  # Make sure object stays in contact with the platform.
         if self._visualize_target:
             self._visualize_goal(
                 offset=[0.0, 0.0, 0.02]
-            )  # Apply offset to make goal marker visible
+            )  # Apply offset to make goal marker visible.

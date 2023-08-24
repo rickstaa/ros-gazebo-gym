@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Contains a small python API class that makes it easier to interact with the
+"""Contains a python utility class that makes it easier to interact with
 `ros_control <https://wiki.ros.org/ros_control>`_ controllers.
 """
-
 import sys
 
 import rospy
@@ -12,18 +11,19 @@ from controller_manager_msgs.srv import (
     SwitchController,
     SwitchControllerRequest,
 )
-from ros_gazebo_gym.common.functions import flatten_list
 from rosgraph_msgs.msg import Clock
 from rospy.exceptions import ROSException, ROSInterruptException
 from std_srvs.srv import Empty
 
-# Script settings
+from ros_gazebo_gym.common.helpers import flatten_list
+
+# Script settings.
 CONNECTION_TIMEOUT = 10
 
 
 class ControllersConnection:
     """Class that contains several methods that can be used to interact with the
-    ros_control controllers.
+    `ros_control <https://wiki.ros.org/ros_control>`_ controllers.
 
     Attributes:
         controllers_list (list): List with currently available controllers.
@@ -45,8 +45,8 @@ class ControllersConnection:
                 controllers to look for. Defaults to ``None``, which means that the
                 class will try to retrieve all the running controllers.
         """
-        rospy.logwarn("Start Init ControllersConnection")
-        self.controllers_list = controllers_list
+        rospy.logwarn("Initialize ControllersConnection utility class...")
+        self._controller_list = controllers_list
         self._gazebo_paused_check_timeout = 0.2
         self._list_controllers_service_name = (
             f"{namespace}/controller_manager/list_controllers"
@@ -133,7 +133,7 @@ class ControllersConnection:
                 "Failed to connect to '%s' service!" % self._gazebo_unpause_service_name
             )
 
-        rospy.logwarn("END Init ControllersConnection")
+        rospy.logwarn("ControllersConnection utility class initialised.")
 
     def switch_controllers(
         self, controllers_on, controllers_off, strictness=1, timeout=0.0
@@ -143,13 +143,13 @@ class ControllersConnection:
         Args:
             controllers_on (list): The controllers you want to turn on.
             controllers_off (list): The controllers you want to turn off.
-            strictness (int, optional): Wether the switching will fail if anything goes
+            strictness (int, optional): Whether the switching will fail if anything goes
                 wrong. Defaults to ``1``.
             timeout (float): The timeout before the request is cancelled. Defaults to
                 ``0.0`` meaning no timeout.
 
         Returns:
-            bool: Boolean specifying whether the switch was successfull.
+            bool: Boolean specifying whether the switch was successful.
         """
         rospy.wait_for_service(self._switch_controller_service_name)
         try:
@@ -160,8 +160,8 @@ class ControllersConnection:
             switch_request_object.timeout = timeout
             switch_result = self._switch_controller_proxy(switch_request_object)
             # NOTE: When a ROS Gazebo simulation is present and it is paused we briefly
-            # unpause it. This is required for the
-            # `controller_manager/switch_controller` service to work.
+            # unpause it. This is needed for the `controller_manager/switch_controller`
+            # service to work.
             if not switch_result.ok and self.gazebo and self.gazebo_paused:
                 self._unpause_proxy()
                 switch_result = self._switch_controller_proxy(switch_request_object)
@@ -179,8 +179,8 @@ class ControllersConnection:
             timeout (float): The timeout before the request is cancelled. Defaults to
                 ``0.0`` meaning no timeout.
         """
-        # Try to find all running controllers controller_list was not supplied
-        if self.controllers_list is None:
+        # Try to find all running controllers controller_list was not supplied.
+        if self._controller_list is None:
             list_controllers_msg = self._list_controllers_proxy.call(
                 ListControllersRequest()
             )
@@ -190,9 +190,9 @@ class ControllersConnection:
                 if controller.state == "running"
             ]
         else:
-            controllers_list = self.controllers_list
+            controllers_list = self._controller_list
 
-        # Reset the running controllers
+        # Reset the running controllers.
         reset_result = False
         rospy.logdebug("Deactivating controllers")
         result_off_ok = self.switch_controllers(
@@ -212,9 +212,15 @@ class ControllersConnection:
             rospy.logdebug("result_off_ok==>" + str(result_off_ok))
         return reset_result
 
-    def update_controllers_list(self, new_controllers_list):
-        """Update the available controllers list."""
-        self.controllers_list = new_controllers_list
+    @property
+    def controllers_list(self):
+        """Returns the list of available controllers."""
+        return self._controllers_list
+
+    @controllers_list.setter
+    def controllers_list(self, new_controllers_list):
+        """Updates the list of available controllers."""
+        self._controllers_list = new_controllers_list
 
     @property
     def gazebo(self):
@@ -225,7 +231,7 @@ class ControllersConnection:
 
     @property
     def gazebo_paused(self):
-        """Checks whether a Gazebo simulation is present in paused mode."""
+        """Returns whether the Gazebo simulation is paused."""
         if self.gazebo and any(
             ["/clock" in topic for topic in flatten_list(rospy.get_published_topics())]
         ):

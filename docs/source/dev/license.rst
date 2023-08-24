@@ -32,4 +32,4 @@ License
     commits made before `3df2ec4d7f446bd7a4b5280d3435278b1e5e3c11 <https://github.com/rickstaa/ros-gazebo-gym/commit/3df2ec4d7f446bd7a4b5280d3435278b1e5e3c11>`_ are
     licensed under a `IGPL <https://nl.wikipedia.org/wiki/GNU_Lesser_General_Public_License>`_ license. All the code changes I created after this commit are licensed under a
     `MIT <https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/LICENSE>`_ license. I use the MIT license since it is less restrictive and improves OpenSource collaboration.
-    Nevertheless, the :ros_gazebo_gym:`ros_gazebo_gym <>` and `openai_ros <http://wiki.ros.org/openai_ros>`_ packages have diverged significantly (see :ref:`openai_diff`).
+    Nevertheless, the :ros-gazebo-gym:`ros_gazebo_gym <>` and `openai_ros <http://wiki.ros.org/openai_ros>`_ packages have diverged significantly (see :ref:`openai_diff`).
