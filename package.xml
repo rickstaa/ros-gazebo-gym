@@ -93,6 +93,8 @@
   <!-- <exec_depend>robotx_gazebo</exec_depend> -->
 
   <!-- Python dependencies -->
+  <exec_depend>python-gymnasium-pip</exec_depend>
+  <exec_depend>python-gymnasium-robotics-pip</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-pygit2</exec_depend>
   <exec_depend>python3-ruamel.yaml</exec_depend>
