@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Contains several helper functions that are used in the
-:ros_gazebo_gym:`ros_gazebo_gym <>` package to setup the gym environments.
+"""Contains several helper functions that are used by the
+:ros-gazebo-gym:`ros_gazebo_gym <>` package for the setup of the ROS Gazebo Gym
+gymnasium environments.
 """
-
 import os
 import subprocess
 import sys
@@ -16,14 +16,18 @@ import rospkg
 import rospy
 import ruamel.yaml as yaml
 from tqdm import tqdm
+import atexit
+import threading
+import time
+from io import TextIOWrapper
+import psutil
 
-# Dependency index
+# Script settings.
 ROSDEP_INDEX_PATH = "../cfg/rosdep.yaml"
-ROSDEP_INDEX = None
 
 
 class GitProgressCallback(pygit2.RemoteCallbacks):
-    """Callback class that can be used to overwrite the transfer_progress callback."""
+    """A :class:`pygit2.RemoteCallbacks` callback that shows a git clone progress bar."""
 
     def __init__(self):
         super().__init__()
@@ -41,8 +45,120 @@ class GitProgressCallback(pygit2.RemoteCallbacks):
         self.pbar.refresh()
 
 
+class PopenAutoCleanup(subprocess.Popen):
+    """A :class:`subprocess.Popen` that cleans up after itself and terminates the
+    process when the main Python script exits. It also allows users to specify whether
+    the process is critical and show an error message when the process is no longer
+    running.
+
+    Attributes:
+        critical (bool): Whether the process is critical and an error message should be
+            shown when the process is no longer running.
+    """
+
+    def __init__(self, *args, critical=False, **kwargs):
+        """Initializes the :class:`PopenAutoCleanup` class.
+
+        Args:
+            *args: The positional arguments that are passed to the
+                :class:`subprocess.Popen` class.
+            critical (bool, optional): Whether the process is critical and an error
+                message should be shown when the process is no longer running.
+            **kwargs: The keyword arguments that are passed to the
+                :class:`subprocess.Popen` class.
+        """
+        super().__init__(*args, **kwargs)
+        atexit.register(self._process_cleanup)  # Ensure cleanup when script exits.
+
+        # Retrieve log file path.
+        self._log_file = kwargs.get("stderr", None)
+        if isinstance(self._log_file, TextIOWrapper):
+            self._log_file = kwargs["stderr"].name
+
+        # If critical, check if process is still running and show error message if not.
+        if critical:
+            self.critical = critical
+            self._critical_check_event = threading.Event()
+            self._thread = threading.Thread(target=self._critical_check, daemon=True)
+            self._thread.start()
+
+    def _process_cleanup(self):
+        """Cleans up the process when the script exits."""
+        rospy.loginfo("Cleaning ROS launch processes.")
+        self._stop_critical_check()
+        if self.poll() is None:
+            self._terminate_child_processes()
+            self.terminate()
+            self.wait()
+
+    def _terminate_child_processes(self):
+        """Terminates all child processes of the process."""
+        if not psutil.pid_exists(self.pid):
+            return
+
+        # Terminate child processes.
+        parent = psutil.Process(self.pid)
+        for child in parent.children(recursive=True):
+            if psutil.pid_exists(child.pid):
+                child.terminate()
+        psutil.wait_procs(parent.children(), timeout=5)
+
+    def _critical_check(self):
+        """Checks if the process is still running and exits the script if it is not and
+        the process is critical."""
+        while not self._critical_check_event.is_set() and self.poll() is None:
+            time.sleep(0.1)
+        if self.critical and not self._critical_check_event.is_set():
+            if self._log_file is None:
+                rospy.logerr(
+                    "A critical subprocess has exited unexpectedly. Check the stdout "
+                    "for more information."
+                )
+            else:
+                rospy.logerr(
+                    "A critical subprocess has exited unexpectedly. Check the log "
+                    f"file for more information (i.e. '{self._log_file})."
+                )
+
+    def _stop_critical_check(self):
+        """Stops the critical check thread."""
+        self._critical_check_event.set()
+
+    def terminate(self):
+        """Terminates the process and stops the critical check thread."""
+        self._stop_critical_check()
+        if self.poll() is None:
+            self._terminate_child_processes()
+            super().terminate()
+            super().wait()
+
+    def kill(self):
+        """Kills the process and stops the critical check thread."""
+        self._stop_critical_check()
+        if self.poll() is None:
+            self._terminate_child_processes()
+            super().kill()
+            super().wait()
+
+
+def get_catkin_workspace_path():
+    """Retrieve the path of the currently sourced catkin workspace.
+
+    Returns:
+        str: The path of the currently sourced catkin workspace. Returns ``None`` if no
+            catkin workspace was sourced.
+    """
+    catkin_ws_path = Path(catkin.workspace.get_workspaces()[0])
+    ws_path = (
+        catkin_ws_path.parent if catkin_ws_path.parts[-1] == "devel" else catkin_ws_path
+    )
+    if not ws_path:
+        return None
+    return str(ws_path)
+
+
 def query_yes_no(question, default="yes"):
-    """Ask a yes/no question via raw_input() and return their answer.
+    """Ask the user a yes/no question via raw_input() and return the answer.
 
     Args:
         question (str): String presented to the user.
@@ -61,6 +177,7 @@ def query_yes_no(question, default="yes"):
         `this stackoverflow question <https://stackoverflow.com/questions/3041986/apt-command-line-interface-like-yes-no-input>`_
     """  # noqa: E501
     valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
+    default = default.lower() if isinstance(default, str) else None
     if default is None:
         prompt = " [y/n] "
     elif default == "yes":
@@ -70,6 +187,7 @@ def query_yes_no(question, default="yes"):
     else:
         raise ValueError("invalid default answer: '%s'" % default)
 
+    # Loop until a valid answer is given.
     while True:
         sys.stdout.write(question + prompt)
         choice = input().lower()
@@ -92,34 +210,25 @@ def get_global_pkg_path(package_name, workspace_path=None):
     Returns:
         str: The global package path.
     """
-    rp = rospkg.RosPack()
-    try:
-        global_pkg_path = rp.get_path(package_name)
+    rospack = rospkg.RosPack()
+    try:  # Try to retrieve workspace path.
+        global_pkg_path = rospack.get_path(package_name)
         rospy.logdebug(
             f"Package '{package_name}' found in your global catkin workspace."
         )
-    except Exception:
-        # Try to source the catkin_ws if no path was found
-        workspace_path = (
-            workspace_path
-            if workspace_path
-            else catkin.workspace.get_workspaces()[0].replace("/devel", "")
-        )
-        # NOTE: Bash prefix needed since sourcing setup.sh doesn't seem to work
-        bash_prefix = '/bin/bash -c "'
-        source_cmd = ". {}{};".format(
-            workspace_path, Path("/devel/setup.bash").resolve()
-        )
-        package_cmd = f"rospack find {package_name}"
-        command = bash_prefix + source_cmd + package_cmd + '"'
+    except Exception:  # Try to source the catkin workspace and try again.
+        if not workspace_path:
+            workspace_path = get_catkin_workspace_path()
         try:
-            global_pkg_path = subprocess.check_output(
-                command,
+            global_pkg_path = subprocess.run(
+                f". ./devel/setup.bash;rospack find {package_name}",
+                executable="/bin/bash",
+                capture_output=True,
                 shell=True,
-                text=True,
-                stderr=subprocess.DEVNULL,
                 cwd=workspace_path,
-            ).split("\n")[0]
+                text=True,
+            ).stdout.split("\n")[0]
+            global_pkg_path = None if global_pkg_path == "" else global_pkg_path
         except Exception:
             global_pkg_path = None
     return global_pkg_path
@@ -152,18 +261,17 @@ def get_local_pkg_path(package_name, catkin_workspace):
 
 
 def clone_dependency_repo(
-    package_name, workspace_path, git_src, branch=None, recursive=True
+    package_name, workspace_path, git_src, branch=None, recursive=False
 ):
     """Clones the repository of the dependency.
 
     Args:
         package_name (str): The package for which you want to clone the repository.
         workspace_path (str): The workspace in which you want to clone the repository.
-        rosdep_index (dict): The ros_gazebo_gym dependency index dictionary.
         git_src (str): The git repository url.
         branch(str, optional): The branch to checkout. Defaults to ``None``.
         recursive(bool, optional): After the clone is created, initialize and clone
-            submodules within based on the provided pathspec. Defaults to ``True``.
+            submodules within based on the provided pathspec. Defaults to ``False``.
     """
     pathstr = str(Path(workspace_path).joinpath("src", "rosdeps", package_name))
     try:
@@ -185,20 +293,22 @@ def clone_dependency_repo(
         raise e
 
 
-def build_catkin_ws(workspace_path, install_ros_deps=True):
-    """Installs the system dependencies and re-builds a catkin workspace.
+def build_catkin_ws(workspace_path, install_ros_deps=False):
+    """Builds the catking workspace and installs system dependencies while doing so if
+    requested.
 
     Args:
         workspace_path (str): The path of the catkin workspace.
-        install_ros_deps (bool, optional): Whether you also want to installt he system
-            using rosdep. Defaults to ``True``.
+        install_ros_deps (bool, optional): Whether you also want to install the system
+            dependencies using rosdep before building the workspace. Defaults to
+            ``False``.
 
     Raises:
         Exception: When something goes wrong while re-building the workspace.
     """
     catkin_make_used = os.path.exists(workspace_path + "/.catkin_workspace")
 
-    # Install system dependencies using rosdep
+    # Install system dependencies using rosdep.
     if install_ros_deps:
         rospy.logwarn(
             "Several system dependencies are required to use the newly installed ROS "
@@ -210,55 +320,45 @@ def build_catkin_ws(workspace_path, install_ros_deps=True):
         if answer:
             rospy.logwarn(
                 "Installing ROS system dependencies using rosdep. If asked please "
-                "supply your root password:"
+                "supply your root password."
             )
             rosdep_cmd = (
-                f"sudo -S rosdep install --from-paths {workspace_path}/src "
-                + "--ignore-src -r -y --rosdistro {}".format(
-                    os.environ.get("ROS_DISTRO")
-                )
+                "sudo -S rosdep install --from-path src --ignore-src -r -y "
+                "--rosdistro {}".format(os.environ.get("ROS_DISTRO"))
             )
 
-            # Try to install the system dependencies
-            p = subprocess.Popen(rosdep_cmd, shell=True, cwd=workspace_path)
+            # Try to install the system dependencies.
+            rosdep_install = subprocess.run(rosdep_cmd, shell=True, cwd=workspace_path)
 
-            # Check exit code and try again if error is known
-            p.communicate()
-            if p.returncode:
+            # Check exit code and try again if error is known.
+            if rosdep_install.returncode:
                 rospy.logwarn(
                     "Something went wrong while trying to install the system "
-                    "dependencies. Trying again while updating rosdep as the root "
-                    "user."
+                    "dependencies. Trying again while first updating rosdep as the "
+                    "root user."
                 )
-                p1 = subprocess.Popen(
-                    "sudo -S rosdep update",
-                    shell=True,
-                    cwd=workspace_path,
+                rosdep_sudo_update = subprocess.run(
+                    "sudo -S rosdep update", shell=True, cwd=workspace_path
                 )
-                p1.communicate()
-                p2 = subprocess.Popen(
-                    rosdep_cmd,
-                    shell=True,
-                    cwd=workspace_path,
+                rosdep_install = subprocess.run(
+                    rosdep_cmd, shell=True, cwd=workspace_path
                 )
-                p2.communicate()
                 rospy.logwarn("Repairing permissions...")
-                p3 = subprocess.Popen(
-                    "sudo -S rosdep fix-permissions",
-                    shell=True,
-                    cwd=workspace_path,
+                rosdep_repair = subprocess.run(
+                    "sudo -S rosdep fix-permissions", shell=True, cwd=workspace_path
                 )
-                p3.communicate()
                 rospy.logwarn("Updating rosdep...")
-                p4 = subprocess.Popen(
-                    "rosdep update",
-                    shell=True,
-                    cwd=workspace_path,
+                rosdep_update = subprocess.run(
+                    "rosdep update", shell=True, cwd=workspace_path
                 )
-                p4.communicate()
 
-                # Throw error if something went wrong
-                if p1.returncode | p2.returncode | p3.returncode | p4.returncode:
+                # Throw error if something went wrong.
+                if (
+                    rosdep_sudo_update.returncode
+                    | rosdep_install.returncode
+                    | rosdep_repair.returncode
+                    | rosdep_update.returncode
+                ):
                     rospy.logerr(
                         "System dependencies could not be installed automatically. "
                         "Please run:\n\n\t rosdep install --from-path src --ignore-src "
@@ -267,20 +367,20 @@ def build_catkin_ws(workspace_path, install_ros_deps=True):
                     )
                     sys.exit(0)
 
-    # Build workspace
-    if catkin_make_used:  # Use catkin_make
+    # Build workspace.
+    if catkin_make_used:
         rosbuild_cmd = "catkin_make"
         rosbuild_clean_cmd = "rm -r devel logs build -y"
-    else:  # Use catkin build
+    else:
         rosbuild_cmd = "catkin build"
         rosbuild_clean_cmd = "catkin clean -y"
     rosbuild_cmd = "catkin build"
     rospy.logwarn("Re-building catkin workspace.")
-    p = subprocess.call(rosbuild_cmd, shell=True, cwd=workspace_path)
+    rosbuild = subprocess.run(rosbuild_cmd, shell=True, cwd=workspace_path)
 
-    # Catch result, clean workspace and try again on fail
-    if p != 0:
-        # Clean the workspace and try one more time
+    # Catch result, clean workspace and try again on fail.
+    if rosbuild.returncode != 0:
+        # Clean the workspace and try one more time.
         rospy.logwarn(
             "Something went wrong while trying to build the catkin workspace."
         )
@@ -289,62 +389,47 @@ def build_catkin_ws(workspace_path, install_ros_deps=True):
         )
         if answer:
             rospy.logwarn("Cleaning the catkin workspace.")
-            p = subprocess.call(rosbuild_clean_cmd, shell=True, cwd=workspace_path)
-            if p != 0:
+            rosbuild_clean = subprocess.run(
+                rosbuild_clean_cmd, shell=True, cwd=workspace_path
+            )
+            if rosbuild_clean.returncode != 0:
                 rospy.logwarn(
                     "Something went wrong while trying to clean the catkin workspace."
                 )
             else:
                 rospy.logwarn("Re-building catkin workspace.")
-                p = subprocess.call(rosbuild_cmd, shell=True, cwd=workspace_path)
+                rosbuild = subprocess.run(rosbuild_cmd, shell=True, cwd=workspace_path)
 
-        # Throw warning if something went wrong
-        if p != 0:
+        # Throw warning if something went wrong.
+        if rosbuild.returncode != 0:
             raise Exception(
                 "Something went wrong while trying to build the catkin workspace."
             )
 
 
 def package_installer(package_name, workspace_path=None):  # noqa: C901
-    """Install a given ROS package together with it's dependencies. This function checks
-    if a ROS packages is installed and installs it if this is not the case. It uses the
-    ros_gazebo_gym package dependency index to clone the package and dependencies in the
-    local catkin workspace and subsequently re-builds this workspace.
+    """Install a given ROS package together with it's dependencies.
+
+    This function checks if a ROS package is installed and installs it if this is not
+    the case. It uses the :ros-gazebo-gym:`ros_gazebo_gym` package dependency index to
+    clone the package and dependencies in the local catkin workspace and subsequently
+    rebuilds this workspace.
 
     Args:
-        package_name (str): The package name you want to have installed.
+        package_name (str): The package you want to install.
         workspace_path (str, optional): The catkin workspace path. Defaults to ``None``
             (i.e. path will be determined).
 
     Returns:
-        bool: Whether the package was successfully installed.
+        bool: Whether the package and its dependencies were successfully installed.
     """
     rospy.logdebug(
-        f"Checking if all ROS dependencies for package '{package_name}' are installed."
+        f"Checking if all ROS dependencies for package '{package_name}' are present."
     )
 
-    # Load ROS dependency index
-    global ROSDEP_INDEX
-    if not ROSDEP_INDEX:
-        rosdep_index_abs = Path(__file__).parent.joinpath(ROSDEP_INDEX_PATH).resolve()
-        try:
-            with open(rosdep_index_abs) as stream:
-                ROSDEP_INDEX = yaml.safe_load(stream)
-        except Exception:
-            warn_msg = (
-                "ROS dependencies could not be installed as something went wrong while "
-                "trying to load the ros_gazebo_gym index configuration file at "
-                f"{rosdep_index_abs}. Please check the ros_gazebo_gym index "
-                "configuration file and try again."
-            )
-            rospy.logwarn(warn_msg)
-
-    # Retrieve workspace path
-    workspace_path = (
-        workspace_path
-        if workspace_path
-        else catkin.workspace.get_workspaces()[0].replace("/devel", "")
-    )
+    # Retrieve workspace path.
+    if not workspace_path:
+        workspace_path = get_catkin_workspace_path()
     if not workspace_path:
         rospy.logerr(
             "Workspace path could not be found. Please make sure that you source "
@@ -353,62 +438,79 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
         )
         sys.exit(0)
 
-    # Retrieve package paths
+    # Check if package exists in the global and local catkin workspaces.
+    rospy.loginfo("Checking if '{package_name}' and its dependencies are installed.")
     global_pkg_path = get_global_pkg_path(package_name)
     local_pkg_path = get_local_pkg_path(package_name, workspace_path)
 
-    # Download the package repository if it is not installed in the right location
-    package_installed = True
+    # Load ROS dependency index.
+    rosdep_index_path = Path(__file__).parent.joinpath(ROSDEP_INDEX_PATH).resolve()
+    try:
+        with open(rosdep_index_path) as stream:
+            rosdep_index = yaml.safe_load(stream)
+    except Exception:
+        warn_msg = (
+            f"Could not check whether '{package_name}' and its dependencies are "
+            "installed since something went wrong while trying to load the "
+            f"'ros_gazebo_gym' index configuration file (i.e. '{rosdep_index_path}'). "
+            "Please check the 'ros_gazebo_gym' index configuration file."
+        )
+        rospy.logwarn(warn_msg)
+
+    # Download the package repository and its dependencies if it is not present.
     deps_cloned = False
-    rospy.loginfo("Checking if all required ROS dependencies are installed...")
-    if ROSDEP_INDEX and package_name in ROSDEP_INDEX.keys():
-        # Download package
+    if rosdep_index and package_name in rosdep_index.keys():
+        # Clone package if it is not present in the local ROS workspace.
         if not local_pkg_path and (
             not global_pkg_path
             or (
                 global_pkg_path
                 and (
                     global_pkg_path != local_pkg_path
-                    and not ROSDEP_INDEX[package_name]["binary"]
-                )
+                    and not rosdep_index[package_name]["binary"]
+                )  # Binary packages are allowed to be installed globally.
             )
         ):
-            debug_message = f"Cloning '{package_name}' into local catkin workspace."
+            # Display warn message.
+            warn_message = f"Cloning '{package_name}' into local catkin workspace."
             if (
                 global_pkg_path != local_pkg_path
-                and not ROSDEP_INDEX[package_name]["binary"]
+                and not rosdep_index[package_name]["binary"]
             ):
-                debug_message = (
-                    f"Package '{package_name}' should be installed in the local catkin "
-                    "workspace. " + debug_message
+                warn_message = (
+                    f"Package '{package_name}' is not set as a binary package in the "
+                    f"'ros_gazebo_gym' package index (i.e. 'rosdep_index_path') and "
+                    "should therefore be installed in the local catkin workspace. "
+                    + warn_message
                 )
             else:
-                debug_message = (
-                    f"ROS dependency '{package_name}' not installed. " + debug_message
+                warn_message = (
+                    f"ROS dependency '{package_name}' not installed. " + warn_message
                 )
-            rospy.logwarn(debug_message)
+            rospy.logwarn(warn_message)
 
-            # Download package repository
+            # Download package repository.
             try:
                 clone_dependency_repo(
                     package_name,
                     workspace_path,
-                    ROSDEP_INDEX[package_name]["git"],
-                    ROSDEP_INDEX[package_name]["branch"]
-                    if "branch" in ROSDEP_INDEX[package_name].keys()
+                    rosdep_index[package_name]["git_url"],
+                    branch=rosdep_index[package_name]["git_branch"]
+                    if "git_branch" in rosdep_index[package_name].keys()
                     else "main",
+                    recursive=True,
                 )
                 deps_cloned = True
             except Exception:
-                package_installed = False
-                warn_msg = f"ROS dependency '{package_name}' could not be installed."
+                warn_msg = f"ROS dependency '{package_name}' could not be cloned."
                 rospy.logwarn(warn_msg)
+                return False
 
-        # Download additional package dependencies
-        if "deps" in ROSDEP_INDEX[package_name].keys() and isinstance(
-            ROSDEP_INDEX[package_name]["deps"], dict
+        # Download additional package dependencies.
+        if "deps" in rosdep_index[package_name].keys() and isinstance(
+            rosdep_index[package_name]["deps"], dict
         ):
-            for dep, dep_index_info in ROSDEP_INDEX[package_name]["deps"].items():
+            for dep, dep_index_info in rosdep_index[package_name]["deps"].items():
                 global_dep_pkg_path = get_global_pkg_path(dep)
                 local_dep_pkg_path = get_local_pkg_path(dep, workspace_path)
                 if not local_dep_pkg_path and (
@@ -421,33 +523,35 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
                         )
                     )
                 ):
-                    debug_message = f"Cloning '{dep}' into local catkin workspace."
+                    warn_message = f"Cloning '{dep}' into local catkin workspace."
                     if (
                         global_dep_pkg_path != local_dep_pkg_path
                         and not dep_index_info["binary"]
                     ):
-                        debug_message = (
+                        warn_message = (
                             f"Package '{dep}' should be installed in the local "
-                            "catkin workspace. " + debug_message
+                            "catkin workspace. " + warn_message
                         )
                     else:
-                        debug_message = (
-                            f"ROS dependency '{dep}' not installed. " + debug_message
+                        warn_message = (
+                            f"ROS dependency '{dep}' not installed. " + warn_message
                         )
-                    rospy.logwarn(debug_message)
+                    rospy.logwarn(warn_message)
                     try:
                         clone_dependency_repo(
                             dep,
                             workspace_path,
-                            dep_index_info["git"],
-                            dep_index_info["branch"]
-                            if "branch" in dep_index_info.keys()
+                            dep_index_info["git_url"],
+                            branch=dep_index_info["git_branch"]
+                            if "git_branch" in dep_index_info.keys()
                             else "main",
+                            recursive=True,
                         )
                         deps_cloned = True
                     except Exception:
                         warn_msg = f"ROS dependency '{dep}' could not be installed."
                         rospy.logwarn(warn_msg)
+                        return False
     else:
         if global_pkg_path or local_pkg_path:
             space_str = (
@@ -460,54 +564,72 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
                 )
             )
             rospy.logdebug(
-                f"Package '{package_name}' was not found in the ros_gazebo_gym "
-                f"dependency it however appears to be installed in the {space_str}."
+                f"Although package '{package_name}' was installed in the {space_str}, "
+                "no information about it was found in the 'ros_gazebo_gym' dependency "
+                f"index (i.e. '{rosdep_index_path}'). As a result, we could not "
+                "determine whether its dependencies were installed. Please add this "
+                "package to the index if you want to be sure all dependencies are "
+                "installed."
             )
-            package_installed = True
         else:
             rospy.logwarn(
-                f"Package '{package_name}' is not installed and not present in the "
-                "ros_gazebo_gym dependency index. As a result it was not installed."
+                f"Package '{package_name}' is not installed or present in the "
+                f"'ros_gazebo_gym' dependency index (i.e. '{rosdep_index_path}'). As a "
+                "result, it could not be installed. Please install the package in the "
+                "global or local ROS workspace or add its information to the "
+                "dependency index."
             )
+            return False
 
-    # Build the catkin workspace
+    # (Re)-build the catkin workspace.
     if deps_cloned:
-        rospy.logwarn("Re-building catkin workspace since new packages were added.")
+        rospy.logwarn(
+            "Installing system dependencies and (re)-building catkin workspace "
+            f"'{workspace_path}' since new packages were added."
+        )
         try:
-            build_catkin_ws(workspace_path)
+            build_catkin_ws(workspace_path, install_ros_deps=True)
         except Exception:
             rospy.logerr(
-                "Something went wrong while trying to re-build the catkin workspace. "
-                "Please build the catkin workspace manually and try again."
+                "While installing the package system dependencies and (re)-building "
+                "the Catkin workspace, something went wrong. Please install the "
+                "system dependencies, manually build the Catkin workspace, and try "
+                "again."
             )
             sys.exit(0)
 
-    # Return package path
-    return package_installed
+    return True
 
 
-def load_ros_params_from_yaml(
-    package_name, rel_path_from_package_to_file, yaml_file_name
-):
+def load_ros_params_from_yaml(yaml_file_path, ros_package_name=None):
     """Loads ros parameters from yaml file.
 
     Args:
+        yaml_file_path (str): The configuration file path. Can be absolute or relative.
+            If relative, the path is relative to the package directory.
         package_name (str): The package name that contains the configuration file.
-        rel_path_from_package_to_file (str): The relative path from this package to the
-            configuration file.
-        yaml_file_name (str): The configuration file name.
+            Defaults to ``None``.
+
+    Raises:
+        :obj:`rosparam.RosParamException`: If the yaml file could not be loaded or the
+            ROS package could not be found.
     """
-    rospack = rospkg.RosPack()
-    pkg_path = rospack.get_path(package_name)
-    config_dir = os.path.join(pkg_path, rel_path_from_package_to_file)
-    path_config_file = os.path.join(config_dir, yaml_file_name)
-    paramlist = rosparam.load_file(path_config_file)
+    yaml_file_path = Path(yaml_file_path)
+
+    # Look for the yaml file in the package directory.
+    if ros_package_name is not None and not yaml_file_path.is_absolute():
+        rospack = rospkg.RosPack()
+        pkg_path = rospack.get_path(ros_package_name)
+        yaml_file_path = os.path.join(pkg_path, yaml_file_path)
+
+    # Load parameters from yaml file.
+    paramlist = rosparam.load_file(str(yaml_file_path))
     for params, ns in paramlist:
         rosparam.upload_params(ns, params)
 
 
 def get_log_path():
-    """Returns the package log folder path.
+    """Returns the 'ros_gazebo_gym' package log folder path.
 
     Returns:
         :obj:`pathlib.Path`: The package log folder path.

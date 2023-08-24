@@ -22,7 +22,7 @@ Markdown guidelines:
 .. _`remark-lint`: https://github.com/remarkjs/remark-lint
 
 .. note::
-    The ROS Gazebo Gym framework contains several :ros_gazebo_gym:`GitHub actions <actions>`, which check code changes
+    The ROS Gazebo Gym framework contains several :ros-gazebo-gym:`GitHub actions <actions>`, which check code changes
     against these coding guidelines. As a result, when the above guidelines are not met, you will
     receive an error/warning when you create a pull request. Some of these actions will create pull requests
     which you can use to fix some of these violations. For other errors/warning, you are expected to handle
@@ -51,7 +51,7 @@ Before releasing the package, make sure the following steps are performed:
     #. Create a new branch on which you implement your changes.
     #. Commit your changes.
     #. Create a pull request to pull the changes of your development branch onto the master branch.
-    #. Make sure that all the :ros_gazebo_gym:`pull request checks <actions>` were successful.
+    #. Make sure that all the :ros-gazebo-gym:`pull request checks <actions>` were successful.
     #. Add a version label to (``bump:patch``, ``bump:minor`` or ``bump:major``) to the pull request.
     #. Squash and merge your branch with the noetic branch.
     #. Create a release using the GitHub draft release tool.

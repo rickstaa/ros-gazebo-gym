@@ -38,14 +38,14 @@ seamlessly with the real robot.
 Control types
 -------------
 
-The :ros_gazebo_gym:`ros_gazebo_gym <>` version of the Panda environment allows for four types of control: ``effort``, ``position``, ``trajectory`` and
+The :ros-gazebo-gym:`ros_gazebo_gym <>` version of the Panda environment allows for four types of control: ``effort``, ``position``, ``trajectory`` and
 ``end-effector`` control. End-effector control is implemented through `MoveIt`_.
 
 .. _MoveIt: https://moveit.ros.org/
 
 .. seealso::
-   All the components used to create the :ros_gazebo_gym:`ros_gazebo_gym <>` Panda environment are contained in the `panda-gazebo`_ ROS workspace
-   package. This package is automatically downloaded and built by :ros_gazebo_gym:`ros_gazebo_gym <>` package when running one of the panda task
+   All the components used to create the :ros-gazebo-gym:`ros_gazebo_gym <>` Panda environment are contained in the `panda-gazebo`_ ROS workspace
+   package. This package is automatically downloaded and built by :ros-gazebo-gym:`ros_gazebo_gym <>` package when running one of the panda task
    environments.
 
 .. _panda-gazebo: https://github.com/rickstaa/panda-gazebo
@@ -53,7 +53,7 @@ The :ros_gazebo_gym:`ros_gazebo_gym <>` version of the Panda environment allows 
 Task environments
 -----------------
 
-The tasks environments that are in the panda :ros_gazebo_gym:`ros_gazebo_gym <>` package were based on the fetch environments that are found in the `openai gym`_
+The tasks environments that are in the panda :ros-gazebo-gym:`ros_gazebo_gym <>` package were based on the fetch environments that are found in the :gymnasium:`gymnasium`
 package. It currently contains the following task environments:
 
 * :class:`PandaReach-v1 <ros_gazebo_gym.task_envs.panda.panda_reach>`: Move Panda to a goal position.
@@ -65,16 +65,15 @@ package. It currently contains the following task environments:
 System dependencies
 -------------------
 
-The Panda task environments require the following system dependencies to be installed. These dependencies should have been fetched and install by the :ros_gazebo_gym:`ros_gazebo_gym <>` package
+The Panda task environments require the following system dependencies to be installed. These dependencies should have been fetched and install by the :ros-gazebo-gym:`ros_gazebo_gym <>` package
 the first time a task environment is imported:
 
 * `ROS noetic <http://wiki.ros.org/noetic>`_.
-* The :panda_gazebo:`panda_gazebo <>` package.
+* The :panda-gazebo:`panda_gazebo <>` package.
 * The `libfranka`_ library.
 
 .. _`Franka Emika`: https://www.franka.de
 .. _`Franka Control Interface`: https://frankaemika.github.io/docs/
 .. _`libfranka`: https://frankaemika.github.io/docs/libfranka.html
 .. _`franka_ros`: https://frankaemika.github.io/docs/franka_ros.html
-.. _`openai gym`: https://gym.openai.com/envs/#robotics
 .. _`frankaemika documentation`: https://frankaemika.github.io/docs/installation_linux.html

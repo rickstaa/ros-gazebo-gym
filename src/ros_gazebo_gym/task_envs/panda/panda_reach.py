@@ -1,12 +1,12 @@
-"""An Openai gym ROS Panda reach environment.
+"""An ROS Panda reach gymnasium environment.
 
 .. figure:: /images/panda/panda_reach_env.png
    :alt: Panda reach environment
 
 Goal:
     In this environment the agent has to learn to move the panda robot to a given goal
-    position. Based on the `FetchReach-v1 <https://gym.openai.com/envs/FetchReach-v1>`_
-    Openai gym environment.
+    position. Based on the :gymnasium-robotics:`FetchReach-v2 <envs/fetch/reach/>`
+    gymnasium environment.
 
 .. admonition:: Configuration
     :class: important
@@ -15,7 +15,6 @@ Goal:
     `panda task environment config folder <../config/panda_reach.yaml>`_).
 
 """
-
 import os
 import sys
 from datetime import datetime
@@ -25,8 +24,13 @@ import numpy as np
 import rospy
 import tf2_geometry_msgs
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Vector3
-from gym import spaces, utils
-from ros_gazebo_gym.common.functions import (
+from gymnasium import spaces, utils
+from rospy.exceptions import ROSException, ROSInterruptException
+from sensor_msgs.msg import JointState
+from std_msgs.msg import ColorRGBA, Header
+from tf2_ros import ConnectivityException, ExtrapolationException, LookupException
+
+from ros_gazebo_gym.common.helpers import (
     flatten_list,
     gripper_width_2_finger_joints_positions,
     list_2_human_text,
@@ -42,23 +46,9 @@ from ros_gazebo_gym.core import ROSLauncher
 from ros_gazebo_gym.core.helpers import get_log_path, load_ros_params_from_yaml
 from ros_gazebo_gym.exceptions import EePoseLookupError
 from ros_gazebo_gym.robot_envs.panda_env import PandaEnv
-from rospy.exceptions import ROSException, ROSInterruptException
-from sensor_msgs.msg import JointState
-from std_msgs.msg import ColorRGBA, Header
-from tf2_ros import ConnectivityException, ExtrapolationException, LookupException
 
-try:
-    import panda_gazebo.msg as pg_msg
-    import panda_gazebo.srv as pg_srv
-    from franka_msgs.srv import SetJointConfiguration, SetJointConfigurationRequest
-
-    PANDA_GAZEBO_IMPORTED = True
-except ImportError:
-    PANDA_GAZEBO_IMPORTED = False
-
-
-# Specify topics and other script variables
-CONNECTION_TIMEOUT = 5  # Timeout for connecting to services or topics
+# Specify topics and other script variables.
+CONNECTION_TIMEOUT = 5  # Timeout for connecting to services or topics.
 MOVEIT_GET_RANDOM_JOINT_POSITIONS_TOPIC = (
     "panda_moveit_planner_server/get_random_joint_positions"
 )
@@ -102,6 +92,8 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         config_path=CONFIG_FILE_PATH,
         gazebo_world_launch_file="start_reach_world.launch",
         visualize=None,
+        action_space_dtype=np.float64,
+        observation_space_dtype=np.float64,
     ):
         """Initializes a Panda Task Environment.
 
@@ -116,9 +108,13 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 the gazebo world. Currently only the launch files inside the
                 `panda_gazebo <https://github.com/rickstaa/panda-gazebo>`_ package are
                 supported. Defaults to ``start_reach_world.launch``.
-            visualize (bool, optional): Whether you want to show the RVIZ visualization.
+            visualize (bool, optional): Whether you want to show the RViz visualization.
                 Defaults to ``None`` meaning the task configuration file values will
                 be used.
+            action_space_dtype (union[numpy.dtype, str], optional): The data type of the
+                action space. Defaults to ``np.float64``.
+            observation_space_dtype (union[numpy.dtype, str], optional): The data type
+                of the observation space. Defaults to ``np.float64``.
 
         .. important::
             In this environment, the joint trajectory control is not implemented yet for
@@ -138,12 +134,13 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 "you want to implement this functionality."
             )
 
-        utils.EzPickle.__init__(
-            **locals()
-        )  # Makes sure the env is pickable when it wraps C++ code.
-        ROSLauncher.initialize()  # Makes sure roscore is running and ROS is initialized
+        # Makes sure the env is pickable when it wraps C++ code.
+        utils.EzPickle.__init__(**locals())
 
-        # This is the path where the simulation files will be downloaded if not present
+        # Makes sure roscore is running and ROS is initialized.
+        ROSLauncher.initialize()
+
+        # This is the path where the simulation files will be downloaded if not present.
         workspace_path = rospy.get_param("/panda_reach_v0/workspace_path", None)
         if workspace_path:
             assert os.path.exists(workspace_path), (
@@ -156,17 +153,16 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 + ";catkin_make"
             )
 
-        # Load Params from the desired Yaml file relative to this TaskEnvironment
+        # Load Params from the desired Yaml file relative to this TaskEnvironment.
         rospy.logdebug("Load Panda Reach parameters.")
         self._config_file_path = Path(__file__).parent.joinpath(config_path)
         load_ros_params_from_yaml(
-            package_name="ros_gazebo_gym",
-            rel_path_from_package_to_file=self._config_file_path.parent,
-            yaml_file_name=self._config_file_path.name,
+            self._config_file_path,
+            ros_package_name="ros_gazebo_gym",
         )
         self._get_params()
 
-        # Thrown warning if gazebo is already running
+        # Thrown warning if gazebo is already running.
         if any(
             ["/gazebo" in topic for topic in flatten_list(rospy.get_published_topics())]
         ):
@@ -177,8 +173,8 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             )
             sys.exit(0)
 
-        # Launch the panda task gazebo environment (Doesn't yet add the robot)
-        # NOTE: This downloads and builds the required ROS packages if not found
+        # Launch the panda task gazebo environment (Doesn't yet add the robot).
+        # NOTE: This downloads and builds the required ROS packages if not found.
         launch_log_file = (
             str(
                 get_log_path()
@@ -201,29 +197,14 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             pause=True,
             physics=self._physics,
             log_file=launch_log_file,
+            critical=True,
         )
-
-        # Throw error if the panda_gazebo package was downloaded in the same run
-        # NOTE: Needed because of how ROS adds custom ROS python modules to the
-        # python path. It uses the '__path__' variable to do this. This method however
-        # only works before the code file is executed (see
-        # https://docs.python.org/3/tutorial/modules.html for more information).
-        # I did not find a easy fix to solve this behaviors.
-        if not PANDA_GAZEBO_IMPORTED:
-            rospy.logerr(
-                "The 'panda_gazebo' package was not found in your PYTHONPATH. If the "
-                "'panda_gazebo' package was just downloaded, it is not yet available "
-                "due to how ROS adds custom python modules to the PYTHONPATH. As a "
-                "result, you have to restart the training script before using the "
-                "Panda ros_gazebo_gym environment."
-            )
-            sys.exit(0)
 
         ########################################
         # Initiate Robot environments ##########
         ########################################
 
-        # Initialize the Robot environment
+        # Initialize the Robot environment.
         super(PandaReachEnv, self).__init__(
             robot_EE_link=self._ee_link,
             load_gripper=self._load_gripper,
@@ -234,10 +215,10 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             visualize=visualize,
         )
 
-        # Disable visualize argument so that config can be used during inference
+        # Disable visualize argument so that config can be used during inference.
         self._ezpickle_kwargs["visualize"] = None
 
-        # Initialize task environment objects
+        # Initialize task environment objects.
         self._is_done_samples = 0
         self._init_model_configuration = {}
 
@@ -246,7 +227,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         # subscribers and publishers. ##########
         ########################################
 
-        # Connect to MoveIt 'get_random_joint_positions' service
+        # Connect to MoveIt 'get_random_joint_positions' service.
         try:
             moveit_get_random_joint_positions_srv_topic = (
                 f"{self.robot_name_space}/{MOVEIT_GET_RANDOM_JOINT_POSITIONS_TOPIC}"
@@ -261,7 +242,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             )
             self._moveit_get_random_joint_positions_client = rospy.ServiceProxy(
                 moveit_get_random_joint_positions_srv_topic,
-                pg_srv.GetRandomJointPositions,
+                self.panda_gazebo.srv.GetRandomJointPositions,
             )
             rospy.logdebug(
                 "Connected to '%s' service!"
@@ -273,7 +254,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 % moveit_get_random_joint_positions_srv_topic
             )
 
-        # Connect to MoveIt 'get_random_ee_pose' service
+        # Connect to MoveIt 'get_random_ee_pose' service.
         try:
             moveit_get_random_ee_pose_srv_topic = (
                 f"{self.robot_name_space}/{MOVEIT_GET_RANDOM_EE_POSE_TOPIC}"
@@ -286,7 +267,8 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 timeout=CONNECTION_TIMEOUT,
             )
             self._moveit_get_random_ee_pose_client = rospy.ServiceProxy(
-                moveit_get_random_ee_pose_srv_topic, pg_srv.GetRandomEePose
+                moveit_get_random_ee_pose_srv_topic,
+                self.panda_gazebo.srv.GetRandomEePose,
             )
             rospy.logdebug(
                 "Connected to '%s' service!" % moveit_get_random_ee_pose_srv_topic
@@ -297,7 +279,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 % moveit_get_random_ee_pose_srv_topic
             )
 
-        # Connect to MoveIt 'planning_scene/add_plane' service
+        # Connect to MoveIt 'planning_scene/add_plane' service.
         try:
             moveit_add_plane_srv_topic = (
                 f"{self.robot_name_space}/{MOVEIT_ADD_PLANE_TOPIC}"
@@ -308,7 +290,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 timeout=CONNECTION_TIMEOUT,
             )
             self._moveit_add_plane_srv = rospy.ServiceProxy(
-                moveit_add_plane_srv_topic, pg_srv.AddPlane
+                moveit_add_plane_srv_topic, self.panda_gazebo.srv.AddPlane
             )
             rospy.logdebug("Connected to '%s' service!" % moveit_add_plane_srv_topic)
         except (rospy.ServiceException, ROSException, ROSInterruptException):
@@ -317,7 +299,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             )
 
         if self._moveit_init_pose_control:
-            # Connect to MoveIt 'planning_scene/set_joint_positions' service
+            # Connect to MoveIt 'planning_scene/set_joint_positions' service.
             try:
                 moveit_set_joint_positions_srv_topic = (
                     f"{self.robot_name_space}/{MOVEIT_SET_JOINT_POSITIONS_TOPIC}"
@@ -330,7 +312,8 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     timeout=CONNECTION_TIMEOUT,
                 )
                 self._moveit_set_joint_positions_srv = rospy.ServiceProxy(
-                    moveit_set_joint_positions_srv_topic, pg_srv.SetJointPositions
+                    moveit_set_joint_positions_srv_topic,
+                    self.panda_gazebo.srv.SetJointPositions,
                 )
                 rospy.logdebug(
                     "Connected to '%s' service!" % moveit_set_joint_positions_srv_topic
@@ -341,7 +324,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     % moveit_set_joint_positions_srv_topic
                 )
         else:
-            # Connect to franka_gazebo's 'reset_joint_positions' service
+            # Connect to franka_gazebo's 'reset_joint_positions' service.
             try:
                 set_franka_model_configuration_srv_topic = (
                     f"{self.robot_name_space}/{SET_FRANKA_MODEL_CONFIGURATION_TOPIC}"
@@ -355,7 +338,8 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     timeout=CONNECTION_TIMEOUT,
                 )
                 self._set_franka_model_configuration_srv = rospy.ServiceProxy(
-                    set_franka_model_configuration_srv_topic, SetJointConfiguration
+                    set_franka_model_configuration_srv_topic,
+                    self.franka_msgs.srv.SetJointConfiguration,
                 )
                 rospy.logdebug(
                     "Connected to '%s' service!"
@@ -367,7 +351,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     % set_franka_model_configuration_srv_topic
                 )
 
-        # Create current target publisher
+        # Create current target publisher.
         rospy.logdebug("Creating target pose publisher.")
         self._target_pose_marker_pub = rospy.Publisher(
             "/ros_gazebo_gym/current_target", TargetMarker, queue_size=1, latch=True
@@ -375,7 +359,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         rospy.logdebug("Goal target publisher created.")
 
         if self._load_rviz:
-            # Create target bounding region publisher
+            # Create target bounding region publisher.
             rospy.logdebug("Creating target bounding region publisher.")
             self._target_sample_region_marker_pub = rospy.Publisher(
                 "/ros_gazebo_gym/target_sample_region",
@@ -385,7 +369,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             )
             rospy.logdebug("Target bounding region publisher created.")
 
-            # Create initial pose bounding region publisher
+            # Create initial pose bounding region publisher.
             rospy.logdebug("Creating initial pose sample region publisher.")
             self._init_pose_sample_region_marker__pub = rospy.Publisher(
                 "/ros_gazebo_gym/init_pose_sample_region",
@@ -396,33 +380,43 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             rospy.logdebug("Initial pose sample region publisher created.")
 
         ########################################
-        # Initialize rviz visualizations #######
+        # Initialize RViz visualizations #######
         ########################################
 
-        # Add ground to MoveIt planning scene
+        # Add ground to MoveIt planning scene.
         self._add_ground_to_moveit_scene()
 
-        # Add pose and target sampling bounds to rviz
+        # Add pose and target sampling bounds to RViz.
         self._init_rviz_visualizations()
 
         ########################################
         # Create action and observation space ##
         ########################################
-        rospy.logdebug("Setup gym action and observation space.")
+        rospy.logdebug("Setup gymnasium action and observation space.")
 
-        self.action_space = self._create_action_space()
+        self._observation_space_dtype = observation_space_dtype
+        self.action_space = self._create_action_space(dtype=action_space_dtype)
         self.goal = self._sample_goal()
         obs = self._get_obs()
         self.observation_space = spaces.Dict(
             dict(
+                observation=spaces.Box(
+                    -np.inf,
+                    np.inf,
+                    shape=obs["observation"].shape,
+                    dtype=observation_space_dtype,
+                ),
                 desired_goal=spaces.Box(
-                    -np.inf, np.inf, shape=obs["desired_goal"].shape, dtype="float32"
+                    -np.inf,
+                    np.inf,
+                    shape=obs["desired_goal"].shape,
+                    dtype=observation_space_dtype,
                 ),
                 achieved_goal=spaces.Box(
-                    -np.inf, np.inf, shape=obs["achieved_goal"].shape, dtype="float32"
-                ),
-                observation=spaces.Box(
-                    -np.inf, np.inf, shape=obs["observation"].shape, dtype="float32"
+                    -np.inf,
+                    np.inf,
+                    shape=obs["achieved_goal"].shape,
+                    dtype=observation_space_dtype,
                 ),
             )
         )
@@ -430,11 +424,11 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
     ################################################
     # Task environment internal methods ############
     ################################################
-    # NOTE: Here you can add additional helper methods that are used in the task env
+    # NOTE: Here you can add additional helper methods that are used in the task env.
 
     def _init_rviz_visualizations(self):
-        """Add pose and target sampling bounds to rviz."""
-        # Add goal samping bounds to rviz
+        """Add pose and target sampling bounds to RViz."""
+        # Add goal sampling bounds to RViz.
         if (
             self._target_sampling_strategy != "fixed"
             and self._load_rviz
@@ -451,7 +445,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             )
             self._target_sample_region_marker_pub.publish(goal_sample_region_marker_msg)
 
-        # Add initial pose sampling region to rviz
+        # Add initial pose sampling region to RViz.
         if (
             self._load_rviz
             and self._visualize_init_pose_bounds
@@ -480,7 +474,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
     def _add_ground_to_moveit_scene(self):
         """Adds the ground to the MoveIt Planning scence."""
         if hasattr(self, "_moveit_add_plane_srv"):
-            add_ground_req = pg_srv.AddPlaneRequest(
+            add_ground_req = self.panda_gazebo.srv.AddPlaneRequest(
                 name="ground",
                 pose=Pose(orientation=Quaternion(0, 0, 0, 1)),
                 normal=[0, 0, 1],
@@ -508,7 +502,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 Defaults to "panda_reach".
         """
         try:
-            # Retrieve control variables
+            # Retrieve control variables.
             try:
                 self._direct_control = rospy.get_param(f"/{ns}/control/direct_control")
             except KeyError:
@@ -549,7 +543,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 )
             except KeyError:
                 self._ee_control_coordinates = None
-            # Retrieve sampling variables
+            # Retrieve sampling variables.
             try:
                 self._visualize_init_pose_bounds = rospy.get_param(
                     f"/{ns}/pose_sampling/visualize_init_pose_bounds"
@@ -673,7 +667,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     "y": 0.0,
                     "z": 0.0,
                 }
-            # Retrieve reward variables
+            # Retrieve reward variables.
             try:
                 self._reward_type = rospy.get_param(f"/{ns}/training/reward_type")
             except KeyError:
@@ -704,7 +698,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 )
             except KeyError:
                 self._ee_frame_offset = None
-            # Retrieve environment variables
+            # Retrieve environment variables.
             try:
                 self._action_bounds = rospy.get_param(
                     f"/{ns}/environment/action_space/bounds"
@@ -730,7 +724,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                         "rw": 1,
                     },
                 }
-            # Retrieve global variables
+            # Retrieve global variables.
             try:
                 self._load_rviz = rospy.get_param(f"/{ns}/load_rviz")
             except KeyError:
@@ -810,10 +804,10 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 a empty dictionary if no valid joint positions were found.
         """
         if hasattr(self, "_moveit_get_random_joint_positions_client"):
-            req = pg_srv.GetRandomJointPositionsRequest()
+            req = self.panda_gazebo.srv.GetRandomJointPositionsRequest()
             req.attempts = self._pose_sampling_attempts
 
-            # Apply pose bounding region
+            # Apply pose bounding region.
             if (
                 hasattr(self, "_init_pose_sampling_bounds")
                 and self._init_pose_sampling_bounds is not None
@@ -824,12 +818,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 joint_positions_bound_region = gripper_width_2_finger_joints_positions(
                     joint_positions_bound_region, self.joints["hand"]
                 )
-                joint_limits = pg_msg.JointLimits()
+                joint_limits = self.panda_gazebo.msg.JointLimits()
                 joint_limits.names = list(joint_positions_bound_region.keys())
                 joint_limits.values = list(joint_positions_bound_region.values())
                 req.joint_limits = joint_limits
 
-            # Retrieve random joint pose and return
+            # Retrieve random joint pose and return.
             resp = self._moveit_get_random_joint_positions_client.call(req)
             if resp.success:
                 joint_positions_dict = dict(zip(resp.joint_names, resp.joint_positions))
@@ -858,10 +852,10 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     EE pose could be found.
         """
         if hasattr(self, "_moveit_get_random_ee_pose_client"):
-            req = pg_srv.GetRandomEePoseRequest()
+            req = self.panda_gazebo.srv.GetRandomEePoseRequest()
             req.attempts = self._pose_sampling_attempts
 
-            # Apply pose bounding region
+            # Apply pose bounding region.
             if (
                 hasattr(self, "_init_pose_sampling_bounds")
                 and self._init_pose_sampling_bounds is not None
@@ -869,9 +863,11 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 ee_pose_bound_region, _ = split_bounds_dict(
                     self._init_pose_sampling_bounds
                 )
-                req.bounding_region = pg_msg.BoundingRegion(**ee_pose_bound_region)
+                req.bounding_region = self.panda_gazebo.msg.BoundingRegion(
+                    **ee_pose_bound_region
+                )
 
-            # Retrieve random ee pose and return result
+            # Retrieve random ee pose and return result.
             resp = self._moveit_get_random_ee_pose_client.call(req)
             if resp.success:
                 return pose_msg_2_pose_dict(resp.ee_pose), dict(
@@ -917,7 +913,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             SystemExit: Thrown when the coordinates/joints in the task environment
                 config file are invalid. As a result the ROS script is shutdown.
         """
-        # Validate EE coordinates
+        # Validate EE coordinates.
         invalid_ee_coordinates = []
         if self.robot_control_type == "end_effector":
             if self._ee_control_coordinates:
@@ -925,7 +921,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     if joint not in VALID_EE_CONTROL_JOINTS:
                         invalid_ee_coordinates.append(joint)
 
-        # Validate control_joints
+        # Validate control_joints.
         hand_joints = ["gripper_width", "gripper_max_effort"]
         invalid_joints = []
         if self._controlled_joints:
@@ -938,7 +934,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 item for item in self._controlled_joints if item not in hand_joints
             ]
 
-        # Throw error and shutdown node if invalid joint was found
+        # Throw error and shutdown node if invalid joint was found.
         if invalid_ee_coordinates or invalid_joints:
             error_msg = "Shutting down '%s' since the " % rospy.get_name()
             if invalid_ee_coordinates and invalid_joints:
@@ -992,18 +988,18 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         Returns:
             list: Joints that are controlled.
         """
-        # Validate the action space joints set in the config file
+        # Validate the action space joints set in the config file.
         self._check_config_action_space_joints()
 
         # Get action space joints
         if self.robot_control_type == "end_effector":
-            # Get end effector control coordinates
+            # Get end effector control coordinates.
             if not self._ee_control_coordinates:
                 action_space_joints = ["x", "y", "z", "rx", "ry", "rz", "rw"]
             else:
                 action_space_joints = self._ee_control_coordinates
 
-            # Get gripper control joints
+            # Get gripper control joints.
             if self._load_gripper:
                 action_space_joints.extend(["gripper_width", "gripper_max_effort"])
         else:
@@ -1024,16 +1020,19 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
 
         return action_space_joints
 
-    def _create_action_space(self):
+    def _create_action_space(self, dtype=np.float64):
         """Create the action space based on the action space size and the action bounds.
 
+        Args:
+            dtype (numpy.dtype, optional): The data type of the action space. Defaults
+                to np.float64.
         Returns:
-            :obj:`gym.spaces.Box`: The gym action space.
+            :obj:`gym.spaces.Box`: The gymnasium action space.
         """
-        # Retrieve action space joints if not supplied
+        # Retrieve action space joints if not supplied.
         self._action_space_joints = self._get_action_space_joints()
 
-        # Set action space bounds based on control_type
+        # Set action space bounds based on control_type.
         arm_bounds_key = (
             "ee_pose"
             if self.robot_control_type == "end_effector"
@@ -1090,22 +1089,24 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 val
                 for key, val in action_bounds_low.items()
                 if key in self._action_space_joints
-            ]
+            ],
+            dtype=dtype,
         )
         action_bound_high_filtered = np.array(
             [
                 val
                 for key, val in action_bounds_high.items()
                 if key in self._action_space_joints
-            ]
+            ],
+            dtype=dtype,
         )
 
-        # Create action space
+        # Create action space.
         return spaces.Box(
             action_bound_low_filtered,
             action_bound_high_filtered,
             shape=action_bound_low_filtered.shape,
-            dtype="float32",
+            dtype=dtype,
         )
 
     def _set_panda_configuration(self, joint_names, joint_positions):
@@ -1128,7 +1129,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         """  # noqa: E501
         if hasattr(self, "_set_franka_model_configuration_srv"):
             resp = self._set_franka_model_configuration_srv.call(
-                SetJointConfigurationRequest(
+                self.franka_msgs.srv.SetJointConfigurationRequest(
                     configuration=JointState(name=joint_names, position=joint_positions)
                 )
             )
@@ -1213,7 +1214,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             The ``done`` argument is not used for computing the reward in this task
             environment.
         """
-        # Calculate the rewards based on the distance from the goal
+        # Calculate the rewards based on the distance from the goal.
         d = self._goal_distance(observations["achieved_goal"], self.goal)
         if self._reward_type == "sparse":
             if self._collision_penalty != 0.0 and self.in_collision:
@@ -1261,17 +1262,13 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     execution.
                 - desired_goal (:obj:`object`): The desired goal that we asked the agent
                     to attempt to achieve.
-                - info (:obj:`dict`): An info dictionary with additional information.
         """
         ee_pose = self.ee_pose
-        ee_position = np.array(
-            [
-                ee_pose.pose.position.x,
-                ee_pose.pose.position.y,
-                ee_pose.pose.position.z,
-            ]
-        )
-        achieved_goal = ee_position
+        ee_position = [
+            ee_pose.pose.position.x,
+            ee_pose.pose.position.y,
+            ee_pose.pose.position.z,
+        ]
 
         robot_qpos, robot_qvel = self._robot_get_obs()
         ee_state = [
@@ -1290,13 +1287,15 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 ee_position,
                 ee_state,
                 ee_vel,
-            ]
+            ],
+            dtype=self._observation_space_dtype,
         )
+        achieved_goal = np.array(ee_position, dtype=self._observation_space_dtype)
+        desired_goal = self.goal.astype(self._observation_space_dtype)
         return {
             "observation": obs.copy(),
             "achieved_goal": achieved_goal.copy(),
-            "desired_goal": self.goal.copy(),
-            "info": {},
+            "desired_goal": desired_goal.copy(),
         }
 
     def _set_action(self, action):
@@ -1305,16 +1304,16 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         Args:
             action (numpy.ndarray): List containing joint or ee action commands.
         """
-        # Throw error and shutdown if action space is not the right size
+        # Throw error and shutdown if action space is not the right size.
         if not action.shape == self.action_space.shape:
             rospy.logerr(
                 f"Shutting down '{rospy.get_name()}' since the shape of the supplied "
-                f"action {action.shape} while the gym action space has shape "
+                f"action {action.shape} while the gymnasium action space has shape "
                 f"{self.action_space.shape}."
             )
             sys.exit(0)
 
-        # Send action commands to the controllers based on control type
+        # Send action commands to the controllers based on control type.
         action_dict = dict(zip(self._action_space_joints, action))
         self._step_debug_logger("=Action set info=")
         self._step_debug_logger("Action that is set:")
@@ -1356,7 +1355,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             bool: Boolean specifying whether the episode is done (e.i. distance to the
                 goal is within the distance threshold, robot has fallen etc.).
         """
-        # Check if gripper is within range of the goal
+        # Check if gripper is within range of the goal.
         d = self._goal_distance(observations["achieved_goal"], self.goal)
         is_done = (d < self._distance_threshold).astype(np.float32)
 
@@ -1403,7 +1402,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 ],
                 size=3,
             )
-        elif self._target_sampling_strategy == "local":  # Rel to current EE pose
+        elif self._target_sampling_strategy == "local":  # Rel to current EE pose.
             try:
                 cur_ee_pose = self.get_ee_pose()
                 cur_ee_position = np.array(
@@ -1421,7 +1420,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 )
                 sys.exit(0)
 
-            # Sample goal relative to end effector pose
+            # Sample goal relative to end effector pose.
             goal = cur_ee_position + self.np_random.uniform(
                 [
                     self._target_sampling_bounds["x_min"],
@@ -1437,7 +1436,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             )
         elif self._target_sampling_strategy == "fixed":
             goal = np.array(list(self._fixed_target_pose.values()))
-        else:  # Thrown error if goal could not be sampled
+        else:  # Thrown error if goal could not be sampled.
             rospy.logerr(
                 f"Shutting down '{rospy.get_name()}' since no goal could be sampled "
                 f"as '{self._target_sampling_strategy}' is not a valid goal sampling "
@@ -1445,13 +1444,13 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             )
             sys.exit(0)
 
-        # Make sure the goal is always within the sampling region
+        # Make sure the goal is always within the sampling region.
         if self._target_sampling_strategy != "fixed":
             goal = self._clip_goal_position(goal)
 
         rospy.logdebug("Goal: %s" % goal)
 
-        # Apply offset and return goal
+        # Apply offset and return goal.
         goal += np.array(
             [
                 self._target_offset["x"],
@@ -1485,10 +1484,10 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
            the ``bounds`` set in the task environment config.
         """
         if self._reset_init_pose:
-            if self._random_init_pose:  # Use random initial model configuration
+            if self._random_init_pose:  # Use random initial model configuration.
                 if (
                     self._pose_sampling_type == "joint_positions"
-                ):  # Sample random joint positions
+                ):  # Sample random joint positions.
                     rospy.logdebug("Retrieve random joint positions.")
                     random_joint_positions = self._get_random_joint_positions()
                     if random_joint_positions:
@@ -1506,36 +1505,36 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                                 for joint, position in random_joint_positions.items()
                                 if joint not in self.joints["hand"]
                             }
-                else:  # Sample random EE poses
+                else:  # Sample random EE poses.
                     if (
                         self._randomize_first_episode or self.episode_num != 0
-                    ):  # Retrieve random EE pose
+                    ):  # Retrieve random EE pose.
                         rospy.logdebug("Retrieve random EE pose.")
                         self._set_panda_configuration(
                             joint_names=self.joints["both"],
                             joint_positions=PANDA_REST_CONFIGURATION[
                                 : len(self.joints["both"])
                             ],
-                        )  # NOTE: Done as joint conflicts might prevent planning
+                        )  # NOTE: Done as joint conflicts might prevent planning.
                         (
                             random_ee_pose,
                             random_joint_positions,
                         ) = self._get_random_ee_pose()
-                    else:  # Use fixed initial arm/hand initial EE pose
+                    else:  # Use fixed initial arm/hand initial EE pose.
                         rospy.logdebug("Retrieving initial EE pose.")
                         random_ee_pose = split_pose_dict(self._init_pose)[0]
                         random_joint_positions = self.get_ee_pose_joint_config(
                             random_ee_pose
                         )
 
-                    # Apply init pose offset
+                    # Apply init pose offset.
                     if random_ee_pose and sum(self._init_pose_offset.values()) != 0.0:
                         rospy.logdebug("Applying offset to initial pose.")
                         random_ee_pose["x"] += self._init_pose_offset["x"]
                         random_ee_pose["y"] += self._init_pose_offset["y"]
                         random_ee_pose["z"] += self._init_pose_offset["z"]
 
-                        # Retrieve model configuration for the new EE pose
+                        # Retrieve model configuration for the new EE pose.
                         ee_pose_joint_positions = self.get_ee_pose_joint_config(
                             random_ee_pose
                         )
@@ -1549,7 +1548,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                         else:
                             random_joint_positions = ee_pose_joint_positions
 
-                    # Retrieve random gripper width
+                    # Retrieve random gripper width.
                     if self._load_gripper:
                         random_joint_positions["gripper_width"] = (
                             split_pose_dict(self._init_pose)[1]["gripper_width"]
@@ -1559,7 +1558,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                             )
                             * 2
                         )
-            else:  # Use fixed initial pose
+            else:  # Use fixed initial pose.
                 if self._pose_sampling_type == "joint_positions":
                     rospy.logdebug("Retrieving initial joint positions.")
                     _, self._init_model_configuration = split_pose_dict(self._init_pose)
@@ -1590,7 +1589,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                             "'{}'.".format(random_joint_positions)
                         )
 
-            # Check if a valid model configuration was found
+            # Check if a valid model configuration was found.
             if random_joint_positions:
                 self._init_model_configuration = random_joint_positions
             else:
@@ -1621,7 +1620,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                         )
                     )
 
-            # Convert gripper width to joint positions
+            # Convert gripper width to joint positions.
             if self._load_gripper:
                 self._init_model_configuration = (
                     gripper_width_2_finger_joints_positions(
@@ -1632,7 +1631,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             # Set initial model configuration and return result
             # NOTE: Here two modes can be used: MoveIT or Gazebo's
             # 'set_model_configuration' service.
-            if not self._moveit_init_pose_control:  # Use Gazebo service
+            if not self._moveit_init_pose_control:  # Use Gazebo service.
                 rospy.loginfo("Setting initial robot pose.")
                 init_pose_retval = self._set_panda_configuration(
                     joint_names=self._init_model_configuration.keys(),
@@ -1641,12 +1640,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 if not init_pose_retval:
                     rospy.logwarn("Setting initial robot pose failed.")
                 return init_pose_retval
-            else:  # Use MoveIt
+            else:  # Use MoveIt.
                 if hasattr(self, "_moveit_set_joint_positions_srv"):
                     prev_control_type = self.robot_control_type
                     self.robot_control_type = "trajectory"
                     resp = self._moveit_set_joint_positions_srv.call(
-                        pg_srv.SetJointPositionsRequest(
+                        self.panda_gazebo.srv.SetJointPositionsRequest(
                             joint_names=self._init_model_configuration.keys(),
                             joint_positions=self._init_model_configuration.values(),
                             wait=True,
@@ -1669,7 +1668,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         """Inits variables needed to be initialized each time we reset at the start
         of an episode.
         """
-        # Sample and visualize goal
+        # Sample and visualize goal.
         self.goal = self._sample_goal()
         if self._visualize_target:
             self._visualize_goal()

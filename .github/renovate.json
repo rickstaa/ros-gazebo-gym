@@ -1,7 +1,0 @@
-{
-  "extends": ["config:base"],
-  "labels": ["bump:patch", "dependencies"],
-  "patch": {
-    "enabled": false
-  }
-}

@@ -8,7 +8,7 @@ panda_reach:
     ee_link: "panda_link8" # Link that is specified as the end effector.
     # ee_link: "panda_EE" # Link that is specified as the end effector.
     # NOTE: We don't load the gripper since the gravity compensation currently does not work with the hand attached (see https://github.com/frankaemika/franka_ros/issues/160#issuecomment-992776684).
-    load_gripper: False # Whether you want to load the gripper.
+    load_gripper: True # Whether you want to load the gripper.
     block_gripper: True # Whether the gripper control should be blocked.
     grasping: False # Whether the gripper should grasp objects.
     arm_wait: False # Wait for the arm control to complete before continuing to the next step.
@@ -222,11 +222,11 @@ panda_reach:
   # Other reach environment settings #####
   ########################################
   physics: "dart" # The physics engine you want to use: dart|ode
-  load_rviz: True # Whether Rviz should be loaded.
-  rviz_file: config/panda_reach.rviz # Rviz config file. Path is relative to parent folder.
+  load_rviz: True # Whether RViz should be loaded.
+  rviz_file: config/panda_reach.rviz # RViz config file. Path is relative to parent folder.
   load_gazebo_gui: False # Whether the gazebo GUI should be shown.
   log_reset: False # Whether we want to print a log statement when the world/simulation is reset.
-  log_step_debug_info: False # Whether debug info about the step should be logged (i.e. reward, is_done, action ect.).
+  log_step_debug_info: False # Whether debug info about the step should be logged (i.e. reward, is_done, action etc.).
   roslaunch_log_to_console: False # Whether to write the log statements of the ROS launch files to the console.
 ##########################################
 # Other settings #########################

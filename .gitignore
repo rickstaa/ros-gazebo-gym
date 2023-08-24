@@ -1,7 +1,7 @@
 # Logs and data
 control/logs
 data/
-logs/*
+logs
 *.pnpm-error.log
 *.pnpm-debug.log
 *.log

@@ -1,9 +1,8 @@
-﻿"""Class used for displaying text in rviz. This class overloads the
+﻿"""Class used for displaying text in RViz. This class overloads the
 :obj:`jsk_rviz_plugins.msgs.OverlayText` class in order to pre-initialize some of
 its attributes. It further automatically makes sure the text width and height are not
 to small.
 """
-
 import math
 
 from jsk_rviz_plugins.msg import OverlayText
@@ -11,7 +10,7 @@ from std_msgs.msg import ColorRGBA
 
 
 class TextOverlay(OverlayText):
-    """Class used to create an rviz text overlay. When no width or height are supplied
+    """Class used to create an RViz text overlay. When no width or height are supplied
     it makes sure that the display fits all the text.
 
     Attributes:
@@ -36,7 +35,7 @@ class TextOverlay(OverlayText):
         self._fit_width_to_text()
         self._fit_height_to_text()
 
-        # Overwrite attributes with defaults if not supplied in the constructor
+        # Overwrite attributes with defaults if not supplied in the constructor.
         if "bg_color" not in kwds.keys():
             self.bg_color = ColorRGBA(0.0, 0.0, 0.0, 1.0)
         if "fg_color" not in kwds.keys():

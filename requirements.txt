@@ -1,3 +1,0 @@
-pygit2
-ruamel.yaml
-tqdm

@@ -7,7 +7,7 @@ Code API
 Python Code API
 ===============
 
-All Python modules, classes, scripts, utilities and functions of the :ros_gazebo_gym:`ros_gazebo_gym <>`
+All Python modules, classes, scripts, utilities and functions of the :ros-gazebo-gym:`ros_gazebo_gym <>`
 package will be documented here.
 
 Modules
@@ -40,6 +40,6 @@ Templates
 Config files
 ------------
 
-The :ros_gazebo_gym:`ros_gazebo_gym <>` package contains configuration files for changing the
+The :ros-gazebo-gym:`ros_gazebo_gym <>` package contains configuration files for changing the
 Task environments. These config files are found inside the ``config`` folder located inside
 the task environments.

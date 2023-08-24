@@ -1,9 +1,8 @@
-"""Class used for displaying a marker for the puck object in rviz. This class overloads
+"""Class used for displaying a marker for the puck object in RViz. This class overloads
 the :obj:`ros_gazebo_gym.common.markers.target_marker.TargetMarker` class in order to
 pre-initialize some of its attributes. Most importantly, a pose offset was applied to
 align the marker frame with the object frame.
 """
-
 from geometry_msgs.msg import Vector3
 from ros_gazebo_gym.common.markers import TargetMarker
 from std_msgs.msg import ColorRGBA
@@ -11,7 +10,7 @@ from visualization_msgs.msg import Marker
 
 
 class PuckMarker(TargetMarker):
-    """Class used to create an rviz marker for the sliding puck.
+    """Class used to create an RViz marker for the sliding puck.
 
     Attributes:
         x (int): The marker x position.
@@ -50,12 +49,12 @@ class PuckMarker(TargetMarker):
         """
         super().__init__(*args, **kwds)
 
-        # Overwrite attributes with defaults if not supplied in the constructor
+        # Overwrite attributes with defaults if not supplied in the constructor.
         if "color" not in kwds.keys():
             self.color = ColorRGBA(0.0, 0.0, 0.0, 1.0)
         if "scale" not in kwds.keys():
             self.scale = Vector3(0.05, 0.05, 0.02)
         self.type = Marker.CYLINDER if "type" not in kwds.keys() else self.type
 
-        # Apply offset to align marker frame with cube object frame
+        # Apply offset to align marker frame with cube object frame.
         self.pose.position.z += 0.01

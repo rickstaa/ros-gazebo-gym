@@ -1,0 +1,6 @@
+gymnasium
+gymnasium-robotics
+numpy
+pygit2
+ruamel.yaml
+tqdm

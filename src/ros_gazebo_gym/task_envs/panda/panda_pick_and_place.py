@@ -1,12 +1,12 @@
-"""An Openai gym ROS Panda pick and place environment.
+"""An ROS Panda pick and place gymnasium environment.
 
 .. figure:: /images/panda/panda_pick_and_place_env.png
    :alt: Panda pick and place environment
 
 Goal:
     In this environment the agent has to learn to lift a block up to reach the desired
-    goal position. Based on the `FetchPush-v1 <https://gym.openai.com/envs/FetchPickAndPlace-v1>`_
-    Openai gym environment.
+    goal position. Based on the :gymnasium-robotics:`FetchPush-v2 <envs/fetch/pick_and_place/>`
+    gymnasium environment.
 
 .. admonition:: Configuration
     :class: important
@@ -14,7 +14,6 @@ Goal:
     The configuration files for this environment are found in the
     `panda task environment config folder <../config/panda_pick_and_place.yaml>`_).
 """  # noqa: E501
-
 import sys
 import time
 from pathlib import Path
@@ -24,8 +23,9 @@ import rospy
 import tf2_ros
 from gazebo_msgs.msg import ModelState
 from geometry_msgs.msg import Pose, Quaternion, TransformStamped, Vector3
-from gym import utils
-from ros_gazebo_gym.common.functions import get_orientation_euler, normalize_quaternion
+from gymnasium import utils
+
+from ros_gazebo_gym.common.helpers import get_orientation_euler, normalize_quaternion
 from ros_gazebo_gym.core import ROSLauncher
 from ros_gazebo_gym.exceptions import SetModelStateError, SpawnModelError
 from ros_gazebo_gym.task_envs.panda import PandaReachEnv
@@ -37,7 +37,7 @@ try:
 except ImportError:
     pass
 
-# Specify topics and other script variables
+# Specify topics and other script variables.
 CONNECTION_TIMEOUT = 5
 TARGET_OBJECT_SPAWN_TIMEOUT = 60
 TARGET_OBJECT_POSE_PUBLISH_RATE = 60
@@ -52,7 +52,7 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
     """Classed used to create a Panda pick and place environment.
 
     Attributes:
-        object_marker_class (:obj:`visualization_msgs.msg.Marker`): The rviz marker
+        object_marker_class (:obj:`visualization_msgs.msg.Marker`): The RViz marker
             class used for displaying the object. Can be overwritten by child
             environments to change the visualization of the object.
         object_frame_name (str): The name used for the object tf frame.
@@ -83,7 +83,7 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
         utils.EzPickle.__init__(
             **locals()
         )  # Makes sure the env is pickable when it wraps C++ code.
-        ROSLauncher.initialize()  # Makes sure roscore is running and ROS is initialized
+        ROSLauncher.initialize()  # Makes sure roscore is running and ROS is initialized.
 
         self._prev_time = rospy.get_time()
         self._prev_grip_position = np.zeros(3)
@@ -97,7 +97,7 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
             **kwargs,
         )
 
-        # Setup MoveIt platform add service
+        # Setup MoveIt platform add service.
         moveit_add_box_srv_topic = f"{self.robot_name_space}/{MOVEIT_ADD_BOX_TOPIC}"
         try:
             rospy.logdebug("Connecting to '%s' service." % moveit_add_box_srv_topic)
@@ -119,19 +119,19 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
         # dynamic by requesting them via a custom made Gazebo plugin.
         self._add_platform_to_moveit_scene()
 
-        # Create object publishers
+        # Create object publishers.
         self.object_marker_class = CubeMarker
         self.object_frame_name = "cube"
-        rospy.logdebug("Creating rviz object marker publisher.")
+        rospy.logdebug("Creating RViz object marker publisher.")
         self._object_marker_pub = rospy.Publisher(
             "/ros_gazebo_gym/object", CubeMarker, queue_size=1, latch=True
         )
-        rospy.logdebug("Rviz object marker publisher created.")
-        rospy.logdebug("Creating rviz object frame marker publisher.")
+        rospy.logdebug("RViz object marker publisher created.")
+        rospy.logdebug("Creating RViz object frame marker publisher.")
         self._object_frame_marker_pub = rospy.Publisher(
             "/ros_gazebo_gym/object_frame", CubeMarker, queue_size=1, latch=True
         )
-        rospy.logdebug("Rviz object frame marker publisher created.")
+        rospy.logdebug("RViz object frame marker publisher created.")
         rospy.Timer(
             rospy.Duration(1.0 / TARGET_OBJECT_POSE_PUBLISH_RATE),
             self._object_marker_pub_cb,
@@ -140,10 +140,10 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
     ################################################
     # Task environment internal methods ############
     ################################################
-    # NOTE: Here you can add additional helper methods that are used in the task env
+    # NOTE: Here you can add additional helper methods that are used in the task env.
 
     def _object_marker_pub_cb(self, event=None):
-        """Callback function that publishes a rviz marker representing the current
+        """Callback function that publishes a RViz marker representing the current
         object position.
 
         Args:
@@ -156,7 +156,7 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
         # IMPROVE: Currently the object properties are hardcoded these can be made
         # dynamic by requesting them via a custom made Gazebo plugin.
 
-        # Publish object frame tf
+        # Publish object frame tf.
         object_pose = self.object_pose
         tf_msg = TransformStamped()
         tf_msg.header.stamp = rospy.Time.now()
@@ -171,13 +171,13 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
         tf_msg.transform.rotation.w = object_pose.orientation.w
         tf2_ros.TransformBroadcaster().sendTransform(tf_msg)
 
-        # Publish object rviz marker
+        # Publish object RViz marker.
         self._object_marker_msg = self.object_marker_class(
             frame_id=self.object_frame_name
         )
         self._object_marker_pub.publish(self._object_marker_msg)
 
-        # Also display marker for object frame position
+        # Also display marker for object frame position.
         object_frame_origin_marker_msg = FrameOriginMarker(
             frame_id=self.object_frame_name
         )
@@ -202,7 +202,7 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
         """Makes sure the object is present in the gazebo simulation."""
         rospy.logdebug("Setting initial object pose.")
 
-        # Try to spawn object if not yet present
+        # Try to spawn object if not yet present.
         if not self.contains_object:
             init_obj_pose = Pose(
                 position=Vector3(
@@ -232,7 +232,7 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
                     pose=init_obj_pose,
                 )
 
-                # Wait till the object is found in the model state
+                # Wait till the object is found in the model state.
                 start_time = time.time()
                 while time.time() - start_time < TARGET_OBJECT_SPAWN_TIMEOUT:
                     rospy.logwarn_once(
@@ -258,9 +258,9 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
         Returns:
             bool: Success boolean.
         """
-        # Set a random object pose
+        # Set a random object pose.
         if self._object_sampling_strategy.lower() == "global":
-            # Retrieve x,y positions of the current and initial object pose
+            # Retrieve x,y positions of the current and initial object pose.
             obj_pose = self.gazebo.model_states[self._object_name]["pose"]
             obj_xy_positions = np.array(
                 [
@@ -269,14 +269,14 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
                 ]
             )
 
-            # Sample an object initial object (x, y) position
+            # Sample an object initial object (x, y) position.
             while (
                 np.linalg.norm(
                     np.array([obj_pose.position.x, obj_pose.position.y])
                     - obj_xy_positions
                 )
                 < self._object_sampling_distance_threshold
-            ):  # Sample till is different enough from the current object pose
+            ):  # Sample till is different enough from the current object pose.
                 obj_xy_positions = self.np_random.uniform(
                     [
                         self._object_sampling_bounds["x_min"],
@@ -289,7 +289,7 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
                     size=2,
                 )
 
-            # Set init object pose
+            # Set init object pose.
             obj_model_state = ModelState()
             obj_model_state.model_name = self._object_name
             obj_model_state.pose.position.x = obj_xy_positions[0]
@@ -306,7 +306,7 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
                 )
                 sys.exit(0)
 
-            # Return result
+            # Return result.
             if not retval:
                 rospy.logwarn("setting initial object position failed.")
             return retval
@@ -369,7 +369,7 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
         """
         super()._get_params(ns=ns)
         try:
-            # Retrieve control variables
+            # Retrieve control variables.
             self._platform_name = rospy.get_param(f"/{ns}/training/platform_name")
             self._platform_size = rospy.get_param(f"/{ns}/training/platform_size")
             self._object_name = rospy.get_param(f"/{ns}/training/object_name")
@@ -425,44 +425,42 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
                     execution.
                 - desired_goal (:obj:`object`): The desired goal that we asked the agent
                     to attempt to achieve.
-                - info (:obj:`dict`): An info dictionary with additional information.
         """
         obs_dict = super()._get_obs()
         obs = obs_dict["observation"]
         desired_goal = obs_dict["desired_goal"]
-        info = obs_dict["info"]
 
-        # Unpack required observations
+        # Unpack required observations.
         ee_position = obs[:3]
         ee_state = obs[3:5]
         ee_vel = obs[5:]
 
-        # Retrieve information about the object
+        # Retrieve information about the object.
         if self.contains_object:
-            # Retrieve gripper velocity
+            # Retrieve gripper velocity.
             dt = self._get_elapsed_time()
             grip_velp = (
                 ee_position - self._prev_grip_position
-            ) / dt  # Velocity(position) = Distance/Time
+            ) / dt  # Velocity(position) = Distance/Time.
 
-            # Get object position
+            # Get object position.
             object_position = self.object_position
 
-            # Get object orientation
+            # Get object orientation.
             object_rot_resp = get_orientation_euler(self.object_pose)
             object_rot = np.array(
                 [object_rot_resp.y, object_rot_resp.p, object_rot_resp.r]
             )
 
-            # Get object velocity
+            # Get object velocity.
             object_velp = (
                 object_position - self._prev_object_position
-            ) / dt  # Velocity(position) = Distance/Time
+            ) / dt  # Velocity(position) = Distance/Time.
             object_velr = (
                 object_rot - self._prev_object_rot
-            ) / dt  # Velocity(rotation) = Rotation/Time
+            ) / dt  # Velocity(rotation) = Rotation/Time.
 
-            # Get relative position and velocity
+            # Get relative position and velocity.
             object_rel_position = object_position - ee_position
             object_velp -= grip_velp
         else:
@@ -470,15 +468,15 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
                 object_rot
             ) = object_velp = object_velr = object_rel_position = np.zeros(3)
 
-        # Save current gripper and object positions
+        # Save current gripper and object positions.
         self._prev_grip_position = ee_position
         self._prev_object_position = object_position
         self._prev_object_rot = object_rot
 
-        # Get achieved goal
+        # Get achieved goal.
         achieved_goal = object_position
 
-        # Concatenate observations
+        # Concatenate observations.
         obs = np.concatenate(
             [
                 ee_position,
@@ -496,7 +494,6 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
             "observation": obs.copy(),
             "achieved_goal": achieved_goal.copy(),
             "desired_goal": desired_goal,
-            "info": info,
         }
 
     def _init_env_variables(self):
@@ -505,7 +502,7 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
         """
         self._set_init_obj_pose()
 
-        # Sample and visualize goal
+        # Sample and visualize goal.
         self.goal = self._sample_goal()
         if self._visualize_target:
             self._visualize_goal()

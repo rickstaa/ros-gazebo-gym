@@ -72,7 +72,7 @@ class SpawnModelError(Exception):
         """
         super().__init__(message)
 
-        # Set attributes
+        # Set attributes.
         self.log_message = log_message
         self.details = details
 
@@ -98,7 +98,7 @@ class GetModelStateError(Exception):
         """
         super().__init__(message)
 
-        # Set attributes
+        # Set attributes.
         self.log_message = log_message
         self.details = details
 
@@ -124,7 +124,7 @@ class GetLinkStateError(Exception):
         """
         super().__init__(message)
 
-        # Set attributes
+        # Set attributes.
         self.log_message = log_message
         self.details = details
 
@@ -150,7 +150,7 @@ class SetModelStateError(Exception):
         """
         super().__init__(message)
 
-        # Set attributes
+        # Set attributes.
         self.log_message = log_message
         self.details = details
 
@@ -176,7 +176,7 @@ class SetModelConfigurationError(Exception):
         """
         super().__init__(message)
 
-        # Set attributes
+        # Set attributes.
         self.log_message = log_message
         self.details = details
 
@@ -202,7 +202,7 @@ class GetPhysicsPropertiesError(Exception):
         """
         super().__init__(message)
 
-        # Set attributes
+        # Set attributes.
         self.log_message = log_message
         self.details = details
 
@@ -228,6 +228,6 @@ class SetPhysicsPropertiesError(Exception):
         """
         super().__init__(message)
 
-        # Set attributes
+        # Set attributes.
         self.log_message = log_message
         self.details = details

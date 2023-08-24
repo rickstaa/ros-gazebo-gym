@@ -1,6 +1,5 @@
 """Contains several helper functions that are used in the several environments.
 """
-
 import collections
 import copy
 import glob
@@ -8,11 +7,12 @@ import os
 
 import rospy
 from actionlib_msgs.msg import GoalStatusArray
-from gym.utils import colorize as gym_colorize
+from gymnasium.utils import colorize as gym_colorize
 from numpy import linalg, nan
-from ros_gazebo_gym.common.euler_angles import EulerAngles
 from rospy.exceptions import ROSException
 from tf.transformations import euler_from_quaternion
+
+from ros_gazebo_gym.common.euler_angles import EulerAngles
 
 
 #################################################
@@ -20,17 +20,17 @@ from tf.transformations import euler_from_quaternion
 #################################################
 def model_state_msg_2_link_state_dict(link_state_msgs):
     """Converts the a `gazebo_msgs/ModelState <https://docs.ros.org/en/jade/api/gazebo_msgs/html/msg/ModelState.html>`_
-    message into a panda_state dictionary. Contrary to the original ModelState message,
+    message into a state dictionary. Contrary to the original ModelState message,
     in the model_state dictionary the poses and twists are grouped per link/model.
 
     Args:
         link_state_msgs (:obj:`gazebo_msgs.msg.ModelState`): A ModelState message.
 
     Returns:
-        dict: A panda_gazebo model_state dictionary.
+        dict: A model_state dictionary.
     """  # noqa: E501
     model_state_dict = {}
-    for (joint_name, position, twist) in zip(
+    for joint_name, position, twist in zip(
         link_state_msgs.name, link_state_msgs.pose, link_state_msgs.twist
     ):
         model_state_dict[joint_name] = {}
@@ -40,7 +40,7 @@ def model_state_msg_2_link_state_dict(link_state_msgs):
 
 
 def pose_msg_2_pose_dict(pose_msg):
-    """Create a panda_gazebo pose dictionary ``{x, y, z, rx, ry, rz, rw}`` out of a
+    """Create a pose dictionary ``{x, y, z, rx, ry, rz, rw}`` out of a
     `geometry_msgs.msg.Pose <https://docs.ros.org/en/noetic/api/geometry_msgs/html/msg/Pose.html>`_
     message.
 
@@ -82,7 +82,7 @@ def colorize(string, color="white", bold=False, highlight=False):
     Returns:
         str: Colorized string.
     """
-    if color:  # If not empty
+    if color:  # If not empty.
         return gym_colorize(string, color, bold, highlight)
     else:
         return string
@@ -101,7 +101,7 @@ def lower_first_char(string):
         This function is not the exact opposite of the capitalize function of the
         standard library. For example, capitalize('abC') returns Abc rather than AbC.
     """
-    if not string:  # Added to handle case where s == None
+    if not string:  # Added to handle case where s == None.
         return
     else:
         return string[0].lower() + string[1:]
@@ -139,11 +139,11 @@ def list_2_human_text(input_list, seperator=",", end_seperator="&"):
     Returns:
         str: A human readable string that can be printed.
     """
-    # Add spaces around separators if not present
+    # Add spaces around separators if not present.
     seperator = wrap_space_around(seperator)[1:]
     end_seperator = wrap_space_around(end_seperator)
 
-    # Create human readable comma deliminated text
+    # Create human readable comma deliminated text.
     if isinstance(input_list, list):
         if len(input_list) > 1:
             return (
@@ -312,7 +312,7 @@ def merge_n_dicts(*args, order=None):
     for arg in args:
         z.update(arg.copy())
 
-    # Re-order if requested
+    # Re-order if requested.
     if order is not None:
         order_tmp = order.copy()
         for key in z.keys():
@@ -338,7 +338,7 @@ def flatten_list(input_list):
         if type(list_item) is list:
             flattened_list.extend(
                 flatten_list(list_item)
-            )  # NOTE: Calls itself recursively
+            )  # NOTE: Calls itself recursively.
         else:
             flattened_list.append(list_item)
     return flattened_list
@@ -363,7 +363,7 @@ def deep_update(d, u=None, fixed=False, **kwargs):  # noqa: C901
         Based on the answer given by `@alex-martelli <https://stackoverflow.com/users/95810/alex-martelli>`_
         on `this stackoverflow question <https://stackoverflow.com/questions/3232943/update-value-of-a-nested-dictionary-of-varying-depth>`_.
     """  # noqa: E501
-    # Update dict based on input dictionary
+    # Update dict based on input dictionary.
     if u:
         for k, v in u.items():
             if isinstance(v, collections.abc.Mapping):
@@ -373,7 +373,7 @@ def deep_update(d, u=None, fixed=False, **kwargs):  # noqa: C901
                 if k in d.keys() or not fixed:
                     d[k] = v
 
-    # Update dict based on keyword arguments
+    # Update dict based on keyword arguments.
     for key, val in kwargs.items():
         for k, v in d.items():
             if isinstance(v, collections.abc.Mapping):
@@ -412,20 +412,18 @@ def has_invalid_type(variable, variable_types, items_types=None, depth=0):  # no
             - :obj:`int`: The maximum depth at which the type was invalid.
             - :class:`type`: The types that were invalid.
     """
-    # If one type was given make tuple
+    # If one type was given make tuple.
     if isinstance(variable_types, type):
         variable_types = (variable_types,)
     if isinstance(items_types, type):
         items_types = (items_types,)
 
-    # Check if variable type is valid
+    # Check if variable type is valid.
     if type(variable) in variable_types:
-
-        # Check list or dictionary value types are valid
-        if items_types:  # If items_types == None we are at the deepest level
+        # Check list or dictionary value types are valid.
+        if items_types:  # If items_types == None we are at the deepest level.
             if isinstance(variable, dict):
-
-                # Check if the dictionary values are of the right type
+                # Check if the dictionary values are of the right type.
                 depth += 1
                 invalid_types = []
                 for key, val in variable.items():
@@ -440,13 +438,12 @@ def has_invalid_type(variable, variable_types, items_types=None, depth=0):  # no
                         retval, depth, invalid_type = has_invalid_type(
                             val, variable_types=items_types, depth=depth
                         )
-                    if retval:  # If invalid type was found
-                        if invalid_type not in invalid_types:  # If not already in list
+                    if retval:  # If invalid type was found.
+                        if invalid_type not in invalid_types:  # If not already in list.
                             invalid_types.append(invalid_type)
                 return retval, depth, flatten_list(invalid_types)
             elif isinstance(variable, list):
-
-                # Check if the list values are of the right type
+                # Check if the list values are of the right type.
                 depth += 1
                 invalid_types = []
                 for val in variable:
@@ -461,15 +458,15 @@ def has_invalid_type(variable, variable_types, items_types=None, depth=0):  # no
                         retval, depth, invalid_type = has_invalid_type(
                             val, variable_types=items_types, depth=depth
                         )
-                    if retval:  # If invalid type was found
-                        if invalid_type not in invalid_types:  # If not already in list
+                    if retval:  # If invalid type was found.
+                        if invalid_type not in invalid_types:  # If not already in list.
                             invalid_types.append(invalid_type)
                 return retval, depth, flatten_list(invalid_types)
         else:
-            # Return type not invalid bool, depth and type
+            # Return type not invalid bool, depth and type.
             return False, depth, []
     else:
-        # Return type invalid bool, depth and type
+        # Return type invalid bool, depth and type.
         return True, depth, type(variable)
 
 
@@ -486,19 +483,19 @@ def action_server_exists(topic_name):
     Returns:
         bool: Boolean specifying whether the action service exists.
     """
-    # Strip action server specific topics from topic name
+    # Strip action server specific topics from topic name.
     if topic_name.split("/")[-1] in ["cancel", "feedback", "goal", "result", "status"]:
         topic_name = "/".join(topic_name.split("/")[:-1])
     if topic_name[-1] == "/":
         topic_name = topic_name[:-1]
 
-    # Validate if action server topic exists
+    # Validate if action server topic exists.
     try:
         rospy.wait_for_message("%s/status" % topic_name, GoalStatusArray, timeout=5)
     except ROSException:
         return False
 
-    # Check if topic contains action client
+    # Check if topic contains action client.
     exists = False
     for item in rospy.get_published_topics():
         if "%s/status" % topic_name in item[0]:
@@ -529,14 +526,13 @@ def find_gazebo_model_path(model_name, model_folder_path, extension=""):
     if extension != "" and extension[0] != ".":
         extension = "." + extension
 
-    # Try to find the model path for a given model_name
+    # Try to find the model path for a given model_name.
     model_folder = os.path.join(model_folder_path, model_name)
-    if os.path.isdir(model_folder):  # Check if model_name folder exists
-        if extension != "":  # Find based on extension
-
-            # Check if sdf or urdf exists with the model_name name
+    if os.path.isdir(model_folder):  # Check if model_name folder exists.
+        if extension != "":  # Find based on extension.
+            # Check if sdf or urdf exists with the model_name name.
             model_path = glob.glob(os.path.join(model_folder, "model" + extension))
-            if model_path:  # If found
+            if model_path:  # If found.
                 return model_path[0]
             else:
                 rospy.logwarn(
@@ -545,12 +541,12 @@ def find_gazebo_model_path(model_name, model_folder_path, extension=""):
                     "'%s'." % (model_name, model_folder)
                 )
                 return "", extension[1:]
-        else:  # no extension given
-            # Look for sdf or urdf files
+        else:  # no extension given.
+            # Look for sdf or urdf files.
             model_path_sdf = glob.glob(os.path.join(model_folder, "model" + ".sdf"))
             model_path_urdf = glob.glob(os.path.join(model_folder, "model" + ".urdf"))
 
-            # Check which extension was found
+            # Check which extension was found.
             if model_path_sdf and model_path_urdf:
                 rospy.logwarn(
                     "Model path for '%s' could not be retrieved as both an 'model.sdf' "
@@ -586,10 +582,10 @@ def get_orientation_euler(quaternion):
         quaternion (:obj:`geometry_msgs.Pose`): Input quaternion.
 
     Returns=:
-        :obj:`panda_gazebo.EulerAngles`: Object containing the yaw (z), pitch (y) and
-            roll (z) euler angles.
+        :obj:`~ros_gazebo_gym.common.euler_angles.EulerAngles`: Object containing the
+            yaw (z), pitch (y) and roll (x) euler angles.
     """
-    # Convert quaternion to euler
+    # Convert quaternion to euler.
     orientation_list = [
         quaternion.orientation.x,
         quaternion.orientation.y,
@@ -598,7 +594,7 @@ def get_orientation_euler(quaternion):
     ]
     euler_resp = euler_from_quaternion(orientation_list, "rzyx")
 
-    # Convert list to euler object
+    # Convert list to euler object.
     euler = EulerAngles()
     euler.y = euler_resp[0]
     euler.p = euler_resp[1]
@@ -629,17 +625,17 @@ def normalize_quaternion(quaternion):
     """
     quaternion = copy.deepcopy(
         quaternion
-    )  # Make sure the original object is not changed
+    )  # Make sure the original object is not changed.
     norm = quaternion_norm(quaternion)
 
-    # Normalize quaternion
+    # Normalize quaternion.
     if norm == nan:
-        # test
+        # TODO: test.
         rospy.logwarn(
             "Quaternion could not be normalized since the norm could not be "
             "calculated."
         )
-    elif norm == 0.0:  # Transform to identity
+    elif norm == 0.0:  # Transform to identity.
         quaternion.x = 0.0
         quaternion.y = 0.0
         quaternion.z = 0.0

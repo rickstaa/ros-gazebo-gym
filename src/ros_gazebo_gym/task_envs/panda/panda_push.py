@@ -1,12 +1,12 @@
-"""An Openai gym ROS Panda push environment.
+"""An ROS Panda push gymnasium environment.
 
 .. figure:: /images/panda/panda_push_env.png
    :alt: Panda push environment
 
 Goal:
     In this environment the agent has to learn to push a puck to a desired goal
-    position. Based on the `FetchPush-v1 <https://gym.openai.com/envs/FetchPush-v1>`_
-    Openai gym environment.
+    position. Based on the :gymnasium-robotics:`FetchPush-v2 <envs/fetch/push/>`
+    gymnasium environment.
 
 .. admonition:: Configuration
     :class: important
@@ -14,11 +14,11 @@ Goal:
     The configuration files for this environment are found in the
     `panda task environment config folder <../config/panda_push.yaml>`_).
 """
+from gymnasium import utils
 
-from gym import utils
 from ros_gazebo_gym.task_envs.panda import PandaPickAndPlaceEnv
 
-# Specify topics and other script variables
+# Specify topics and other script variables.
 CONFIG_FILE_PATH = "config/panda_push.yaml"
 
 
@@ -61,10 +61,10 @@ class PandaPushEnv(PandaPickAndPlaceEnv, utils.EzPickle):
         """
         self._set_init_obj_pose()
 
-        # Sample and visualize goal
+        # Sample and visualize goal.
         self.goal = self._sample_goal()
         self.goal[-1] = self.object_position[
             -1
-        ]  # Make sure object stays on the initial platform
+        ]  # Make sure object stays on the initial platform.
         if self._visualize_target:
             self._visualize_goal()

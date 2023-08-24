@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(ros_gazebo_gym)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
@@ -104,7 +104,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES beginner_tutorials
+#  LIBRARIES ros_gazebo_gym
   CATKIN_DEPENDS 
     rospy gazebo_msgs std_msgs geometry_msgs controller_manager_msgs message_runtime
     rospy_message_converter actionlib_msgs jsk_rviz_plugins tf2_geometry_msgs sensor_msgs

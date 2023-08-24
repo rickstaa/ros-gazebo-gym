@@ -1,5 +1,5 @@
-"""Template file used for creating a new task environments. It contains a python class
-that allows to specify the **TASK** that the robot has to learn. For more information
+"""Template file used for creating a new task environment. It contains a Python class
+that allows specifying the **TASK** that the robot has to learn; for more information,
 see the `ros_gazebo_gym <https://rickstaa.dev/ros-gazebo-gym>`_ documentation.
 
 Source code
@@ -8,18 +8,15 @@ Source code
 .. literalinclude:: ../../../../../templates/template_my_task_env.py
    :language: python
    :linenos:
-   :lines: 14-
+   :lines: 13-
 """
-
 import numpy as np
 import rospy
-from gym import spaces
-from gym.envs.registration import register
+from gymnasium import spaces
+from gymnasium.envs.registration import register
+from template_my_robot_env import MyRobotEnv  # NOTE: Import your robot environment.
 
-# Import your robot environment
-from template_my_robot_env import MyRobotEnv
-
-# Register the task environment as a gym environment
+# Register the task environment as a gymnasium environment.
 max_episode_steps = 1000
 register(
     id="MyTaskEnv-v0",
@@ -36,11 +33,11 @@ class MyTaskEnv(MyRobotEnv):
     def __init__(self):
         """Initializes a new Task environment."""
 
-        # TODO: Implement the action and observation space
+        # TODO: Implement the action space.
         number_actions = rospy.get_param("/my_robot_namespace/n_actions")
         self.action_space = spaces.Discrete(number_actions)
 
-        # TODO: Implement the observation space
+        # TODO: Implement the observation space.
         high = np.array(
             [
                 # Observation 1 max value,
@@ -51,13 +48,18 @@ class MyTaskEnv(MyRobotEnv):
         )
         self.observation_space = spaces.Box(-high, high)
 
-        # TODO: Retrieve required robot variables through the param server
+        # TODO: Retrieve required robot variables through the param server.
 
-        # Initiate the Robot environment
+        # Initiate the Robot environment.
         super(MyTaskEnv, self).__init__()
 
     ################################################
-    # Overload Robot env virtual methods ###########
+    # Task environment internal methods ############
+    ################################################
+    # NOTE: Here you can add additional helper methods that are used in the task env.
+
+    ################################################
+    # Overload Robot/Gazebo env virtual methods ####
     ################################################
     # NOTE: Methods that need to be implemented as they are called by the robot and
     # gazebo environments.
@@ -65,12 +67,12 @@ class MyTaskEnv(MyRobotEnv):
         """Initializes variables that need to be initialized at the start of the gazebo
         simulation.
         """
-        # TODO: Implement the logic that sets initial gazebo physics engine parameters
+        # TODO: Implement logic that sets initial gazebo physics engine parameters.
         raise NotImplementedError()
 
     def _set_init_pose(self):
         """Sets the Robot in its initial pose."""
-        # TODO: Implement the logic that sets the robot to it's initial position
+        # TODO: Implement logic that sets the robot to it's initial position.
         return True
 
     def _init_env_variables(self):
@@ -86,7 +88,7 @@ class MyTaskEnv(MyRobotEnv):
         Returns:
             numpy.ndarray: The observation data.
         """
-        # TODO: Implement the logic that retrieves the observation needed for the reward
+        # TODO: Implement logic that retrieves the observation needed for the reward.
         observations = np.array([0.0, 0.0, 0.0])
         return observations
 
@@ -96,7 +98,7 @@ class MyTaskEnv(MyRobotEnv):
         Args:
             action (numpy.ndarray): The action we want to apply.
         """
-        # TODO: Implement logic that moves the robot based on a given action
+        # TODO: Implement logic that moves the robot based on a given action.
         return True
 
     def _is_done(self, observations):
@@ -126,8 +128,3 @@ class MyTaskEnv(MyRobotEnv):
         # TODO: Implement logic that is used to calculate the reward.
         reward = 1e6
         return reward
-
-    ################################################
-    # Task environment internal methods ############
-    ################################################
-    # NOTE: Here you can add additional helper methods that are used in the task env

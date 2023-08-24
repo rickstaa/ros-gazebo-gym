@@ -4,7 +4,7 @@
 .. note::
     The panda robot environment contains two methods of controlling the robot: ``DIRECT``
     control (Default) and ``PROXY`` based control. Initially, I abstracted all the panda
-    control logic away in the :panda_gazebo:`panda_gazebo <>` package and made it
+    control logic away in the :panda-gazebo:`panda_gazebo <>` package and made it
     available through services. Later, however, I found that the service calls slowed
     down the control. I then added the DIRECT control method, which directly publishes
     the control commands on the controller ``command`` topic. This control method made
@@ -12,7 +12,6 @@
     for the ``position`` and ``effort`` control. Other control methods like
     ``trajectory`` and ``end_effector`` control will use the PROXY based method.
 """  # noqa: E501
-
 import sys
 from datetime import datetime
 from itertools import compress
@@ -23,36 +22,26 @@ import rospy
 import tf2_ros
 from control_msgs.msg import GripperCommandAction, GripperCommandGoal
 from geometry_msgs.msg import Pose, PoseStamped
-from ros_gazebo_gym.common.functions import (
+from rospy.exceptions import ROSException, ROSInterruptException
+from sensor_msgs.msg import JointState
+from std_msgs.msg import Float64, Float32
+
+from ros_gazebo_gym.common.helpers import (
     action_server_exists,
     flatten_list,
     get_orientation_euler,
     lower_first_char,
     normalize_quaternion,
 )
-from ros_gazebo_gym.core import ROSLauncher
+from ros_gazebo_gym.core import ROSLauncher, LazyImporter
 from ros_gazebo_gym.core.helpers import get_log_path
 from ros_gazebo_gym.exceptions import EePoseLookupError, EeRpyLookupError
 from ros_gazebo_gym.robot_gazebo_goal_env import RobotGazeboGoalEnv
 
-try:
-    import panda_gazebo.common.functions as pg_functions
-    import panda_gazebo.core as pg_core
-    import panda_gazebo.msg as pg_msg
-    import panda_gazebo.srv as pg_srv
-    from franka_msgs.msg import FrankaState
-    from panda_gazebo.exceptions import InputMessageInvalidError
 
-    PANDA_GAZEBO_IMPORTED = True
-except ImportError:
-    PANDA_GAZEBO_IMPORTED = False
-from rospy.exceptions import ROSException, ROSInterruptException
-from sensor_msgs.msg import JointState
-from std_msgs.msg import Float64, Float32
-
-# Specify topics and connection timeouts
-CONNECTION_TIMEOUT = 5  # Timeout for connecting to services or topics
-GAZEBO_SIM_CONNECTION_TIMEOUT = 60  # Timeout for waiting for gazebo to be launched
+# Specify topics and connection timeouts.
+CONNECTION_TIMEOUT = 5  # Timeout for connecting to services or topics.
+GAZEBO_SIM_CONNECTION_TIMEOUT = 60  # Timeout for waiting for gazebo to be launched.
 MOVEIT_SET_EE_POSE_TOPIC = "panda_moveit_planner_server/panda_arm/set_ee_pose"
 MOVEIT_GET_EE_POSE_JOINT_CONFIG_TOPIC = (
     "panda_moveit_planner_server/panda_arm/get_ee_pose_joint_config"
@@ -65,7 +54,7 @@ FRANKA_GRIPPER_COMMAND_TOPIC = "franka_gripper/gripper_action"
 JOINT_STATES_TOPIC = "joint_states"
 FRANKA_STATES_TOPIC = "franka_state_controller/franka_states"
 
-# Other script variables
+# Other script variables.
 AVAILABLE_CONTROL_TYPES = [
     "trajectory",
     "position",
@@ -83,7 +72,7 @@ PANDA_JOINTS_FALLBACK = {
         "panda_joint7",
     ],
     "hand": ["panda_finger_joint1", "panda_finger_joint2"],
-}  # NOTE: Used when the joints can not be determined
+}  # NOTE: Used when the joints can not be determined.
 ARM_POSITION_CONTROLLERS = [
     "panda_arm_joint1_position_controller",
     "panda_arm_joint2_position_controller",
@@ -102,11 +91,11 @@ ARM_EFFORT_CONTROLLERS = [
     "panda_arm_joint6_effort_controller",
     "panda_arm_joint7_effort_controller",
 ]
-GRASP_FORCE = 10  # Default panda gripper force. Panda force information: {Continuous force: 70N, max_force: 140 N}  # noqa: E501
+GRASP_FORCE = 10  # Default panda gripper force. Panda force information: {Continuous force: 70N, max_force: 140 N}.  # noqa: E501
 ARM_CONTROL_WAIT_TIMEOUT = 5  # Default arm control wait timeout [s].
 ARM_JOINT_POSITION_WAIT_THRESHOLD = 0.07  # Threshold used for determining whether a joint position is reached (i.e. 0.01 rad per joint).  # noqa: E501
 ARM_JOINT_EFFORT_WAIT_THRESHOLD = 7  # Threshold used for determining whether a joint position is reached (i.e. 1 N per joint).  # noqa: E501
-ARM_JOINT_VELOCITY_WAIT_THRESHOLD = 0.07  # Threshold used for determining whether the joint velocity is zero (i.e. 1rad/s per joint)  # noqa: E501
+ARM_JOINT_VELOCITY_WAIT_THRESHOLD = 0.07  # Threshold used for determining whether the joint velocity is zero (i.e. 1rad/s per joint).  # noqa: E501
 
 
 class PandaEnv(RobotGazeboGoalEnv):
@@ -139,6 +128,10 @@ class PandaEnv(RobotGazeboGoalEnv):
         in_collision(bool): Whether the robot is in collision.
         tf_buffer (:obj:`tf2_ros.buffer.Buffer`): Tf buffer object can be used to
             request transforms.
+        panda_gazebo (:obj:`ros_gazebo_gym.core.LazyImporter`): Lazy importer for the
+            :panda-gazebo:`panda_gazebo <>` package.
+        franka_msgs (:obj:`ros_gazebo_gym.core.LazyImporter`): Lazy importer for the
+            :franka-gazebo:`franka_msgs <>` package.
     """
 
     def __init__(  # noqa: C901
@@ -173,13 +166,19 @@ class PandaEnv(RobotGazeboGoalEnv):
                 panda_gazebo package should be found. Defaults to ``None``.
             log_reset (bool, optional): Whether we want to print a log statement when
                 the world/simulation is reset. Defaults to ``True``.
-            visualize (bool, optional): Whether you want to show the RVIZ visualization.
+            visualize (bool, optional): Whether you want to show the RViz visualization.
                 Defaults to ``None`` meaning the task configuration file values will be
                 used.
         """
         rospy.logdebug("Initialize PandaEnv robot environment...")
 
-        # set initial robot env variables
+        # Initialize lazy imported modules.
+        # NOTE: Used because if not yet installed these packages will be installed later
+        # and can therefore not be imported at the top of the file.
+        self.panda_gazebo = LazyImporter("panda_gazebo")
+        self.franka_msgs = LazyImporter("franka_msgs")
+
+        # Set initial robot env variables.
         self.robot_name_space = robot_name_space
         self.reset_controls = True
         self.robot_EE_link = robot_EE_link
@@ -206,7 +205,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         self.__joints = {}
         self.__in_collision = False
 
-        # Thrown control warnings
+        # Thrown control warnings.
         if self._direct_control and self.robot_control_type in [
             "trajectory",
             "end_effector",
@@ -221,7 +220,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                 "See https://github.com/rickstaa/panda-gazebo/issues/12."
             )
 
-        # Wait for the simulation to be started
+        # Wait for the simulation to be started.
         simulation_check_timeout_time = rospy.get_rostime() + rospy.Duration(
             GAZEBO_SIM_CONNECTION_TIMEOUT
         )
@@ -247,7 +246,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                 )
                 sys.exit(0)
 
-        # Validate requested control type
+        # Validate requested control type.
         if self.robot_control_type not in AVAILABLE_CONTROL_TYPES:
             err_msg = (
                 f"Shutting down '{rospy.get_name()}' because control type "
@@ -261,12 +260,12 @@ class PandaEnv(RobotGazeboGoalEnv):
         else:
             rospy.logwarn(f"Panda robot is controlled using '{control_type}' control.")
 
-        # Launch the ROS launch that spawns the robot into the world
+        # Launch the ROS launch that spawns the robot into the world.
         control_type_group = (
             "trajectory"
             if self.robot_control_type == "end_effector"
             else self.robot_control_type
-        )  # NOTE: Ee control uses the trajectory controllers
+        )  # NOTE: Ee control uses the trajectory controllers.
         launch_log_file = str(
             get_log_path().joinpath(
                 "put_robot_in_world_launch_{}.log".format(
@@ -295,23 +294,8 @@ class PandaEnv(RobotGazeboGoalEnv):
             rviz_file=self._rviz_file if hasattr(self, "_rviz_file") else "",
             disable_franka_gazebo_logs=True,
             log_file=launch_log_file,
+            critical=True,
         )
-
-        # Throw error if the panda_gazebo package was downloaded in the same run
-        # NOTE: Needed because of how ROS adds custom ROS python modules to the
-        # python path. It uses the '__path__' variable to do this. This method however
-        # only works before the code file is executed (see
-        # https://docs.python.org/3/tutorial/modules.html for more information).
-        # I did not find a easy fix to solve this behaviors.
-        if not PANDA_GAZEBO_IMPORTED:
-            rospy.logerr(
-                "The 'panda_gazebo' package was not found in your PYTHONPATH. If the "
-                "'panda_gazebo' package was just downloaded, it is not yet available "
-                "due to how ROS adds custom python modules to the PYTHONPATH. As a "
-                "result, you have to restart the training script before using the "
-                "Panda ros_gazebo_gym environment."
-            )
-            sys.exit(0)
 
         ########################################
         # Initiate gazebo environment ##########
@@ -334,12 +318,12 @@ class PandaEnv(RobotGazeboGoalEnv):
         ########################################
         rospy.logdebug("Connecting to sensors.")
 
-        # Create publishers
+        # Create publishers.
         self._in_collision_pub = rospy.Publisher(
             "/ros_gazebo_gym/in_collision", Float32, queue_size=1, latch=True
         )
 
-        # Create joint state and franka state subscriber
+        # Create joint state and franka state subscriber.
         rospy.Subscriber(
             f"{self.robot_name_space}/{JOINT_STATES_TOPIC}",
             JointState,
@@ -348,12 +332,12 @@ class PandaEnv(RobotGazeboGoalEnv):
         )
         rospy.Subscriber(
             FRANKA_STATES_TOPIC,
-            FrankaState,
+            self.franka_msgs.msg.FrankaState,
             self._franka_states_cb,
             queue_size=1,
         )
 
-        # Create transform listener
+        # Create transform listener.
         self.tf_buffer = tf2_ros.Buffer()
         self._tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
@@ -369,16 +353,18 @@ class PandaEnv(RobotGazeboGoalEnv):
         # provided by the 'panda_gazebo' package that knows which controllers to load
         # for each control type.
         rospy.logdebug("Creating to Panda Control switcher.")
-        self._controller_switcher = pg_core.control_switcher.PandaControlSwitcher(
-            connection_timeout=self._connection_timeout,
-            robot_name_space=self.robot_name_space,
+        self._controller_switcher = (
+            self.panda_gazebo.core.control_switcher.PandaControlSwitcher(
+                connection_timeout=self._connection_timeout,
+                robot_name_space=self.robot_name_space,
+            )
         )
 
         ################################
         # MoveIt Control services ######
         ################################
 
-        # Connect to Panda control server 'get_controlled_joints' service
+        # Connect to Panda control server 'get_controlled_joints' service.
         try:
             get_controlled_joints_srv_topic = (
                 f"{self.robot_name_space}/{GET_CONTROLLED_JOINTS_TOPIC}"
@@ -391,7 +377,8 @@ class PandaEnv(RobotGazeboGoalEnv):
                 timeout=self._connection_timeout,
             )
             self._get_controlled_joints_client = rospy.ServiceProxy(
-                get_controlled_joints_srv_topic, pg_srv.GetControlledJoints
+                get_controlled_joints_srv_topic,
+                self.panda_gazebo.srv.GetControlledJoints,
             )
             rospy.logdebug(
                 "Connected to '%s' service!" % get_controlled_joints_srv_topic
@@ -401,7 +388,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                 "Failed to connect to '%s' service!" % get_controlled_joints_srv_topic
             )
 
-        # Connect to MoveIt 'set_ee_pose' topic
+        # Connect to MoveIt 'set_ee_pose' topic.
         if self.robot_control_type == "end_effector":
             try:
                 moveit_set_ee_pose_srv_topic = (
@@ -415,7 +402,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                     timeout=self._connection_timeout,
                 )
                 self._moveit_set_ee_pose_client = rospy.ServiceProxy(
-                    moveit_set_ee_pose_srv_topic, pg_srv.SetEePose
+                    moveit_set_ee_pose_srv_topic, self.panda_gazebo.srv.SetEePose
                 )
                 rospy.logdebug(
                     "Connected to '%s' service!" % moveit_set_ee_pose_srv_topic
@@ -434,7 +421,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                 )
                 sys.exit(0)
 
-        # Connect to MoveIt 'get_ee_pose_joint_config' service
+        # Connect to MoveIt 'get_ee_pose_joint_config' service.
         try:
             moveit_get_ee_pose_joint_config_srv_topic = (
                 f"{self.robot_name_space}/{MOVEIT_GET_EE_POSE_JOINT_CONFIG_TOPIC}"
@@ -448,7 +435,8 @@ class PandaEnv(RobotGazeboGoalEnv):
                 timeout=self._connection_timeout,
             )
             self._moveit_get_ee_pose_joint_config_client = rospy.ServiceProxy(
-                moveit_get_ee_pose_joint_config_srv_topic, pg_srv.GetEePoseJointConfig
+                moveit_get_ee_pose_joint_config_srv_topic,
+                self.panda_gazebo.srv.GetEePoseJointConfig,
             )
             rospy.logdebug(
                 "Connected to '%s' service!" % moveit_get_ee_pose_joint_config_srv_topic
@@ -464,7 +452,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         # Trajectory action service ####
         ################################
         if self.robot_control_type == "trajectory":
-            # Connect to Joint Trajectory Panda Control (action) service
+            # Connect to Joint Trajectory Panda Control (action) service.
             set_joint_trajectory_action_srv_topic = (
                 f"{self.robot_name_space}/{SET_JOINT_TRAJECTORY_TOPIC}"
             )
@@ -474,20 +462,20 @@ class PandaEnv(RobotGazeboGoalEnv):
             )
             if action_server_exists(
                 set_joint_trajectory_action_srv_topic
-            ):  # Check if exists
-                # Connect to robot control action server
+            ):  # Check if exists.
+                # Connect to robot control action server.
                 self._arm_joint_traj_control_client = actionlib.SimpleActionClient(
                     set_joint_trajectory_action_srv_topic,
-                    pg_msg.FollowJointTrajectoryAction,
+                    self.panda_gazebo.msg.FollowJointTrajectoryAction,
                 )
-                # Waits until the action server has started up
+                # Waits until the action server has started up.
                 retval = self._arm_joint_traj_control_client.wait_for_server(
                     timeout=rospy.Duration(self._connection_timeout)
                 )
                 if retval:
                     self._arm_joint_traj_control_client_connected = True
 
-            # Shutdown if not connected
+            # Shutdown if not connected.
             if not self._arm_joint_traj_control_client_connected:
                 rospy.logerr(
                     "Shutting down '%s' since no connection could be established with "
@@ -505,10 +493,10 @@ class PandaEnv(RobotGazeboGoalEnv):
         # Panda control services #######
         ################################
 
-        # Connect to arm control services/topics
+        # Connect to arm control services/topics.
         if control_type_group != "trajectory":
-            if not self._direct_control:  # Use 'panda_gazebo' services
-                # Connect to Panda Control server 'set_joint_commands' service
+            if not self._direct_control:  # Use 'panda_gazebo' services.
+                # Connect to Panda Control server 'set_joint_commands' service.
                 try:
                     set_joint_commands_srv_topic = (
                         f"{self.robot_name_space}/{SET_JOINT_COMMANDS_TOPIC}"
@@ -521,7 +509,8 @@ class PandaEnv(RobotGazeboGoalEnv):
                         timeout=self._connection_timeout,
                     )
                     self._set_joint_commands_client = rospy.ServiceProxy(
-                        set_joint_commands_srv_topic, pg_srv.SetJointCommands
+                        set_joint_commands_srv_topic,
+                        self.panda_gazebo.srv.SetJointCommands,
                     )
                     rospy.logdebug(
                         "Connected to '%s' service!" % set_joint_commands_srv_topic
@@ -535,10 +524,12 @@ class PandaEnv(RobotGazeboGoalEnv):
                         % (rospy.get_name(), set_joint_commands_srv_topic)
                     )
                     sys.exit(0)
-            else:  # Directly publish control commands to controller topics
+            else:  # Directly publish control commands to controller topics.
                 if self.robot_control_type == "position":
-                    # Create arm joint position controller publishers
-                    self._arm_joint_position_pub = pg_core.GroupPublisher()
+                    # Create arm joint position controller publishers.
+                    self._arm_joint_position_pub = (
+                        self.panda_gazebo.core.GroupPublisher()
+                    )
                     for position_controller in ARM_POSITION_CONTROLLERS:
                         self._arm_joint_position_pub.append(
                             rospy.Publisher(
@@ -548,8 +539,8 @@ class PandaEnv(RobotGazeboGoalEnv):
                             )
                         )
                 else:
-                    # Create arm joint effort publishers
-                    self._arm_joint_effort_pub = pg_core.GroupPublisher()
+                    # Create arm joint effort publishers.
+                    self._arm_joint_effort_pub = self.panda_gazebo.core.GroupPublisher()
                     for effort_controller in ARM_EFFORT_CONTROLLERS:
                         self._arm_joint_effort_pub.append(
                             rospy.Publisher(
@@ -559,12 +550,12 @@ class PandaEnv(RobotGazeboGoalEnv):
                             )
                         )
 
-        # Connect to gripper control services
+        # Connect to gripper control services.
         if self.load_gripper and (
             control_type_group == "trajectory"
             or (control_type_group != "trajectory" and not self._direct_control)
         ):
-            # Connect to 'panda_gazebo' gripper control service
+            # Connect to 'panda_gazebo' gripper control service.
             try:
                 set_gripper_width_topic = (
                     f"{self.robot_name_space}/{SET_GRIPPER_WIDTH_TOPIC}"
@@ -575,7 +566,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                     timeout=self._connection_timeout,
                 )
                 self._set_gripper_width_client = rospy.ServiceProxy(
-                    set_gripper_width_topic, pg_srv.SetGripperWidth
+                    set_gripper_width_topic, self.panda_gazebo.srv.SetGripperWidth
                 )
                 rospy.logdebug("Connected to '%s' service!" % set_gripper_width_topic)
                 self._set_gripper_width_client_connected = True
@@ -596,19 +587,19 @@ class PandaEnv(RobotGazeboGoalEnv):
             and control_type_group != "trajectory"
             and self._direct_control
         ):
-            # Connect to 'franka_gazebo' gripper command action server
+            # Connect to 'franka_gazebo' gripper command action server.
             rospy.logdebug(
                 "Connecting to '%s' action service." % FRANKA_GRIPPER_COMMAND_TOPIC
             )
             franka_gripper_action_connected = True
             if action_server_exists(FRANKA_GRIPPER_COMMAND_TOPIC):
-                # Connect to robot control action server
+                # Connect to robot control action server.
                 self._gripper_command_client = actionlib.SimpleActionClient(
                     FRANKA_GRIPPER_COMMAND_TOPIC,
                     GripperCommandAction,
                 )
 
-                # Waits until the action server has started up
+                # Waits until the action server has started up.
                 retval = self._gripper_command_client.wait_for_server(
                     timeout=rospy.Duration(secs=5)
                 )
@@ -617,7 +608,7 @@ class PandaEnv(RobotGazeboGoalEnv):
             else:
                 franka_gripper_action_connected = False
 
-            # Shutdown if franka_gripper_action not found
+            # Shutdown if franka_gripper_action not found.
             if not franka_gripper_action_connected:
                 rospy.logerr(
                     "Shutting down '%s' since no connection could be "
@@ -627,7 +618,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                 )
                 sys.exit(0)
 
-        # Environment initiation complete message
+        # Environment initiation complete message.
         rospy.logdebug("PandaEnv robot environment initialized.")
 
     ################################################
@@ -645,12 +636,12 @@ class PandaEnv(RobotGazeboGoalEnv):
                 service.
         """
         try:
-            # Retrieve EE pose using tf2
+            # Retrieve EE pose using tf2.
             ee_site_trans = self.tf_buffer.lookup_transform(
                 "world", self.robot_EE_link, rospy.Time()
             )
 
-            # Transform trans to pose
+            # Transform trans to pose.
             ee_pose = PoseStamped()
             ee_pose.header = ee_site_trans.header
             ee_pose.pose.orientation = ee_site_trans.transform.rotation
@@ -684,19 +675,19 @@ class PandaEnv(RobotGazeboGoalEnv):
                 ``get_ee_pose`` service.
         """
         try:
-            # Retrieve EE pose using tf2
+            # Retrieve EE pose using tf2.
             ee_site_trans = self.tf_buffer.lookup_transform(
                 "world", self.robot_EE_link, rospy.Time()
             )
 
-            # Transform trans to pose
+            # Transform trans to pose.
             ee_pose = PoseStamped()
             ee_pose.header = ee_site_trans.header
             ee_pose.pose.orientation = ee_site_trans.transform.rotation
             ee_pose.pose.position = ee_site_trans.transform.translation
 
-            # Convert EE pose to rpy
-            gripper_rpy = get_orientation_euler(ee_pose.pose)  # Yaw, Pitch Roll
+            # Convert EE pose to rpy.
+            gripper_rpy = get_orientation_euler(ee_pose.pose)  # Yaw, Pitch Roll.
         except (
             tf2_ros.LookupException,
             tf2_ros.ConnectivityException,
@@ -735,13 +726,13 @@ class PandaEnv(RobotGazeboGoalEnv):
             ee_target_pose.orientation.y = ee_pose["ry"]
             ee_target_pose.orientation.z = ee_pose["rz"]
             ee_target_pose.orientation.w = ee_pose["rw"]
-            # Make sure the orientation is normalized
+            # Make sure the orientation is normalized.
             ee_target_pose.orientation = normalize_quaternion(
                 ee_target_pose.orientation
             )
 
-            # Request and return pose
-            req = pg_srv.GetEePoseJointConfigRequest()
+            # Request and return pose.
+            req = self.panda_gazebo.srv.GetEePoseJointConfigRequest()
             req.pose = ee_target_pose
             req.attempts = (
                 self._pose_sampling_attempts
@@ -784,12 +775,12 @@ class PandaEnv(RobotGazeboGoalEnv):
                 for item in self._action_space_joints
                 if item not in ["gripper_width", "gripper_max_effort"]
             ]
-            # Convert float and array joint_commands to dictionary
+            # Convert float and array joint_commands to dictionary.
             if isinstance(ee_pose, (list, np.ndarray, tuple)) or np.isscalar(ee_pose):
                 if np.isscalar(ee_pose):
                     ee_pose = [ee_pose]
 
-                # Create joint_commands dictionary
+                # Create joint_commands dictionary.
                 if len(ee_pose) > len(arm_action_space_joints):
                     rospy.logwarn_once(
                         "End effector pose setpoint contains %s values while it "
@@ -803,9 +794,9 @@ class PandaEnv(RobotGazeboGoalEnv):
                     )
                 ee_pose = dict(zip(arm_action_space_joints, ee_pose))
 
-            # Create set EE pose request message
+            # Create set EE pose request message.
             if isinstance(ee_pose, dict):
-                # Fill missing EE pose attributes with curren pose values
+                # Fill missing EE pose attributes with curren pose values.
                 if arm_action_space_joints != list(ee_pose.keys()):
                     cur_ee_pose = self.get_ee_pose()
                     cur_ee_pose_dict = {
@@ -834,9 +825,9 @@ class PandaEnv(RobotGazeboGoalEnv):
                 ee_target_pose.orientation = ee_pose.pose.orientation
             elif isinstance(ee_pose, Pose):
                 ee_target_pose = ee_pose
-            elif isinstance(ee_pose, pg_srv.SetEePoseRequest):
+            elif isinstance(ee_pose, self.panda_gazebo.srv.SetEePoseRequest):
                 ee_target = ee_pose
-            else:  # If the ee_pose format is not valid
+            else:  # If the ee_pose format is not valid.
                 rospy.logwarn(
                     "Setting end effector pose failed since the ee_pose you specified "
                     "was given as a %s while the 'set_ee_pose' function only accepts "
@@ -847,7 +838,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                 ee_target_pose.orientation
             )
             if isinstance(ee_target_pose, Pose):
-                ee_target = pg_srv.SetEePoseRequest()
+                ee_target = self.panda_gazebo.srv.SetEePoseRequest()
                 ee_target.pose = ee_target_pose
 
             ########################################
@@ -888,7 +879,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         Returns:
             bool: Boolean specifying if the joint commands were set successfully.
         """  # noqa: E501
-        # Set control
+        # Set control.
         if self.robot_control_type == "effort":
             return self.set_joint_efforts(
                 joint_commands,
@@ -923,14 +914,14 @@ class PandaEnv(RobotGazeboGoalEnv):
         Returns:
             bool: Boolean specifying if the joint positions were set successfully.
         """  # noqa: E501
-        # Convert float and array joint_commands to dictionary
+        # Convert float and array joint_commands to dictionary.
         if isinstance(joint_commands, (list, np.ndarray, tuple)) or np.isscalar(
             joint_commands
         ):
             if np.isscalar(joint_commands):
                 joint_commands = [joint_commands]
 
-            # Create joint_commands dictionary
+            # Create joint_commands dictionary.
             if len(joint_commands) > len(self._action_space_joints):
                 rospy.logwarn_once(
                     "Joint positions setpoint contains %s values while it "
@@ -944,16 +935,18 @@ class PandaEnv(RobotGazeboGoalEnv):
                 )
             joint_commands = dict(zip(self._action_space_joints, joint_commands))
 
-        # Create SetJointCommandsRequest message if PROXY mode
+        # Create SetJointCommandsRequest message if PROXY mode.
         if not direct_control:
             if isinstance(joint_commands, dict):
-                req = pg_srv.SetJointCommandsRequest()
+                req = self.panda_gazebo.srv.SetJointCommandsRequest()
                 if self._grasping:
                     req.grasping = self._grasping
                 req.joint_names = list(joint_commands.keys())
                 req.joint_commands = list(joint_commands.values())
                 req.control_type = "position"
-            elif isinstance(joint_commands, pg_srv.SetJointPositionsRequest):
+            elif isinstance(
+                joint_commands, self.panda_gazebo.srv.SetJointPositionsRequest
+            ):
                 req = joint_commands
             else:
                 rospy.logwarn(
@@ -964,7 +957,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                 )
                 return False
 
-            # Add wait variables to SetJointCommandsRequest message
+            # Add wait variables to SetJointCommandsRequest message.
             req.arm_wait = arm_wait
             req.hand_wait = hand_wait
         else:
@@ -987,7 +980,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                 "DIRECT" if direct_control else "PROXY"
             )
         )
-        if not direct_control:  # Use proxy service
+        if not direct_control:  # Use proxy service.
             if self._set_joint_commands_client_connected:
                 self._set_joint_commands_client.call(req)
             else:
@@ -996,7 +989,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                     f"'{SET_JOINT_COMMANDS_TOPIC}' service was not available."
                 )
                 return False
-        else:  # Directly control the controllers
+        else:  # Directly control the controllers.
             self._joint_positions_direct_control(
                 joint_commands, arm_wait=arm_wait, hand_wait=hand_wait
             )
@@ -1015,7 +1008,7 @@ class PandaEnv(RobotGazeboGoalEnv):
             hand_wait (bool, optional): Wait till the hand control has finished.
                 Defaults to ``False``.
         """
-        # Fill missing states if joint_commands dictionary is incomplete
+        # Fill missing states if joint_commands dictionary is incomplete.
         if list(joint_commands.keys()) != (
             [
                 item
@@ -1036,11 +1029,11 @@ class PandaEnv(RobotGazeboGoalEnv):
                     GRASP_FORCE if self._grasping else 0.0
                 )
 
-            # Add joint commands
+            # Add joint commands.
             cur_joint_commands.update(joint_commands)
             joint_commands = cur_joint_commands
 
-        # Send arm and hand control commands
+        # Send arm and hand control commands.
         if self.load_gripper and not self.block_gripper:
             gripper_width = joint_commands.pop("gripper_width", None)
             gripper_max_effort = joint_commands.pop("gripper_max_effort", None)
@@ -1056,7 +1049,7 @@ class PandaEnv(RobotGazeboGoalEnv):
             req = GripperCommandGoal()
             req.command.position = (
                 gripper_width / 2
-            )  # NOTE: Done the action expects the finger width
+            )  # NOTE: Done the action expects the finger width.
             req.command.max_effort = gripper_max_effort
             self._gripper_command_client.send_goal(req)
             if hand_wait:
@@ -1083,14 +1076,14 @@ class PandaEnv(RobotGazeboGoalEnv):
         Returns:
             bool: Boolean specifying if the joint efforts were set successfully.
         """  # noqa: E501
-        # Convert float and array joint_commands to dictionary
+        # Convert float and array joint_commands to dictionary.
         if isinstance(joint_commands, (list, np.ndarray, tuple)) or np.isscalar(
             joint_commands
         ):
             if np.isscalar(joint_commands):
                 joint_commands = [joint_commands]
 
-            # Create joint_commands dictionary
+            # Create joint_commands dictionary.
             if len(joint_commands) > len(self._action_space_joints):
                 rospy.logwarn_once(
                     "Joint efforts setpoint contains %s values while it "
@@ -1104,16 +1097,18 @@ class PandaEnv(RobotGazeboGoalEnv):
                 )
             joint_commands = dict(zip(self._action_space_joints, joint_commands))
 
-        # Create SetJointCommandsRequest message if PROXY mode
+        # Create SetJointCommandsRequest message if PROXY mode.
         if not direct_control:
             if isinstance(joint_commands, dict):
-                req = pg_srv.SetJointCommandsRequest()
+                req = self.panda_gazebo.srv.SetJointCommandsRequest()
                 if self._grasping:
                     req.grasping = self._grasping
                 req.joint_names = list(joint_commands.keys())
                 req.joint_commands = list(joint_commands.values())
                 req.control_type = "effort"
-            elif isinstance(joint_commands, pg_srv.SetJointEffortsRequest):
+            elif isinstance(
+                joint_commands, self.panda_gazebo.srv.SetJointEffortsRequest
+            ):
                 req = joint_commands
             else:
                 rospy.logwarn(
@@ -1124,7 +1119,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                 )
                 return False
 
-            # Add wait variables to SetJointCommandsRequest message
+            # Add wait variables to SetJointCommandsRequest message.
             req.arm_wait = arm_wait
             req.hand_wait = hand_wait
         else:
@@ -1147,7 +1142,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                 "DIRECT" if direct_control else "PROXY"
             )
         )
-        if not direct_control:  # Use proxy service
+        if not direct_control:  # Use proxy service.
             if self._set_joint_commands_client_connected:
                 self._set_joint_commands_client.call(req)
             else:
@@ -1156,7 +1151,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                     f"'{SET_JOINT_COMMANDS_TOPIC}' service was not available."
                 )
                 return False
-        else:  # Directly control the controllers
+        else:  # Directly control the controllers.
             self._joint_efforts_direct_control(
                 joint_commands, arm_wait=arm_wait, hand_wait=hand_wait
             )
@@ -1165,7 +1160,7 @@ class PandaEnv(RobotGazeboGoalEnv):
     def _joint_efforts_direct_control(
         self,
         joint_commands,
-        arm_wait=False,  # Currently not used
+        arm_wait=False,  # Currently not used.
         hand_wait=False,
     ):
         """Directly publish effort commands to the controller command topics. This is
@@ -1176,7 +1171,7 @@ class PandaEnv(RobotGazeboGoalEnv):
             hand_wait (bool, optional): Wait till the hand control has finished.
                 Defaults to ``False``.
         """
-        # Fill missing states if joint_commands dictionary is incomplete
+        # Fill missing states if joint_commands dictionary is incomplete.
         if list(joint_commands.keys()) != (
             [
                 item
@@ -1197,11 +1192,11 @@ class PandaEnv(RobotGazeboGoalEnv):
                     GRASP_FORCE if self._grasping else 0.0
                 )
 
-            # Add joint commands
+            # Add joint commands.
             cur_joint_commands.update(joint_commands)
             joint_commands = cur_joint_commands
 
-        # Send arm and hand control commands
+        # Send arm and hand control commands.
         if self.load_gripper and not self.block_gripper:
             gripper_width = joint_commands.pop("gripper_width", None)
             gripper_max_effort = joint_commands.pop("gripper_max_effort", None)
@@ -1220,7 +1215,7 @@ class PandaEnv(RobotGazeboGoalEnv):
             req = GripperCommandGoal()
             req.command.position = (
                 gripper_width / 2
-            )  # NOTE: Done the action expects the finger width
+            )  # NOTE: Done the action expects the finger width.
             req.command.max_effort = gripper_max_effort
             self._gripper_command_client.send_goal(req)
             if hand_wait:
@@ -1260,7 +1255,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                 for item in self._action_space_joints
                 if item not in ["gripper_width", "gripper_max_effort"]
             ]
-            # Convert float and array joint_trajectory to dictionary
+            # Convert float and array joint_trajectory to dictionary.
             if (
                 isinstance(joint_trajectory, (list, tuple))
                 or np.isscalar(joint_trajectory)
@@ -1272,7 +1267,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                 if np.isscalar(joint_trajectory):
                     joint_trajectory = [joint_trajectory]
 
-                # Create joint trajectory dictionary
+                # Create joint trajectory dictionary.
                 if len(joint_trajectory) > len(arm_action_space_joints):
                     rospy.logwarn_once(
                         "Joint trajectory dict contains %s values while it "
@@ -1314,7 +1309,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                     "each joint, one for each waypoint."
                 )
 
-            # Create SetJointtrajectory message
+            # Create SetJointtrajectory message.
             if isinstance(joint_trajectory, dict):
                 time_from_start = time_from_start if time_from_start else 0.01
                 time_axis_step = (
@@ -1322,10 +1317,14 @@ class PandaEnv(RobotGazeboGoalEnv):
                     if isinstance(list(joint_trajectory.values())[0], np.ndarray)
                     else time_from_start
                 )
-                req = pg_functions.action_dict_2_joint_trajectory_msg(
-                    joint_trajectory, time_axis_step=time_axis_step
+                req = (
+                    self.panda_gazebo.common.helpers.action_dict_2_joint_trajectory_msg(
+                        joint_trajectory, time_axis_step=time_axis_step
+                    )
                 )
-            elif isinstance(joint_trajectory, pg_msg.FollowJointTrajectoryGoal):
+            elif isinstance(
+                joint_trajectory, self.panda_gazebo.msg.FollowJointTrajectoryGoal
+            ):
                 req = joint_trajectory
             else:
                 rospy.logwarn(
@@ -1340,7 +1339,7 @@ class PandaEnv(RobotGazeboGoalEnv):
             ########################################
             # Set trajectory #######################
             ########################################
-            # Try to setting joint trajectory if service is available
+            # Try to setting joint trajectory if service is available.
             self._step_debug_logger(
                 "Setting joint trajectory using the "
                 f"'{self._arm_joint_traj_control_client.action_client.ns}' action "
@@ -1386,17 +1385,17 @@ class PandaEnv(RobotGazeboGoalEnv):
                 f"'{self._set_gripper_width_client.resolved_name}' service."
             )
 
-            # Create gripper width request
-            req = pg_srv.SetGripperWidthRequest()
+            # Create gripper width request.
+            req = self.panda_gazebo.srv.SetGripperWidthRequest()
             req.width = gripper_width
             if grasping is not None:
                 req.grasping = grasping
             if max_effort is not None:
                 req.max_effort = max_effort
-            if wait:  # Done since it will otherwise use the msg default value
+            if wait:  # Done since it will otherwise use the msg default value.
                 req.wait = wait
 
-            # Send gripper width request
+            # Send gripper width request.
             self._set_gripper_width_client.call(req)
             return True
         else:
@@ -1442,12 +1441,12 @@ class PandaEnv(RobotGazeboGoalEnv):
             else rospy.Duration(ARM_CONTROL_WAIT_TIMEOUT)
         )
 
-        # Compute the state masks
+        # Compute the state masks.
         try:
             arm_states_mask = [
                 joint in self.joints["arm"] for joint in self.joint_states.name
             ]
-        except InputMessageInvalidError:
+        except self.panda_gazebo.exceptions:
             rospy.logwarn(
                 "Not waiting for control to be completed as no information could "
                 "be retrieved about which joints are controlled when using '%s' "
@@ -1478,10 +1477,10 @@ class PandaEnv(RobotGazeboGoalEnv):
             return False
 
         # Wait till robot positions/efforts reach the setpoint or the velocities are
-        # not changing anymore
+        # not changing anymore.
         timeout_time = rospy.get_rostime() + timeout
         while not rospy.is_shutdown() and rospy.get_rostime() < timeout_time:
-            # Wait till joint positions/efforts are within range or vel not changing
+            # Wait till joint positions/efforts are within range or vel not changing.
             joint_states = (
                 np.array(list(compress(self.joint_states.position, arm_states_mask)))
                 if control_type == "position"
@@ -1494,10 +1493,11 @@ class PandaEnv(RobotGazeboGoalEnv):
             )
             grad_threshold = ARM_JOINT_VELOCITY_WAIT_THRESHOLD
             joint_setpoint_tmp = np.append(
-                np.array(joint_setpoint), joint_states[len(joint_setpoint) :]
+                np.array(joint_setpoint),
+                joint_states[len(joint_setpoint) :],  # noqa: E203, E501
             )
 
-            # Add current state to state_buffer and delete oldest entry
+            # Add current state to state_buffer and delete oldest entry.
             state_buffer = np.full((2, len(joint_states)), np.nan)
             grad_buffer = np.full((2, len(joint_states)), np.nan)
             state_buffer = np.delete(
@@ -1505,22 +1505,22 @@ class PandaEnv(RobotGazeboGoalEnv):
             )
             grad_buffer = np.gradient(state_buffer, axis=0)
 
-            # Check if setpoint is reached
-            if check_gradient:  # Check position/effort and gradients
+            # Check if setpoint is reached.
+            if check_gradient:  # Check position/effort and gradients.
                 if (
                     np.linalg.norm(joint_states - joint_setpoint_tmp)
-                    <= state_threshold  # Check if difference norm is within threshold
+                    <= state_threshold  # Check if difference norm is within threshold.
                 ) or all(
                     [
                         (np.abs(val) <= grad_threshold and val != 0.0)
                         for val in grad_buffer[-1]
-                    ]  # Check if all velocities are close to zero
+                    ]  # Check if all velocities are close to zero.
                 ):
                     break
-            else:  # Only check position/effort
+            else:  # Only check position/effort.
                 if (
                     np.linalg.norm(joint_states - joint_setpoint_tmp)
-                    <= state_threshold  # Check if difference norm is within threshold
+                    <= state_threshold  # Check if difference norm is within threshold.
                 ):
                     break
 
@@ -1606,7 +1606,9 @@ class PandaEnv(RobotGazeboGoalEnv):
         """
         if not self.__joints:
             resp = self._get_controlled_joints_client.call(
-                pg_srv.GetControlledJointsRequest(control_type=self.robot_control_type)
+                self.panda_gazebo.srv.GetControlledJointsRequest(
+                    control_type=self.robot_control_type
+                )
             )
             self.__joints["arm"] = (
                 resp.controlled_joints_arm
@@ -1657,7 +1659,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         """Sets the robot control type while making sure the required controllers are
         loaded. Options are: ``trajectory``, ``position`` and ``effort``.
         """
-        # Make sure the controller are running
+        # Make sure the controller are running.
         resp = self._controller_switcher.switch(
             control_group="arm", control_type=control_type, verbose=True
         )
@@ -1678,7 +1680,7 @@ class PandaEnv(RobotGazeboGoalEnv):
     ################################################
     # Overload Gazebo env virtual methods ##########
     ################################################
-    # NOTE: Methods needed by the gazebo environment
+    # NOTE: Methods needed by the gazebo environment.
     def _check_all_systems_ready(self):
         """Checks that all the sensors, publishers and other simulation systems are
         operational.

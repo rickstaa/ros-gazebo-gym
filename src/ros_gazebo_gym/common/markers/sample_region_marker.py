@@ -1,19 +1,18 @@
-"""Class used for displaying the a sampling region in rviz. This class overloads
+"""Class used for displaying a sampling region marker in RViz. This class overloads
 the :obj:`visualization_msgs.msgs.Marker` class in order to pre-initialize some of
 its attributes. It further also adds the ability to specify the marker scale using
 ``x``, ``y``, ``z`` max and min values.
 """
-
 import rospy
 from geometry_msgs.msg import Pose, Vector3
-from ros_gazebo_gym.common.functions import normalize_quaternion
+from ros_gazebo_gym.common.helpers import normalize_quaternion
 from rospy.exceptions import ROSInitException
 from std_msgs.msg import ColorRGBA, Header
 from visualization_msgs.msg import Marker
 
 
 class SampleRegionMarker(Marker):
-    """Class used to create an rviz goal sample region marker.
+    """Class used to create an RViz goal sample region marker.
 
     Attributes:
         x (int): The marker x position.
@@ -98,11 +97,11 @@ class SampleRegionMarker(Marker):
         self.__z_max = 0.0
         super().__init__(*args, **kwds)
 
-        # Overwrite attributes with defaults if not supplied in the constructor
+        # Overwrite attributes with defaults if not supplied in the constructor.
         if "header" not in kwds.keys():
-            # Pre-initialize header
+            # Pre-initialize header.
             self.header = Header()
-            try:  # Check if rostime was initialized
+            try:  # Check if rostime was initialized.
                 self.header.stamp = rospy.Time.now()
             except ROSInitException:
                 raise Exception(
@@ -124,7 +123,7 @@ class SampleRegionMarker(Marker):
             rospy.Duration(0) if "lifetime" not in kwds.keys() else self.lifetime
         )
 
-        # Add class attributes
+        # Add class attributes.
         if x:
             self.x = x
         if y:
