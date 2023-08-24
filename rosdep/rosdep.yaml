@@ -1,0 +1,15 @@
+# Custom dependency overwrites for rosdep.
+python3-gymnasium-pip:
+  ubuntu:
+    focal: 
+      pip:
+        packages: [gymnasium]
+python3-gymnasium-robotics-pip:
+  ubuntu:
+    focal: 
+      pip:
+        packages: [gymnasium-robotics]
+python3-numpy:
+  ubuntu:
+      pip:
+        packages: [numpy]
