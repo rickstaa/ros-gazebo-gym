@@ -13,7 +13,7 @@ import rospy
 from ros_gazebo_gym.core.helpers import (
     PopenAutoCleanup,
     get_global_pkg_path,
-    package_installer,
+    install_package,
     get_catkin_workspace_path,
 )
 from ros_gazebo_gym.common.helpers import colorize
@@ -109,6 +109,7 @@ class ROSLauncher(object):
         log_file=None,
         critical=False,
         wait_time=2,
+        outdated_warning=False,
         **kwargs,
     ):
         """Launch a given launchfile while also installing the launchfile package and or
@@ -125,6 +126,8 @@ class ROSLauncher(object):
                 message should be shown when the process is no longer running.
             wait_time (int, optional): The time to wait before checking if the was
                 launched successfully and is still running. Defaults to ``2``.
+            outdated_warning (bool, optional): Whether to show a update warning when the
+                package is outdated. Defaults to ``False``.
             **kwargs: Keyword arguments you want to pass to the launchfile.
 
         Raises:
@@ -142,8 +145,10 @@ class ROSLauncher(object):
 
         # Install ROS package and its dependencies if they are not present.
         try:
-            package_installed = package_installer(
-                package_name, workspace_path=workspace_path
+            package_installed = install_package(
+                package_name,
+                workspace_path=workspace_path,
+                outdated_warning=outdated_warning,
             )
         except Exception:
             rospy.logwarn(
