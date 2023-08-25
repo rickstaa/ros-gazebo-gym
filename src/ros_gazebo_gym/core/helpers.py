@@ -260,25 +260,21 @@ def get_local_pkg_path(package_name, catkin_workspace):
     return local_pkg_path
 
 
-def clone_dependency_repo(
-    package_name, workspace_path, git_src, branch=None, recursive=False
-):
+def clone_repo(path, git_src, branch=None, recursive=False):
     """Clones the repository of the dependency.
 
     Args:
-        package_name (str): The package for which you want to clone the repository.
-        workspace_path (str): The workspace in which you want to clone the repository.
+        path (str): The path to which you want to clone the repository.
         git_src (str): The git repository url.
         branch(str, optional): The branch to checkout. Defaults to ``None``.
         recursive(bool, optional): After the clone is created, initialize and clone
             submodules within based on the provided pathspec. Defaults to ``False``.
     """
-    pathstr = str(Path(workspace_path).joinpath("src", "rosdeps", package_name))
     try:
-        rospy.logdebug(f"Cloning '{git_src}' into {pathstr}.")
+        rospy.logdebug(f"Cloning '{git_src}' into '{path}'.")
         repo = pygit2.clone_repository(
             git_src,
-            pathstr,
+            path,
             checkout_branch=branch,
             callbacks=GitProgressCallback(),
         )
@@ -287,10 +283,39 @@ def clone_dependency_repo(
             repo.init_submodules()
             repo.update_submodules()
     except Exception as e:
+        repo_name = git_src.split("/")[-1].split(".")[0]
         rospy.logwarn(
-            f"Could no clone the '{package_name}' package repository as {e.args[0]}."
+            f"Could no clone the '{repo_name}' package repository as {e.args[0]}."
         )
         raise e
+
+
+def is_repo_up_to_date(repo_path):
+    """Checks if the local repository is up to date with the remote repository.
+
+    Args:
+        repo_path (str): The path of the local repository.
+
+    Returns:
+        bool: Whether the local repository is up to date with the remote repository.
+    """
+    try:
+        # Open the repository.
+        repo = pygit2.Repository(repo_path)
+
+        # Get the current commit hash of the local repository.
+        local_commit_hash = repo.head.target
+
+        # Get the latest commit hash of the remote repository.
+        repo.remotes["origin"].fetch()
+        latest_remote_commit = repo.revparse_single("FETCH_HEAD").id
+
+        # Compare the commit hashes and return the result.
+        return local_commit_hash.hex == latest_remote_commit.hex
+
+    except pygit2.GitError as e:
+        print(f"Error: {e}")
+        return False
 
 
 def build_catkin_ws(workspace_path, install_ros_deps=False):
@@ -407,21 +432,26 @@ def build_catkin_ws(workspace_path, install_ros_deps=False):
             )
 
 
-def package_installer(package_name, workspace_path=None):  # noqa: C901
+def install_package(  # noqa: C901
+    package_name, workspace_path=None, outdated_warning=True
+):
     """Install a given ROS package together with it's dependencies.
 
     This function checks if a ROS package is installed and installs it if this is not
     the case. It uses the :ros-gazebo-gym:`ros_gazebo_gym` package dependency index to
     clone the package and dependencies in the local catkin workspace and subsequently
-    rebuilds this workspace.
+    rebuilds this workspace. It also throws a warning if a package is installed but not
+    up to date.
 
     Args:
         package_name (str): The package you want to install.
         workspace_path (str, optional): The catkin workspace path. Defaults to ``None``
             (i.e. path will be determined).
+        outdated_warning (bool, optional): Whether to show a update warning when the
+            package is outdated. Defaults to ``True``.
 
     Returns:
-        bool: Whether the package and its dependencies were successfully installed.
+        bool: Whether the package and its dependencies are installed.
     """
     rospy.logdebug(
         f"Checking if all ROS dependencies for package '{package_name}' are present."
@@ -433,7 +463,7 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
     if not workspace_path:
         rospy.logerr(
             "Workspace path could not be found. Please make sure that you source "
-            "the workspace before calling the package_installer function or supply the "
+            "the workspace before calling the 'install_package' function or supply the "
             "function with a workspace_path."
         )
         sys.exit(0)
@@ -460,6 +490,9 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
     # Download the package repository and its dependencies if it is not present.
     deps_cloned = False
     if rosdep_index and package_name in rosdep_index.keys():
+        package_clone_path = str(
+            Path(workspace_path).joinpath("src", "rosdeps", package_name)
+        )
         # Clone package if it is not present in the local ROS workspace.
         if not local_pkg_path and (
             not global_pkg_path
@@ -491,9 +524,8 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
 
             # Download package repository.
             try:
-                clone_dependency_repo(
-                    package_name,
-                    workspace_path,
+                clone_repo(
+                    package_clone_path,
                     rosdep_index[package_name]["git_url"],
                     branch=rosdep_index[package_name]["git_branch"]
                     if "git_branch" in rosdep_index[package_name].keys()
@@ -505,6 +537,15 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
                 warn_msg = f"ROS dependency '{package_name}' could not be cloned."
                 rospy.logwarn(warn_msg)
                 return False
+        else:
+            # Throw warning if package is installed but not up to date.
+            if outdated_warning and not is_repo_up_to_date(package_clone_path):
+                rospy.logwarn(
+                    f"Package '{package_name}' is installed but not up to date. "
+                    "If you want to have the latest version of the package, please "
+                    "update it manually by running 'git pull' in the package directory "
+                    f"(i.e. '{package_clone_path}')."
+                )
 
         # Download additional package dependencies.
         if "deps" in rosdep_index[package_name].keys() and isinstance(
@@ -513,6 +554,9 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
             for dep, dep_index_info in rosdep_index[package_name]["deps"].items():
                 global_dep_pkg_path = get_global_pkg_path(dep)
                 local_dep_pkg_path = get_local_pkg_path(dep, workspace_path)
+                dep_clone_path = str(
+                    Path(workspace_path).joinpath("src", "rosdeps", dep)
+                )
                 if not local_dep_pkg_path and (
                     not global_dep_pkg_path
                     or (
@@ -538,9 +582,8 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
                         )
                     rospy.logwarn(warn_message)
                     try:
-                        clone_dependency_repo(
-                            dep,
-                            workspace_path,
+                        clone_repo(
+                            dep_clone_path,
                             dep_index_info["git_url"],
                             branch=dep_index_info["git_branch"]
                             if "git_branch" in dep_index_info.keys()
@@ -552,6 +595,15 @@ def package_installer(package_name, workspace_path=None):  # noqa: C901
                         warn_msg = f"ROS dependency '{dep}' could not be installed."
                         rospy.logwarn(warn_msg)
                         return False
+                else:
+                    # Throw warning if dependency is installed but not up to date.
+                    if outdated_warning and not is_repo_up_to_date(dep_clone_path):
+                        rospy.logwarn(
+                            f"Package dependency '{dep}' is installed but not up to "
+                            "date. If you want to have the latest version of the "
+                            "package, please update it manually by running 'git pull' "
+                            f"in the package directory (i.e. '{dep_clone_path}')."
+                        )
     else:
         if global_pkg_path or local_pkg_path:
             space_str = (

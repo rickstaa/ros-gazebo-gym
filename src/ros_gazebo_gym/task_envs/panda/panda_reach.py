@@ -198,6 +198,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             physics=self._physics,
             log_file=launch_log_file,
             critical=True,
+            outdated_warning=True,
         )
 
         ########################################
