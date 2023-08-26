@@ -324,8 +324,7 @@ class GazeboConnection:
     def pause_sim(self):
         """Pause the simulation."""
         rospy.logdebug("PAUSING service found...")
-        paused_done = False
-        counter = 0
+        paused_done, counter, warned = False, 0, False
         while not paused_done and not rospy.is_shutdown():
             if counter < self._max_retry:
                 try:
@@ -334,25 +333,26 @@ class GazeboConnection:
                     paused_done = True
                     rospy.logdebug("PAUSING service calling...DONE")
                 except rospy.ServiceException:
+                    if not warned:
+                        rospy.logerr(
+                            "/gazebo/pause_physics service call failed retrying "
+                            f"{self._max_retry} times."
+                        )
+                        warned = True
                     counter += 1
-                    rospy.logerr("/gazebo/pause_physics service call failed")
                     time.sleep(0.2)
             else:
                 error_message = (
-                    "Maximum retries done "
-                    + str(self._max_retry)
-                    + ", please check Gazebo pause service"
+                    f"Maximum retries done ({self._max_retry}), please check Gazebo "
+                    "pause service and try again."
                 )
-                rospy.logerr(error_message)
-                assert False, error_message
-
+                rospy.signal_shutdown(error_message)
         rospy.logdebug("PAUSING finished")
 
     def unpause_sim(self):
         """Unpauses the simulation."""
         rospy.logdebug("UNPAUSING start")
-        unpaused_done = False
-        counter = 0
+        unpaused_done, counter, warned = False, 0, False
         while not unpaused_done and not rospy.is_shutdown():
             if counter < self._max_retry:
                 try:
@@ -361,19 +361,20 @@ class GazeboConnection:
                     unpaused_done = True
                     rospy.logdebug("UNPAUSING service calling...DONE")
                 except rospy.ServiceException:
+                    if not warned:
+                        rospy.logerr(
+                            "/gazebo/unpause_physics service call failed retrying "
+                            f"{self._max_retry} times."
+                        )
+                        warned = True
                     counter += 1
-                    rospy.logerr(
-                        "/gazebo/unpause_physics service call failed...Retrying "
-                        + str(counter)
-                    )
+                    time.sleep(0.2)
             else:
                 error_message = (
-                    "Maximum retries done"
-                    + str(self._max_retry)
-                    + ", please check Gazebo unpause service"
+                    f"Maximum retries done ({self._max_retry}), please check Gazebo "
+                    "unpause service and try again."
                 )
-                rospy.logerr(error_message)
-                assert False, error_message
+                rospy.signal_shutdown(error_message)
         rospy.logdebug("UNPAUSING finished")
 
     def _reset_simulation(self):

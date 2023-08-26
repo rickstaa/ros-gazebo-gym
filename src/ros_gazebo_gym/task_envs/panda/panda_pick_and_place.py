@@ -487,12 +487,15 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
                 object_velp.ravel(),
                 object_velr.ravel(),
                 ee_vel,
-            ]
+            ],
+            dtype=self._observation_space_dtype,
         )
+        achieved_goal = np.array(ee_position, dtype=self._observation_space_dtype)
+        desired_goal = self.goal.astype(self._observation_space_dtype)
 
         return {
-            "observation": obs.copy(),
-            "achieved_goal": achieved_goal.copy(),
+            "observation": obs,
+            "achieved_goal": achieved_goal,
             "desired_goal": desired_goal,
         }
 

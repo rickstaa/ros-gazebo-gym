@@ -350,6 +350,9 @@ class RobotGazeboGoalEnv(gymrobot.GoalEnv):
         Args:
             observations (numpy.ndarray): The observations.
 
+        Returns:
+            bool: Whether the episode was finished.
+
         Raises:
             NotImplementedError: Thrown When the method was not overloaded by the task
                 environment.

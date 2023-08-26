@@ -339,6 +339,9 @@ class RobotGazeboEnv(gym.Env):
         Args:
             observations (numpy.ndarray): The observations.
 
+        Returns:
+            bool: Whether the episode was finished.
+
         Raises:
             NotImplementedError: Thrown When the method was not overloaded by the task
                 environment.
@@ -350,7 +353,7 @@ class RobotGazeboEnv(gym.Env):
 
         Args:
             observations (numpy.ndarray): The observations.
-            done (function): Whether the episode was done.
+            done (bool): Whether the episode was done.
 
         Raises:
             NotImplementedError: Thrown When the method was not overloaded by the task
