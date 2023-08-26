@@ -395,7 +395,9 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         ########################################
         rospy.logdebug("Setup gymnasium action and observation space.")
 
+        self._action_space_dtype = action_space_dtype
         self._observation_space_dtype = observation_space_dtype
+        self._action_dtype_conversion_warning = False
         self.action_space = self._create_action_space(dtype=action_space_dtype)
         self.goal = self._sample_goal()
         obs = self._get_obs()
@@ -1293,10 +1295,11 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         )
         achieved_goal = np.array(ee_position, dtype=self._observation_space_dtype)
         desired_goal = self.goal.astype(self._observation_space_dtype)
+
         return {
-            "observation": obs.copy(),
-            "achieved_goal": achieved_goal.copy(),
-            "desired_goal": desired_goal.copy(),
+            "observation": obs,
+            "achieved_goal": achieved_goal,
+            "desired_goal": desired_goal,
         }
 
     def _set_action(self, action):
@@ -1313,6 +1316,19 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 f"{self.action_space.shape}."
             )
             sys.exit(0)
+
+        # Change action dtype if needed and throw one time warning.
+        if action.dtype != self._action_space_dtype:
+            action = action.astype(self._action_space_dtype)
+            if not self._action_dtype_conversion_warning:
+                rospy.logwarn(
+                    "The data type of the action that is supplied to the "
+                    f"'ros_gazebo_gym:{self.spec.id}' environment ({action.dtype}) "
+                    "does not match the data type of the action space "
+                    f"({self._action_space_dtype.__name__}). The action data type will "
+                    "be converted to the action space data type."
+                )
+                self._action_dtype_conversion_warning = True
 
         # Send action commands to the controllers based on control type.
         action_dict = dict(zip(self._action_space_joints, action))
@@ -1358,7 +1374,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         """
         # Check if gripper is within range of the goal.
         d = self._goal_distance(observations["achieved_goal"], self.goal)
-        is_done = (d < self._distance_threshold).astype(np.float32)
+        is_done = d < self._distance_threshold
 
         self._step_debug_logger("=Task is done info=")
         if self._target_hold:
