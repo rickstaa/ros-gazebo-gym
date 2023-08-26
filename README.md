@@ -33,3 +33,6 @@ Please see the [docs](https://rickstaa.github.io/panda-gazebo-gym) for installat
 ## Contributing
 
 We use [husky](https://github.com/typicode/husky) pre-commit hooks and github actions to enforce high code quality. Please check the [contributing.md](https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/contributing.md) before contributing to this repository.
+
+> \[!NOTE]\
+> We used [husky](https://github.com/typicode/husky) instead of [pre-commit](https://pre-commit.com/), which is more commonly used with Python projects. This was done because only some tools we wanted to use were possible to integrate the Please feel free to open a [PR](https://github.com/rickstaa/ros-gazebo-gym/pulls) if you want to switch to pre-commit if this is no longer the case.
