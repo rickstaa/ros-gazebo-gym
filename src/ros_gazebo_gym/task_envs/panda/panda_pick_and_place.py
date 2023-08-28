@@ -24,7 +24,6 @@ import tf2_ros
 from gazebo_msgs.msg import ModelState
 from geometry_msgs.msg import Pose, Quaternion, TransformStamped, Vector3
 from gymnasium import utils
-
 from ros_gazebo_gym.common.helpers import get_orientation_euler, normalize_quaternion
 from ros_gazebo_gym.core import ROSLauncher
 from ros_gazebo_gym.exceptions import SetModelStateError, SpawnModelError
@@ -80,11 +79,13 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
             **kwargs: Keyword arguments that are passed to the
                 :class:`~ros_gazebo_gym.task_envs.panda.PandaReachEnv` super class.
         """
+        rospy.logdebug("Initialize Panda pick and place environment.")
         utils.EzPickle.__init__(
             **locals()
         )  # Makes sure the env is pickable when it wraps C++ code.
         ROSLauncher.initialize()  # Makes sure roscore is running and ROS is initialized.
 
+        # Create storage variables.
         self._prev_time = rospy.get_time()
         self._prev_grip_position = np.zeros(3)
         self._prev_object_position = np.zeros(3)
@@ -136,6 +137,8 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
             rospy.Duration(1.0 / TARGET_OBJECT_POSE_PUBLISH_RATE),
             self._object_marker_pub_cb,
         )
+
+        rospy.logdebug("Panda pick and place environment initialized.")
 
     ################################################
     # Task environment internal methods ############
@@ -310,13 +313,13 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
             if not retval:
                 rospy.logwarn("setting initial object position failed.")
             return retval
-        else:
-            return True
+
+        return True
 
     def _get_elapsed_time(self):
         """Returns the elapsed time since the last time this function was called."""
         current_time = rospy.get_time()
-        dt = self._prev_time - current_time
+        dt = current_time - self._prev_time
         self._prev_time = current_time
         return dt
 
@@ -340,6 +343,12 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
                 object_pose.position.z,
             ]
         )
+
+    @property
+    def object_rot(self):
+        """Retrieves the current object rotation."""
+        object_rot_resp = get_orientation_euler(self.object_pose)
+        return np.array([object_rot_resp.y, object_rot_resp.p, object_rot_resp.r])
 
     @property
     def object_pose(self):
@@ -447,10 +456,7 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
             object_position = self.object_position
 
             # Get object orientation.
-            object_rot_resp = get_orientation_euler(self.object_pose)
-            object_rot = np.array(
-                [object_rot_resp.y, object_rot_resp.p, object_rot_resp.r]
-            )
+            object_rot = self.object_rot
 
             # Get object velocity.
             object_velp = (
@@ -504,6 +510,12 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
         of an episode.
         """
         self._set_init_obj_pose()
+
+        # Reset storage variables.
+        self._prev_time = rospy.get_time()
+        self._prev_grip_position = super()._get_obs()["observation"][:3]
+        self._prev_object_position = self.object_position
+        self._prev_object_rot = self.object_rot
 
         # Sample and visualize goal.
         self.goal = self._sample_goal()
