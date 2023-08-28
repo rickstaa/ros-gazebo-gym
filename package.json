@@ -31,7 +31,8 @@
   "author": "Rick Staa",
   "scripts": {
     "prepare": "husky install",
-    "sort": "sort-package-json"
+    "sort": "sort-package-json",
+    "sort:py": "isort ."
   },
   "commitlint": {
     "extends": [
