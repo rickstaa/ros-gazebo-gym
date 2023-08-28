@@ -14,8 +14,8 @@ Goal:
     The configuration files for this environment are found in the
     `panda task environment config folder <../config/panda_push.yaml>`_).
 """
+import rospy
 from gymnasium import utils
-
 from ros_gazebo_gym.task_envs.panda import PandaPickAndPlaceEnv
 
 # Specify topics and other script variables.
@@ -37,6 +37,7 @@ class PandaPushEnv(PandaPickAndPlaceEnv, utils.EzPickle):
             **kwargs: Keyword arguments that are passed to the
                 :class:`~ros_gazebo_gym.task_envs.panda.PandaPushEnv` super class.
         """
+        rospy.logwarn("Initialize Panda push environment.")
         utils.EzPickle.__init__(
             **locals()
         )  # Makes sure the env is pickable when it wraps C++ code.
@@ -47,6 +48,8 @@ class PandaPushEnv(PandaPickAndPlaceEnv, utils.EzPickle):
             *args,
             **kwargs,
         )
+
+        rospy.logwarn("Panda push environment initialized.")
 
     ################################################
     # Overload Reach environment methods ###########

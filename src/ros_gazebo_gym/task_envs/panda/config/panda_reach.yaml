@@ -8,7 +8,7 @@ panda_reach:
     ee_link: "panda_link8" # Link that is specified as the end effector.
     # ee_link: "panda_EE" # Link that is specified as the end effector.
     # NOTE: We don't load the gripper since the gravity compensation currently does not work with the hand attached (see https://github.com/frankaemika/franka_ros/issues/160#issuecomment-992776684).
-    load_gripper: True # Whether you want to load the gripper.
+    load_gripper: False # Whether you want to load the gripper.
     block_gripper: True # Whether the gripper control should be blocked.
     grasping: False # Whether the gripper should grasp objects.
     arm_wait: False # Wait for the arm control to complete before continuing to the next step.

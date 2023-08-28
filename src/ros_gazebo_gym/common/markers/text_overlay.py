@@ -1,7 +1,10 @@
-﻿"""Class used for displaying text in RViz. This class overloads the
-:obj:`jsk_rviz_plugins.msgs.OverlayText` class in order to pre-initialize some of
-its attributes. It further automatically makes sure the text width and height are not
-to small.
+﻿"""Contains a class that can be used for displaying text in RViz.
+
+.. note::
+    This class overloads the
+    :obj:`jsk_rviz_plugins.msgs.OverlayText` class in order to pre-initialize some of
+    its attributes. It further automatically makes sure the text width and height are
+    not to small.
 """
 import math
 
@@ -10,8 +13,11 @@ from std_msgs.msg import ColorRGBA
 
 
 class TextOverlay(OverlayText):
-    """Class used to create an RViz text overlay. When no width or height are supplied
-    it makes sure that the display fits all the text.
+    """RViz text overlay.
+
+    .. note::
+        When no width or height are supplied it makes sure that the display fits all the
+        text.
 
     Attributes:
         action (float): The marker message action (add or remove).
@@ -27,28 +33,30 @@ class TextOverlay(OverlayText):
         text (str): The text.
     """
 
-    def __init__(self, *args, **kwds):
+    def __init__(self, *args, **kwargs):
         """Initialize text overlay object."""
-        self.__text_size = 0.0 if "text_size" not in kwds.keys() else kwds["text_size"]
-        self._text = "" if "text" not in kwds.keys() else kwds["text"]
-        super().__init__(*args, **kwds)
+        self.__text_size = (
+            0.0 if "text_size" not in kwargs.keys() else kwargs["text_size"]
+        )
+        self._text = "" if "text" not in kwargs.keys() else kwargs["text"]
+        super().__init__(*args, **kwargs)
         self._fit_width_to_text()
         self._fit_height_to_text()
 
         # Overwrite attributes with defaults if not supplied in the constructor.
-        if "bg_color" not in kwds.keys():
+        if "bg_color" not in kwargs.keys():
             self.bg_color = ColorRGBA(0.0, 0.0, 0.0, 1.0)
-        if "fg_color" not in kwds.keys():
+        if "fg_color" not in kwargs.keys():
             self.fg_color = ColorRGBA(1.0, 1.0, 1.0, 1.0)
-        if "left" not in kwds.keys():
+        if "left" not in kwargs.keys():
             self.left = 10
-        if "top" not in kwds.keys():
+        if "top" not in kwargs.keys():
             self.top = 10
-        if "width" in kwds.keys():
-            self.width = kwds["width"]
-        if "height" in kwds.keys():
-            self.height = kwds["height"]
-        self.action = OverlayText.ADD if "action" not in kwds.keys() else self.action
+        if "width" in kwargs.keys():
+            self.width = kwargs["width"]
+        if "height" in kwargs.keys():
+            self.height = kwargs["height"]
+        self.action = OverlayText.ADD if "action" not in kwargs.keys() else self.action
 
     def _fit_width_to_text(self):
         """Makes sure that the width is big enough to hold the text."""

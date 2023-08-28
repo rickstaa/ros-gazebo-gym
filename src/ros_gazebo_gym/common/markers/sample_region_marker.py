@@ -1,7 +1,9 @@
-"""Class used for displaying a sampling region marker in RViz. This class overloads
-the :obj:`visualization_msgs.msgs.Marker` class in order to pre-initialize some of
-its attributes. It further also adds the ability to specify the marker scale using
-``x``, ``y``, ``z`` max and min values.
+"""Contains a class that can be used for displaying a sampling region marker in RViz.
+
+.. note::
+    This class overloads the :obj:`visualization_msgs.msgs.Marker` class in order to
+    pre-initialize some of its attributes. It further also adds the ability to specify
+    the marker scale using s``x``, ``y``, ``z`` max and min values.
 """
 import rospy
 from geometry_msgs.msg import Pose, Vector3
@@ -12,7 +14,7 @@ from visualization_msgs.msg import Marker
 
 
 class SampleRegionMarker(Marker):
-    """Class used to create an RViz goal sample region marker.
+    """RViz goal sample region marker.
 
     Attributes:
         x (int): The marker x position.
@@ -57,7 +59,7 @@ class SampleRegionMarker(Marker):
         z_max=None,
         frame_id=None,
         *args,
-        **kwds
+        **kwargs
     ):
         """Initialize SampleRegionMarker object.
 
@@ -95,10 +97,10 @@ class SampleRegionMarker(Marker):
         self.__z_min = 0.0
         self.__y_max = 0.0
         self.__z_max = 0.0
-        super().__init__(*args, **kwds)
+        super().__init__(*args, **kwargs)
 
         # Overwrite attributes with defaults if not supplied in the constructor.
-        if "header" not in kwds.keys():
+        if "header" not in kwargs.keys():
             # Pre-initialize header.
             self.header = Header()
             try:  # Check if rostime was initialized.
@@ -112,18 +114,18 @@ class SampleRegionMarker(Marker):
                 self.header.frame_id = "world"
             else:
                 self.header.frame_id = frame_id
-        if "pose" not in kwds.keys():
+        if "pose" not in kwargs.keys():
             self.pose = Pose(position=Vector3(x, y, z))
-        if "color" not in kwds.keys():
+        if "color" not in kwargs.keys():
             self.color = ColorRGBA(1.0, 0.0, 0.0, 0.15)
-        self.id = 1 if "id" not in kwds.keys() else self.id
-        self.type = Marker.CUBE if "type" not in kwds.keys() else self.type
-        self.action = Marker.ADD if "action" not in kwds.keys() else self.action
+        self.id = 1 if "id" not in kwargs.keys() else self.id
+        self.type = Marker.CUBE if "type" not in kwargs.keys() else self.type
+        self.action = Marker.ADD if "action" not in kwargs.keys() else self.action
         self.lifetime = (
-            rospy.Duration(0) if "lifetime" not in kwds.keys() else self.lifetime
+            rospy.Duration(0) if "lifetime" not in kwargs.keys() else self.lifetime
         )
 
-        # Add class attributes.
+        # Set class properties if not none.
         if x:
             self.x = x
         if y:
