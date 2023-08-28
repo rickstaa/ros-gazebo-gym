@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.8.0](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.7.0...v1.8.0) (2023-08-28)
+
+
+### Features
+
+* add rosdeps update warning ([#15](https://github.com/rickstaa/ros-gazebo-gym/issues/15)) ([52b77af](https://github.com/rickstaa/ros-gazebo-gym/commit/52b77afbc760dc8c3f09161f6700276a7dddc120))
+* improve ros shutdown and codebase ([#20](https://github.com/rickstaa/ros-gazebo-gym/issues/20)) ([a263b6f](https://github.com/rickstaa/ros-gazebo-gym/commit/a263b6f0208dd24ee943ba27bfbcd68867468f64))
+* migrate to gymnasium and cleanup codebase ([#9](https://github.com/rickstaa/ros-gazebo-gym/issues/9)) ([e4fe84d](https://github.com/rickstaa/ros-gazebo-gym/commit/e4fe84d99ac7fad7c849c9a52f054cc8584fda83))
+
+
+### Bug Fixes
+
+* fix 'PickAndPlace' reset velocities ([#19](https://github.com/rickstaa/ros-gazebo-gym/issues/19)) ([86a1da4](https://github.com/rickstaa/ros-gazebo-gym/commit/86a1da4859973e8c7b3dfc8b338f89d25f70cfdd))
+* fix action/observation space dtype ([#17](https://github.com/rickstaa/ros-gazebo-gym/issues/17)) ([c484443](https://github.com/rickstaa/ros-gazebo-gym/commit/c4844431d37ffa48872227c7811973bc9ca91b2c))
+* remove singleton anti-pattern ([#7](https://github.com/rickstaa/ros-gazebo-gym/issues/7)) ([c2f163c](https://github.com/rickstaa/ros-gazebo-gym/commit/c2f163cd33d8d9124a10d1914a7afc368bb9008c))
+
+
+### Documentation
+
+* add pre-commit note ([#16](https://github.com/rickstaa/ros-gazebo-gym/issues/16)) ([e3c1819](https://github.com/rickstaa/ros-gazebo-gym/commit/e3c181993d37a60a56daef1caec9e33bc31eba33))
+* update BLC reference to SLC ([27a098b](https://github.com/rickstaa/ros-gazebo-gym/commit/27a098bdbdd6e9dfd26ff62380c6afc5a9c0cd94))
+
 ## [1.7.0](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.6.1...v1.7.0) (2022-03-07)
 
 
