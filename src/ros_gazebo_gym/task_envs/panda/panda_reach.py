@@ -16,7 +16,6 @@ Goal:
 
 """
 import os
-import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -25,27 +24,30 @@ import rospy
 import tf2_geometry_msgs
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Vector3
 from gymnasium import spaces, utils
-from rospy.exceptions import ROSException, ROSInterruptException
-from sensor_msgs.msg import JointState
-from std_msgs.msg import ColorRGBA, Header
-from tf2_ros import ConnectivityException, ExtrapolationException, LookupException
-
 from ros_gazebo_gym.common.helpers import (
     flatten_list,
     gripper_width_2_finger_joints_positions,
     list_2_human_text,
     lower_first_char,
-    merge_n_dicts,
     normalize_quaternion,
     pose_msg_2_pose_dict,
+    merge_n_dicts,
     split_bounds_dict,
     split_pose_dict,
 )
 from ros_gazebo_gym.common.markers import SampleRegionMarker, TargetMarker
 from ros_gazebo_gym.core import ROSLauncher
-from ros_gazebo_gym.core.helpers import get_log_path, load_ros_params_from_yaml
+from ros_gazebo_gym.core.helpers import (
+    get_log_path,
+    load_ros_params_from_yaml,
+    ros_exit_gracefully,
+)
 from ros_gazebo_gym.exceptions import EePoseLookupError
 from ros_gazebo_gym.robot_envs.panda_env import PandaEnv
+from rospy.exceptions import ROSException, ROSInterruptException
+from sensor_msgs.msg import JointState
+from std_msgs.msg import ColorRGBA, Header
+from tf2_ros import ConnectivityException, ExtrapolationException, LookupException
 
 # Specify topics and other script variables.
 CONNECTION_TIMEOUT = 5  # Timeout for connecting to services or topics.
@@ -89,6 +91,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
     def __init__(  # noqa: C901
         self,
         control_type="effort",
+        positive_reward=False,
         config_path=CONFIG_FILE_PATH,
         gazebo_world_launch_file="start_reach_world.launch",
         visualize=None,
@@ -101,6 +104,8 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             control_Type (str, optional): The type of control you want to use for the
                 panda robot (i.e. hand and arm). Options are: ``trajectory``,
                 ``position``, ``effort`` or ``end_effector``. Defaults to ``effort``.
+            positive_reward (bool, optional): Whether you want to enforce a positive
+                reward. Defaults to ``False``.
             config_path (str, optional): Path where the environment configuration
                 value are found. The path is resolved relative to the
                 :class:`~ros_gazebo_gym.task_envs.panda.panda_reach` class file.
@@ -124,6 +129,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             easily extended to work with multiple waypoints by modifying the
             :obj:`PandaReachEnv~._create_action_space` method.
         """
+        rospy.logwarn("Initialize PandaEnv task environment...")
         self.__class__._instance_count += 1
         if self.__class__._instance_count > 1:
             rospy.logwarn(
@@ -133,6 +139,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 "the script will be shut down. Feel free to open a pull request if "
                 "you want to implement this functionality."
             )
+        self._positive_reward = positive_reward
 
         # Makes sure the env is pickable when it wraps C++ code.
         utils.EzPickle.__init__(**locals())
@@ -166,12 +173,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         if any(
             ["/gazebo" in topic for topic in flatten_list(rospy.get_published_topics())]
         ):
-            rospy.logerr(
+            err_msg = (
                 f"Shutting down '{rospy.get_name()}' since a Gazebo instance is "
                 "already running. Unfortunately, spawning multiple Panda simulations "
                 "is not yet supported. Please shut down this instance and try again."
             )
-            sys.exit(0)
+            ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
 
         # Launch the panda task gazebo environment (Doesn't yet add the robot).
         # NOTE: This downloads and builds the required ROS packages if not found.
@@ -398,7 +405,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         self._action_space_dtype = action_space_dtype
         self._observation_space_dtype = observation_space_dtype
         self._action_dtype_conversion_warning = False
-        self.action_space = self._create_action_space(dtype=action_space_dtype)
+        self.action_space = self._create_action_space(dtype=self._action_space_dtype)
         self.goal = self._sample_goal()
         obs = self._get_obs()
         self.observation_space = spaces.Dict(
@@ -407,22 +414,24 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     -np.inf,
                     np.inf,
                     shape=obs["observation"].shape,
-                    dtype=observation_space_dtype,
+                    dtype=self._observation_space_dtype,
                 ),
                 desired_goal=spaces.Box(
                     -np.inf,
                     np.inf,
                     shape=obs["desired_goal"].shape,
-                    dtype=observation_space_dtype,
+                    dtype=self._observation_space_dtype,
                 ),
                 achieved_goal=spaces.Box(
                     -np.inf,
                     np.inf,
                     shape=obs["achieved_goal"].shape,
-                    dtype=observation_space_dtype,
+                    dtype=self._observation_space_dtype,
                 ),
             )
         )
+
+        rospy.logwarn("PandaEnv task environment initialized.")
 
     ################################################
     # Task environment internal methods ############
@@ -490,12 +499,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     "and may plan states that are in collision."
                 )
         else:
-            rospy.logerr(
+            err_msg = (
                 f"Failled to connect to '{MOVEIT_ADD_PLANE_TOPIC}' service! "
                 f"Shutting down '{rospy.get_name()}' as this service is required for "
                 "making MoveIt aware of the ground."
             )
-            sys.exit(0)
+            ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
 
     def _get_params(self, ns="panda_reach"):  # noqa: C901
         """Retrieve task environment configuration parameters from parameter server.
@@ -769,7 +778,9 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 f"environment configuration file '{self._config_file_path}' and try "
                 "again."
             )
-            sys.exit(0)
+            ros_exit_gracefully(
+                shutdown_msg=f"Shutting down '{rospy.get_name()}'.", exit_code=1
+            )
 
     def _robot_get_obs(self):
         """Returns all joint positions and velocities associated with a robot.
@@ -834,12 +845,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             else:
                 return {}
         else:
-            rospy.logerr(
+            err_msg = (
                 f"Failled to connect to '{MOVEIT_GET_RANDOM_JOINT_POSITIONS_TOPIC}' "
                 f"service! Shutting down '{rospy.get_name()}' as this service is "
                 "required for retrieving random joint positions."
             )
-            sys.exit(0)
+            ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
 
     def _get_random_ee_pose(self):
         """Get a valid random EE pose that considers the boundaries set in the task
@@ -879,12 +890,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             else:
                 return {}, {}
         else:
-            rospy.logerr(
+            err_msg = (
                 f"Failled to connect to '{MOVEIT_GET_RANDOM_EE_POSE_TOPIC}' service! "
                 f"Shutting down '{rospy.get_name()}' as this service is required for "
                 "retrieving a random end effector pose."
             )
-            sys.exit(0)
+            ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
 
     def _clip_goal_position(self, goal_pose):
         """Limit the possible goal position x, y and z values to a certian range.
@@ -905,6 +916,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 "Goal pose clipped since it was not within the set target bounds."
             )
             rospy.logdebug("New goal pose: %s" % clipped_goal_pose)
+
         return clipped_goal_pose
 
     def _check_config_action_space_joints(self):  # noqa: C901
@@ -982,7 +994,9 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     else ("joints", "were", "are")
                 )
             rospy.logerr(error_msg)
-            sys.exit(0)
+            ros_exit_gracefully(
+                shutdown_msg=f"Shutting down '{rospy.get_name()}'.", exit_code=1
+            )
 
     def _get_action_space_joints(self):
         """Retrieves the joints that are being controlled when we sample from the action
@@ -1160,12 +1174,10 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 ConnectivityException,
                 ExtrapolationException,
             ) as e:
-                rospy.logerr(
-                    "Shutting down '{}' since the {}.".format(
-                        rospy.get_name(), lower_first_char(e.args[0])
-                    )
+                err_msg = "Shutting down '{}' since the {}.".format(
+                    rospy.get_name(), lower_first_char(e.args[0])
                 )
-                sys.exit(0)
+                ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
             rew_frame_offset_pose_stamped = PoseStamped(
                 header=Header(frame_id=self._ee_link, stamp=rospy.Time.now()),
                 pose=Pose(
@@ -1191,12 +1203,10 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             try:
                 return self.get_ee_pose()
             except EePoseLookupError as e:
-                rospy.logerr(
-                    "Shutting down '{}' since the {}.".format(
-                        rospy.get_name(), lower_first_char(e.args[0])
-                    )
+                err_msg = "Shutting down '{}' since the {}".format(
+                    rospy.get_name(), lower_first_char(e.args[0])
                 )
-                sys.exit(0)
+                ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
 
     ################################################
     # Overload Robot env virtual methods ###########
@@ -1234,7 +1244,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 "Received reward: %s",
                 reward,
             )
-            return reward
+            return np.abs(reward) if self._positive_reward else reward
         else:
             self._step_debug_logger("=Reward info=")
             self._step_debug_logger("Reward type: Sparse")
@@ -1246,7 +1256,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             reward = -d
             if self._collision_penalty != 0.0 and self.in_collision:
                 reward -= np.float64(self._collision_penalty)
-            return reward
+            return np.abs(reward) if self._positive_reward else reward
 
     def _get_obs(self):
         """Get robot state observation.
@@ -1310,16 +1320,15 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         """
         # Throw error and shutdown if action space is not the right size.
         if not action.shape == self.action_space.shape:
-            rospy.logerr(
+            err_msg = (
                 f"Shutting down '{rospy.get_name()}' since the shape of the supplied "
                 f"action {action.shape} while the gymnasium action space has shape "
                 f"{self.action_space.shape}."
             )
-            sys.exit(0)
+            ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
 
         # Change action dtype if needed and throw one time warning.
         if action.dtype != self._action_space_dtype:
-            action = action.astype(self._action_space_dtype)
             if not self._action_dtype_conversion_warning:
                 rospy.logwarn(
                     "The data type of the action that is supplied to the "
@@ -1329,6 +1338,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     "be converted to the action space data type."
                 )
                 self._action_dtype_conversion_warning = True
+            action = action.astype(self._action_space_dtype)
 
         # Send action commands to the controllers based on control type.
         action_dict = dict(zip(self._action_space_joints, action))
@@ -1396,6 +1406,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 self._step_debug_logger("Task is done.")
             else:
                 self._step_debug_logger("Task is not done.")
+
         return is_done
 
     def _sample_goal(self):
@@ -1430,12 +1441,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     ]
                 )
             except EePoseLookupError:
-                rospy.logerr(
+                err_msg = (
                     f"Shutting down '{rospy.get_name()}' since the current end "
                     "effector pose which is needed for sampling the goals could "
                     "not be retrieved."
                 )
-                sys.exit(0)
+                ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
 
             # Sample goal relative to end effector pose.
             goal = cur_ee_position + self.np_random.uniform(
@@ -1454,12 +1465,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         elif self._target_sampling_strategy == "fixed":
             goal = np.array(list(self._fixed_target_pose.values()))
         else:  # Thrown error if goal could not be sampled.
-            rospy.logerr(
+            err_msg = (
                 f"Shutting down '{rospy.get_name()}' since no goal could be sampled "
                 f"as '{self._target_sampling_strategy}' is not a valid goal sampling "
                 "strategy. Options are 'global' and 'local'."
             )
-            sys.exit(0)
+            ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
 
         # Make sure the goal is always within the sampling region.
         if self._target_sampling_strategy != "fixed":

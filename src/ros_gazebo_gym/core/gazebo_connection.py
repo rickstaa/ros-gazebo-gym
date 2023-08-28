@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
 """Contains a small python utility class that makes it easier to interact with the
 Gazebo simulator.
 """
+import time
+
 import numpy as np
 import rospy
-import time
 from gazebo_msgs.msg import ModelStates
 from gazebo_msgs.srv import (
     GetLinkState,
@@ -20,7 +20,7 @@ from gazebo_msgs.srv import (
     SpawnModel,
     SpawnModelRequest,
 )
-from geometry_msgs.msg import Pose
+from geometry_msgs.msg import Pose, Vector3
 from ros_gazebo_gym.common.helpers import (
     deep_update,
     find_gazebo_model_path,
@@ -28,6 +28,7 @@ from ros_gazebo_gym.common.helpers import (
     model_state_msg_2_link_state_dict,
     normalize_quaternion,
 )
+from ros_gazebo_gym.core.helpers import ros_exit_gracefully
 from ros_gazebo_gym.exceptions import (
     GetLinkStateError,
     GetModelStateError,
@@ -43,7 +44,6 @@ from rospy.exceptions import ROSException, ROSInterruptException
 from rospy_message_converter import message_converter
 from std_msgs.msg import Float64
 from std_srvs.srv import Empty
-from geometry_msgs.msg import Vector3
 
 # Specify gazebo service topics.
 GAZEBO_PAUSE_PHYSICS_TOPIC = "/gazebo/pause_physics"
@@ -101,7 +101,7 @@ class GazeboConnection:
     """
 
     def __init__(  # noqa: C901
-        self, reset_world_or_sim="WORLD", max_retry=20, log_reset=True
+        self, reset_world_or_sim="WORLD", max_retry=20, retry_rate=5, log_reset=True
     ):
         """Initiate the GazeboConnection instance.
 
@@ -110,7 +110,9 @@ class GazeboConnection:
                 simulation "SIMULATION" at startup or only the world "WORLD" (object
                 positions). Defaults to "WORLD".
             max_retry (int, optional): How many times a command to the simulator is
-                retried before giving up. Defaults to ``20``.
+                retried before giving up. Defaults to ``30``.
+            retry_rate (int, optional): The rate at which the retry is done. Defaults to
+                ``2`` (i.e. 0.5 seconds).
             log_reset (bool, optional): Whether we want to print a log statement when
                 the world/simulation is reset. Defaults to ``True``.
         """
@@ -118,6 +120,7 @@ class GazeboConnection:
         self._reset_world_or_sim = reset_world_or_sim
         self._log_reset = log_reset
         self._max_retry = max_retry
+        self._retry_rate = retry_rate
         self._physics_update_rate = Float64(PHYSICS_UPDATE_RATE)
         self.__time = 0.0
 
@@ -340,13 +343,15 @@ class GazeboConnection:
                         )
                         warned = True
                     counter += 1
-                    time.sleep(0.2)
+                    time.sleep(1 / self._retry_rate)
             else:
-                error_message = (
+                rospy.logerr(
                     f"Maximum retries done ({self._max_retry}), please check Gazebo "
                     "pause service and try again."
                 )
-                rospy.signal_shutdown(error_message)
+                ros_exit_gracefully(
+                    shutdown_msg=f"Shutting down {rospy.get_name()}", exit_code=1
+                )
         rospy.logdebug("PAUSING finished")
 
     def unpause_sim(self):
@@ -368,13 +373,15 @@ class GazeboConnection:
                         )
                         warned = True
                     counter += 1
-                    time.sleep(0.2)
+                    time.sleep((1 / self._retry_rate))
             else:
-                error_message = (
+                rospy.logerr(
                     f"Maximum retries done ({self._max_retry}), please check Gazebo "
                     "unpause service and try again."
                 )
-                rospy.signal_shutdown(error_message)
+                ros_exit_gracefully(
+                    shutdown_msg=f"Shutting down {rospy.get_name()}", exit_code=1
+                )
         rospy.logdebug("UNPAUSING finished")
 
     def _reset_simulation(self):
@@ -445,9 +452,7 @@ class GazeboConnection:
                 ]
             )
         else:
-            logwarn_msg = "Model state of '%s' model could not be retrieved." % (
-                model_name,
-            )
+            logwarn_msg = f"Model state of '{model_name}' model could not be retrieved."
             rospy.logwarn(logwarn_msg)
             raise GetModelStateError(
                 message=logwarn_msg, details=model_state.status_message
@@ -499,9 +504,7 @@ class GazeboConnection:
                 ]
             )
         else:
-            logwarn_msg = "Model state of '%s' model could not be retrieved." % (
-                link_name,
-            )
+            logwarn_msg = f"Model state of '{link_name}' model could not be retrieved."
             rospy.logwarn(logwarn_msg)
             raise GetLinkStateError(
                 message=logwarn_msg, details=link_state.status_message
@@ -700,8 +703,8 @@ class GazeboConnection:
         # Check if model is already present.
         if object_name in self.model_states.keys():
             rospy.logwarn(
-                "A model with model name '%s' already exists. Please check if this is "
-                "the right model." % (model_name)
+                f"A model with model name '{model_name}' already exists. Please check "
+                "if this is the right model."
             )
             return False
 
@@ -710,9 +713,9 @@ class GazeboConnection:
         model_xml, extension = find_gazebo_model_path(model_name, models_folder_path)
         if not model_xml:  # If model file was not found.
             logwarn_msg = (
-                "Spawning model '%s' as '%s' failed since the sdf/urd model file "
-                "was not found. Please make sure you added the model sdf/urdf file "
-                "to the '%s' folder." % (model_name, object_name, models_folder_path)
+                f"Spawning model '{model_name}' as '{object_name}' failed since the "
+                "sdf/urd model file was not found. Please make sure you added the "
+                f"model sdf/urdf file to the '{models_folder_path}' folder."
             )
             rospy.logwarn(logwarn_msg)
             raise SpawnModelError(message=logwarn_msg)
@@ -744,10 +747,9 @@ class GazeboConnection:
                         rospy.logdebug("SPAWNING service calling...DONE")
                         return retval
                     except rospy.ServiceException as e:
-                        logwarn_msg = "Spawning model '%s' as '%s' failed since %s." % (
-                            model_name,
-                            object_name,
-                            lower_first_char(e.args[0]),
+                        logwarn_msg = (
+                            f"Spawning model '{model_name}' as '{object_name}' failed "
+                            f"since {lower_first_char(e.args[0])}."
                         )
                         rospy.logwarn(logwarn_msg)
                         raise SpawnModelError(
@@ -763,10 +765,9 @@ class GazeboConnection:
                         rospy.logdebug("SPAWNING service calling...DONE")
                         return retval
                     except rospy.ServiceException as e:
-                        logwarn_msg = "Spawning model '%s' as '%s' failed since %s." % (
-                            model_name,
-                            object_name,
-                            lower_first_char(e.args[0]),
+                        logwarn_msg = (
+                            f"Spawning model '{model_name}' as '{object_name}' failed "
+                            f"since {lower_first_char(e.args[0])}."
                         )
                         rospy.logwarn(logwarn_msg)
                         raise SpawnModelError(

@@ -14,7 +14,6 @@ Goal:
     The configuration files for this environment are found in the
     `panda task environment config folder <../config/panda_pick_and_place.yaml>`_).
 """  # noqa: E501
-import sys
 import time
 from pathlib import Path
 
@@ -26,6 +25,7 @@ from geometry_msgs.msg import Pose, Quaternion, TransformStamped, Vector3
 from gymnasium import utils
 from ros_gazebo_gym.common.helpers import get_orientation_euler, normalize_quaternion
 from ros_gazebo_gym.core import ROSLauncher
+from ros_gazebo_gym.core.helpers import ros_exit_gracefully
 from ros_gazebo_gym.exceptions import SetModelStateError, SpawnModelError
 from ros_gazebo_gym.task_envs.panda import PandaReachEnv
 from ros_gazebo_gym.task_envs.panda.markers import CubeMarker, FrameOriginMarker
@@ -249,11 +249,11 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
                         f"'{TARGET_OBJECT_SPAWN_TIMEOUT}' second time limit."
                     )
             except SpawnModelError:
-                rospy.logerr(
-                    "Shutting down task environment since the target object "
-                    f"`{self._object_name}` was not spawned successfully."
+                err_msg = (
+                    f"Shutting down {rospy.get_name()} since the task environment "
+                    f"target object `{self._object_name}` was not spawned successfully."
                 )
-                sys.exit(0)
+                ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
 
     def _set_init_obj_pose(self):
         """Sets the object to its (random) initial pose.
@@ -303,11 +303,11 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
             try:
                 retval = self.gazebo.set_model_state(obj_model_state)
             except SetModelStateError:
-                rospy.logerr(
-                    "Shutting down '%s' since the state of the grasp object could not "
-                    "be set." % (rospy.get_name())
+                err_msg = (
+                    f"Shutting down '{rospy.get_name()}' since the state of the grasp "
+                    "object could not be set."
                 )
-                sys.exit(0)
+                ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
 
             # Return result.
             if not retval:
@@ -404,7 +404,9 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
                 f"environment configuration file '{self._config_file_path}' and try "
                 "again."
             )
-            sys.exit(0)
+            ros_exit_gracefully(
+                shutdown_msg=f"Shutting down {rospy.get_name()}.", exit_code=1
+            )
 
     def _get_obs(self):
         """Get robot state observation.

@@ -1,9 +1,6 @@
-#!/usr/bin/env python3
 """Contains a python utility class that makes it easier to interact with
 `ros_control <https://wiki.ros.org/ros_control>`_ controllers.
 """
-import sys
-
 import rospy
 from controller_manager_msgs.srv import (
     ListControllers,
@@ -11,11 +8,11 @@ from controller_manager_msgs.srv import (
     SwitchController,
     SwitchControllerRequest,
 )
+from ros_gazebo_gym.common.helpers import flatten_list
+from ros_gazebo_gym.core.helpers import ros_exit_gracefully
 from rosgraph_msgs.msg import Clock
 from rospy.exceptions import ROSException, ROSInterruptException
 from std_srvs.srv import Empty
-
-from ros_gazebo_gym.common.helpers import flatten_list
 
 # Script settings.
 CONNECTION_TIMEOUT = 10
@@ -35,7 +32,7 @@ class ControllersConnection:
             switch service.
     """
 
-    def __init__(self, namespace="", controllers_list=None):
+    def __init__(self, namespace="", controllers_list=None):  # noqa: C901
         """Initialize the ControllersConnection instance.
 
         Args:
@@ -66,11 +63,11 @@ class ControllersConnection:
                 "Connected to '%s' service!" % self._list_controllers_service_name
             )
         except (rospy.ServiceException, ROSException, ROSInterruptException):
-            rospy.logerr(
+            error_msg = (
                 f"Shutting down '{rospy.get_name()}' since no connection could be "
                 f"established with the {self._list_controllers_service_name} service!"
             )
-            sys.exit(0)
+            ros_exit_gracefully(shutdown_msg=error_msg, exit_code=1)
         self._switch_controller_service_name = (
             f"{namespace}/controller_manager/switch_controller"
         )
@@ -89,11 +86,11 @@ class ControllersConnection:
                 "Connected to '%s' service!" % self._switch_controller_service_name
             )
         except (rospy.ServiceException, ROSException, ROSInterruptException):
-            rospy.logerr(
+            error_msg = (
                 f"Shutting down '{rospy.get_name()}' since no connection could be "
                 f"established with the {self._list_controllers_service_name} service!"
             )
-            sys.exit(0)
+            ros_exit_gracefully(shutdown_msg=error_msg, exit_code=1)
         self._gazebo_pause_service_name = "/gazebo/pause_physics"
         try:
             rospy.logdebug(
@@ -210,6 +207,7 @@ class ControllersConnection:
                 rospy.logdebug("result_on_ok==>" + str(result_on_ok))
         else:
             rospy.logdebug("result_off_ok==>" + str(result_off_ok))
+
         return reset_result
 
     @property
@@ -242,5 +240,5 @@ class ControllersConnection:
                 return False
             except ROSException:
                 return True
-        else:
-            return False
+
+        return False
