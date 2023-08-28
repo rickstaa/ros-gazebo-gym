@@ -1,8 +1,11 @@
-"""Class used for displaying a marker for the cube object in RViz. This class overloads
-the :class:`ros_gazebo_gym.common.markers.target_marker.TargetMarker` class in order to
-pre-initialize some of its attributes. Most importantly, a pose offset was applied to
-align the marker frame with the object frame.
-"""
+"""Contains a class that can be used for displaying a marker for the cube object in
+RViz.
+
+.. note::
+    This class overloads the :class:`ros_gazebo_gym.common.markers.target_marker.TargetMarker`
+    class in order to pre-initialize some of its attributes. Most importantly, a pose
+    offset was applied to align the marker frame with the object frame.
+"""  # noqa: E501
 from geometry_msgs.msg import Vector3
 from ros_gazebo_gym.common.markers import TargetMarker
 from std_msgs.msg import ColorRGBA
@@ -10,7 +13,7 @@ from visualization_msgs.msg import Marker
 
 
 class CubeMarker(TargetMarker):
-    """Class used to create an RViz marker for the grasping cube.
+    """RViz grasping cube marker.
 
     Attributes:
         x (int): The marker x position.
@@ -36,7 +39,7 @@ class CubeMarker(TargetMarker):
         ``x``, ``y``, ``z`` positions are used.
     """
 
-    def __init__(self, *args, **kwds):
+    def __init__(self, *args, **kwargs):
         """Initialize CubeMarker object.
 
         Args:
@@ -47,14 +50,14 @@ class CubeMarker(TargetMarker):
                 :class:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super
                 class.
         """
-        super().__init__(*args, **kwds)
+        super().__init__(*args, **kwargs)
 
         # Overwrite attributes with defaults if not supplied in the constructor.
-        if "color" not in kwds.keys():
+        if "color" not in kwargs.keys():
             self.color = ColorRGBA(0.0, 0.0, 0.0, 1.0)
-        if "scale" not in kwds.keys():
+        if "scale" not in kwargs.keys():
             self.scale = Vector3(0.06, 0.06, 0.06)
-        self.type = Marker.CUBE if "type" not in kwds.keys() else self.type
+        self.type = Marker.CUBE if "type" not in kwargs.keys() else self.type
 
         # Apply offset to align marker frame with cube object frame.
         self.pose.position.x += 0.03

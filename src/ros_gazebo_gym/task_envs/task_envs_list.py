@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Contains a list of available :ros-gazebo-gym:`ros_gazebo_gym <>` gymnasium
 environments.
 
@@ -21,7 +20,7 @@ ENVS = {
     # Panda task envs.
     "PandaReach-v1": {
         "entry_point": "ros_gazebo_gym.task_envs.panda.panda_reach:PandaReachEnv",
-        "reward_threshold": -20,  # FIXME: Should not be negative!
+        "reward_threshold": -20,
         "max_steps": 500,
     },
     "PandaPickAndPlace-v1": {

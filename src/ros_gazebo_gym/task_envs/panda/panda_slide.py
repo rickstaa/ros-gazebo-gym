@@ -14,8 +14,8 @@ Goal:
     The configuration files for this environment are found in the
     `panda task environment config folder <../config/panda_slide.yaml>`_).
 """
+import rospy
 from gymnasium import utils
-
 from ros_gazebo_gym.task_envs.panda import PandaPickAndPlaceEnv
 from ros_gazebo_gym.task_envs.panda.markers import PuckMarker
 
@@ -38,6 +38,7 @@ class PandaSlideEnv(PandaPickAndPlaceEnv, utils.EzPickle):
             **kwargs: Keyword arguments that are passed to the
                 :class:`~ros_gazebo_gym.task_envs.panda.PandaSlideEnv` super class.
         """
+        rospy.logwarn("Initialize Panda slide environment.")
         utils.EzPickle.__init__(
             **locals()
         )  # Makes sure the env is pickable when it wraps C++ code.
@@ -52,6 +53,8 @@ class PandaSlideEnv(PandaPickAndPlaceEnv, utils.EzPickle):
         # Change object marker properties.
         self.object_marker_class = PuckMarker
         self.object_frame_name = "puck"
+
+        rospy.logwarn("Panda slide environment initialized.")
 
     ################################################
     # Overload Reach environment methods ###########

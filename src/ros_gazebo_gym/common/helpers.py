@@ -4,15 +4,15 @@ import collections
 import copy
 import glob
 import os
+import re
 
+import numpy as np
 import rospy
 from actionlib_msgs.msg import GoalStatusArray
-from gymnasium.utils import colorize as gym_colorize
-from numpy import linalg, nan
+from numpy import linalg
+from ros_gazebo_gym.common.euler_angles import EulerAngles
 from rospy.exceptions import ROSException
 from tf.transformations import euler_from_quaternion
-
-from ros_gazebo_gym.common.euler_angles import EulerAngles
 
 
 #################################################
@@ -21,7 +21,7 @@ from ros_gazebo_gym.common.euler_angles import EulerAngles
 def model_state_msg_2_link_state_dict(link_state_msgs):
     """Converts the a `gazebo_msgs/ModelState <https://docs.ros.org/en/jade/api/gazebo_msgs/html/msg/ModelState.html>`_
     message into a state dictionary. Contrary to the original ModelState message,
-    in the model_state dictionary the poses and twists are grouped per link/model.
+    in the model state dictionary the poses and twists are grouped per link/model.
 
     Args:
         link_state_msgs (:obj:`gazebo_msgs.msg.ModelState`): A ModelState message.
@@ -36,6 +36,7 @@ def model_state_msg_2_link_state_dict(link_state_msgs):
         model_state_dict[joint_name] = {}
         model_state_dict[joint_name]["pose"] = copy.deepcopy(position)
         model_state_dict[joint_name]["twist"] = copy.deepcopy(twist)
+
     return model_state_dict
 
 
@@ -45,7 +46,7 @@ def pose_msg_2_pose_dict(pose_msg):
     message.
 
     Args:
-        pose_msg (:obj:`geometry_msgs.msg.Pose`):A pose message
+        pose_msg (:obj:`geometry_msgs.msg.Pose`): A pose message
 
     Returns:
         dict: Dictionary that contains the pose.
@@ -59,33 +60,13 @@ def pose_msg_2_pose_dict(pose_msg):
         "rz": pose_msg.orientation.z,
         "rw": pose_msg.orientation.w,
     }
+
     return pose_dict
 
 
 #################################################
-# List dict and text manipulation functions #####
+# List, dict and text manipulation functions #####
 #################################################
-def colorize(string, color="white", bold=False, highlight=False):
-    """Colorize a string.
-
-    .. seealso::
-        This function wraps the :meth:`gym.utils.colorize` function to make sure that it
-        also works with empty empty color strings.
-
-    Args:
-        string (str): The string you want to colorize.
-        color (str): The color you want to use.
-        bold (bool, optional): Whether you want the text to be bold text has to be bold.
-        highlight (bool, optional):  Whether you want to highlight the text. Defaults to
-            ``False``.
-
-    Returns:
-        str: Colorized string.
-    """
-    if color:  # If not empty.
-        return gym_colorize(string, color, bold, highlight)
-    else:
-        return string
 
 
 def lower_first_char(string):
@@ -101,10 +82,10 @@ def lower_first_char(string):
         This function is not the exact opposite of the capitalize function of the
         standard library. For example, capitalize('abC') returns Abc rather than AbC.
     """
-    if not string:  # Added to handle case where s == None.
+    if not string:  # If empty
         return
-    else:
-        return string[0].lower() + string[1:]
+
+    return string[0].lower() + string[1:]
 
 
 def wrap_space_around(text):
@@ -116,22 +97,47 @@ def wrap_space_around(text):
     Returns:
         str: Text with extra spaces around it.
     """
-    if text[0] != " " and text[-1] != " ":
-        return " " + text + " "
-    elif text[0] != " ":
-        return " " + text
-    elif text[-1] != " ":
-        return text + " "
-    else:
-        return text
+    text = text.strip()
+    return " " + text + " "
 
 
-def list_2_human_text(input_list, seperator=",", end_seperator="&"):
+def to_pascal_case(text):
+    """Convert a string to pascal case.
+
+    Args:
+        text (str): Text
+
+    Returns:
+        str: Text in pascal case.
+    """
+    # Split the string into words.
+    words = re.findall(r"[a-zA-Z0-9]+", text)
+
+    # Capitalize the first letter of each word and join them together.
+    return "".join(word.capitalize() for word in words)
+
+
+def to_snake_case(text):
+    """Convert a string to snake case.
+
+    Args:
+        text (str): Text
+
+    Returns:
+        str: Text in snake case.
+    """
+    # Replace any capital letters with an underscore followed by the lowercase letter.
+    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", text)
+    s2 = re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
+    return s2
+
+
+def list_2_human_text(input_list, separator=", ", end_separator=" & "):
     """Function converts a list of values into human readable sentence.
 
     Example:
         Using this function a list of 4 items ``[item1, item2, item3, item4]`` becomes
-        ``item2, item3 and item4``.
+        ``item2, item3 & item4``.
 
     Args:
         input_list (list): A input list.
@@ -139,36 +145,25 @@ def list_2_human_text(input_list, seperator=",", end_seperator="&"):
     Returns:
         str: A human readable string that can be printed.
     """
-    # Add spaces around separators if not present.
-    seperator = wrap_space_around(seperator)[1:]
-    end_seperator = wrap_space_around(end_seperator)
-
-    # Create human readable comma deliminated text.
-    if isinstance(input_list, list):
-        if len(input_list) > 1:
-            return (
-                seperator.join([str(item) for item in input_list[:-1]])
-                + end_seperator
-                + str(input_list[-1])
-            )
-        if len(input_list) == 0:
-            return ""
-        else:
-            return str(input_list[0])
-    if isinstance(input_list, tuple):
-        input_list = list(input_list)
-        if len(input_list) > 1:
-            return (
-                seperator.join([str(item) for item in input_list[:-1]])
-                + end_seperator
-                + str(input_list[-1])
-            )
-        if len(input_list) == 0:
-            return ""
-        else:
-            return str(input_list[0])
-    else:
+    if isinstance(input_list, str):
         return input_list
+
+    # Convert input to a list.
+    if not isinstance(input_list, list):
+        input_list = list(input_list)
+
+    # Add spaces around separators if not present.
+    separator = wrap_space_around(separator)[1:]
+    end_separator = wrap_space_around(end_separator)
+
+    # Create human readable comma delimited text.
+    if len(input_list) > 1:
+        return end_separator.join(
+            [separator.join(map(str, input_list[:-1])), str(input_list[-1])]
+        )
+    elif len(input_list) == 1:
+        return str(input_list[0])
+    return ""
 
 
 def split_dict(input_dict, *args):
@@ -196,6 +191,7 @@ def split_dict(input_dict, *args):
         split_dict_list.append(
             {key: val for key, val in input_dict.items() if key in split_list_item}
         )
+
     return split_dict_list
 
 
@@ -212,8 +208,7 @@ def split_bounds_dict(bounds_dict):
             - :obj:`dict`: ee_pose bounding region dictionary.
             - :obj:`dict`: joint_pose bounding region dictionary.
     """
-    # Split bounds dict into two separate dictionaries one for the ee_pose bounds and
-    # one for the joint_pose bounds.
+    # Split bounds dict into ee_pose bounds and joint_pose bounds dictionaries.
     split_dict_list = split_dict(
         bounds_dict,
         ["x_min", "x_max", "y_min", "y_max", "z_min", "z_max"],
@@ -240,6 +235,7 @@ def split_bounds_dict(bounds_dict):
             "gripper_width_max",
         ],
     )
+
     return split_dict_list[0], split_dict_list[1]
 
 
@@ -261,6 +257,7 @@ def gripper_width_2_finger_joints_positions(input_dict, joints):
                 output_dict[key.replace("gripper_width", joint)] = val / 2
         else:
             output_dict[key] = val
+
     return output_dict
 
 
@@ -277,8 +274,7 @@ def split_pose_dict(pose_dict):
             - :obj:`dict`: ee_pose bounding region dictionary.
             - :obj:`dict`: joint_pose dictionary.
     """
-    # Split bounds dict into two separate dictionaries one for the ee_pose and one for
-    # the joint_pose.
+    # Split bounds dict into ee_pose and joint_pose dictionaries.
     split_dict_list = split_dict(
         pose_dict,
         ["x", "y", "z", "rx", "ry", "rz", "rw"],
@@ -295,10 +291,11 @@ def split_pose_dict(pose_dict):
             "gripper_width",
         ],
     )
+
     return split_dict_list[0], split_dict_list[1]
 
 
-def merge_n_dicts(*args, order=None):
+def shallow_dict_merge(*args, order=None):
     """Given several dicts, merge them into a new dict as a shallow copy.
 
     Args:
@@ -341,11 +338,12 @@ def flatten_list(input_list):
             )  # NOTE: Calls itself recursively.
         else:
             flattened_list.append(list_item)
+
     return flattened_list
 
 
 def deep_update(d, u=None, fixed=False, **kwargs):  # noqa: C901
-    """Updates a dictionary recursively (deep update). This function takes a update
+    """Updates a dictionary recursively (i.e. deep update). This function takes a update
     dictionary and/or keyword arguments. When a keyword argument is supplied, the
     key-value pair is changed if it exists somewhere in the dictionary.
 
@@ -382,15 +380,13 @@ def deep_update(d, u=None, fixed=False, **kwargs):  # noqa: C901
                 if k == key and key in d.keys():
                     d[k] = val
 
+    # Print warning if no update dictionary or keyword argument was supplied.
     if not kwargs and not u:
-        print(
-            colorize(
-                "WARNING: Returning original dictionary since no update dictionary or "
-                "keyword argument was supplied.",
-                color="yellow",
-                bold=True,
-            )
+        rospy.logwarn(
+            "Returning original dictionary since no update dictionary or keyword "
+            "argument was supplied."
         )
+
     return d
 
 
@@ -465,9 +461,9 @@ def has_invalid_type(variable, variable_types, items_types=None, depth=0):  # no
         else:
             # Return type not invalid bool, depth and type.
             return False, depth, []
-    else:
-        # Return type invalid bool, depth and type.
-        return True, depth, type(variable)
+
+    # Return type invalid bool, depth and type.
+    return True, depth, type(variable)
 
 
 #################################################
@@ -503,18 +499,21 @@ def action_server_exists(topic_name):
                 exists = True
             else:
                 exists = False
+
     return exists
 
 
-def find_gazebo_model_path(model_name, model_folder_path, extension=""):
+def find_gazebo_model_path(model_name, models_directory_path, extension=""):
     """Finds the path of the ``sdf`` or ``urdf`` file that belongs to a given
-    ``model_name``. This is done by searching in the ``model_folder_path`` folder. If
-    no file was found the model file path is returned empty.
+    ``model_name``. This is done by searching in the ``models_directory_path`` folder.
+    If no file was found the model file path is returned empty.
 
     Args:
         model_name (str): The name of the model for which you want to find the path.
-        model_folder_path (str): The path of the folder that contains the gazebo models.
-        extension (str, optional): The model path extension. Defaults to ``""``.
+        models_directory_path (str): The path of the folder that contains the gazebo
+            models. extension (str, optional): The model path extension. Defaults to
+            ``""`` meaning that the function will first look for a ``sdf`` file and if
+            that is not found it will look for a ``urdf`` file.
 
     Returns:
         (tuple): tuple containing:
@@ -523,56 +522,33 @@ def find_gazebo_model_path(model_name, model_folder_path, extension=""):
                 found.
             - :obj:`str`: Extension of the model file.
     """
-    if extension != "" and extension[0] != ".":
+    if extension and not extension.startswith("."):
         extension = "." + extension
 
     # Try to find the model path for a given model_name.
-    model_folder = os.path.join(model_folder_path, model_name)
-    if os.path.isdir(model_folder):  # Check if model_name folder exists.
-        if extension != "":  # Find based on extension.
-            # Check if sdf or urdf exists with the model_name name.
-            model_path = glob.glob(os.path.join(model_folder, "model" + extension))
-            if model_path:  # If found.
+    model_directory_path = os.path.join(models_directory_path, model_name)
+    if os.path.isdir(model_directory_path):  # Check if model directory exists.
+        if extension != "":
+            model_path = glob.glob(
+                os.path.join(model_directory_path, "model" + extension)
+            )
+            if model_path:
                 return model_path[0]
-            else:
-                rospy.logwarn(
-                    "Model path for '%s' could not be found. Please check if the"
-                    "'model.sdf' or 'model.urdf' file exist in the model directory "
-                    "'%s'." % (model_name, model_folder)
-                )
-                return "", extension[1:]
         else:  # no extension given.
-            # Look for sdf or urdf files.
-            model_path_sdf = glob.glob(os.path.join(model_folder, "model" + ".sdf"))
-            model_path_urdf = glob.glob(os.path.join(model_folder, "model" + ".urdf"))
+            for ext in [".sdf", ".urdf"]:
+                model_path = glob.glob(
+                    os.path.join(model_directory_path, "model" + ext)
+                )
+                if model_path:
+                    return model_path[0], ext[1:]
 
-            # Check which extension was found.
-            if model_path_sdf and model_path_urdf:
-                rospy.logwarn(
-                    "Model path for '%s' could not be retrieved as both an 'model.sdf' "
-                    "and a 'model.urdf' file are present. Please make sure that only "
-                    "one is model file is present in the '%s' folder or use the "
-                    "extension argument." % (model_name, model_folder)
-                )
-                return "", ""
-            elif model_path_sdf:
-                return model_path_sdf[0], "sdf"
-            elif model_path_urdf:
-                return model_path_urdf[0], "urdf"
-            else:
-                rospy.logwarn(
-                    "Model path for '%s' could not be found. Please check if the"
-                    "'model.sdf' or 'model.urdf' file exist in the model directory "
-                    "'%s'." % (model_name, model_folder)
-                )
-                return "", ""
-    else:
-        rospy.logwarn(
-            "Model path for '%s' could not be found. Please check if the 'model.sdf' "
-            "or 'model.urdf' file exist in the model directory '%s'."
-            % (model_name, model_folder)
-        )
-        return "", ""
+    # If model path could not be found.
+    rospy.logwarn(
+        f"Model path for '{model_name}' could not be found. Please check if the "
+        f"'{model_name}.sdf' or '{model_name}.urdf' file exist in the model directory "
+        f"'{model_directory_path}'."
+    )
+    return "", ""
 
 
 def get_orientation_euler(quaternion):
@@ -599,6 +575,7 @@ def get_orientation_euler(quaternion):
     euler.y = euler_resp[0]
     euler.p = euler_resp[1]
     euler.r = euler_resp[2]
+
     return euler
 
 
@@ -629,8 +606,7 @@ def normalize_quaternion(quaternion):
     norm = quaternion_norm(quaternion)
 
     # Normalize quaternion.
-    if norm == nan:
-        # TODO: test.
+    if np.isnan(norm):
         rospy.logwarn(
             "Quaternion could not be normalized since the norm could not be "
             "calculated."
@@ -645,4 +621,5 @@ def normalize_quaternion(quaternion):
         quaternion.y = quaternion.y / norm
         quaternion.z = quaternion.z / norm
         quaternion.w = quaternion.w / norm
+
     return quaternion

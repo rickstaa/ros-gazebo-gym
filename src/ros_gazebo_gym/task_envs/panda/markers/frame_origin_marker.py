@@ -1,13 +1,16 @@
-"""Class used for displaying a marker for the object frame origin in RViz. This class
-overloads the :obj:`ros_gazebo_gym.common.markers.target_marker.TargetMarker` class in
-order to pre-initialize some of its attributes.
-"""
+"""Contains a class that can be used for displaying a marker for the object frame origin
+in RViz.
+
+.. note::
+    This class overloads the :obj:`ros_gazebo_gym.common.markers.target_marker.TargetMarker`
+    class in order to pre-initialize some of its attributes.
+"""  # noqa: E501
 from ros_gazebo_gym.common.markers import TargetMarker
 from std_msgs.msg import ColorRGBA
 
 
 class FrameOriginMarker(TargetMarker):
-    """Class used to create an RViz marker for the object frame origin.
+    """RViz object frame origin marker.
 
     Attributes:
         x (int): The marker x position.
@@ -33,7 +36,7 @@ class FrameOriginMarker(TargetMarker):
         ``x``, ``y``, ``z`` positions are used.
     """
 
-    def __init__(self, *args, **kwds):
+    def __init__(self, *args, **kwargs):
         """Initialize FrameOriginMarker object.
 
         Args:
@@ -44,8 +47,8 @@ class FrameOriginMarker(TargetMarker):
                 :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super
                 class.
         """
-        super().__init__(*args, **kwds)
+        super().__init__(*args, **kwargs)
 
         # Overwrite attributes with defaults if not supplied in the constructor.
-        if "color" not in kwds.keys():
+        if "color" not in kwargs.keys():
             self.color = ColorRGBA(0.0, 0.0, 1.0, 1.0)
