@@ -1,17 +1,15 @@
-#!/usr/bin/env python3
 """The Gazebo environment is mainly used to connect the simulated Gym environment to the
 Gazebo simulator. It takes care of the resets of the simulator after each step or the
 resets of the controllers (if needed), it also takes care of all the steps that need to
 be done on the simulator when doing a training step or a training reset (typical steps
 in the reinforcement learning loop).
 """
-import sys
-
 import gymnasium as gym
 import rospy
 from ros_gazebo_gym.common.markers import TextOverlay
 from ros_gazebo_gym.core.controllers_connection import ControllersConnection
 from ros_gazebo_gym.core.gazebo_connection import GazeboConnection
+from ros_gazebo_gym.core.helpers import ros_exit_gracefully
 from ros_gazebo_gym.msg import RLExperimentInfo
 
 
@@ -67,7 +65,6 @@ class RobotGazeboEnv(gym.Env):
         self._reset_robot_pose = reset_robot_pose
         self._pause_simulation = pause_simulation
         self._publish_rviz_training_info_overlay = publish_rviz_training_info_overlay
-        self.seed()
 
         # Set up ROS related variables.
         self.episode_num = 0
@@ -219,7 +216,9 @@ class RobotGazeboEnv(gym.Env):
         other systems that need closing.
         """
         rospy.logdebug("Closing RobotGazeboEnvironment")
-        sys.exit(0)
+        ros_exit_gracefully(
+            shutdown_msg=f"Shutting down {rospy.get_name()}", exit_code=0
+        )
 
     def _reset_sim(self):
         """Resets a simulation."""

@@ -12,7 +12,6 @@
     for the ``position`` and ``effort`` control. Other control methods like
     ``trajectory`` and ``end_effector`` control will use the PROXY based method.
 """  # noqa: E501
-import sys
 from datetime import datetime
 from itertools import compress
 
@@ -22,10 +21,6 @@ import rospy
 import tf2_ros
 from control_msgs.msg import GripperCommandAction, GripperCommandGoal
 from geometry_msgs.msg import Pose, PoseStamped
-from rospy.exceptions import ROSException, ROSInterruptException
-from sensor_msgs.msg import JointState
-from std_msgs.msg import Float64, Float32
-
 from ros_gazebo_gym.common.helpers import (
     action_server_exists,
     flatten_list,
@@ -33,11 +28,13 @@ from ros_gazebo_gym.common.helpers import (
     lower_first_char,
     normalize_quaternion,
 )
-from ros_gazebo_gym.core import ROSLauncher, LazyImporter
-from ros_gazebo_gym.core.helpers import get_log_path
+from ros_gazebo_gym.core import LazyImporter, ROSLauncher
+from ros_gazebo_gym.core.helpers import get_log_path, ros_exit_gracefully
 from ros_gazebo_gym.exceptions import EePoseLookupError, EeRpyLookupError
 from ros_gazebo_gym.robot_gazebo_goal_env import RobotGazeboGoalEnv
-
+from rospy.exceptions import ROSException, ROSInterruptException
+from sensor_msgs.msg import JointState
+from std_msgs.msg import Float32, Float64
 
 # Specify topics and connection timeouts.
 CONNECTION_TIMEOUT = 5  # Timeout for connecting to services or topics.
@@ -170,7 +167,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                 Defaults to ``None`` meaning the task configuration file values will be
                 used.
         """
-        rospy.logdebug("Initialize PandaEnv robot environment...")
+        rospy.logwarn("Initialize PandaEnv robot environment...")
 
         # Initialize lazy imported modules.
         # NOTE: Used because if not yet installed these packages will be installed later
@@ -239,12 +236,12 @@ class PandaEnv(RobotGazeboGoalEnv):
                 rospy.logwarn_once("Waiting for the Gazebo simulation to be started...")
         else:
             if not rospy.is_shutdown():
-                rospy.logerr(
-                    "Shutting down '%s' since the Panda Gazebo simulation was not "
-                    "started within the set timeout period of %s seconds."
-                    % (rospy.get_name(), GAZEBO_SIM_CONNECTION_TIMEOUT)
+                err_msg = (
+                    f"Shutting down '{rospy.get_name()}' since the Panda Gazebo "
+                    "simulation was not started within the set timeout period of "
+                    f"{GAZEBO_SIM_CONNECTION_TIMEOUT} seconds."
                 )
-                sys.exit(0)
+                ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
 
         # Validate requested control type.
         if self.robot_control_type not in AVAILABLE_CONTROL_TYPES:
@@ -255,8 +252,7 @@ class PandaEnv(RobotGazeboGoalEnv):
             )
             for ctrl_type in AVAILABLE_CONTROL_TYPES:
                 err_msg += f"\n - {ctrl_type}"
-            rospy.logerr(err_msg)
-            sys.exit(0)
+            ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
         else:
             rospy.logwarn(f"Panda robot is controlled using '{control_type}' control.")
 
@@ -409,17 +405,13 @@ class PandaEnv(RobotGazeboGoalEnv):
                 )
                 self._moveit_set_ee_pose_client_connected = True
             except (rospy.ServiceException, ROSException, ROSInterruptException):
-                rospy.logerr(
-                    "Shutting down '%s' since no connection could be established with "
-                    "the '%s' service. This service is needed for controlling the "
-                    "Panda robot using the '%s' control type."
-                    % (
-                        rospy.get_name(),
-                        moveit_set_ee_pose_srv_topic,
-                        self.robot_control_type,
-                    )
+                err_msg = (
+                    f"Shutting down '{rospy.get_name()}' since no connection could be "
+                    f"established with the '{moveit_set_ee_pose_srv_topic}' service. "
+                    "This service is needed for controlling the Panda robot using the "
+                    f"'{self.robot_control_type}' control type."
                 )
-                sys.exit(0)
+                ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
 
         # Connect to MoveIt 'get_ee_pose_joint_config' service.
         try:
@@ -477,17 +469,13 @@ class PandaEnv(RobotGazeboGoalEnv):
 
             # Shutdown if not connected.
             if not self._arm_joint_traj_control_client_connected:
-                rospy.logerr(
-                    "Shutting down '%s' since no connection could be established with "
-                    "the '%s' service. This service is needed for controlling the "
-                    "Panda robot using the '%s' control type."
-                    % (
-                        rospy.get_name(),
-                        set_joint_trajectory_action_srv_topic,
-                        self.robot_control_type,
-                    )
+                err_msg = (
+                    f"Shutting down '{rospy.get_name()}' since no connection could be "
+                    f"established with  the '{set_joint_trajectory_action_srv_topic}' "
+                    "service. This service is needed for controlling the Panda robot "
+                    f"using the '{self.robot_control_type}' control type."
                 )
-                sys.exit(0)
+                ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
 
         ################################
         # Panda control services #######
@@ -517,13 +505,13 @@ class PandaEnv(RobotGazeboGoalEnv):
                     )
                     self._set_joint_commands_client_connected = True
                 except (rospy.ServiceException, ROSException, ROSInterruptException):
-                    rospy.logerr(
-                        "Shutting down '%s' since no connection could be established "
-                        "with the '%s' service. This service is needed for controlling "
-                        "the arm in 'PROXY' control mode."
-                        % (rospy.get_name(), set_joint_commands_srv_topic)
+                    err_msg = (
+                        f"Shutting down '{rospy.get_name()}' since no connection could "
+                        f"be established with the '{set_joint_commands_srv_topic}' "
+                        "service. This service is needed for controlling the arm in "
+                        "'PROXY' control mode."
                     )
-                    sys.exit(0)
+                    ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
             else:  # Directly publish control commands to controller topics.
                 if self.robot_control_type == "position":
                     # Create arm joint position controller publishers.
@@ -575,13 +563,13 @@ class PandaEnv(RobotGazeboGoalEnv):
                 ROSException,
                 ROSInterruptException,
             ):
-                rospy.logerr(
-                    "Shutting down '%s' since no connection could be "
-                    "established with the '%s' service. This service is needed "
-                    "for controlling the hand in 'PROXY' control mode."
-                    % (rospy.get_name(), set_gripper_width_topic)
+                err_msg = (
+                    f"Shutting down '{rospy.get_name()}' since no connection could be "
+                    f"established with the '{set_gripper_width_topic}' service. This "
+                    "service is needed for controlling the hand in 'PROXY' control "
+                    "mode."
                 )
-                sys.exit(0)
+                ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
         elif (
             self.load_gripper
             and control_type_group != "trajectory"
@@ -610,16 +598,16 @@ class PandaEnv(RobotGazeboGoalEnv):
 
             # Shutdown if franka_gripper_action not found.
             if not franka_gripper_action_connected:
-                rospy.logerr(
-                    "Shutting down '%s' since no connection could be "
-                    "established with the '%s' action service. This service is "
-                    "needed for controlling the hand in 'DIRECT' control mode."
-                    % (rospy.get_name(), FRANKA_GRIPPER_COMMAND_TOPIC)
+                err_msg = (
+                    f"Shutting down '{rospy.get_name()}' since no connection could be "
+                    f"established with the '{FRANKA_GRIPPER_COMMAND_TOPIC}' action "
+                    "service. This service is needed for controlling the hand in "
+                    "'DIRECT' control mode."
                 )
-                sys.exit(0)
+                ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
 
         # Environment initiation complete message.
-        rospy.logdebug("PandaEnv robot environment initialized.")
+        rospy.logwarn("PandaEnv robot environment initialized.")
 
     ################################################
     # Panda Robot env main methods #################
@@ -651,9 +639,8 @@ class PandaEnv(RobotGazeboGoalEnv):
             tf2_ros.ConnectivityException,
             tf2_ros.ExtrapolationException,
         ) as e:
-            logwarn_msg = (
-                "End effector pose could not be retrieved as "
-                + lower_first_char(e.args[0])
+            logwarn_msg = "End effector pose could not be retrieved as {}.".format(
+                lower_first_char(e.args[0])
             )
             raise EePoseLookupError(
                 message="End effector pose could not be retrieved.",
@@ -726,10 +713,9 @@ class PandaEnv(RobotGazeboGoalEnv):
             ee_target_pose.orientation.y = ee_pose["ry"]
             ee_target_pose.orientation.z = ee_pose["rz"]
             ee_target_pose.orientation.w = ee_pose["rw"]
-            # Make sure the orientation is normalized.
             ee_target_pose.orientation = normalize_quaternion(
                 ee_target_pose.orientation
-            )
+            )  # Make sure the orientation is normalized.
 
             # Request and return pose.
             req = self.panda_gazebo.srv.GetEePoseJointConfigRequest()
@@ -748,15 +734,14 @@ class PandaEnv(RobotGazeboGoalEnv):
                 )
                 rospy.logwarn(logdebug_msg)
                 return {}
-            else:
-                return joint_configuration_dict
-        else:
-            rospy.logwarn_once(
-                "Joint configuration can not be retrieved as the "
-                f"{self.robot_name_space}/{MOVEIT_GET_EE_POSE_JOINT_CONFIG_TOPIC} is "
-                "not available."
-            )
-            return {}
+            return joint_configuration_dict
+
+        rospy.logwarn_once(
+            "Joint configuration can not be retrieved as the "
+            f"{self.robot_name_space}/{MOVEIT_GET_EE_POSE_JOINT_CONFIG_TOPIC} is "
+            "not available."
+        )
+        return {}
 
     def set_ee_pose(self, ee_pose):  # noqa: C901
         """Sets the Panda end effector pose.
@@ -783,14 +768,10 @@ class PandaEnv(RobotGazeboGoalEnv):
                 # Create joint_commands dictionary.
                 if len(ee_pose) > len(arm_action_space_joints):
                     rospy.logwarn_once(
-                        "End effector pose setpoint contains %s values while it "
-                        "can only contain %s. As a result only the first %s "
+                        f"End effector pose setpoint contains {len(ee_pose)} values "
+                        f"while it can only contain {len(arm_action_space_joints)}. "
+                        f"As a result only the first {len(ee_pose)} "
                         "values are used in the arm and gripper control command."
-                        % (
-                            len(ee_pose),
-                            len(arm_action_space_joints),
-                            len(ee_pose),
-                        )
                     )
                 ee_pose = dict(zip(arm_action_space_joints, ee_pose))
 
@@ -830,8 +811,8 @@ class PandaEnv(RobotGazeboGoalEnv):
             else:  # If the ee_pose format is not valid.
                 rospy.logwarn(
                     "Setting end effector pose failed since the ee_pose you specified "
-                    "was given as a %s while the 'set_ee_pose' function only accepts "
-                    "a list, Pose and a PoseStamped." % type(ee_pose)
+                    f"was given as a '{type(ee_pose)}' while the 'set_ee_pose' "
+                    "function only accepts a list, Pose and a PoseStamped."
                 )
                 return False
             ee_target_pose.orientation = normalize_quaternion(
@@ -855,14 +836,14 @@ class PandaEnv(RobotGazeboGoalEnv):
                 )
                 rospy.logwarn(logdebug_msg)
                 return False
-            else:
-                return True
-        else:
-            rospy.logwarn(
-                "Setting end effector pose failed since the required service '%s' was "
-                "not available." % MOVEIT_SET_EE_POSE_TOPIC
-            )
-            return False
+
+            return True
+
+        rospy.logwarn(
+            "Setting end effector pose failed since the required service "
+            f"'{MOVEIT_SET_EE_POSE_TOPIC}' was not available."
+        )
+        return False
 
     def set_joint_commands(self, joint_commands, arm_wait=False, hand_wait=False):
         """Sets the Panda arm and hand joint commands based on the set
@@ -924,14 +905,10 @@ class PandaEnv(RobotGazeboGoalEnv):
             # Create joint_commands dictionary.
             if len(joint_commands) > len(self._action_space_joints):
                 rospy.logwarn_once(
-                    "Joint positions setpoint contains %s values while it "
-                    "can only contain %s. As a result only the first %s "
+                    f"Joint positions setpoint contains {len(joint_commands)} values "
+                    f"while it can only contain {len(self._action_space_joints)}. "
+                    f"As a result only the first {len(joint_commands)} "
                     "values are used in the arm and gripper control command."
-                    % (
-                        len(joint_commands),
-                        len(self._action_space_joints),
-                        len(joint_commands),
-                    )
                 )
             joint_commands = dict(zip(self._action_space_joints, joint_commands))
 
@@ -951,9 +928,9 @@ class PandaEnv(RobotGazeboGoalEnv):
             else:
                 rospy.logwarn(
                     "Setting joint positions failed since the 'joint_commands' "
-                    "argument is of the '%s' type while the 'set_joint_positions' "
-                    "function only accepts a dictionary, list or a "
-                    "'SetJointCommandsRequest' message." % type(joint_commands)
+                    f"argument is of the '{type(joint_commands)}' type while the "
+                    "'set_joint_positions' function only accepts a dictionary, list or "
+                    "a 'SetJointCommandsRequest' message."
                 )
                 return False
 
@@ -966,9 +943,9 @@ class PandaEnv(RobotGazeboGoalEnv):
             ) or np.isscalar(joint_commands):
                 rospy.logwarn(
                     "Setting joint positions failed since the 'joint_commands' "
-                    "argument is of the '%s' type while the 'set_joint_positions' "
-                    "function only  accepts a dictionary, list or int when in DIRECT "
-                    "control mode." % type(joint_commands)
+                    f"argument is of the '{type(joint_commands)}' type while the "
+                    "'set_joint_positions' function only accepts a dictionary, list "
+                    "or int when in DIRECT control mode."
                 )
                 return False
 
@@ -1086,14 +1063,10 @@ class PandaEnv(RobotGazeboGoalEnv):
             # Create joint_commands dictionary.
             if len(joint_commands) > len(self._action_space_joints):
                 rospy.logwarn_once(
-                    "Joint efforts setpoint contains %s values while it "
-                    "can only contain %s. As a result only the first %s "
+                    f"Joint efforts setpoint contains {len(joint_commands)} values "
+                    f"while it can only contain {len(self._action_space_joints)}. "
+                    f"As a result only the first {len(joint_commands)} "
                     "values are used in the arm and gripper control command."
-                    % (
-                        len(joint_commands),
-                        len(self._action_space_joints),
-                        len(joint_commands),
-                    )
                 )
             joint_commands = dict(zip(self._action_space_joints, joint_commands))
 
@@ -1113,9 +1086,9 @@ class PandaEnv(RobotGazeboGoalEnv):
             else:
                 rospy.logwarn(
                     "Setting joint efforts failed since the 'joint_commands' argument "
-                    "is of the '%s' type while the 'set_joint_efforts' function only "
-                    "accepts a dictionary, list or a 'SetJointEfforts' message."
-                    % type(joint_commands)
+                    f"is of the '{type(joint_commands)}' type while the "
+                    "'set_joint_efforts' function only accepts a dictionary, list or a "
+                    "'SetJointCommandsRequest' message."
                 )
                 return False
 
@@ -1128,9 +1101,9 @@ class PandaEnv(RobotGazeboGoalEnv):
             ) or np.isscalar(joint_commands):
                 rospy.logwarn(
                     "Setting joint efforts failed since the 'joint_commands' argument "
-                    "is of the '%s' type while the 'set_joint_efforts' function only "
-                    "accepts a dictionary, list or int when in DIRECT control mode."
-                    % type(joint_commands)
+                    f"is of the '{type(joint_commands)}' type while the "
+                    "'set_joint_efforts' function only accepts a dictionary, list or "
+                    "int when in DIRECT control mode."
                 )
                 return False
 
@@ -1155,6 +1128,7 @@ class PandaEnv(RobotGazeboGoalEnv):
             self._joint_efforts_direct_control(
                 joint_commands, arm_wait=arm_wait, hand_wait=hand_wait
             )
+
         return True
 
     def _joint_efforts_direct_control(
@@ -1270,14 +1244,10 @@ class PandaEnv(RobotGazeboGoalEnv):
                 # Create joint trajectory dictionary.
                 if len(joint_trajectory) > len(arm_action_space_joints):
                     rospy.logwarn_once(
-                        "Joint trajectory dict contains %s values while it "
-                        "can only contain %s. As a result only the first %s "
+                        f"Joint trajectory contains {len(joint_trajectory)} values "
+                        f"while it can only contain {len(arm_action_space_joints)}. "
+                        f"As a result only the first {len(joint_trajectory)} "
                         "values are used in the arm and gripper control command."
-                        % (
-                            len(joint_trajectory),
-                            len(arm_action_space_joints),
-                            len(joint_trajectory),
-                        )
                     )
                 joint_trajectory = dict(zip(arm_action_space_joints, joint_trajectory))
             elif (
@@ -1286,14 +1256,10 @@ class PandaEnv(RobotGazeboGoalEnv):
             ):
                 if joint_trajectory.shape[1] > len(arm_action_space_joints):
                     rospy.logwarn_once(
-                        "Joint trajectory dict contains %s values while it "
-                        "can only contain %s. As a result only the first %s "
+                        f"Joint trajectory contains {len(joint_trajectory)} values "
+                        f"while it can only contain {len(arm_action_space_joints)}. "
+                        f"As a result only the first {len(joint_trajectory)} "
                         "values are used in the arm and gripper control command."
-                        % (
-                            len(joint_trajectory),
-                            len(arm_action_space_joints),
-                            len(joint_trajectory),
-                        )
                     )
                 joint_trajectory = dict(
                     zip(arm_action_space_joints, np.transpose(joint_trajectory))
@@ -1329,10 +1295,9 @@ class PandaEnv(RobotGazeboGoalEnv):
             else:
                 rospy.logwarn(
                     "Setting joint trajectory failed since the 'joint_trajectory' "
-                    "input argument is of the '%s' type while the "
-                    "'set_arm_joint_trajectory' function only accepts a dictionary, "
+                    f"input argument is of the '{type(joint_trajectory)}' type while "
+                    "the 'set_arm_joint_trajectory' function only accepts a dictionary, "
                     "list or a FollowJointTrajectoryActionGoal message."
-                    % type(joint_trajectory)
                 )
                 return False
 
@@ -1352,14 +1317,14 @@ class PandaEnv(RobotGazeboGoalEnv):
             if not retval:
                 rospy.logwarn("Setting joint trajectory failed.")
                 return False
-            else:
-                return True
-        else:
-            rospy.logwarn(
-                "Setting joints trajectory failed since the "
-                f"'{SET_JOINT_TRAJECTORY_TOPIC}' service was not available."
-            )
-            return False
+
+            return True
+
+        rospy.logwarn(
+            "Setting joints trajectory failed since the "
+            f"'{SET_JOINT_TRAJECTORY_TOPIC}' service was not available."
+        )
+        return False
 
     def set_gripper_width(
         self, gripper_width, wait=None, grasping=None, max_effort=None
@@ -1398,12 +1363,12 @@ class PandaEnv(RobotGazeboGoalEnv):
             # Send gripper width request.
             self._set_gripper_width_client.call(req)
             return True
-        else:
-            rospy.logwarn(
-                f"Setting gripper_width failed since the '{SET_JOINT_COMMANDS_TOPIC}' "
-                "service was not available."
-            )
-            return False
+
+        rospy.logwarn(
+            f"Setting gripper_width failed since the '{SET_JOINT_COMMANDS_TOPIC}' "
+            "service was not available."
+        )
+        return False
 
     def _wait_till_arm_control_done(  # noqa: C901
         self,
@@ -1430,8 +1395,8 @@ class PandaEnv(RobotGazeboGoalEnv):
         """
         if control_type not in ["position", "effort"]:
             raise ValueError(
-                "Please specify a valid control type. Valid values are %s."
-                % ("['position', 'effort']")
+                "Please specify a valid control type. Valid values are 'position' & "
+                "'effort'."
             )
         else:
             control_type = control_type.lower()
@@ -1666,11 +1631,11 @@ class PandaEnv(RobotGazeboGoalEnv):
         if resp.success:
             self.__robot_control_type = control_type
         else:
-            rospy.logerr(
-                "Shutting down '%s' since the controllers required for '%s' control "
-                "were not loaded successfully." % (rospy.get_name(), control_type)
+            err_msg = (
+                f"Shutting down '{rospy.get_name()}' since the controllers required "
+                f"for '{control_type}' control were not loaded successfully."
             )
-            sys.exit(0)
+            ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
 
     @property
     def in_collision(self):

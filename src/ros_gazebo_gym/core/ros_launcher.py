@@ -1,22 +1,20 @@
-#!/usr/bin/env python3
 """Launches all the ROS nodes that are needed for a given
 :ros-gazebo-gym:`ros_gazebo_gym <>` gymnasium environment.
 """
-import sys
+import os
+import socket
 import time
 from pathlib import Path
-import rosgraph
-import socket
-import os
 
+import rosgraph
 import rospy
 from ros_gazebo_gym.core.helpers import (
     PopenAutoCleanup,
+    get_catkin_workspace_path,
     get_global_pkg_path,
     install_package,
-    get_catkin_workspace_path,
+    ros_exit_gracefully,
 )
-from ros_gazebo_gym.common.helpers import colorize
 
 
 class ROSLauncher(object):
@@ -36,45 +34,31 @@ class ROSLauncher(object):
         try:
             # Ensure that a ROS master is running.
             if not rosgraph.is_master_online():
-                print(
-                    colorize(
-                        "WARNING: No ROS master was found. Starting one in a "
-                        "subprocess.",
-                        color="yellow",
-                        bold=True,
-                    )
-                )
+                rospy.logwarn("No ROS master was found. Starting one in a subprocess.")
                 p = PopenAutoCleanup("roscore", critical=True)
                 state = p.poll()
                 if state is None:
-                    print(colorize("INFO: ROS master successfully started."))
+                    rospy.loginfo("ROS master successfully started.")
                     cls.launched["roscore"] = p  # Store a reference to the process.
                 elif state != 0:
-                    print(
-                        colorize(
-                            "ERROR: Something went wrong while trying to launch the "
-                            "ROS master.",
-                            color="red",
-                            bold=True,
-                        )
+                    rospy.logerr(
+                        "Something went wrong while trying to launch the ROS master."
                     )
-                    sys.exit(0)
+                    ros_exit_gracefully(
+                        shutdown_msg=f"Shutting down {rospy.get_name()}", exit_code=1
+                    )
         except socket.error:
-            print(
-                colorize(
-                    "ERROR: No ROS master was found and none could be started "
-                    "please check your system and try again.",
-                    color="red",
-                    bold=True,
-                )
+            rospy.logerr(
+                "No ROS master was found and none could be started please check your "
+                "system and try again."
             )
-            sys.exit(0)
+            ros_exit_gracefully(
+                shutdown_msg=f"Shutting down {rospy.get_name()}", exit_code=1
+            )
 
         # Make sure ROS has been initialized.
         if not rospy.rostime.is_rostime_initialized():
-            rospy.init_node(
-                "ros_gazebo_gym_launcher_node", anonymous=True, log_level=rospy.WARN
-            )
+            rospy.init_node("ros_gazebo_gym_launcher_node", anonymous=True)
 
     @classmethod
     def list_processes(cls):
@@ -101,7 +85,7 @@ class ROSLauncher(object):
         cls.launched = {}
 
     @classmethod
-    def launch(
+    def launch(  # noqa: C901
         cls,
         package_name,
         launch_file_name,
@@ -141,7 +125,9 @@ class ROSLauncher(object):
                 "the workspace before calling the ROSLauncher or supply it with a "
                 "workspace_path."
             )
-            sys.exit(0)
+            ros_exit_gracefully(
+                shutdown_msg=f"Shutting down {rospy.get_name()}", exit_code=1
+            )
 
         # Install ROS package and its dependencies if they are not present.
         try:
@@ -205,7 +191,9 @@ class ROSLauncher(object):
                     "Something went wrong while trying to launch the "
                     f"{path_launch_file_name} launch file."
                 )
-                sys.exit(0)
+                ros_exit_gracefully(
+                    shutdown_msg=f"Shutting down {rospy.get_name()}", exit_code=1
+                )
         else:
             raise Exception(
                 f"Package '{package_name}' and its dependencies could not be found."

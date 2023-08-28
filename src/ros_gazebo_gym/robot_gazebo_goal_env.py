@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """The Gazebo GOAL environment is mainly used to connect the simulated Gym GOAL
 environment to the Gazebo simulator. It takes care of the resets of the simulator after
 each step or the resets of the controllers (if needed), it also takes care of all the
@@ -27,13 +26,12 @@ reset (typical steps in the reinforcement learning loop).
     the :class:`~ros_gazebo_gym.robot_gazebo_env.RobotGazeboEnv`, but the cost at each
     step.
 """
-import sys
-
 import gymnasium_robotics as gymrobot
 import rospy
 from ros_gazebo_gym.common.markers import TextOverlay
 from ros_gazebo_gym.core.controllers_connection import ControllersConnection
 from ros_gazebo_gym.core.gazebo_connection import GazeboConnection
+from ros_gazebo_gym.core.helpers import ros_exit_gracefully
 from ros_gazebo_gym.msg import RLExperimentInfo
 
 
@@ -230,7 +228,9 @@ class RobotGazeboGoalEnv(gymrobot.GoalEnv):
         other systems that need closing.
         """
         rospy.logdebug("Closing RobotGazeboEnvironment")
-        sys.exit(0)
+        ros_exit_gracefully(
+            shutdown_msg=f"Shutting down {rospy.get_name()}", exit_code=0
+        )
 
     def _reset_sim(self):
         """Resets a simulation."""
@@ -364,7 +364,7 @@ class RobotGazeboGoalEnv(gymrobot.GoalEnv):
 
         Args:
             observations (numpy.ndarray): The observations.
-            done (function): Whether the episode was done.
+            done (bool): Whether the episode was done.
 
         Raises:
             NotImplementedError: Thrown When the method was not overloaded by the task

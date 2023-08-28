@@ -1,26 +1,25 @@
-#!/usr/bin/env python3
 """Contains several helper functions that are used by the
 :ros-gazebo-gym:`ros_gazebo_gym <>` package for the setup of the ROS Gazebo Gym
 gymnasium environments.
 """
+import atexit
 import os
 import subprocess
 import sys
+import threading
+import time
+from io import TextIOWrapper
 from pathlib import Path
 
 import catkin
 import catkin_pkg
+import psutil
 import pygit2
 import rosparam
 import rospkg
 import rospy
 import ruamel.yaml as yaml
 from tqdm import tqdm
-import atexit
-import threading
-import time
-from io import TextIOWrapper
-import psutil
 
 # Script settings.
 ROSDEP_INDEX_PATH = "../cfg/rosdep.yaml"
@@ -67,6 +66,7 @@ class PopenAutoCleanup(subprocess.Popen):
             **kwargs: The keyword arguments that are passed to the
                 :class:`subprocess.Popen` class.
         """
+        self._cmd = args[0]
         super().__init__(*args, **kwargs)
         atexit.register(self._process_cleanup)  # Ensure cleanup when script exits.
 
@@ -84,7 +84,7 @@ class PopenAutoCleanup(subprocess.Popen):
 
     def _process_cleanup(self):
         """Cleans up the process when the script exits."""
-        rospy.loginfo("Cleaning ROS launch processes.")
+        rospy.logwarn(f"Cleaning ROS launch process: {self._cmd}")
         self._stop_critical_check()
         if self.poll() is None:
             self._terminate_child_processes()
@@ -318,6 +318,23 @@ def is_repo_up_to_date(repo_path):
         return False
 
 
+def ros_exit_gracefully(shutdown_msg=None, exit_code=0):
+    """Shuts down the ROS node wait until it is shutdown and exits the script.
+
+    Args:
+        shutdown_msg (str, optional): The shutdown message. Defaults to ``None``.
+        exit_code (int, optional): The exit code. Defaults to ``0``.
+    """
+    if exit_code == 0:
+        rospy.loginfo(shutdown_msg)
+    else:
+        rospy.logerr(shutdown_msg)
+    rospy.signal_shutdown(shutdown_msg)
+    while not rospy.is_shutdown():
+        rospy.sleep(0.1)
+    sys.exit(exit_code)
+
+
 def build_catkin_ws(workspace_path, install_ros_deps=False):
     """Builds the catking workspace and installs system dependencies while doing so if
     requested.
@@ -390,7 +407,9 @@ def build_catkin_ws(workspace_path, install_ros_deps=False):
                         "-r -y\n\nin the catkin workspace and try again (i.e. "
                         f"'{workspace_path}')."
                     )
-                    sys.exit(0)
+                    ros_exit_gracefully(
+                        shutdown_msg=f"Shutting down {rospy.get_name()}", exit_code=1
+                    )
 
     # Build workspace.
     if catkin_make_used:
@@ -466,10 +485,12 @@ def install_package(  # noqa: C901
             "the workspace before calling the 'install_package' function or supply the "
             "function with a workspace_path."
         )
-        sys.exit(0)
+        ros_exit_gracefully(
+            shutdown_msg=f"Shutting down {rospy.get_name()}", exit_code=1
+        )
 
     # Check if package exists in the global and local catkin workspaces.
-    rospy.loginfo("Checking if '{package_name}' and its dependencies are installed.")
+    rospy.loginfo(f"Checking if '{package_name}' and its dependencies are installed.")
     global_pkg_path = get_global_pkg_path(package_name)
     local_pkg_path = get_local_pkg_path(package_name, workspace_path)
 
@@ -648,7 +669,9 @@ def install_package(  # noqa: C901
                 "system dependencies, manually build the Catkin workspace, and try "
                 "again."
             )
-            sys.exit(0)
+            ros_exit_gracefully(
+                shutdown_msg=f"Shutting down {rospy.get_name()}", exit_code=1
+            )
 
     return True
 
