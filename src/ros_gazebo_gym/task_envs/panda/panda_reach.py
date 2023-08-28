@@ -31,7 +31,7 @@ from ros_gazebo_gym.common.helpers import (
     lower_first_char,
     normalize_quaternion,
     pose_msg_2_pose_dict,
-    merge_n_dicts,
+    shallow_dict_merge,
     split_bounds_dict,
     split_pose_dict,
 )
@@ -1074,7 +1074,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             for joint, val in self._action_bounds["joint_efforts"]["low"].items()
             if joint == "gripper_max_effort"
         }
-        action_bounds_low = merge_n_dicts(
+        action_bounds_low = shallow_dict_merge(
             arm_action_bounds_low,
             gripper_with_action_bound_low,
             gripper_max_effort_action_bound_low,
@@ -1095,7 +1095,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             for joint, val in self._action_bounds["joint_efforts"]["high"].items()
             if joint == "gripper_max_effort"
         }
-        action_bounds_high = merge_n_dicts(
+        action_bounds_high = shallow_dict_merge(
             arm_action_bounds_high,
             gripper_with_action_bound_high,
             gripper_max_effort_action_bound_high,
