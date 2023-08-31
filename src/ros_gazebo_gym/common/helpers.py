@@ -519,7 +519,7 @@ def find_gazebo_model_path(model_name, models_directory_path, extension=""):
         (tuple): tuple containing:
 
             - :obj:`str`: The path where the ``sdf`` or ``urdf`` model file can be
-                found.
+              found.
             - :obj:`str`: Extension of the model file.
     """
     if extension and not extension.startswith("."):

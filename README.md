@@ -1,4 +1,4 @@
-# ROS-gazebo-gym
+# ROS Gazebo Gym
 
 [![ROS Gazebo Gym](https://github.com/rickstaa/ros-gazebo-gym/actions/workflows/ros_gazebo_gym.yml/badge.svg)](https://github.com/rickstaa/ros-gazebo-gym/actions/workflows/ros_gazebo_gym.yml)
 [![ROS Test](https://github.com/rickstaa/ros-gazebo-gym/actions/workflows/ros_test.yml/badge.svg)](https://github.com/rickstaa/ros-gazebo-gym/actions/workflows/ros_test.yml)
