@@ -1,4 +1,4 @@
-# Custom ROS-Gazebo-Gym rosdep rules
+# Custom ROS-gazebo-gym rosdep rules
 
 This folder contains custom [rosdep](https://wiki.ros.org/rosdep) rules for the `ros-gazebo-gym` package. These rules were created to resolve conflicting requirements between the `python3-gymnasium-pip` and `python3-gymnasium-robotics` rules and the `python3-numpy` rule on [Ubuntu 20.04](https://releases.ubuntu.com/focal/). Specifically, `gymnasium` requires `numpy>=1.20.1`, but the `python3-numpy` rule installs `numpy==1.17.4` (see https://github.com/ros/rosdistro/issues/38332).
 
