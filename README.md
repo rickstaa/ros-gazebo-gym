@@ -1,5 +1,7 @@
 # ROS-gazebo-gym
 
+[![ROS Gazebo Gym](https://github.com/rickstaa/ros-gazebo-gym/actions/workflows/ros_gazebo_gym.yml/badge.svg)](https://github.com/rickstaa/ros-gazebo-gym/actions/workflows/ros_gazebo_gym.yml)
+[![ROS Test](https://github.com/rickstaa/ros-gazebo-gym/actions/workflows/ros_test.yml/badge.svg)](https://github.com/rickstaa/ros-gazebo-gym/actions/workflows/ros_test.yml)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/rickstaa/ros-gazebo-gym)](https://github.com/rickstaa/ros-gazebo-gym/releases)
 [![Python 3](https://img.shields.io/badge/Python-3.8%20%7C%203.7%20%7C%203.6-brightgreen)](https://www.python.org/)
 [![ROS version](https://img.shields.io/badge/ROS%20versions-Noetic-brightgreen)](https://wiki.ros.org)
