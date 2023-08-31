@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.9.3](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.9.2...v1.9.3) (2023-08-31)
+
+
+### Documentation
+
+* fix zenodo config ([#35](https://github.com/rickstaa/ros-gazebo-gym/issues/35)) ([59c8f63](https://github.com/rickstaa/ros-gazebo-gym/commit/59c8f637152e0e1326b02a1b2e8abe2cb800eb5a))
+* improve rosdep docs ([#37](https://github.com/rickstaa/ros-gazebo-gym/issues/37)) ([42fb036](https://github.com/rickstaa/ros-gazebo-gym/commit/42fb0360bcbf29442c6edcae23bc26e49cf83921))
+
 ## [1.9.2](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.9.1...v1.9.2) (2023-08-31)
 
 
