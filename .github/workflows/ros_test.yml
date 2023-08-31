@@ -3,7 +3,7 @@ name: ROS Test
 on:
   push:
     branches:
-      - main
+      - noetic
   pull_request:
 
 jobs:
