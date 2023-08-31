@@ -37,12 +37,7 @@ System dependencies
 The Panda environment requires the following system dependencies to be installed on the host machine:
 
 - :ROS:`ROS Noetic <noetic>`.
-- The `libfranka`_ library.
-
-.. important::
-
-   It is recommended to build the `libfranka`_ library from source in accordance with the `Franka Emika documentation`_. This will ensure that the
-   latest version of the library is installed.
+- The `libfranka`_ library **(automatically installed by rosdep)**.
 
 .. _`libfranka`: https://frankaemika.github.io/docs/libfranka.html
 
