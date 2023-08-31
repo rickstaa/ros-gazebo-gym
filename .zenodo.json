@@ -1,0 +1,34 @@
+{
+    "description": "Framework for training reinforcement learning algorithms on a variety of ROS Gazebo environments.",
+    "license": "MIT",
+    "title": "rickstaa/ros-gazebo-gym",
+    "upload_type": "software",
+    "keywords": [
+        "framework",
+        "reinforcement-learning",
+        "simulation",
+        "openai-gym",
+        "gym-environments",
+        "gymnasium",
+        "gymnasium-environments",
+        "ros",
+        "gazebo",
+        "panda",
+        "emika-franka",
+        "reinforcement-learning",
+        "artificial-intelligence",
+    ],
+    "creators": [
+        {
+            "orcid": "0000-0003-4835-2040",
+            "affiliation": "TU Delft",
+            "name": "Rick Staa"
+        },
+        {
+            "orcid": "0000-0003-1121-9879",
+            "affiliation": "The University of Manchester",
+            "name": "Wei Pan"
+        }
+    ],
+    "access_right": "open"
+}

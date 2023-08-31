@@ -1,0 +1,38 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+cff-version: 1.2.0
+title: rickstaa/ros-gazebo-gym
+message: >-
+  If you want to cite this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Rick
+    family-names: Staa
+    affiliation: TU Delft
+    orcid: 'https://orcid.org/0000-0003-4835-2040'
+  - given-names: Wei
+    family-names: Pan
+    affiliation: The University of Manchester
+    orcid: 'https://orcid.org/0000-0003-1121-9879'
+identifiers:
+  - type: url
+    value: 'https://zenodo.org/badge/latestdoi/453634930'
+repository-code: 'https://github.com/rickstaa/ros-gazebo-gym'
+abstract: >-
+  Framework for training reinforcement learning algorithms on a variety of ROS Gazebo environments.
+keywords:
+  - framework
+  - reinforcement-learning
+  - simulation
+  - openai-gym
+  - gym-environments
+  - gymnasium
+  - gymnasium-environments
+  - ros
+  - gazebo
+  - panda
+  - emika-franka
+  - reinforcement-learning
+  - artificial-intelligence
+license: MIT
