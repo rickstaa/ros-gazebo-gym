@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.9.1](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.9.0...v1.9.1) (2023-08-31)
+
+
+### Documentation
+
+* update badges ([#30](https://github.com/rickstaa/ros-gazebo-gym/issues/30)) ([ad24ffd](https://github.com/rickstaa/ros-gazebo-gym/commit/ad24ffd5446505b447ae97cbed61c8fdc1a7a0bb))
+
 ## [1.9.0](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.8.0...v1.9.0) (2023-08-31)
 
 
