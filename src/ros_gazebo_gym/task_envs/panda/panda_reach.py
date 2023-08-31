@@ -1417,6 +1417,19 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             "desired_goal": desired_goal,
         }
 
+    def _get_info(self):
+        """Returns a dictionary with additional step information.
+
+        Returns:
+            dict: Dictionary with additional information.
+        """
+        info = {
+            "reference": self.goal,
+            "state_of_interest": self.ee_pose,
+            "reference_error": self.ee_pose - self.goal,
+        }
+        return info
+
     def _set_action(self, action):
         """Take robot action.
 

@@ -28,7 +28,7 @@ reset (typical steps in the reinforcement learning loop).
 """
 import gymnasium_robotics as gymrobot
 import rospy
-from ros_gazebo_gym.common.markers import TextOverlay
+from ros_gazebo_gym.common.markers.text_overlay import TextOverlay
 from ros_gazebo_gym.core.controllers_connection import ControllersConnection
 from ros_gazebo_gym.core.gazebo_connection import GazeboConnection
 from ros_gazebo_gym.core.helpers import ros_exit_gracefully
@@ -165,9 +165,10 @@ class RobotGazeboGoalEnv(gymrobot.GoalEnv):
         if self._publish_rviz_training_info_overlay:
             self._publish_rviz_info_overlay()
         self.step_num += 1
+        info = self._get_info()
 
         rospy.logdebug("END STEP")
-        return obs, self.step_reward, done, False, {}
+        return obs, self.step_reward, done, False, info
 
     def _publish_reward_topic(self):
         """This function publishes the given reward in the reward topic for
@@ -219,9 +220,10 @@ class RobotGazeboGoalEnv(gymrobot.GoalEnv):
         obs = self._get_obs()
         if self._pause_simulation:
             self.gazebo.pause_sim()
+        info = self._get_info()
         rospy.logdebug("END resetting RobotGazeboEnvironment")
 
-        return obs, {}
+        return obs, info
 
     def close(self):
         """Function executed when closing the environment. Use it for closing GUIS and
@@ -358,6 +360,14 @@ class RobotGazeboGoalEnv(gymrobot.GoalEnv):
                 environment.
         """
         raise NotImplementedError()
+
+    def _get_info(self):
+        """Returns a dictionary with additional step information.
+
+        Returns:
+            dict: Dictionary with additional information.
+        """
+        return {}
 
     def _compute_reward(self, observations, done):
         """Calculates the reward to give based on the observations given.
