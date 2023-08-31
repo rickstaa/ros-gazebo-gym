@@ -7,26 +7,33 @@ This section provides instructions on how to use the ROS Gazebo Gym framework to
 General usage instructions
 ==========================
 
-The :ros-gazebo-gym:`ROS Gazebo Gym <>` framework contains several gymnasium robotics task environments that can be used to train RL algorithms. Please see the :ref:`environments <envs>` section for more information about all available task environments. All the environments in the :ros-gazebo-gym:`ROS Gazebo Gym <>` framework can be imported like any other :gymnasium:`gymnasium <>`
-environment. The environments will be registered under the ``gymnasium`` namespace when imported from the ``ros_gazebo_gym`` package or any of its submodules. You 
-can also prefix the environment name with the ``ros_gazebo_gym`` module name prefix, separated by a colon, to use it directly inside the `gym.make` function (e.g. ``ros_gazeb_gym:PandaReach-v1``).
+The :ros-gazebo-gym:`ROS Gazebo Gym <>` framework contains several gymnasium robotics task environments that can be used to train RL algorithms. Please see 
+the :ref:`environments <envs>` section for more information about all available task environments. All the environments in the :ros-gazebo-gym:`ROS Gazebo Gym <>` 
+framework can be imported like any other :gymnasium:`gymnasium <>` environment. The environments will be registered under the ``gymnasium`` namespace when imported 
+from the ``ros_gazebo_gym`` package or any of its submodules. You can also prefix the environment name with the ``ros_gazebo_gym`` module name prefix, separated by
+a colon, to use it directly inside the `gym.make` function (e.g. ``ros_gazeb_gym:PandaReach-v1``).
 
 .. important::
 
    Since the task environments found in the ROS Gazebo Gym are created in Gazebo and ROS, you have to make sure that you first build and source the ``ros_gazebo_gym`` catkin workspace
    before importing any task environments.
 
-Usage example
-=============
+Usage Examples
+==============
 
-To train a reaching task on a (simulated) `Panda Emika Franka`_ robot using the `SAC algorithm of the stable-baselines`_ package, follow these steps:
+A collection of usage examples showcasing how to utilize the ROS Gazebo Gym framework can be discovered in the :ros-gazebo-gym-examples:`ros_gazebo_gym_examples <>` package. These illustrative examples are
+tailored for integration with the `stable-baselines3`_ package. The current selection of examples includes:
 
-1. Clone the `ros_gazebo_gym_examples` package inside the catkin workspace you created for the ``ros_gazebo_gym`` package.
-2. Install all ROS dependencies and rebuild the catkin workspace (see :ref:`install_dependencies` and :ref:`build_package`).
-3. Source the catkin workspace (i.e. ``. ../develop/setup.bash``).
-4. Launch any of the examples found in the `ros_gazebo_gym_examples` package using the `roslaunch` command.
+- :ros-gazebo-gym-examples:`launch/start_panda_training.launch <>`: This launch file initiates a training session for the ``PandaReach-v1`` task environment using the `Stable Baselines SAC algorithm`_.
 
-Here is an example of how to launch the training example:
+To embark on a training session for a reaching task involving a (simulated) `Panda Emika Franka`_ robot using the `Stable Baselines SAC algorithm`_, follow these steps:
+
+1. Clone the `ros_gazebo_gym_examples` package within the Catkin workspace established for the ``ros_gazebo_gym`` package.
+2. Complete the installation of all requisite ROS dependencies and perform the catkin workspace reconstruction (refer to :ref:`install_dependencies` and :ref:`build_package`).
+3. Source the Catkin workspace (e.g., execute ``. ../develop/setup.bash``).
+4. Launch any of the examples from the :ros-gazebo-gym-examples:`ros_gazebo_gym_examples <>` package using the ``roslaunch`` command.
+
+Here's a demonstration of how to launch the training example:
 
 .. code-block:: bash
 
@@ -34,21 +41,20 @@ Here is an example of how to launch the training example:
 
 .. note::
 
-   To ease the installation process, we also provide the :ros-gazebo-gym-ws:`ros-gazebo-gym-ws <>` repository that contains both the :ros-gazebo-gym:`ros_gazebo_gym <>` and :ros-gazebo-gym-examples:`ros_gazebo_gym_examples <>` package repositories
-   which you can clone directly inside your Catkin workspace using the following command:
+   To streamline the installation process, the :ros-gazebo-gym-ws:`ros-gazebo-gym-ws <>` repository is provided. This repository encompasses both the :ros-gazebo-gym:`ros_gazebo_gym <>` and :ros-gazebo-gym-examples:`ros_gazebo_gym_examples <>` package repositories. You can effortlessly incorporate these repositories into your Catkin workspace using the subsequent command:
 
    .. code-block:: bash
 
       git clone --recurse-submodules https://github.com/rickstaa/ros-gazebo-gym-ws.git src
 
-   The ``--recurse-submodules`` argument also ensures that all the submodules are cloned. If you already cloned the repository and forgot the `--recurse-submodule` argument, you can pull the submodules 
-   using the following git command:
+   The usage of the ``--recurse-submodules`` argument ensures the cloning of all submodules. If you have already cloned the repository and neglected the `--recurse-submodule` argument, you can rectify this by employing the following git command:
 
    .. code-block:: bash
 
       git submodule update --init --recursive
 
-.. _`SAC algorithm of the stable-baselines`: https://stable-baselines3.readthedocs.io/en/master/modules/sac.html
+.. _`stable-baselines3`: https://stable-baselines3.readthedocs.io
+.. _`Stable Baselines SAC algorithm`: https://stable-baselines3.readthedocs.io/en/master/modules/sac.html
 .. _`Panda Emika Franka`: https://www.franka.de/
 
 Task environment configuration

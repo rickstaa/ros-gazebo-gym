@@ -55,13 +55,13 @@ Action space:
             - **y** (:obj:`float`): The y position of the end-effector.
             - **z** (:obj:`float`): The z position of the end-effector.
             - **rx** (:obj:`float`): The x component of the quaternion orientation of the
-            end-effector.
+              end-effector.
             - **ry** (:obj:`float`): The y component of the quaternion orientation of the
-            end-effector.
+              end-effector.
             - **rz** (:obj:`float`): The z component of the quaternion orientation of the
-            end-effector.
+              end-effector.
             - **rw** (:obj:`float`): The w component of the quaternion orientation of the
-            end-effector.
+              end-effector.
 
     If the gripper is loaded, the action space is extended with the following
     dimensions:
@@ -109,9 +109,9 @@ Environment step return:
 
     The info dictionary contains the following information:
 
-    -   **reference**: The reference position (x,y,z) that the Panda Reach is tracking (i.e. the goal position).
-    -   **state_of_interest**: The state that should track the reference (SOI) (i.e. the end-effector position).
-    -   **reference_error**: The error between SOI and the reference (i.e. the error between the end-effector position and the goal position).
+    - **reference**: The reference position (x,y,z) that the Panda Reach is tracking (i.e. the goal position).
+    - **state_of_interest**: The state that should track the reference (SOI) (i.e. the end-effector position).
+    - **reference_error**: The error between SOI and the reference (i.e. the error between the end-effector position and the goal position).
 
 .. admonition:: Configuration
     :class: important
@@ -965,10 +965,10 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             (tuple): tuple containing:
 
                 - random_ee_pose (dict): Random EE pose. A empty dictionary is returned
-                    when no valid random EE pose could be found.
+                  when no valid random EE pose could be found.
                 - model_configuration (dict): A set of joint positions that result in
-                    this EE pose. A empty dictionary is returned when no valid random
-                    EE pose could be found.
+                  this EE pose. A empty dictionary is returned when no valid random
+                  EE pose could be found.
         """
         if hasattr(self, "_moveit_get_random_ee_pose_client"):
             req = self.panda_gazebo.srv.GetRandomEePoseRequest()
@@ -1377,9 +1377,9 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                         - End effector joints positions
                         - End effector joints velocities
                 - achieved_goal (:obj:`object`): The goal that was achieved during
-                    execution.
+                  execution.
                 - desired_goal (:obj:`object`): The desired goal that we asked the agent
-                    to attempt to achieve.
+                  to attempt to achieve.
         """
         ee_pose = self.ee_pose
         ee_position = [

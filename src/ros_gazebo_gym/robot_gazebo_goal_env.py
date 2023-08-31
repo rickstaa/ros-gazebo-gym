@@ -141,13 +141,13 @@ class RobotGazeboGoalEnv(gymrobot.GoalEnv):
         Returns:
             (tuple): tuple containing:
 
-                -   obs (:obj:`np.ndarray`): Environment observation.
-                -   cost (:obj:`float`): Cost of the action.
-                -   terminated (:obj:`bool`): Whether the episode is terminated.
-                -   truncated (:obj:`bool`): Whether the episode was truncated. This
-                    value is set by wrappers when for example a time limit is reached or
-                    the agent goes out of bounds.
-                -   info (:obj:`dict`): Additional information about the environment.
+                - obs (:obj:`np.ndarray`): Environment observation.
+                - cost (:obj:`float`): Cost of the action.
+                - terminated (:obj:`bool`): Whether the episode is terminated.
+                - truncated (:obj:`bool`): Whether the episode was truncated. This
+                  value is set by wrappers when for example a time limit is reached or
+                  the agent goes out of bounds.
+                - info (:obj:`dict`): Additional information about the environment.
 
         .. note::
             Here we should convert the action num to movement action, execute the action
