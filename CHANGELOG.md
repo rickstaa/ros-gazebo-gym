@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.9.0](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.8.0...v1.9.0) (2023-08-31)
+
+
+### Features
+
+* add step info ([#27](https://github.com/rickstaa/ros-gazebo-gym/issues/27)) ([65267a4](https://github.com/rickstaa/ros-gazebo-gym/commit/65267a4ca164708b93f13429f5f87e6a0dd9c1d7))
+
+
+### Bug Fixes
+
+* fix panda reach import error ([#22](https://github.com/rickstaa/ros-gazebo-gym/issues/22)) ([0897138](https://github.com/rickstaa/ros-gazebo-gym/commit/08971380ab66c72a891d935b96aa84fcb3dc4844))
+
+
+### Documentation
+
+* improve documentation ([#26](https://github.com/rickstaa/ros-gazebo-gym/issues/26)) ([a04355d](https://github.com/rickstaa/ros-gazebo-gym/commit/a04355d071f605056d2e015a7cd00035b4a531a6))
+
 ## [1.8.0](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.7.0...v1.8.0) (2023-08-28)
 
 
