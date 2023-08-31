@@ -54,12 +54,12 @@ jobs:
           run: |
             . /devel/setup.bash
             pip install -r ../src/requirements/doc_requirements.txt
-            rosdoc_lite ../src/ros_gazebo_gym -o ../src/ros_gazebo_gym/docs/build
+            rosdoc_lite ../src -o ../src/docs/build
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: src/ros_gazebo_gym/docs/build/html
+          publish_dir: src/docs/build/html
           force_orphan: true
