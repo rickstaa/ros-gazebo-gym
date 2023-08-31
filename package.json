@@ -1,6 +1,6 @@
 {
   "name": "ros-gazebo-gym",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "description": "Framework for training RL algorithms on ROS Gazebo robots.",
   "keywords": [
     "framework",
