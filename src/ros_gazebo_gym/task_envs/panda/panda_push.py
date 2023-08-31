@@ -1,22 +1,25 @@
 """An ROS Panda push gymnasium environment.
 
-.. figure:: /images/panda/panda_push_env.png
+.. image:: /images/panda/panda_push_env.png
    :alt: Panda push environment
+
+This environment is an extension of the :class:`~ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv` task environment,
+sharing most features such as observation and action spaces. Notable distinctions are detailed below.
 
 Goal:
     In this environment the agent has to learn to push a puck to a desired goal
-    position. Based on the :gymnasium-robotics:`FetchPush-v2 <envs/fetch/push/>`
+    position. It was based on the :gymnasium-robotics:`FetchPush-v2 <envs/fetch/push/>`
     gymnasium environment.
 
 .. admonition:: Configuration
     :class: important
 
     The configuration files for this environment are found in the
-    `panda task environment config folder <../config/panda_push.yaml>`_).
-"""
+    :ros-gazebo-gym:`panda task environment config folder <blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_push.yaml>`.
+"""  # noqa: E501
 import rospy
 from gymnasium import utils
-from ros_gazebo_gym.task_envs.panda import PandaPickAndPlaceEnv
+from ros_gazebo_gym.task_envs.panda.panda_pick_and_place import PandaPickAndPlaceEnv
 
 # Specify topics and other script variables.
 CONFIG_FILE_PATH = "config/panda_push.yaml"

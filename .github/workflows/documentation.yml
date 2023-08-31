@@ -53,7 +53,7 @@ jobs:
           options: -v ${{github.workspace}}/src:/src/ -v ${{github.workspace}}/devel:/devel/
           run: |
             . /devel/setup.bash
-            pip install -r ../src/ros_gazebo_gym/requirements/doc_requirements.txt
+            pip install -r ../src/requirements/doc_requirements.txt
             rosdoc_lite ../src/ros_gazebo_gym -o ../src/ros_gazebo_gym/docs/build
 
       - name: Deploy

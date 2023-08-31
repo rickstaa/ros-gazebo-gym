@@ -8,7 +8,7 @@ from pathlib import Path
 import catkin_pkg.package
 
 # -- Retrieve package version ------------------------------------------------
-catkin_dir = Path(__file__).joinpath("../../..").resolve()
+catkin_dir = Path(__file__).parent.joinpath("../..").resolve()
 catkin_package = catkin_pkg.package.parse_package(
     catkin_dir.joinpath(catkin_pkg.package.PACKAGE_MANIFEST_FILENAME)
 )
@@ -18,7 +18,6 @@ catkin_package = catkin_pkg.package.parse_package(
 project = "ROS Gazebo Gym"
 copyright = f"{datetime.now().year}, Rick Staa"
 author = "Rick Staa"
-git_user_name = "rickstaa"
 release = catkin_package.version
 version = ".".join(release.split(".")[:3])
 print("Doc release: ", release)
@@ -42,17 +41,16 @@ extensions = [
     "myst_parser",  # Support for MyST Markdown syntax.
     "autoapi.extension",  # Generate API documentation from code.
     "sphinx.ext.autodoc",  # Include documentation from docstrings.
-    "sphinx.ext.imgmath",  # Render math as images.
 ]
 autoapi_dirs = [
     "../../src/ros_gazebo_gym",
     str(
         catkin_dir.joinpath(
-            "../../../devel/lib/python3/dist-packages/panda_gazebo"  # TODO: FIX!
+            "../../devel/lib/python3/dist-packages/ros_gazebo_gym"
         ).resolve()
     ),
 ]
-
+myst_heading_anchors = 2  # Add anchors to headings.
 
 # Extensions settings.
 autoapi_member_order = "bysource"
@@ -66,12 +64,9 @@ autoapi_options = [
 autoapi_python_class_content = "both"
 autoapi_template_dir = "_templates/autoapi"
 
-# imgmath settings.
-imgmath_image_format = "svg"
-imgmath_font_size = 14
-
 # Add mappings.
 intersphinx_mapping = {
+    "gymnasium": ("https://www.gymlibrary.dev/", None),
     "python3": ("https://docs.python.org/3", None),
     "numpy": ("https://numpy.org/doc/stable", None),
     "pygit2": ("https://www.pygit2.org/", None),
@@ -118,16 +113,21 @@ html_context = {
 # Here you will find some often used global url definitions.
 extlinks = {
     "ros-gazebo-gym": (
-        "https://github.com/rickstaa/ros-gazebo-gym/tree/noetic/%s",
+        "https://github.com/rickstaa/ros-gazebo-gym/%s",
         None,
     ),
+    "ros-gazebo-gym-examples": (
+        "https://github.com/rickstaa/ros-gazebo-gym-examples/%s",
+        None,
+    ),
+    "ros-gazebo-gym-ws": ("https://github.com/rickstaa/ros-gazebo-gym-ws/%s", None),
     "gymnasium": ("https://gymnasium.farama.org/%s", None),
     "gymnasium-robotics": ("https://robotics.farama.org/%s", None),
     "panda-gazebo": ("https://github.com/rickstaa/panda-gazebo/%s", None),
-    "issues": (
-        "https://github.com/rickstaa/ros-gazebo-gym/issues/%s",
-        None,
-    ),
+    "franka-ros": ("https://github.com/frankaemika/franka_ros/%s", None),
+    "ROS": ("https://wiki.ros.org/%s", None),
+    "gazebo": ("https://gazebosim.org/%s", None),
+    "openai_ros": ("http://wiki.ros.org/openai_ros/%s", None),
 }
 
 

@@ -457,7 +457,7 @@ def install_package(  # noqa: C901
     """Install a given ROS package together with it's dependencies.
 
     This function checks if a ROS package is installed and installs it if this is not
-    the case. It uses the :ros-gazebo-gym:`ros_gazebo_gym` package dependency index to
+    the case. It uses the :ros-gazebo-gym:`ros_gazebo_gym <>` package dependency index to
     clone the package and dependencies in the local catkin workspace and subsequently
     rebuilds this workspace. It also throws a warning if a package is installed but not
     up to date.

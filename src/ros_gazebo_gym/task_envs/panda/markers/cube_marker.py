@@ -16,13 +16,9 @@ class CubeMarker(TargetMarker):
     """RViz grasping cube marker.
 
     Attributes:
-        x (int): The marker x position.
-        y (int): The marker y position.
-        z (int): The marker z position.
         id (int): The marker object id.
         type (str): The marker type.
         action (float): The marker message action (add or remove).
-        pose (:obj:`geometry_msgs.Pose`): The marker pose.
         scale (:obj:`geometry_msgs.Vector3`): The marker scale.
         color (:obj:`std_msgs.ColorRGBA`): The marker color.
         lifetime (:obj:`rospy.duration`): The lifetime duration.

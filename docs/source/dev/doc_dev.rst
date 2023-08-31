@@ -4,88 +4,70 @@ Release documentation
 
 .. contents:: Table of Contents
 
-The ROS Gazebo Gym framework contains two `Github actions`_ that automatically check and
-deploy new documentation:
-
-    * The `docs_check_ci`_ action checks your changes to see if the documentation still builds.
-    * The `docs_publish_ci`_ action deploys your documentation if a new version of the ROS Gazebo Gym framework is released.
-
-Automatic build instructions
-============================
-
-To successfully deploy your new documentation, you have to follow the following development steps:
-
-#. Create a new branch for the changes you want to make to the documentation (e.g. ``docs_change`` branch).
-#. Make your changes to this branch.
-#. Commit your changes. This will trigger the `docs_check_ci`_ action to run.
-#. Create a pull request into the noetic branch if this action ran without errors.
-#. Add a version bump label (``bump:patch``, ``bump:minor`` or ``bump:major``) to the pull request.
-#. Merge the pull request into the noetic branch. The documentation will now be deployed using the `docs_publish_ci`_ action.
-
-.. _`Github actions`: https://github.com/features/actions
-.. _`docs_check_ci`: https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/.github/workflows/docs_check_ci.yml
-.. _`docs_publish_ci`: https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/.github/workflows/docs_publish_ci.yml
-
-.. tip::
-
-    It is a good idea to `manually build the documentation <#build-the-documentation>`_ before pushing your changes to
-    your branch. This way, you spot syntax errors early on in the development process.
-
-Manual build instructions
-=========================
-
 Install requirements
 --------------------
 
-Building the ROS Gazebo Gym's `HTML`_ documentation requires `sphinx`_,
-the ROS Gazebo Gym package and several plugins. All of the above can be
-installed using the following `pip`_ command:
+Building the :ros-gazebo-gym:`ROS Gazebo Gym <>` documentation requires `sphinx`_, the ``ros_gazebo_gym``
+package and several system and Python packages. you can use `rosdep`_, a package manager for 
+ROS that automates the installation of system and ROS dependencies. To install the 
+required dependencies for building the documentation, you can run the following 
+command inside your Catkin workspace:
 
 .. code-block:: bash
 
-    pip install -e .[docs]
+    rosdep install -t doc --from-paths src --ignore-src -r -y
 
-.. _`sphinx`: http://www.sphinx-doc.org/en/master
+Alternatively, you can also use the ``requirements/doc_requirements.txt`` file to install the Python 
+packages inside your Python environment. This can be  done using the following `pip`_ command:
+
+.. code-block:: bash
+
+    pip install -r requirements/doc_requirements.txt
+
+.. _`sphinx`: https://www.sphinx-doc.org/en/master
 .. _`pip`: https://pypi.org/project/pip/
 
-If you also want to build the `LATEX`_ documentation, you have to install the `texlive-full`_
-package.
+.. note::
+    You can also install these requirements in a virtual environment. If you want to do so, you are advised to use the
+    `venv`_ package instead of `Conda`_ since the latter is known to cause issues when used with ROS. If you use the 
+    `venv`_ package, please use the ``--system-site-packages`` flag when creating the virtual environment. This will
+    ensure all the ROS system packages are available in the virtual environment. This is required because the `sphinx`_ 
+    package needs to be able to import the ``ros_gazebo_gym`` ROS package.
 
-.. _`texlive-full`: https://tug.org/texlive/
+.. _rosdep: https://wiki.ros.org/rosdep
+.. _venv: https://docs.python.org/3/library/venv.html
+.. _Conda: https://docs.conda.io/en/latest/
 
 Build the documentation
 -----------------------
 
-Build HTML documentation
-~~~~~~~~~~~~~~~~~~~~~~~~
+To build the Python and ROS documentation, go into the :ros-gazebo-gym:`docs/ <tree/noetic/docs>` directory and run the
+``make docs`` command. This command will use `rosdoc_lite`_ and `sphinx`_ to generate the 
+html documentation inside the ``docs/build/html`` directory. If the documentation is successfully built, you can also use the 
+``make linkcheck`` command to check for broken links.
 
-To build the `HTML`_ documentation, go into the :ros-gazebo-gym:`docs/ <tree/noetic/docs>` directory and run the
-``make html`` command. This command will generate the html documentation
-inside the ``docs/build/html`` directory.
+.. attention::
+    If you used a virtual environment, ensure you are in the environment where you installed the :ros-gazebo-gym:`ros_gazebo_gym <>` package with its
+    dependencies.
+
+.. tip::
+    You can also use the ``make html`` command to build the documentation. Although warnings and errors are now coloured, it does not produce the
+    accompanying ROS package documentation. 
 
 .. note::
-    Make sure you are in the Conda environment in which you installed the :ros-gazebo-gym:`ros_gazebo_gym <>`
-    package with it's dependencies.
+    Sometimes the ``make linkcheck`` command doesn't show the results on the stdout. You can also find the results
+    in the ``docs/build/linkcheck`` folder. 
 
-.. _`HTML`: https://www.w3schools.com/html/
-
-Build LATEX documentation
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To build the `LATEX`_ documentation, go into the :ros-gazebo-gym:`docs/ <tree/noetic/docs>` directory and run the
-``make latex`` command. This command will generate the html documentation
-inside the ``docs/build/latex`` directory.
-
-.. _`LATEX`: https://www.latex-project.org/help/documentation/
+.. _rosdoc_lite: https://wiki.ros.org/rosdoc_lite
+.. _HTML: https://www.w3schools.com/html/
 
 Deploying
 ---------
 
-To deploy documentation to the Github Pages site for the repository,
-push the documentation to the :ros-gazebo-gym:`noetic <tree/noetic>` branch and run the
-``make gh-pages`` command inside the :ros-gazebo-gym:`docs/ <tree/noetic/docs>` directory.
+The documentation is automatically built and deployed to the Github Pages site by the `Docs workflow`_ when a new version
+is released. You must `create a new release`_ to deploy documentation to the Github Pages. Additionally, you can manually
+deploy the documentation through the `GitHub action interface`_ by running the `Docs workflow`_.
 
-.. warning::
-
-    Please make sure you are on the :ros-gazebo-gym:`noetic <tree/noetic>` branch while building the documentation. Otherwise,
-    errors will greet you.
+.. _`create a new release`: https://rickstaa.dev/ros-gazebo-gym/dev/contributing.html#release-guidelines
+.. _`Docs workflow`: https://github.com/rickstaa/ros-gazebo-gym/actions/workflows/documentation.yml
+.. _`GitHub action interface`: https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#defining-inputs-for-manually-triggered-workflows

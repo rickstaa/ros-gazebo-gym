@@ -28,7 +28,6 @@ class TextOverlay(OverlayText):
         bg_color (:obj:`std_msgs.ColorRGBA`): The overlay background color.
         fg_color (:obj:`std_msgs.ColorRGBA`): The text color.
         line_width (int): The text line width.
-        text_size (int): The font size.
         font (str): The font.
         text (str): The text.
     """
