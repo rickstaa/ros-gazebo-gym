@@ -8,10 +8,10 @@ environments.
 Source code
 -----------
 
-.. literalinclude:: ../../../../../src/ros_gazebo_gym/task_envs/task_envs_list.py
+.. literalinclude:: ../../../../../../src/ros_gazebo_gym/task_envs/task_envs_list.py
    :language: python
    :linenos:
-   :lines: 18-
+   :lines: 17-
 """
 
 # Available environments.

@@ -37,14 +37,14 @@ We use GitHub issues to track public bugs. Report a bug by [opening a new issue]
 
 #### Write bug reports with detail, background, and sample code
 
-[This is an example](http://stackoverflow.com/q/12488905/180626) of a bug report, and I think it's a good model. Here's [another example from Craig Hockenberry](http://www.openradar.me/11905408), an app developer greatly respected in the community.
+[This is an example](https://stackoverflow.com/q/12488905/180626) of a bug report, and I think it's a good model. Here's [another example from Craig Hockenberry](http://www.openradar.me/11905408), an app developer greatly respected in the community.
 
 **Great Bug Reports** tend to have:
 
 *   A quick summary and/or background.
 *   Steps to reproduce:
     *   Be specific!
-    *   Give sample code if you can. [A StackOverflow question](http://stackoverflow.com/q/12488905/180626) includes sample code that *anyone* with a base R setup can run to reproduce the error.
+    *   Give sample code if you can. [A StackOverflow question](https://stackoverflow.com/q/12488905/180626) includes sample code that *anyone* with a base R setup can run to reproduce the error.
 *   What you expected would happen
 *   What happens?
 *   Notes (possibly including why you think this might be happening or stuff you tried that didn't work).

@@ -4,29 +4,28 @@
 Difference with openai_ros
 ==========================
 
-This package was built upon the structure of the `openai_ros <http://wiki.ros.org/openai_ros>`_ package created by `the construct <https://www.theconstructsim.com/>`_.
-As a result, they share their general package structure. Both packages split the Gym environments into separate ``task``, ``robot`` and ``gazebo`` classes, and both use
-a ``gazebo_connection`` and ``controllers_connection`` class to communicate with Gazebo and the controllers. Apart from that, the code has diverged significantly from the `openai_ros <http://wiki.ros.org/openai_ros>`_
-package and is no longer backwards compatible. The most significant differences between the two are displayed in the table below:
+This package has been constructed following the blueprint of the :openai_ros:`openai_ros <>` package, which was developed by `the construct`_. Consequently, they share a foundational package structure.
+Both packages compartmentalize the Gym environments into distinct **task**, **robot**, and **gazebo** classes. Furthermore, they employ corresponding ``gazebo_connection`` and ``controllers_connection``
+classes to establish communication with Gazebo and the controllers.
+
+However, it's important to note that while this common framework serves as the foundation, substantial deviations from the original :openai_ros:`openai_ros <>` package have emerged. These modifications
+have led to a significant divergence in the codebase. Consequently, it's essential to acknowledge that not all components maintain backward compatibility. To offer a more precise overview of the contrasting
+features, the table below highlights the most noteworthy differences between the two implementations:
 
 +-----------------------------------+-----------------------------------------------------------+-----------------------------------------------------------------------+
 |                                   | openai_ros                                                | ros_gazebo_gym                                                        |
 +===================================+===========================================================+=======================================================================+
 | License                           | ILPG                                                      | MIT                                                                   |
 +-----------------------------------+-----------------------------------------------------------+-----------------------------------------------------------------------+
-| Import behaviour                  | uses ``StartOpenAI_ROS_Environment`` function             | Direct environment imports, similarly to other gymnasium environments |
+| Import behaviour                  | Uses ``StartOpenAI_ROS_Environment`` function             | Direct environment imports, similarly to other gymnasium environments |
 +-----------------------------------+-----------------------------------------------------------+-----------------------------------------------------------------------+
-| Focus                             | simulated systems                                         | Simulated and real systems                                            |
+| Focus                             | Simulated systems                                         | Simulated and real systems                                            |
 +-----------------------------------+-----------------------------------------------------------+-----------------------------------------------------------------------+
 | ROS Noetic compatible             | ❌                                                        | ✅                                                                    |
 +-----------------------------------+-----------------------------------------------------------+-----------------------------------------------------------------------+
 | ROS EOL compatible                | ✅                                                        | ❌                                                                    |
 +-----------------------------------+-----------------------------------------------------------+-----------------------------------------------------------------------+
 | Uses black/flake8 conventions     | ❌                                                        | ✅                                                                    |
-+-----------------------------------+-----------------------------------------------------------+-----------------------------------------------------------------------+
-| Code quality pre-commit hooks     | ❌                                                        | ✅                                                                    |
-+-----------------------------------+-----------------------------------------------------------+-----------------------------------------------------------------------+
-| Code quality gh-actions           | ❌                                                        | ✅                                                                    |
 +-----------------------------------+-----------------------------------------------------------+-----------------------------------------------------------------------+
 | Clones environment repository     | ✅                                                        | ✅                                                                    |
 +-----------------------------------+-----------------------------------------------------------+-----------------------------------------------------------------------+
@@ -82,9 +81,12 @@ package and is no longer backwards compatible. The most significant differences 
 +-----------------------------------+-----------------------------------------------------------+-----------------------------------------------------------------------+
 
 As the table above shows, the :ros-gazebo-gym:`ros_gazebo_gym <>` package works in ROS noetic, is easier to work with, is fully open-source, and comes with extensive code API documentation. The `openai_ros <http://wiki.ros.org/openai_ros>`_
-on the other hand, contains more task environments and is compatible with EOL ROS versions. Nevertheless, new environments can easily be added to the :ros-gazebo-gym:`ros_gazebo_gym <>` package by following :ref:`this guide <add_new_env>`.
+on the other hand, currently contains more robotics environments and is compatible with EOL ROS versions. Nevertheless, new environments can easily be added to the :ros-gazebo-gym:`ros_gazebo_gym <>` package by following
+:ref:`this guide <add_new_env>`.
 
 .. important::
 
-    Although the :ros-gazebo-gym:`ros_gazebo_gym <>` package diverged significantly from the `openai_ros <http://wiki.ros.org/openai_ros>`_ package with some effort,
-    it can be back-ported into the `openai_ros <http://wiki.ros.org/openai_ros>`_ package under an MIT license. I'm happy to do this if this achieves enough support from the ROS community.
+    Although the :ros-gazebo-gym:`ros_gazebo_gym <>` package diverged significantly from the :openai_ros:`openai_ros <>` package with some effort,
+    it can be back-ported into the :openai_ros:`openai_ros <>` package under an MIT license. I'm happy to do this if this achieves enough support from the ROS community.
+
+.. _`the construct`: https://www.theconstructsim.com/

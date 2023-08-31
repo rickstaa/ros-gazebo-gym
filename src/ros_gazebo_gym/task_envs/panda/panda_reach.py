@@ -1,20 +1,124 @@
 """An ROS Panda reach gymnasium environment.
 
-.. figure:: /images/panda/panda_reach_env.png
+.. image:: /images/panda/panda_reach_env.png
    :alt: Panda reach environment
 
-Goal:
+Observation space:
+    As the panda environment inherits from the `gym.GoalEnv`_ class, the observation
+    space is a dictionary.
+
+    Type: Dict
+        - **observation** (:obj:`numpy.ndarray`): The current end-effector pose, joint
+          positions and joint velocities.
+        - **desired_goal** (:obj:`numpy.ndarray`): The desired end-effector pose.
+        - **achieved_goal** (:obj:`numpy.ndarray`): The achieved end-effector pose.
+
+.. _`gym.GoalEnv`: https://robotics.farama.org/content/multi-goal_api/#goalenv
+
+Action space:
+    The action space of the panda environment is dependent on the control type and
+    whether the gripper is loaded. The following action spaces are available:
+
+    **Joint trajectory control**:
+        Type: Box(7)
+            - **panda_joint1** (:obj:`float`): The position of the first joint.
+            - **panda_joint2** (:obj:`float`): The position of the second joint.
+            - **panda_joint3** (:obj:`float`): The position of the third joint.
+            - **panda_joint4** (:obj:`float`): The position of the fourth joint.
+            - **panda_joint5** (:obj:`float`): The position of the fifth joint.
+            - **panda_joint6** (:obj:`float`): The position of the sixth joint.
+            - **panda_joint7** (:obj:`float`): The position of the seventh joint.
+
+    **Joint position control**:
+        Type: Box(7)
+            - **panda_joint1** (:obj:`float`): The position of the first joint.
+            - **panda_joint2** (:obj:`float`): The position of the second joint.
+            - **panda_joint3** (:obj:`float`): The position of the third joint.
+            - **panda_joint4** (:obj:`float`): The position of the fourth joint.
+            - **panda_joint5** (:obj:`float`): The position of the fifth joint.
+            - **panda_joint6** (:obj:`float`): The position of the sixth joint.
+            - **panda_joint7** (:obj:`float`): The position of the seventh joint.
+
+    **Joint effort control**:
+        Type: Box(7)
+            - **panda_joint1** (:obj:`float`): The effort of the first joint.
+            - **panda_joint2** (:obj:`float`): The effort of the second joint.
+            - **panda_joint3** (:obj:`float`): The effort of the third joint.
+            - **panda_joint4** (:obj:`float`): The effort of the fourth joint.
+            - **panda_joint5** (:obj:`float`): The effort of the fifth joint.
+            - **panda_joint6** (:obj:`float`): The effort of the sixth joint.
+            - **panda_joint7** (:obj:`float`): The effort of the seventh joint.
+
+    **End-effector position control**:
+        Type: Box(7)
+            - **x** (:obj:`float`): The x position of the end-effector.
+            - **y** (:obj:`float`): The y position of the end-effector.
+            - **z** (:obj:`float`): The z position of the end-effector.
+            - **rx** (:obj:`float`): The x component of the quaternion orientation of the
+            end-effector.
+            - **ry** (:obj:`float`): The y component of the quaternion orientation of the
+            end-effector.
+            - **rz** (:obj:`float`): The z component of the quaternion orientation of the
+            end-effector.
+            - **rw** (:obj:`float`): The w component of the quaternion orientation of the
+            end-effector.
+
+    If the gripper is loaded, the action space is extended with the following
+    dimensions:
+
+    Type: Box(2)
+        - **gripper_width** (:obj:`float`): The width of the gripper - only if the
+          gripper is loaded.
+        - **gripper_max_effort** (:obj:`float`): The maximum effort of the gripper -
+          only if the gripper is loaded.
+
+Episode termination:
+    The episode terminates when the end-effector is within a certain distance of the
+    goal position. The distance is defined by the ``distance_threshold`` parameter in
+    the task environment configuration file. If the ``hold_samples`` parameter is
+    greater than zero, the episode will terminate after ``hold_samples`` consecutive
+    samples are within the ``distance_threshold``. The episode will also terminate if
+    the maximum number of samples is reached.
+
+Environment Goal:
     In this environment the agent has to learn to move the panda robot to a given goal
-    position. Based on the :gymnasium-robotics:`FetchReach-v2 <envs/fetch/reach/>`
+    position. It was based on the :gymnasium-robotics:`FetchReach-v2 <envs/fetch/reach/>`
     gymnasium environment.
+
+Reward function:
+    The reward function is defined as the negative of the Euclidean distance between the
+    end-effector and the goal position. If the ``positive_reward`` parameter is set to
+    ``true``, the absolute value of the reward is returned:
+
+    .. math::
+        reward = -\\sqrt{(x_{ee} - x_{goal})^2 + (y_{ee} - y_{goal})^2 + (z_{ee} - z_{goal})^2}
+
+Initialization:
+    The environment is initialized by loading the Panda robot model and setting its
+    initial position and orientation. The environment parameters can be set in the
+    configuration file located at `ros_gazebo_gym/task_envs/panda/config/panda_reach.yaml`.
+
+Environment step return:
+
+    In addition to the observations, the reward, and a termination and truncation boolean,
+    the environment also returns an info dictionary:
+
+    .. code-block:: python
+
+        [observation, reward, termination, truncation, info_dict]
+
+    The info dictionary contains the following information:
+
+    -   **reference**: The reference position (x,y,z) that the Panda Reach is tracking (i.e. the goal position).
+    -   **state_of_interest**: The state that should track the reference (SOI) (i.e. the end-effector position).
+    -   **reference_error**: The error between SOI and the reference (i.e. the error between the end-effector position and the goal position).
 
 .. admonition:: Configuration
     :class: important
 
     The configuration files for this environment are found in the
-    `panda task environment config folder <../config/panda_reach.yaml>`_).
-
-"""
+    :ros-gazebo-gym:`panda task environment config folder <blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_reach.yaml>`.
+"""  # noqa: E501
 import os
 from datetime import datetime
 from pathlib import Path
@@ -35,7 +139,8 @@ from ros_gazebo_gym.common.helpers import (
     split_bounds_dict,
     split_pose_dict,
 )
-from ros_gazebo_gym.common.markers import SampleRegionMarker, TargetMarker
+from ros_gazebo_gym.common.markers.sample_region_marker import SampleRegionMarker
+from ros_gazebo_gym.common.markers.target_marker import TargetMarker
 from ros_gazebo_gym.core import ROSLauncher
 from ros_gazebo_gym.core.helpers import (
     get_log_path,
@@ -104,8 +209,8 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             control_Type (str, optional): The type of control you want to use for the
                 panda robot (i.e. hand and arm). Options are: ``trajectory``,
                 ``position``, ``effort`` or ``end_effector``. Defaults to ``effort``.
-            positive_reward (bool, optional): Whether you want to enforce a positive
-                reward. Defaults to ``False``.
+            positive_reward (bool, optional): Whether you want to use a positive
+                reward instead of a negative reward. Defaults to ``False``.
             config_path (str, optional): Path where the environment configuration
                 value are found. The path is resolved relative to the
                 :class:`~ros_gazebo_gym.task_envs.panda.panda_reach` class file.

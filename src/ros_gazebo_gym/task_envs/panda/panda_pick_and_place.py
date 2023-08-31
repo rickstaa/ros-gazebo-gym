@@ -1,18 +1,36 @@
 """An ROS Panda pick and place gymnasium environment.
 
-.. figure:: /images/panda/panda_pick_and_place_env.png
+.. image:: /images/panda/panda_pick_and_place_env.png
    :alt: Panda pick and place environment
+
+This environment is an extension of the :class:`~ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv` task environment,
+sharing most features such as the action spaces. Notable distinctions are detailed below.
+
+Observation space:
+    The observation space was extended with the 11 observations:
+
+    - Object x position.
+    - Object y position.
+    - Object z position.
+    - x distance between object and end-effector.
+    - y distance between object and end-effector.
+    - z distance between object and end-effector.
+    - Object yaw rotation.
+    - Object pitch rotation.
+    - Object roll rotation.
+    - Object translational velocity.
+    - Object rotational velocity.
 
 Goal:
     In this environment the agent has to learn to lift a block up to reach the desired
-    goal position. Based on the :gymnasium-robotics:`FetchPush-v2 <envs/fetch/pick_and_place/>`
+    goal position. It was based on the :gymnasium-robotics:`FetchPickAndPlace-v2 <envs/fetch/pick_and_place/>`
     gymnasium environment.
 
 .. admonition:: Configuration
     :class: important
 
     The configuration files for this environment are found in the
-    `panda task environment config folder <../config/panda_pick_and_place.yaml>`_).
+    :ros-gazebo-gym:`panda task environment config folder <blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_pick_and_place.yaml>`.
 """  # noqa: E501
 import time
 from pathlib import Path
@@ -24,11 +42,12 @@ from gazebo_msgs.msg import ModelState
 from geometry_msgs.msg import Pose, Quaternion, TransformStamped, Vector3
 from gymnasium import utils
 from ros_gazebo_gym.common.helpers import get_orientation_euler, normalize_quaternion
-from ros_gazebo_gym.core import ROSLauncher
+from ros_gazebo_gym.core.ros_launcher import ROSLauncher
 from ros_gazebo_gym.core.helpers import ros_exit_gracefully
 from ros_gazebo_gym.exceptions import SetModelStateError, SpawnModelError
-from ros_gazebo_gym.task_envs.panda import PandaReachEnv
-from ros_gazebo_gym.task_envs.panda.markers import CubeMarker, FrameOriginMarker
+from ros_gazebo_gym.task_envs.panda.panda_reach import PandaReachEnv
+from ros_gazebo_gym.task_envs.panda.markers.cube_marker import CubeMarker
+from ros_gazebo_gym.task_envs.panda.markers.frame_origin_marker import FrameOriginMarker
 from rospy import ROSException, ROSInterruptException
 
 try:

@@ -17,20 +17,9 @@ class SampleRegionMarker(Marker):
     """RViz goal sample region marker.
 
     Attributes:
-        x (int): The marker x position.
-        y (int): The marker y position.
-        z (int): The marker z position.
-        x_min (float): The min x position of the marker.
-        y_min (float): The min y position of the marker.
-        z_min (float): The min z position of the marker.
-        x_max (float): The max x position of the marker.
-        y_max (float): The max y position of the marker.
-        z_max (float): The max z position of the marker.
         id (int): The marker object id.
         type (str): The marker type.
         action (float): The marker message action (add or remove).
-        pose (:obj:`geometry_msgs.Pose`): The marker pose.
-        scale (:obj:~geometry_msgs.Vector3`): The marker scale
         color (:obj:`std_msgs.ColorRGBA`): The marker color.
         lifetime (:obj:`:rospy.Duration`): The lifetime duration.
         frame_locked (bool): Boolean specifying whether the marker frame is locked to
@@ -64,9 +53,6 @@ class SampleRegionMarker(Marker):
         """Initialize SampleRegionMarker object.
 
         Args:
-            x (int, optional): The target marker x position. Defaults to ``0``.
-            y (int, optional): The target marker y position. Defaults to ``0``.
-            z (int, optional): The target marker z position. Defaults to ``0``.
             x_min (float, optional): The min x position of the marker. Defaults to
                 ``None``.
             y_min (float, optional): The min y position of the marker. Defaults to

@@ -23,7 +23,6 @@ class ControllersConnection:
     `ros_control <https://wiki.ros.org/ros_control>`_ controllers.
 
     Attributes:
-        controllers_list (list): List with currently available controllers.
         list_service_name (str): The name of the controller list service.
         list_service (:obj:`rospy.impl.tcpros_service.ServiceProxy`): The controller
             list service.

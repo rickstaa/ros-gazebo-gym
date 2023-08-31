@@ -28,7 +28,8 @@ from ros_gazebo_gym.common.helpers import (
     lower_first_char,
     normalize_quaternion,
 )
-from ros_gazebo_gym.core import LazyImporter, ROSLauncher
+from ros_gazebo_gym.core.ros_launcher import ROSLauncher
+from ros_gazebo_gym.core.lazy_importer import LazyImporter
 from ros_gazebo_gym.core.helpers import get_log_path, ros_exit_gracefully
 from ros_gazebo_gym.exceptions import EePoseLookupError, EeRpyLookupError
 from ros_gazebo_gym.robot_gazebo_goal_env import RobotGazeboGoalEnv
@@ -116,19 +117,15 @@ class PandaEnv(RobotGazeboGoalEnv):
         robot_EE_link (str): The link used for the end effector control.
         load_gripper (bool): Whether the gripper was loaded.
         block_gripper (bool): Whether the gripper was blocked.
-        robot_control_type (str): The robot control type.
         joint_states (:obj:`sensor_msgs.msg.JointState`): The current joint states.
         franka_states (:obj:`franka_msgs.msg.FrankaState`): The current franka states.
             These give robot specific information about the panda robot.
-        joints (dict): The joint that can be controlled.
-        gripper_width (float): The gripper width.
-        in_collision(bool): Whether the robot is in collision.
         tf_buffer (:obj:`tf2_ros.buffer.Buffer`): Tf buffer object can be used to
             request transforms.
         panda_gazebo (:obj:`ros_gazebo_gym.core.LazyImporter`): Lazy importer for the
             :panda-gazebo:`panda_gazebo <>` package.
         franka_msgs (:obj:`ros_gazebo_gym.core.LazyImporter`): Lazy importer for the
-            :franka-gazebo:`franka_msgs <>` package.
+            :franka-ros:`franka_msgs <tree/develop/franka_msgs>` package.
     """
 
     def __init__(  # noqa: C901
