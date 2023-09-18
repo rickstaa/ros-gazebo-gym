@@ -15,7 +15,7 @@ jobs:
           mkdir -p ${{github.workspace}}/src
           mkdir -p ${{github.workspace}}/devel
 
-      - uses: docker/setup-buildx-action@v2
+      - uses: docker/setup-buildx-action@v3
 
       - name: Checkout
         uses: actions/checkout@v4
