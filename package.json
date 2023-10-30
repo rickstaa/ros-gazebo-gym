@@ -52,7 +52,7 @@
     }
   },
   "devDependencies": {
-    "@commitlint/cli": "18.0.0",
+    "@commitlint/cli": "18.2.0",
     "@commitlint/config-conventional": "18.0.0",
     "commitizen": "4.3.0",
     "cz-conventional-changelog": "3.3.0",
