@@ -16,7 +16,7 @@ The [ros-gazebo-gym](https://github.com/rickstaa/ros-gazebo-gym) framework provi
 
 ## Installation and Usage
 
-Please see the [docs](https://rickstaa.github.io/panda-gazebo-gym) for installation and usage instructions.
+Please see the [docs](https://rickstaa.github.io/ros-gazebo-gym) for installation and usage instructions.
 
 ## Contributing
 
