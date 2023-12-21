@@ -28,7 +28,7 @@ tailored for integration with the `stable-baselines3`_ package. The current sele
 
 To embark on a training session for a reaching task involving a (simulated) `Panda Emika Franka`_ robot using the `Stable Baselines SAC algorithm`_, follow these steps:
 
-1. Clone the `ros_gazebo_gym_examples` package within the Catkin workspace established for the ``ros_gazebo_gym`` package.
+1. Clone the ``ros_gazebo_gym_examples`` package within the Catkin workspace established for the ``ros_gazebo_gym`` package.
 2. Complete the installation of all requisite ROS dependencies and perform the catkin workspace reconstruction (refer to :ref:`install_dependencies` and :ref:`build_package`).
 3. Source the Catkin workspace (e.g., execute ``. ../develop/setup.bash``).
 4. Launch any of the examples from the :ros-gazebo-gym-examples:`ros_gazebo_gym_examples <>` package using the ``roslaunch`` command.
@@ -37,7 +37,7 @@ Here's a demonstration of how to launch the training example:
 
 .. code-block:: bash
 
-   roslaunch ros_gazebo_gym_examples start_training.launch
+   roslaunch ros_gazebo_gym_examples start_panda_training.launch
 
 .. note::
 
