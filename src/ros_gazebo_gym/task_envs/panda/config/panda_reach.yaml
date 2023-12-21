@@ -221,7 +221,7 @@ panda_reach:
   ########################################
   # Other reach environment settings #####
   ########################################
-  physics: "dart" # The physics engine you want to use: dart|ode
+  physics: "ode" # The physics engine you want to use: dart|ode
   load_rviz: True # Whether RViz should be loaded.
   rviz_file: config/panda_reach.rviz # RViz config file. Path is relative to parent folder.
   load_gazebo_gui: False # Whether the gazebo GUI should be shown.

@@ -228,7 +228,7 @@ panda_pick_and_place:
   ########################################
   # Other pick and place settings ########
   ########################################
-  physics: "dart" # The physics engine you want to use: dart|ode
+  physics: "ode" # The physics engine you want to use: dart|ode
   load_rviz: True # Whether RViz should be loaded.
   rviz_file: config/panda_pick_and_place.rviz # RViz config file. Path is relative to parent folder.
   load_gazebo_gui: False # Whether the gazebo GUI should be shown.

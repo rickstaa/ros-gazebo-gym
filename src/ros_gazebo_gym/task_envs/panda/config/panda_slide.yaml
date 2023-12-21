@@ -228,7 +228,7 @@ panda_slide:
   ########################################
   # Other slide environment settings #####
   ########################################
-  physics: "dart" # The physics engine you want to use: dart|ode
+  physics: "ode" # The physics engine you want to use: dart|ode
   load_rviz: True # Whether Rviz should be loaded.
   rviz_file: config/panda_slide.rviz # RViz config file. Path is relative to parent folder.
   load_gazebo_gui: False # Whether the gazebo GUI should be shown.

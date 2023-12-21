@@ -1,4 +1,4 @@
-"""An ROS Panda reach gymnasium environment.
+r"""An ROS Panda reach gymnasium environment.
 
 .. image:: /images/panda/panda_reach_env.png
    :alt: Panda reach environment
@@ -91,7 +91,7 @@ Reward function:
     ``true``, the absolute value of the reward is returned:
 
     .. math::
-        reward = -\\sqrt{(x_{ee} - x_{goal})^2 + (y_{ee} - y_{goal})^2 + (z_{ee} - z_{goal})^2}
+        reward = -\sqrt{(x_{ee} - x_{goal})^2 + (y_{ee} - y_{goal})^2 + (z_{ee} - z_{goal})^2}
 
 Initialization:
     The environment is initialized by loading the Panda robot model and setting its
@@ -855,7 +855,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             try:
                 self._physics = rospy.get_param(f"/{ns}/physics").lower()
             except KeyError:
-                self._physics = "dart"
+                self._physics = "ode"
             try:
                 self._gazebo_gui = rospy.get_param(f"/{ns}/load_gazebo_gui")
             except KeyError:
