@@ -60,4 +60,45 @@ The panda :ros-gazebo-gym:`ros_gazebo_gym <>` package comprises task environment
 * :class:`PandaSlide-v1 <ros_gazebo_gym.task_envs.panda.panda_slide>`: Slide a puck to a goal position.
 
 .. note::
-   The components responsible for creating the :ros-gazebo-gym:`ros_gazebo_gym <>` Panda environment are enclosed within the :panda-gazebo:`panda-gazebo <>` ROS workspace package. This package is automatically downloaded and built by the :ros-gazebo-gym:`ros_gazebo_gym <>` package when running one of the panda task environments.
+   The components responsible for creating the :ros-gazebo-gym:`ros_gazebo_gym <>` Panda environment are enclosed within the :panda-gazebo:`panda-gazebo <>` ROS workspace package. This package is automatically downloaded
+   and built by the :ros-gazebo-gym:`ros_gazebo_gym <>` package when running one of the panda task environments.
+
+Known Issues
+============
+
+This document outlines the known issues you may encounter when using the Panda environment. These issues are caused by upstream bugs in the `franka_ros`_ package, which the :panda-gazebo:`panda_gazebo <>` package
+uses to create the simulated Panda robot. We recommend checking :panda-gazebo:`the issues page <issues>` on the :panda-gazebo:`panda-gazebo GitHub repository <>` for updates.
+
+Gravity Compensation Bug
+-------------------------
+
+- **Issue**: Gravity compensation is not working properly when the robot is effort-controlled.
+- **Reference**: `#39 <https://github.com/rickstaa/panda-gazebo/issues/39>`_
+
+Due to an upstream bug in the :panda-gazebo:`franka_gazebo <>` package, the gravity compensation feature may not function as expected. 
+This issue can be mitigated by switching the physics engine from `ODE`_ to `DART`_ using the ``physics`` argument in the ``simulation.launch`` file:
+
+.. code-block:: bash
+
+    roslaunch panda_gazebo simulation.launch physics:=Dart
+
+Simulation Crashes with DART Physics
+--------------------------------------
+
+- **Issue**: The simulation sometimes crashes when the `DART`_ physics engine is used and the gripper is controlled.
+- **Reference**: `#196 <https://github.com/rickstaa/panda-gazebo/issues/196>`_
+
+Users may experience occasional simulation crashes when using the `DART`_ physics engine and controlling the gripper. We
+recommend switching to the `ODE`_ physics engine when using the gripper.
+
+Gripper Problems when Vertical
+------------------------------
+
+- **Issue**: The gripper is not working properly when being vertical to the ground.
+- **Reference**: `#33 <https://github.com/rickstaa/panda-gazebo/issues/33>`_
+
+Due to incorrectly tuned PID gains in the :panda-gazebo:`franka_gazebo <>` package, the gripper may not function properly when it is oriented
+vertically to the ground.
+
+.. _ODE: http://www.ode.org/
+.. _DART: https://dartsim.github.io/
