@@ -21,7 +21,6 @@ class MyRobotEnv(RobotGazeboEnv):
 
     def __init__(self):
         """Initializes a new Robot environment."""
-
         # Setup internal robot environment variables (controllers, namespace etc.).
         # NOTE: If the controllers_list is not set all the currently running controllers
         # will be reset by the ControllersList class.

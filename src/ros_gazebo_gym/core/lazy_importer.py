@@ -1,6 +1,4 @@
-"""Contains the LazyImporter class which can be used to import modules lazily.
-"""
-
+"""Contains the LazyImporter class which can be used to import modules lazily."""
 import importlib
 
 

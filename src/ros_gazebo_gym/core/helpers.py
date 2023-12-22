@@ -29,6 +29,7 @@ class GitProgressCallback(pygit2.RemoteCallbacks):
     """A :class:`pygit2.RemoteCallbacks` callback that shows a git clone progress bar."""
 
     def __init__(self):
+        """Initializes the :class:`GitProgressCallback` class."""
         super().__init__()
         self.pbar = tqdm(file=sys.stdout)
 
@@ -105,7 +106,8 @@ class PopenAutoCleanup(subprocess.Popen):
 
     def _critical_check(self):
         """Checks if the process is still running and exits the script if it is not and
-        the process is critical."""
+        the process is critical.
+        """
         while not self._critical_check_event.is_set() and self.poll() is None:
             time.sleep(0.1)
         if self.critical and not self._critical_check_event.is_set():

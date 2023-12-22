@@ -32,7 +32,6 @@ class MyTaskEnv(MyRobotEnv):
 
     def __init__(self):
         """Initializes a new Task environment."""
-
         # TODO: Implement the action space.
         number_actions = rospy.get_param("/my_robot_namespace/n_actions")
         self.action_space = spaces.Discrete(number_actions)
