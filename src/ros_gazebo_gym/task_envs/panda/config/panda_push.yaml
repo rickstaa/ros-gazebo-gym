@@ -239,6 +239,6 @@ panda_push:
 # Other settings #########################
 ##########################################
 # NOTE: The settings below can be used to overwrite settings of other ROS nodes.
-# panda_moveit_planner_server: # Scale the Moveit control speed/ acceleration.
+# panda_moveit_planner_server: # Scale the MoveIt control speed/ acceleration.
 #   max_velocity_scaling_factor: 0.5
 #   max_acceleration_scaling_factor: 0.5

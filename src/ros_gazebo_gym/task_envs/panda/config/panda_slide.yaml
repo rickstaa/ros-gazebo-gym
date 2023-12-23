@@ -229,7 +229,7 @@ panda_slide:
   # Other slide environment settings #####
   ########################################
   physics: "ode" # The physics engine you want to use: dart|ode
-  load_rviz: True # Whether Rviz should be loaded.
+  load_rviz: True # Whether RViz should be loaded.
   rviz_file: config/panda_slide.rviz # RViz config file. Path is relative to parent folder.
   load_gazebo_gui: False # Whether the gazebo GUI should be shown.
   log_reset: False # Whether we want to print a log statement when the world/simulation is reset.
@@ -239,6 +239,6 @@ panda_slide:
 # Other settings #########################
 ##########################################
 # NOTE: The settings below can be used to overwrite settings of other ROS nodes.
-# panda_moveit_planner_server: # Scale the Moveit control speed/ acceleration.
+# panda_moveit_planner_server: # Scale the MoveIt control speed/ acceleration.
 #   max_velocity_scaling_factor: 0.5
 #   max_acceleration_scaling_factor: 0.5

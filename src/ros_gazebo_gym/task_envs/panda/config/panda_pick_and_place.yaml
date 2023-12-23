@@ -1,5 +1,5 @@
 # This config file contains the configuration values that are used by the Panda pick and place task.
-# FIXME: This environment is currently not working when using effort control because the gravity compensation is
+# FIXME: This environment is currently not functioning optimally when using effort control because the gravity compensation is
 # broken when the hand is attached (see https://github.com/frankaemika/franka_ros/issues/160#issuecomment-992776684).
 panda_pick_and_place:
   ########################################
@@ -239,6 +239,6 @@ panda_pick_and_place:
 # Other settings #########################
 ##########################################
 # NOTE: The settings below can be used to overwrite settings of other ROS nodes.
-# panda_moveit_planner_server: # Scale the Moveit control speed/ acceleration.
+# panda_moveit_planner_server: # Scale the MoveIt control speed/ acceleration.
 #   max_velocity_scaling_factor: 0.5
 #   max_acceleration_scaling_factor: 0.5
