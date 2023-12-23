@@ -73,7 +73,7 @@ Gravity Compensation Bug
 -------------------------
 
 - **Issue**: Gravity compensation is not working properly when the robot is effort-controlled.
-- **Reference**: `#39 <https://github.com/rickstaa/panda-gazebo/issues/39>`_
+- **Reference**: `panda-gazebo#39 <https://github.com/rickstaa/panda-gazebo/issues/39>`_
 
 Due to an upstream bug in the :panda-gazebo:`franka_gazebo <>` package, the gravity compensation feature may not function as expected. 
 This issue can be mitigated by switching the physics engine from `ODE`_ to `DART`_ using the ``physics`` argument in the ``simulation.launch`` file:
@@ -86,7 +86,7 @@ Simulation Crashes with DART Physics
 --------------------------------------
 
 - **Issue**: The simulation sometimes crashes when the `DART`_ physics engine is used and the gripper is controlled.
-- **Reference**: `#196 <https://github.com/rickstaa/panda-gazebo/issues/196>`_
+- **Reference**: `panda-gazebo#196 <https://github.com/rickstaa/panda-gazebo/issues/196>`_
 
 Users may experience occasional simulation crashes when using the `DART`_ physics engine and controlling the gripper. We
 recommend switching to the `ODE`_ physics engine when using the gripper.
@@ -95,7 +95,7 @@ Gripper Problems when Vertical
 ------------------------------
 
 - **Issue**: The gripper is not working properly when being vertical to the ground.
-- **Reference**: `#33 <https://github.com/rickstaa/panda-gazebo/issues/33>`_
+- **Reference**: `panda-gazebo#33 <https://github.com/rickstaa/panda-gazebo/issues/33>`_
 
 Due to incorrectly tuned PID gains in the :panda-gazebo:`franka_gazebo <>` package, the gripper may not function properly when it is oriented
 vertically to the ground.
