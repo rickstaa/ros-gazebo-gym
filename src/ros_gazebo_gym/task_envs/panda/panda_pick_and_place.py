@@ -149,7 +149,7 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
         rospy.logdebug("RViz object marker publisher created.")
         rospy.logdebug("Creating RViz object frame marker publisher.")
         self._object_frame_marker_pub = rospy.Publisher(
-            "/ros_gazebo_gym/object_frame", CubeMarker, queue_size=1, latch=True
+            "/ros_gazebo_gym/object_frame", FrameOriginMarker, queue_size=1, latch=True
         )
         rospy.logdebug("RViz object frame marker publisher created.")
         rospy.Timer(
