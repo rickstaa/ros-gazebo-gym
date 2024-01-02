@@ -43,6 +43,7 @@ class ControllersConnection:
         """
         rospy.logwarn("Initialize ControllersConnection utility class...")
         self._controller_list = controllers_list
+        self._paused_controllers = []
         self._gazebo_paused_check_timeout = 0.2
         self._list_controllers_service_name = (
             f"{namespace}/controller_manager/list_controllers"
@@ -208,6 +209,78 @@ class ControllersConnection:
             rospy.logdebug("result_off_ok==>" + str(result_off_ok))
 
         return reset_result
+
+    def pause_controllers(self, controller_list=None, filter_list=[]):
+        """Pauses controllers.
+
+        Args:
+            controller_list (list, optional): The controllers you want to pause.
+                Defaults to ``None``, which means that the class will pause all the
+                running controllers.
+            filter_list (list, optional): The controllers you want to ignore when
+                pausing. Defaults to ``[]``.
+        """
+        # Retrieve all running controllers if controller_list was not supplied.
+        if controller_list is None:
+            if self._controller_list is None:
+                list_controllers_msg = self._list_controllers_proxy.call(
+                    ListControllersRequest()
+                )
+                controllers_list = [
+                    controller.name
+                    for controller in list_controllers_msg.controller
+                    if controller.state == "running"
+                ]
+            else:
+                controllers_list = self._controller_list
+
+        # Filter out the controllers that should be ignored.
+        controllers_list = [
+            controller
+            for controller in controllers_list
+            if controller not in filter_list
+        ]
+
+        # Pause the running controllers.
+        pause_result = False
+        rospy.logdebug("Pausing controllers")
+        self._paused_controllers = controllers_list
+        result_off_ok = self.switch_controllers(
+            controllers_on=[], controllers_off=controllers_list
+        )
+        if result_off_ok:
+            rospy.logdebug("Controllers paused==>" + str(controllers_list))
+            pause_result = True
+        else:
+            rospy.logdebug("result_off_ok==>" + str(result_off_ok))
+
+        return pause_result
+
+    def unpause_controllers(self):
+        """Unpauses all the paused controllers.
+
+        Returns:
+            bool: Boolean specifying whether the unpause was successful.
+        """
+        if self._paused_controllers:
+            unpause_result = False
+            rospy.logdebug("Unpausing controllers")
+            result_on_ok = self.switch_controllers(
+                controllers_on=self._paused_controllers, controllers_off=[]
+            )
+            if result_on_ok:
+                rospy.logdebug(
+                    "Controllers unpaused==>" + str(self._paused_controllers)
+                )
+                unpause_result = True
+                self._paused_controllers = []
+            else:
+                rospy.logdebug("result_on_ok==>" + str(result_on_ok))
+
+            return unpause_result
+        else:
+            rospy.logwarn("No controllers to unpause!")
+            return False
 
     @property
     def controllers_list(self):

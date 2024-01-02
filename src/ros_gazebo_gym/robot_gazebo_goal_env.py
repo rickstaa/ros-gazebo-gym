@@ -287,6 +287,24 @@ class RobotGazeboGoalEnv(gymrobot.GoalEnv):
         """Overload render method since rendering is handled in Gazebo."""
         pass
 
+    def pause_controllers(self, controllers_list=None, filter_list=[]):
+        """Pauses the controllers.
+
+        Args:
+            controller_list (list, optional): The controllers you want to pause.
+                Defaults to ``None``, which means that the class will pause all the
+                running controllers.
+            filter_list (list, optional): The controllers you want to ignore when
+                pausing. Defaults to ``[]``.
+        """
+        self._controllers_object.pause_controllers(
+            controller_list=controllers_list, filter_list=filter_list
+        )
+
+    def unpause_controllers(self):
+        """Un-pauses the paused controllers."""
+        self._controllers_object.unpause_controllers()
+
     ################################################
     # Extension methods ############################
     ################################################
