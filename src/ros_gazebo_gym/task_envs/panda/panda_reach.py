@@ -125,15 +125,12 @@ from pathlib import Path
 
 import numpy as np
 import rospy
-import tf2_geometry_msgs
-from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Vector3
+from geometry_msgs.msg import Pose, Quaternion
 from gymnasium import spaces, utils
 from ros_gazebo_gym.common.helpers import (
     flatten_list,
     gripper_width_2_finger_joints_positions,
     list_2_human_text,
-    lower_first_char,
-    normalize_quaternion,
     pose_msg_2_pose_dict,
     shallow_dict_merge,
     split_bounds_dict,
@@ -151,8 +148,7 @@ from ros_gazebo_gym.exceptions import EePoseLookupError
 from ros_gazebo_gym.robot_envs.panda_env import PandaEnv
 from rospy.exceptions import ROSException, ROSInterruptException
 from sensor_msgs.msg import JointState
-from std_msgs.msg import ColorRGBA, Header
-from tf2_ros import ConnectivityException, ExtrapolationException, LookupException
+from std_msgs.msg import ColorRGBA
 
 # Specify topics and other script variables.
 CONNECTION_TIMEOUT = 5  # Timeout for connecting to services or topics.
@@ -245,6 +241,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 "you want to implement this functionality."
             )
         self._positive_reward = positive_reward
+        self._task_env = "panda_reach"
 
         # Makes sure the env is pickable when it wraps C++ code.
         utils.EzPickle.__init__(**locals())
@@ -305,12 +302,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             package_name="panda_gazebo",
             launch_file_name=gazebo_world_launch_file,
             workspace_path=workspace_path,
-            gazebo_gui=self._gazebo_gui,
-            pause=True,
-            physics=self._physics,
             log_file=launch_log_file,
             critical=True,
             outdated_warning=True,
+            paused=True,
+            gazebo_gui=self._gazebo_gui,
+            physics=self._physics,
         )
 
         ########################################
@@ -320,6 +317,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         # Initialize the Robot environment.
         super(PandaReachEnv, self).__init__(
             robot_EE_link=self._ee_link,
+            ee_frame_offset=self._ee_frame_offset,
             load_gripper=self._load_gripper,
             block_gripper=self._block_gripper,
             control_type=control_type,
@@ -618,6 +616,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             ns (str, optional): The namespace on which the parameters are found.
                 Defaults to "panda_reach".
         """
+        self._task_env = ns
         try:
             # Retrieve control variables.
             try:
@@ -625,13 +624,13 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             except KeyError:
                 self._direct_control = True
             try:
-                self._ee_link = rospy.get_param(f"/{ns}/control/ee_link")
-            except KeyError:
-                self._ee_link = "panda_link8"
-            try:
                 self._load_gripper = rospy.get_param(f"/{ns}/control/load_gripper")
             except KeyError:
                 self._load_gripper = True
+            try:
+                self._ee_link = rospy.get_param(f"/{ns}/control/ee_link")
+            except KeyError:
+                self._ee_link = "panda_hand" if self._load_gripper else "panda_link8"
             try:
                 self._block_gripper = rospy.get_param(f"/{ns}/control/block_gripper")
             except KeyError:
@@ -649,17 +648,23 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             except KeyError:
                 self._hand_wait = True
             try:
+                self._ee_control_coordinates = rospy.get_param(
+                    f"/{ns}/control/ee_control_coordinates"
+                )
+            except KeyError:
+                self._ee_control_coordinates = None
+            try:
                 self._controlled_joints = rospy.get_param(
                     f"/{ns}/control/controlled_joints"
                 )
             except KeyError:
                 self._controlled_joints = None
             try:
-                self._ee_control_coordinates = rospy.get_param(
-                    f"/{ns}/control/ee_control_coordinates"
+                self._ee_frame_offset = rospy.get_param(
+                    f"/{ns}/control/ee_frame_offset"
                 )
             except KeyError:
-                self._ee_control_coordinates = None
+                self._ee_frame_offset = None
             # Retrieve sampling variables.
             try:
                 self._visualize_init_pose_bounds = rospy.get_param(
@@ -734,6 +739,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             except KeyError:
                 self._init_pose_sampling_bounds = None
             try:
+                self._target_sampling_strategy = rospy.get_param(
+                    f"/{ns}/target_sampling/strategy"
+                )
+            except KeyError:
+                self._target_sampling_strategy = "global"
+            try:
                 self._visualize_target = rospy.get_param(
                     f"/{ns}/target_sampling/visualize_target"
                 )
@@ -746,11 +757,23 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             except KeyError:
                 self._visualize_target_sampling_bounds = True
             try:
-                self._target_sampling_strategy = rospy.get_param(
-                    f"/{ns}/target_sampling/strategy"
+                self._target_offset = rospy.get_param(f"/{ns}/target_sampling/offset")
+            except KeyError:
+                self._target_ofset = {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0,
+                }
+            try:
+                self._fixed_target_pose = rospy.get_param(
+                    f"/{ns}/target_sampling/fixed_target"
                 )
             except KeyError:
-                self._target_sampling_strategy = "global"
+                self._fixed_target_pose = {
+                    "x": 0.4,
+                    "y": 0.0,
+                    "z": 0.8,
+                }
             if self._target_sampling_strategy != "fixed":
                 try:
                     self._target_sampling_bounds = rospy.get_param(
@@ -766,24 +789,6 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                         "z_min": 0.0,
                         "z_max": 1.3,
                     }
-            try:
-                self._fixed_target_pose = rospy.get_param(
-                    f"/{ns}/target_sampling/fixed_target"
-                )
-            except KeyError:
-                self._fixed_target_pose = {
-                    "x": 0.4,
-                    "y": 0.0,
-                    "z": 0.8,
-                }
-            try:
-                self._target_offset = rospy.get_param(f"/{ns}/target_sampling/offset")
-            except KeyError:
-                self._target_ofset = {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0,
-                }
             # Retrieve reward variables.
             try:
                 self._reward_type = rospy.get_param(f"/{ns}/training/reward_type")
@@ -809,12 +814,6 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 )
             except KeyError:
                 self._collision_penalty = 0.0
-            try:
-                self._ee_frame_offset = rospy.get_param(
-                    f"/{ns}/training/ee_frame_offset"
-                )
-            except KeyError:
-                self._ee_frame_offset = None
             # Retrieve environment variables.
             try:
                 self._action_bounds = rospy.get_param(
@@ -822,26 +821,76 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 )
             except KeyError:
                 self._action_bounds = {
-                    "low": {
-                        "x": -1.3,
-                        "y": -1.3,
-                        "z": 0.0,
-                        "rx": 0,
-                        "ry": 0,
-                        "rz": 0,
-                        "rw": 0,
+                    "ee_pose": {
+                        "low": {
+                            "x": -1.3,
+                            "y": -1.3,
+                            "z": 0.0,
+                            "rx": 0,
+                            "ry": 0,
+                            "rz": 0,
+                            "rw": 0,
+                        },
+                        "high": {
+                            "x": 1.3,
+                            "y": 1.3,
+                            "z": 1.3,
+                            "rx": 1,
+                            "ry": 1,
+                            "rz": 1,
+                            "rw": 1,
+                        },
                     },
-                    "high": {
-                        "x": 1.3,
-                        "y": 1.3,
-                        "z": 1.3,
-                        "rx": 1,
-                        "ry": 1,
-                        "rz": 1,
-                        "rw": 1,
+                    "joint_positions": {
+                        "low": {
+                            "panda_joint1": -2.8973,
+                            "panda_joint2": -1.7628,
+                            "panda_joint3": -2.8973,
+                            "panda_joint4": -3.0718,
+                            "panda_joint5": -2.8973,
+                            "panda_joint6": -0.0175,
+                            "panda_joint7": -2.8973,
+                            "gripper_width": 0.0,
+                        },
+                        "high": {
+                            "panda_joint1": 2.8973,
+                            "panda_joint2": 1.7628,
+                            "panda_joint3": 2.8973,
+                            "panda_joint4": -0.0698,
+                            "panda_joint5": 2.8973,
+                            "panda_joint6": 3.7525,
+                            "panda_joint7": 2.8973,
+                            "gripper_width": 0.08,
+                        },
+                    },
+                    "joint_efforts": {
+                        "low": {
+                            "panda_joint1": -87.0,
+                            "panda_joint2": -87.0,
+                            "panda_joint3": -87.0,
+                            "panda_joint4": -87.0,
+                            "panda_joint5": -12.0,
+                            "panda_joint6": -12.0,
+                            "panda_joint7": -12.0,
+                            "gripper_max_effort": 0.0,
+                        },
+                        "high": {
+                            "panda_joint1": 87.0,
+                            "panda_joint2": 87.0,
+                            "panda_joint3": 87.0,
+                            "panda_joint4": 87.0,
+                            "panda_joint5": 12.0,
+                            "panda_joint6": 12.0,
+                            "panda_joint7": 12.0,
+                            "gripper_max_effort": 140,
+                        },
                     },
                 }
             # Retrieve global variables.
+            try:
+                self._physics = rospy.get_param(f"/{ns}/physics").lower()
+            except KeyError:
+                self._physics = "ode"
             try:
                 self._load_rviz = rospy.get_param(f"/{ns}/load_rviz")
             except KeyError:
@@ -852,10 +901,6 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 )
             except KeyError:
                 self._rviz_file = Path(__file__).parent.joinpath("config/moveit.rviz")
-            try:
-                self._physics = rospy.get_param(f"/{ns}/physics").lower()
-            except KeyError:
-                self._physics = "ode"
             try:
                 self._gazebo_gui = rospy.get_param(f"/{ns}/load_gazebo_gui")
             except KeyError:
@@ -948,10 +993,19 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 joint_positions_dict = dict(zip(resp.joint_names, resp.joint_positions))
                 return joint_positions_dict
             else:
+                if resp.message == "Invalid joint limits were given.":
+                    err_msg = (
+                        "The joint limits specified in the pose_sampling bounds "
+                        "section of the task environment configuration file were "
+                        f"invalid '{str(self._config_file_path)}'. Please make sure "
+                        "that the pose_sampling joint limits are within the joint "
+                        "limits specified in the panda robot description file."
+                    )
+                    ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
                 return {}
         else:
             err_msg = (
-                f"Failled to connect to '{MOVEIT_GET_RANDOM_JOINT_POSITIONS_TOPIC}' "
+                f"Failed to connect to '{MOVEIT_GET_RANDOM_JOINT_POSITIONS_TOPIC}' "
                 f"service! Shutting down '{rospy.get_name()}' as this service is "
                 "required for retrieving random joint positions."
             )
@@ -1261,58 +1315,6 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
 
         return retval
 
-    @property
-    def ee_pose(self):
-        """Returns the ee pose while taking the `reward_frame_offset` into account when
-        it has been set in the environment config.
-
-        Returns:
-            :obj:`geometry_msgs.msg.PoseStamped`: The stamped ee pose.
-        """
-        if self._ee_frame_offset and sum(list(self._ee_frame_offset.values())) != 1.0:
-            try:
-                ee_to_world_transform = self.tf_buffer.lookup_transform(
-                    "world", self._ee_link, rospy.Time(0)
-                )
-            except (
-                LookupException,
-                ConnectivityException,
-                ExtrapolationException,
-            ) as e:
-                err_msg = "Shutting down '{}' since the {}.".format(
-                    rospy.get_name(), lower_first_char(e.args[0])
-                )
-                ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
-            rew_frame_offset_pose_stamped = PoseStamped(
-                header=Header(frame_id=self._ee_link, stamp=rospy.Time.now()),
-                pose=Pose(
-                    position=Vector3(
-                        x=self._ee_frame_offset["x"],
-                        y=self._ee_frame_offset["y"],
-                        z=self._ee_frame_offset["z"],
-                    ),
-                    orientation=normalize_quaternion(
-                        Quaternion(
-                            x=self._ee_frame_offset["rx"],
-                            y=self._ee_frame_offset["ry"],
-                            z=self._ee_frame_offset["rz"],
-                            w=self._ee_frame_offset["rw"],
-                        )
-                    ),
-                ),
-            )
-            return tf2_geometry_msgs.do_transform_pose(
-                rew_frame_offset_pose_stamped, ee_to_world_transform
-            )
-        else:
-            try:
-                return self.get_ee_pose()
-            except EePoseLookupError as e:
-                err_msg = "Shutting down '{}' since the {}".format(
-                    rospy.get_name(), lower_first_char(e.args[0])
-                )
-                ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
-
     ################################################
     # Overload Robot env virtual methods ###########
     ################################################
@@ -1381,7 +1383,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 - desired_goal (:obj:`object`): The desired goal that we asked the agent
                   to attempt to achieve.
         """
-        ee_pose = self.ee_pose
+        ee_pose = self.get_ee_pose()
         ee_position = [
             ee_pose.pose.position.x,
             ee_pose.pose.position.y,
@@ -1423,10 +1425,16 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         Returns:
             dict: Dictionary with additional information.
         """
+        ee_pose = self.get_ee_pose()
+        ee_position = [
+            ee_pose.pose.position.x,
+            ee_pose.pose.position.y,
+            ee_pose.pose.position.z,
+        ]
         info = {
             "reference": self.goal,
-            "state_of_interest": self.ee_pose,
-            "reference_error": self.ee_pose - self.goal,
+            "state_of_interest": ee_position,
+            "reference_error": ee_position - self.goal,
         }
         return info
 
@@ -1630,6 +1638,8 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
            the ``bounds`` set in the task environment config.
         """
         if self._reset_init_pose:
+            init_type = "random " if self._random_init_pose else ""
+            rospy.loginfo(f"Setting {init_type}init pose...")
             if self._random_init_pose:  # Use random initial model configuration.
                 if (
                     self._pose_sampling_type == "joint_positions"
@@ -1739,15 +1749,18 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             if random_joint_positions:
                 self._init_model_configuration = random_joint_positions
             else:
+                pose_sampling_type_str = (
+                    "joint positions"
+                    if self._pose_sampling_type == "joint_positions"
+                    else "EE pose"
+                )
                 if self._init_model_configuration:
                     rospy.logwarn(
-                        "No valid random {} could be retrieved. As a result the "
-                        "initial model configuration of the previous episode was "
-                        "used.".format(
-                            "joint positions"
-                            if self._pose_sampling_type == "joint_positions"
-                            else "EE pose"
-                        )
+                        f"Unable to retrieve a valid random {pose_sampling_type_str}. "
+                        "Please ensure that you have set valid pose_sampling bounds in "
+                        "the task environment config file "
+                        f"'{str(self._config_file_path)}'. The initial model "
+                        "configuration from the previous episode was used as a result."
                     )
                 else:
                     self._init_model_configuration = dict(
@@ -1757,13 +1770,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                         )
                     )
                     rospy.logwarn(
-                        "No valid random {} could be retrieved. As a result the "
-                        "fallback model configuration was used '{}'.".format(
-                            "joint positions"
-                            if self._pose_sampling_type == "joint_positions"
-                            else "EE pose",
-                            self._init_model_configuration,
-                        )
+                        f"Unable to retrieve a valid random {pose_sampling_type_str}. "
+                        "Please ensure that you have set valid pose_sampling bounds in "
+                        "the task environment config file "
+                        f"'{str(self._config_file_path)}'. Because no previous "
+                        "initial model configuration was available the fallback model "
+                        f"configuration '{self._init_model_configuration}' was used."
                     )
 
             # Convert gripper width to joint positions.
@@ -1801,14 +1813,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     if not resp.success:
                         rospy.logwarn("Setting initial robot pose failed.")
                     return resp.success
-                else:
-                    rospy.logwarn(
-                        "The initial pose failed since the {} service was not "
-                        "available.".format(MOVEIT_SET_JOINT_POSITIONS_TOPIC)
-                    )
-                    return False
-        else:
-            return True
+                rospy.logwarn(
+                    "The initial pose failed since the {} service was not "
+                    "available.".format(MOVEIT_SET_JOINT_POSITIONS_TOPIC)
+                )
+                return False
+        return True
 
     def _init_env_variables(self):
         """Inits variables needed to be initialized each time we reset at the start
