@@ -15,6 +15,7 @@
 from datetime import datetime
 from itertools import compress
 
+import copy
 import actionlib
 import numpy as np
 import rospy
@@ -27,15 +28,22 @@ from ros_gazebo_gym.common.helpers import (
     get_orientation_euler,
     lower_first_char,
     normalize_quaternion,
+    list_2_human_text,
+    suppress_stderr,
+    is_sublist,
 )
 from ros_gazebo_gym.core.ros_launcher import ROSLauncher
 from ros_gazebo_gym.core.lazy_importer import LazyImporter
 from ros_gazebo_gym.core.helpers import get_log_path, ros_exit_gracefully
 from ros_gazebo_gym.exceptions import EePoseLookupError, EeRpyLookupError
+from ros_gazebo_gym.robot_envs.helpers import (
+    remove_gripper_commands_from_joint_commands_msg,
+)
 from ros_gazebo_gym.robot_gazebo_goal_env import RobotGazeboGoalEnv
 from rospy.exceptions import ROSException, ROSInterruptException
 from sensor_msgs.msg import JointState
-from std_msgs.msg import Float32, Float64
+from std_msgs.msg import Float32, Float64MultiArray
+from urdf_parser_py.urdf import URDF
 
 # Specify topics and connection timeouts.
 CONNECTION_TIMEOUT = 5  # Timeout for connecting to services or topics.
@@ -71,24 +79,8 @@ PANDA_JOINTS_FALLBACK = {
     ],
     "hand": ["panda_finger_joint1", "panda_finger_joint2"],
 }  # NOTE: Used when the joints can not be determined.
-ARM_POSITION_CONTROLLERS = [
-    "panda_arm_joint1_position_controller",
-    "panda_arm_joint2_position_controller",
-    "panda_arm_joint3_position_controller",
-    "panda_arm_joint4_position_controller",
-    "panda_arm_joint5_position_controller",
-    "panda_arm_joint6_position_controller",
-    "panda_arm_joint7_position_controller",
-]
-ARM_EFFORT_CONTROLLERS = [
-    "panda_arm_joint1_effort_controller",
-    "panda_arm_joint2_effort_controller",
-    "panda_arm_joint3_effort_controller",
-    "panda_arm_joint4_effort_controller",
-    "panda_arm_joint5_effort_controller",
-    "panda_arm_joint6_effort_controller",
-    "panda_arm_joint7_effort_controller",
-]
+ARM_POSITION_CONTROLLER = "panda_arm_joint_position_controller"
+ARM_EFFORT_CONTROLLER = "panda_arm_joint_effort_controller"
 GRASP_FORCE = 10  # Default panda gripper force. Panda force information: {Continuous force: 70N, max_force: 140 N}.  # noqa: E501
 ARM_CONTROL_WAIT_TIMEOUT = 5  # Default arm control wait timeout [s].
 ARM_JOINT_POSITION_WAIT_THRESHOLD = 0.07  # Threshold used for determining whether a joint position is reached (i.e. 0.01 rad per joint).  # noqa: E501
@@ -195,6 +187,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         self._set_joint_commands_client_connected = False
         self._set_gripper_width_client_connected = False
         self._fetched_joints = False
+        self._last_gripper_goal = None
         self.__robot_control_type = control_type.lower()
         self.__joints = {}
         self.__in_collision = False
@@ -280,14 +273,14 @@ class PandaEnv(RobotGazeboGoalEnv):
             package_name="panda_gazebo",
             launch_file_name="put_robot_in_world.launch",
             workspace_path=workspace_path,
-            control_type=control_type_group,
-            end_effector=self.robot_EE_link,
-            load_gripper=self.load_gripper,
-            rviz=show_rviz,
-            rviz_file=self._rviz_file if hasattr(self, "_rviz_file") else "",
-            disable_franka_gazebo_logs=True,
             log_file=launch_log_file,
             critical=True,
+            rviz=show_rviz,
+            load_gripper=self.load_gripper,
+            disable_franka_gazebo_logs=True,
+            rviz_file=self._rviz_file if hasattr(self, "_rviz_file") else "",
+            end_effector=self.robot_EE_link,
+            control_type=control_type_group,
         )
 
         ########################################
@@ -307,16 +300,17 @@ class PandaEnv(RobotGazeboGoalEnv):
         )
 
         ########################################
-        # Connect to sensors ###################
+        # Initialize sensor topics #############
         ########################################
-        rospy.logdebug("Connecting to sensors.")
 
         # Create publishers.
+        rospy.logdebug("Creating publishers.")
         self._in_collision_pub = rospy.Publisher(
             "/ros_gazebo_gym/in_collision", Float32, queue_size=1, latch=True
         )
 
         # Create joint state and franka state subscriber.
+        rospy.logdebug("Connecting to sensors.")
         rospy.Subscriber(
             f"{self.robot_name_space}/{JOINT_STATES_TOPIC}",
             JointState,
@@ -331,8 +325,38 @@ class PandaEnv(RobotGazeboGoalEnv):
         )
 
         # Create transform listener.
+        rospy.logdebug("Creating tf2 buffer.")
         self.tf_buffer = tf2_ros.Buffer()
         self._tf_listener = tf2_ros.TransformListener(self.tf_buffer)
+
+        ########################################
+        # Validate environment arguments #######
+        ########################################
+        rospy.logdebug("Validating environment arguments.")
+
+        # Retrieve the robot model from the parameter server.
+        rospy.logdebug("Retrieving robot model from the parameter server.")
+        try:
+            with suppress_stderr():
+                self._robot = URDF.from_parameter_server()
+        except KeyError as e:
+            if e.args[0] == "robot_description":
+                err_msg = (
+                    "Failed to retrieve robot model from the parameter server. "
+                    "Please make sure the robot model is loaded on the parameter server "
+                    "and try again."
+                )
+                ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
+            raise e
+
+        # Ensure specified end-effector link exists.
+        rospy.logdebug("Validating end-effector link.")
+        if not self.ee_link_exists:
+            err_msg = (
+                f"The specified end-effector link '{self.robot_EE_link}' does not "
+                "exist. Please make sure the end-effector link exists and try again."
+            )
+            ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
 
         ########################################
         # Connect to control services ##########
@@ -342,7 +366,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         ################################
         # Control switcher #############
         ################################
-        # NOTE: Here we use a warpper around the 'control_manager/switch_controller'
+        # NOTE: Here we use a wrapper around the 'control_manager/switch_controller'
         # provided by the 'panda_gazebo' package that knows which controllers to load
         # for each control type.
         rospy.logdebug("Creating to Panda Control switcher.")
@@ -511,29 +535,19 @@ class PandaEnv(RobotGazeboGoalEnv):
                     ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
             else:  # Directly publish control commands to controller topics.
                 if self.robot_control_type == "position":
-                    # Create arm joint position controller publishers.
-                    self._arm_joint_position_pub = (
-                        self.panda_gazebo.core.GroupPublisher()
+                    # Create arm joint position control publisher.
+                    self._arm_joint_position_pub = rospy.Publisher(
+                        "%s/command" % (ARM_POSITION_CONTROLLER),
+                        Float64MultiArray,
+                        queue_size=10,
                     )
-                    for position_controller in ARM_POSITION_CONTROLLERS:
-                        self._arm_joint_position_pub.append(
-                            rospy.Publisher(
-                                "%s/command" % (position_controller),
-                                Float64,
-                                queue_size=10,
-                            )
-                        )
                 else:
-                    # Create arm joint effort publishers.
-                    self._arm_joint_effort_pub = self.panda_gazebo.core.GroupPublisher()
-                    for effort_controller in ARM_EFFORT_CONTROLLERS:
-                        self._arm_joint_effort_pub.append(
-                            rospy.Publisher(
-                                "%s/command" % (effort_controller),
-                                Float64,
-                                queue_size=10,
-                            )
-                        )
+                    # Create arm joint effort control publisher.
+                    self._arm_joint_effort_pub = rospy.Publisher(
+                        "%s/command" % (ARM_EFFORT_CONTROLLER),
+                        Float64MultiArray,
+                        queue_size=10,
+                    )
 
         # Connect to gripper control services.
         if self.load_gripper and (
@@ -909,52 +923,75 @@ class PandaEnv(RobotGazeboGoalEnv):
                 )
             joint_commands = dict(zip(self._action_space_joints, joint_commands))
 
-        # Create SetJointCommandsRequest message if PROXY mode.
-        if not direct_control:
-            if isinstance(joint_commands, dict):
-                req = self.panda_gazebo.srv.SetJointCommandsRequest()
-                if self._grasping:
-                    req.grasping = self._grasping
-                req.joint_names = list(joint_commands.keys())
-                req.joint_commands = list(joint_commands.values())
-                req.control_type = "position"
-            elif isinstance(
-                joint_commands, self.panda_gazebo.srv.SetJointPositionsRequest
-            ):
-                req = joint_commands
-            else:
-                rospy.logwarn(
-                    "Setting joint positions failed since the 'joint_commands' "
-                    f"argument is of the '{type(joint_commands)}' type while the "
-                    "'set_joint_positions' function only accepts a dictionary, list or "
-                    "a 'SetJointCommandsRequest' message."
-                )
-                return False
-
-            # Add wait variables to SetJointCommandsRequest message.
-            req.arm_wait = arm_wait
-            req.hand_wait = hand_wait
-        else:
-            if not isinstance(
-                joint_commands, (dict, list, np.ndarray, tuple)
-            ) or np.isscalar(joint_commands):
-                rospy.logwarn(
-                    "Setting joint positions failed since the 'joint_commands' "
-                    f"argument is of the '{type(joint_commands)}' type while the "
-                    "'set_joint_positions' function only accepts a dictionary, list "
-                    "or int when in DIRECT control mode."
-                )
-                return False
+        # Throw warning and return if joint_commands is not of the correct type.
+        valid_types = (
+            (dict, list, np.ndarray, tuple)
+            if direct_control
+            else (dict, self.panda_gazebo.srv.SetJointCommandsRequest)
+        )
+        if not isinstance(joint_commands, valid_types):
+            control_mode = "DIRECT" if direct_control else "INDIRECT"
+            valid_types_str = list_2_human_text(
+                [f"'{type_.__name__}'" for type_ in valid_types],
+                separator=", a",
+                end_separator=" or a",
+            )
+            rospy.logwarn(
+                "Setting joint positions failed since the 'joint_commands' argument is "
+                f"of the '{type(joint_commands).__name__}' type while the "
+                f"'set_joint_positions' function only accepts a {valid_types_str} when "
+                f"{control_mode} control mode."
+            )
+            return False
 
         ########################################
         # Set joint positions ##################
         ########################################
+        commanded_joints = (
+            list(joint_commands.keys())
+            if isinstance(joint_commands, dict)
+            else joint_commands.joint_names
+        )
+        if (
+            "gripper_max_effort" in commanded_joints
+            and "gripper_width" not in commanded_joints
+        ):
+            rospy.logwarn_once(
+                "Gripper max effort was specified but no gripper width was specified. "
+                "As a result the max effort will be ignored."
+            )
         self._step_debug_logger(
             "Setting joint positions using {} control mode.".format(
                 "DIRECT" if direct_control else "PROXY"
             )
         )
         if not direct_control:  # Use proxy service.
+            # Create SetJointCommandsRequest message.
+            if isinstance(joint_commands, dict):
+                req = self.panda_gazebo.srv.SetJointCommandsRequest()
+                req.grasping = self._grasping if self._grasping else False
+                req.joint_names = list(joint_commands.keys())
+                req.joint_commands = list(joint_commands.values())
+                req.control_type = "position"
+            elif isinstance(
+                joint_commands, self.panda_gazebo.srv.SetJointCommandsRequest
+            ):
+                req = joint_commands
+            req.arm_wait = arm_wait
+            req.hand_wait = hand_wait
+
+            # Ensure that the gripper is blocked if self.block_gripper is True.
+            if self.block_gripper:
+                req = self._block_gripper_commands(req)
+
+            # Prevent duplicate gripper commands from being sent.
+            if is_sublist(["gripper_width", "gripper_max_effort"], req.joint_names):
+                if self._last_gripper_goal != req:
+                    self._last_gripper_goal = req
+                else:
+                    req = remove_gripper_commands_from_joint_commands_msg(req)
+
+            # Send arm and hand control commands.
             if self._set_joint_commands_client_connected:
                 self._set_joint_commands_client.call(req)
             else:
@@ -982,54 +1019,36 @@ class PandaEnv(RobotGazeboGoalEnv):
             hand_wait (bool, optional): Wait till the hand control has finished.
                 Defaults to ``False``.
         """
-        # Fill missing states if joint_commands dictionary is incomplete.
-        if list(joint_commands.keys()) != (
-            [
-                item
-                for item in self._action_space_joints
-                if item not in ["gripper_width", "gripper_max_effort"]
-            ]
-            if self.load_gripper and self.block_gripper
-            else self._action_space_joints
-        ):
-            cur_joint_commands = {
-                key: val
-                for key, val in zip(self.joint_states.name, self.joint_states.position)
-                if key in self.joints["arm"]
-            }
-            if self.load_gripper:
-                cur_joint_commands["gripper_width"] = self.gripper_width
-                cur_joint_commands["gripper_max_effort"] = (
-                    GRASP_FORCE if self._grasping else 0.0
-                )
-
-            # Add joint commands.
-            cur_joint_commands.update(joint_commands)
-            joint_commands = cur_joint_commands
+        # Retrieve arm and gripper commands.
+        arm_commands = self._get_arm_commands(
+            joint_commands, control_type="position", fill_missing=True
+        )
+        gripper_width, gripper_max_effort = self._get_gripper_commands(joint_commands)
 
         # Send arm and hand control commands.
-        if self.load_gripper and not self.block_gripper:
-            gripper_width = joint_commands.pop("gripper_width", None)
-            gripper_max_effort = joint_commands.pop("gripper_max_effort", None)
         self._arm_joint_position_pub.publish(
-            [Float64(val) for val in joint_commands.values()]
+            Float64MultiArray(data=list(arm_commands.values()))
         )
         if arm_wait:
             self._wait_till_arm_control_done(
                 control_type="position",
-                joint_setpoint=list(joint_commands.values()),
+                joint_setpoint=list(arm_commands.values()),
             )
-        if self.load_gripper and not self.block_gripper:
+        if self.load_gripper and not self.block_gripper and gripper_width is not None:
             req = GripperCommandGoal()
             req.command.position = (
                 gripper_width / 2
             )  # NOTE: Done the action expects the finger width.
             req.command.max_effort = gripper_max_effort
-            self._gripper_command_client.send_goal(req)
-            if hand_wait:
-                self._gripper_command_client.wait_for_result(
-                    timeout=rospy.Duration(secs=5)
-                )
+
+            # Send gripper goal if it was different from the previous one.
+            if self._last_gripper_goal != req:
+                self._last_gripper_goal = req
+                self._gripper_command_client.send_goal(req)
+                if hand_wait:
+                    self._gripper_command_client.wait_for_result(
+                        timeout=rospy.Duration(secs=5)
+                    )
 
     def set_joint_efforts(  # noqa: C901
         self, joint_commands, arm_wait=False, hand_wait=False, direct_control=True
@@ -1067,52 +1086,68 @@ class PandaEnv(RobotGazeboGoalEnv):
                 )
             joint_commands = dict(zip(self._action_space_joints, joint_commands))
 
-        # Create SetJointCommandsRequest message if PROXY mode.
-        if not direct_control:
-            if isinstance(joint_commands, dict):
-                req = self.panda_gazebo.srv.SetJointCommandsRequest()
-                if self._grasping:
-                    req.grasping = self._grasping
-                req.joint_names = list(joint_commands.keys())
-                req.joint_commands = list(joint_commands.values())
-                req.control_type = "effort"
-            elif isinstance(
-                joint_commands, self.panda_gazebo.srv.SetJointEffortsRequest
-            ):
-                req = joint_commands
-            else:
-                rospy.logwarn(
-                    "Setting joint efforts failed since the 'joint_commands' argument "
-                    f"is of the '{type(joint_commands)}' type while the "
-                    "'set_joint_efforts' function only accepts a dictionary, list or a "
-                    "'SetJointCommandsRequest' message."
-                )
-                return False
-
-            # Add wait variables to SetJointCommandsRequest message.
-            req.arm_wait = arm_wait
-            req.hand_wait = hand_wait
-        else:
-            if not isinstance(
-                joint_commands, (dict, list, np.ndarray, tuple)
-            ) or np.isscalar(joint_commands):
-                rospy.logwarn(
-                    "Setting joint efforts failed since the 'joint_commands' argument "
-                    f"is of the '{type(joint_commands)}' type while the "
-                    "'set_joint_efforts' function only accepts a dictionary, list or "
-                    "int when in DIRECT control mode."
-                )
-                return False
+        # Throw warning and return if joint_commands is not of the correct type.
+        valid_types = (
+            (dict, list, np.ndarray, tuple)
+            if direct_control
+            else (dict, self.panda_gazebo.srv.SetJointCommandsRequest)
+        )
+        if not isinstance(joint_commands, valid_types):
+            control_mode = "DIRECT" if direct_control else "INDIRECT"
+            valid_types_str = list_2_human_text(
+                [f"'{type_.__name__}'" for type_ in valid_types],
+                separator=", a",
+                end_separator=" or a",
+            )
+            rospy.logwarn(
+                "Setting joint efforts failed since the 'joint_commands' argument is "
+                f"of the '{type(joint_commands).__name__}' type while the "
+                f"'set_joint_efforts' function only accepts a {valid_types_str} when "
+                f"{control_mode} control mode."
+            )
+            return False
 
         ########################################
         # Set joint efforts ####################
         ########################################
+        commanded_joints = (
+            list(joint_commands.keys())
+            if isinstance(joint_commands, dict)
+            else joint_commands.joint_names
+        )
+        if (
+            "gripper_max_effort" in commanded_joints
+            and "gripper_width" not in commanded_joints
+        ):
+            rospy.logwarn_once(
+                "Gripper max effort was specified but no gripper width was specified. "
+                "As a result the max effort will be ignored."
+            )
         self._step_debug_logger(
             "Setting joint efforts using {} control mode.".format(
                 "DIRECT" if direct_control else "PROXY"
             )
         )
         if not direct_control:  # Use proxy service.
+            # Create SetJointCommandsRequest message.
+            if isinstance(joint_commands, dict):
+                req = self.panda_gazebo.srv.SetJointCommandsRequest()
+                req.grasping = self._grasping if self._grasping else False
+                req.joint_names = list(joint_commands.keys())
+                req.joint_commands = list(joint_commands.values())
+                req.control_type = "effort"
+            elif isinstance(
+                joint_commands, self.panda_gazebo.srv.SetJointCommandsRequest
+            ):
+                req = joint_commands
+            req.arm_wait = arm_wait
+            req.hand_wait = hand_wait
+
+            # Ensure that the gripper is blocked if self.block_gripper is True.
+            if self.block_gripper:
+                req = self._block_gripper_commands(req)
+
+            # Send arm and hand control commands.
             if self._set_joint_commands_client_connected:
                 self._set_joint_commands_client.call(req)
             else:
@@ -1142,37 +1177,15 @@ class PandaEnv(RobotGazeboGoalEnv):
             hand_wait (bool, optional): Wait till the hand control has finished.
                 Defaults to ``False``.
         """
-        # Fill missing states if joint_commands dictionary is incomplete.
-        if list(joint_commands.keys()) != (
-            [
-                item
-                for item in self._action_space_joints
-                if item not in ["gripper_width", "gripper_max_effort"]
-            ]
-            if self.load_gripper and self.block_gripper
-            else self._action_space_joints
-        ):
-            cur_joint_commands = {
-                key: val
-                for key, val in zip(self.joint_states.name, self.joint_states.effort)
-                if key in self.joints["arm"]
-            }
-            if self.load_gripper:
-                cur_joint_commands["gripper_width"] = self.gripper_width
-                cur_joint_commands["gripper_max_effort"] = (
-                    GRASP_FORCE if self._grasping else 0.0
-                )
-
-            # Add joint commands.
-            cur_joint_commands.update(joint_commands)
-            joint_commands = cur_joint_commands
+        # Retrieve arm and gripper commands.
+        arm_commands = self._get_arm_commands(
+            joint_commands, control_type="effort", fill_missing=True
+        )
+        gripper_width, gripper_max_effort = self._get_gripper_commands(joint_commands)
 
         # Send arm and hand control commands.
-        if self.load_gripper and not self.block_gripper:
-            gripper_width = joint_commands.pop("gripper_width", None)
-            gripper_max_effort = joint_commands.pop("gripper_max_effort", None)
         self._arm_joint_effort_pub.publish(
-            [Float64(val) for val in joint_commands.values()]
+            Float64MultiArray(data=list(arm_commands.values()))
         )
         # NOTE: We currently do not have to wait for control efforts to be applied
         # since the 'FrankaHWSim' does not yet implement control latency. Torques
@@ -1180,9 +1193,9 @@ class PandaEnv(RobotGazeboGoalEnv):
         # if arm_wait:
         #     self._wait_till_arm_control_done(
         #         control_type="effort",
-        #         joint_setpoint=list(joint_commands.values())
+        #         joint_setpoint=list(arm_commands.values())
         #     )
-        if self.load_gripper and not self.block_gripper:
+        if self.load_gripper and not self.block_gripper and gripper_width is not None:
             req = GripperCommandGoal()
             req.command.position = (
                 gripper_width / 2
@@ -1412,13 +1425,13 @@ class PandaEnv(RobotGazeboGoalEnv):
             rospy.logwarn(
                 "Not waiting for control to be completed as no information could "
                 "be retrieved about which joints are controlled when using '%s' "
-                "control. Please make sure the '%s' controllers that are needed "
-                "for '%s' control are initialized."
+                "control. Please make sure the '%s' controller that is needed for '%s' "
+                "control are initialized."
                 % (
                     control_type,
-                    ARM_POSITION_CONTROLLERS
+                    ARM_POSITION_CONTROLLER
                     if control_type == "position"
-                    else ARM_EFFORT_CONTROLLERS,
+                    else ARM_EFFORT_CONTROLLER,
                     control_type,
                 )
             )
@@ -1427,12 +1440,12 @@ class PandaEnv(RobotGazeboGoalEnv):
             rospy.logwarn(
                 "Not waiting for control to be completed as no joints appear to be "
                 "controlled when using '%s' control. Please make sure the '%s' "
-                "controllers that are needed for '%s' control are initialized."
+                "controller that is needed for '%s' control are initialized."
                 % (
                     control_type,
-                    ARM_POSITION_CONTROLLERS
+                    ARM_POSITION_CONTROLLER
                     if control_type == "position"
-                    else ARM_EFFORT_CONTROLLERS,
+                    else ARM_EFFORT_CONTROLLER,
                     control_type,
                 )
             )
@@ -1553,6 +1566,90 @@ class PandaEnv(RobotGazeboGoalEnv):
         else:
             pass
 
+    def _fill_missing_arm_joint_commands(self, joint_commands, control_type):
+        """Fills missing arm joint commands with the current joint states if the joint
+        states dictionary is incomplete.
+
+        Args:
+            joint_commands (dict): The joint commands dictionary.
+            control_type (str): The type of control commands that are being executed.
+                Options are ``effort`` and ``position``.
+
+        Returns:
+            dict: The arm joint commands dictionary with the missing joint states
+                filled in.
+        """
+        cur_joint_commands = (
+            self.arm_positions
+            if control_type.lower() == "position"
+            else self.arm_efforts
+        )
+        cur_joint_commands.update(joint_commands)
+        joint_commands = cur_joint_commands
+        return joint_commands
+
+    def _get_arm_commands(self, joint_commands, control_type, fill_missing=False):
+        """Retrieves the arm commands from the joint commands dictionary.
+
+        Args:
+            joint_commands (dict): The joint commands dictionary.
+            control_type (str): The type of control commands that are being executed.
+                Options are ``effort`` and ``position``.
+            fill_missing (bool, optional): Whether to fill missing arm joint commands
+                with the current joint states if the joint states dictionary is
+                incomplete. Defaults to ``False``.
+
+        Returns:
+            dict: The arm joint commands dictionary.
+        """
+        # Remove gripper commands.
+        arm_commands = copy.deepcopy(joint_commands)
+        arm_commands.pop("gripper_width", None)
+        arm_commands.pop("gripper_max_effort", None)
+
+        # Fill missing arm joint commands if needed.
+        if fill_missing:
+            arm_commands = self._fill_missing_arm_joint_commands(
+                arm_commands, control_type=control_type
+            )
+        return arm_commands
+
+    def _get_gripper_commands(self, joint_commands):
+        """Retrieves the gripper commands from the joint commands dictionary.
+
+        Args:
+            joint_commands (dict): The joint commands dictionary.
+
+        Returns:
+            (tuple): tuple containing:
+
+                - **gripper_width** (float): The gripper width.
+                - **gripper_max_effort** (float): The gripper max effort.
+        """
+        gripper_width = None
+        gripper_max_effort = None
+        if self.load_gripper and not self.block_gripper:
+            # Block gripper if requested and set max effort to 10N if grasping.
+            gripper_width = joint_commands.pop("gripper_width", None)
+            gripper_max_effort = joint_commands.pop(
+                "gripper_max_effort", GRASP_FORCE if self._grasping else 0.0
+            )
+        return gripper_width, gripper_max_effort
+
+    def _block_gripper_commands(self, joint_commands_msg):
+        """Modifies the joint commands message to block the gripper.
+
+        Args:
+            joint_commands_msg (:obj:`panda_gazebo.msg.JointCommands`): The joint
+                commands message.
+        """
+        if self.load_gripper:
+            joint_commands_msg.grasping = False
+            joint_commands_msg = remove_gripper_commands_from_joint_commands_msg(
+                joint_commands_msg
+            )
+        return joint_commands_msg
+
     #############################################
     # Retrieve robot states #####################
     #############################################
@@ -1612,6 +1709,45 @@ class PandaEnv(RobotGazeboGoalEnv):
         )
 
     @property
+    def arm_positions(self):
+        """Returns the current arm joint positions.
+
+        Returns:
+            dict: The arm joint positions.
+        """
+        return {
+            key: val
+            for key, val in zip(self.joint_states.name, self.joint_states.position)
+            if key in self.joints["arm"]
+        }
+
+    @property
+    def arm_velocities(self):
+        """Returns the current arm joint velocities.
+
+        Returns:
+            dict: The arm joint velocities.
+        """
+        return {
+            key: val
+            for key, val in zip(self.joint_states.name, self.joint_states.velocity)
+            if key in self.joints["arm"]
+        }
+
+    @property
+    def arm_efforts(self):
+        """Returns the current arm joint efforts.
+
+        Returns:
+            dict: The arm joint efforts.
+        """
+        return {
+            key: val
+            for key, val in zip(self.joint_states.name, self.joint_states.effort)
+            if key in self.joints["arm"]
+        }
+
+    @property
     def robot_control_type(self):
         """Returns the currently set robot control type."""
         return self.__robot_control_type
@@ -1638,6 +1774,15 @@ class PandaEnv(RobotGazeboGoalEnv):
     def in_collision(self):
         """Whether the robot is in collision."""
         return self.__in_collision
+
+    @property
+    def ee_link_exists(self):
+        """Returns whether the end effector link exists in the robot model.
+
+        Returns:
+            bool: Whether the end effector link exists in the robot model.
+        """
+        return any(link.name == self.robot_EE_link for link in self._robot.links)
 
     ################################################
     # Overload Gazebo env virtual methods ##########

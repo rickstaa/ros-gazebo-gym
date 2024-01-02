@@ -4,6 +4,8 @@ import copy
 import glob
 import os
 import re
+import sys
+from contextlib import contextmanager
 
 import numpy as np
 import rospy
@@ -389,6 +391,19 @@ def deep_update(d, u=None, fixed=False, **kwargs):  # noqa: C901
     return d
 
 
+def is_sublist(lst1, lst2):
+    """Checks whether lst1 is a sublist of lst2.
+
+    Args:
+        lst1 (list): List 1.
+        lst2 (list): List 2.
+
+    Returns:
+        bool: Boolean specifying whether lst1 is a sublist of lst2.
+    """
+    return all(element in lst2 for element in lst1)
+
+
 #################################################
 # Argument validation functions #################
 #################################################
@@ -622,3 +637,30 @@ def normalize_quaternion(quaternion):
         quaternion.w = quaternion.w / norm
 
     return quaternion
+
+
+class DummyFile(object):
+    """Dummy file class to redirect stderr to."""
+
+    def write(self, x):
+        """Writes the given string to the dummy file."""
+        pass
+
+
+@contextmanager
+def suppress_stderr():
+    """Suppresses the stderr output of a code block.
+
+    Example:
+            .. code-block:: python
+
+                with suppress_stderr():
+                    # Code block that will not print stderr.
+                    sys.stderr.write("This will not be printed.")
+    """
+    orig_stderr = sys.stderr
+    sys.stderr = DummyFile()
+    try:
+        yield
+    finally:
+        sys.stderr = orig_stderr
