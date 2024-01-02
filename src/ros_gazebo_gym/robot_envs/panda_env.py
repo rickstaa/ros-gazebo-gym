@@ -170,6 +170,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         self.robot_EE_link = robot_EE_link
         self.load_gripper = load_gripper
         self.block_gripper = block_gripper
+        self._ros_shutdown_requested = False
         self._connection_timeout = CONNECTION_TIMEOUT
         self._joint_traj_action_server_default_step_size = 1
         self._grasping = False if not hasattr(self, "_grasping") else self._grasping
@@ -187,6 +188,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         self._set_joint_commands_client_connected = False
         self._set_gripper_width_client_connected = False
         self._fetched_joints = False
+        self._ros_is_shutdown = False
         self._last_gripper_goal = None
         self.__robot_control_type = control_type.lower()
         self.__joints = {}
@@ -282,6 +284,9 @@ class PandaEnv(RobotGazeboGoalEnv):
             end_effector=self.robot_EE_link,
             control_type=control_type_group,
         )
+
+        # Add ros shutdown hook.
+        rospy.on_shutdown(self._ros_shutdown_hook)
 
         ########################################
         # Initiate gazebo environment ##########
@@ -788,7 +793,7 @@ class PandaEnv(RobotGazeboGoalEnv):
 
             # Create set EE pose request message.
             if isinstance(ee_pose, dict):
-                # Fill missing EE pose attributes with curren pose values.
+                # Fill missing EE pose attributes with current pose values.
                 if arm_action_space_joints != list(ee_pose.keys()):
                     cur_ee_pose = self.get_ee_pose()
                     cur_ee_pose_dict = {
@@ -1522,9 +1527,10 @@ class PandaEnv(RobotGazeboGoalEnv):
         """
         self.franka_states = data
         self.__in_collision = any(self.franka_states.cartesian_contact)
-        self._in_collision_pub.publish(
-            Float32(np.float32(self._PandaEnv__in_collision))
-        )
+        if not (rospy.is_shutdown() or self._ros_shutdown_requested):
+            self._in_collision_pub.publish(
+                Float32(np.float32(self._PandaEnv__in_collision))
+            )
 
     def _check_all_sensors_ready(self):
         """Checks whether we are receiving sensor data."""
@@ -1565,6 +1571,10 @@ class PandaEnv(RobotGazeboGoalEnv):
             rospy.logdebug(*args, **kwargs)
         else:
             pass
+
+    def _ros_shutdown_hook(self):
+        """Method that is called when the ROS node is shutdown."""
+        self._ros_shutdown_requested = True
 
     def _fill_missing_arm_joint_commands(self, joint_commands, control_type):
         """Fills missing arm joint commands with the current joint states if the joint
