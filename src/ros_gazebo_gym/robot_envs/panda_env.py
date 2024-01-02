@@ -282,6 +282,8 @@ class PandaEnv(RobotGazeboGoalEnv):
             disable_franka_gazebo_logs=True,
             rviz_file=self._rviz_file if hasattr(self, "_rviz_file") else "",
             end_effector=self.robot_EE_link,
+            max_velocity_scaling_factor=self._max_velocity_scaling_factor,
+            max_acceleration_scaling_factor=self._max_acceleration_scaling_factor,
             control_type=control_type_group,
         )
 

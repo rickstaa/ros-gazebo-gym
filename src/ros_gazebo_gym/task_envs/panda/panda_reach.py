@@ -921,6 +921,19 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 )
             except KeyError:
                 self._roslaunch_log_to_console = False
+            # Retrieve other variables.
+            try:
+                self._max_velocity_scaling_factor = rospy.get_param(
+                    "/panda_moveit_planner_server/max_velocity_scaling_factor"
+                )
+            except KeyError:
+                self._max_velocity_scaling_factor = 1.0
+            try:
+                self._max_acceleration_scaling_factor = rospy.get_param(
+                    "/panda_moveit_planner_server/max_acceleration_scaling_factor"
+                )
+            except KeyError:
+                self._max_acceleration_scaling_factor = 1.0
         except KeyError as e:
             rospy.logerr(
                 f"Parameter '{e.args[0]}' could not be retrieved from the parameter "
