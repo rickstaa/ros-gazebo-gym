@@ -7,7 +7,7 @@ panda_pick_and_place:
   ########################################
   control:
     direct_control: True # Directly control the panda robot by publishing on the controller command topics (FAST). When ``False`` the 'panda_gazebo' control services will be used (SLOWER).
-    ee_link: "panda_EE" # Link that is specified as the end effector.
+    ee_link: "panda_hand" # End effector link. Defaults to 'panda_link8' or 'panda_hand' based on 'load_gripper'.
     load_gripper: True # Whether you want to load the gripper.
     grasping: True # Whether the gripper should grasp objects.
     arm_wait: False # Wait for the arm control to complete before continuing to the next step.

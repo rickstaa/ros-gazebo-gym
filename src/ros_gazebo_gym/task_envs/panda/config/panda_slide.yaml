@@ -5,8 +5,7 @@ panda_slide:
   ########################################
   control:
     direct_control: True # Directly control the panda robot by publishing on the controller command topics (FAST). When ``False`` the 'panda_gazebo' control services will be used (SLOWER).
-    ee_link: "panda_link8" # Link that is specified as the end effector.
-    # ee_link: "panda_EE" # Link that is specified as the end effector.
+    ee_link: "panda_link8" # End effector link. Defaults to 'panda_link8' or 'panda_hand' based on 'load_gripper'.
     # NOTE: We don't load the gripper since the gravity compensation currently does not work with the hand attached (see https://github.com/frankaemika/franka_ros/issues/160#issuecomment-992776684).
     load_gripper: False # Whether you want to load the gripper.
     grasping: False # Whether the gripper should grasp objects.
