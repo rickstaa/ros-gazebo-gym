@@ -404,6 +404,24 @@ def is_sublist(lst1, lst2):
     return all(element in lst2 for element in lst1)
 
 
+def remove_dict_none_values(input_dict):
+    """Removes all the None values from a dictionary.
+
+    Args:
+        input_dict (dict): The input dictionary.
+
+    Returns:
+        dict: The dictionary without the None values.
+    """
+    if not isinstance(input_dict, dict):
+        return input_dict
+    return {
+        k: remove_dict_none_values(v)
+        for k, v in input_dict.items()
+        if v is not None and remove_dict_none_values(v) is not None
+    }
+
+
 #################################################
 # Argument validation functions #################
 #################################################

@@ -19,6 +19,7 @@ import rosparam
 import rospkg
 import rospy
 import ruamel.yaml as yaml
+from ros_gazebo_gym.common.helpers import remove_dict_none_values
 from tqdm import tqdm
 
 # Script settings.
@@ -702,6 +703,7 @@ def load_ros_params_from_yaml(yaml_file_path, ros_package_name=None):
     # Load parameters from yaml file.
     paramlist = rosparam.load_file(str(yaml_file_path))
     for params, ns in paramlist:
+        params = remove_dict_none_values(params)
         rosparam.upload_params(ns, params)
 
 
