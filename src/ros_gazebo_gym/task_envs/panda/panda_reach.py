@@ -320,6 +320,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             robot_EE_link=self._ee_link,
             load_gripper=self._load_gripper,
             lock_gripper=self._lock_gripper,
+            grasping=self._grasping,
             control_type=control_type,
             workspace_path=workspace_path,
             log_reset=self._log_reset,

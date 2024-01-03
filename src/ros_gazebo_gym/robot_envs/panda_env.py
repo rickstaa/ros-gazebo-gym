@@ -127,6 +127,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         robot_EE_link="panda_link8",
         load_gripper=True,
         lock_gripper=False,
+        grasping=False,
         control_type="effort",
         reset_robot_pose=True,
         workspace_path=None,
@@ -144,6 +145,9 @@ class PandaEnv(RobotGazeboGoalEnv):
                 gripper. Defaults to ``True``.
             lock_gripper (bool, optional): Whether we want to lock the parallel-jaw
                 gripper (i.e. not move). Defaults to ``False``.
+            grasping (bool, optional): Whether we want to use the gripper for grasping.
+                If ``True`` and `gripper_max_effort` is unset, applies 10N effort.
+                Defaults to False.
             control_Type (str, optional): The type of control you want to use for the
                 panda robot (i.e. hand and arm). Options are: ``trajectory``,
                 ``position``, ``effort`` or ``end_effector``. Defaults to ``effort``.
@@ -174,9 +178,9 @@ class PandaEnv(RobotGazeboGoalEnv):
         self._ros_shutdown_requested = False
         self._connection_timeout = CONNECTION_TIMEOUT
         self._joint_traj_action_server_default_step_size = 1
-        self._grasping = False if not hasattr(self, "_grasping") else self._grasping
+        self._grasping = grasping
         self._direct_control = (
-            False if not hasattr(self, "_direct_control") else self._direct_control
+            True if not hasattr(self, "_direct_control") else self._direct_control
         )
         self._log_step_debug_info = (
             False
