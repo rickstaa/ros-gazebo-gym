@@ -9,7 +9,6 @@ panda_pick_and_place:
     direct_control: True # Directly control the panda robot by publishing on the controller command topics (FAST). When ``False`` the 'panda_gazebo' control services will be used (SLOWER).
     ee_link: "panda_EE" # Link that is specified as the end effector.
     load_gripper: True # Whether you want to load the gripper.
-    block_gripper: False # Whether the gripper control should be blocked.
     grasping: True # Whether the gripper should grasp objects.
     arm_wait: False # Wait for the arm control to complete before continuing to the next step.
     hand_wait: False # Wait for the hand control to complete before continuing to the next step.
@@ -33,6 +32,15 @@ panda_pick_and_place:
       - "gripper_width"
       # NOTE: When uncommented the robot also tries to control the max gripper effort
       - "gripper_max_effort"
+    locked_arm_joints: # Arm joints that are locked during control.
+      # - "panda_joint1"
+      # - "panda_joint2"
+      # - "panda_joint3"
+      # - "panda_joint4"
+      # - "panda_joint5"
+      # - "panda_joint6"
+      # - "panda_joint7"
+    lock_gripper: False # Whether the gripper should be locked (i.e. not move).
 
   ########################################
   # Sampling settings ####################
