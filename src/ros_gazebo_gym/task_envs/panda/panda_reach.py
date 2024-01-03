@@ -317,7 +317,6 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         # Initialize the Robot environment.
         super(PandaReachEnv, self).__init__(
             robot_EE_link=self._ee_link,
-            ee_frame_offset=self._ee_frame_offset,
             load_gripper=self._load_gripper,
             block_gripper=self._block_gripper,
             control_type=control_type,
@@ -659,12 +658,6 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 )
             except KeyError:
                 self._controlled_joints = None
-            try:
-                self._ee_frame_offset = rospy.get_param(
-                    f"/{ns}/control/ee_frame_offset"
-                )
-            except KeyError:
-                self._ee_frame_offset = None
             # Retrieve sampling variables.
             try:
                 self._visualize_init_pose_bounds = rospy.get_param(

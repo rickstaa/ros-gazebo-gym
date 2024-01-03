@@ -142,19 +142,6 @@ panda_reach:
     distance_threshold: 0.05 # The threshold for determining a target has been reached.
     collision_penalty: 0.0 # The penalty given for when the robot is in collision. Set to `0.0` if you don't want to use a collision penalty.
 
-    # Reward frame offset (Only used in REACH environment)
-    # NOTE: Normally, the distance between the `ee_frame` and the `target` is used to
-    # calculate the reward. If you want to change this but have no TF frame available,
-    # you can use the offset below.
-    ee_frame_offset:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-      rx: 0.0
-      ry: 0.0
-      rz: 0.0
-      rw: 1.0
-
   ########################################
   # Environment settings #################
   ########################################
