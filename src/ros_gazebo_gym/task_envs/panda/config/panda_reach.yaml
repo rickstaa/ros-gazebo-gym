@@ -153,6 +153,7 @@ panda_reach:
   # Environment settings #################
   ########################################
   environment:
+    pause_after_step: False # Pause the simulation after each step.
     # The environment action space
     action_space:
       bounds:

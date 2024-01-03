@@ -305,6 +305,9 @@ class PandaEnv(RobotGazeboGoalEnv):
             reset_robot_pose=reset_robot_pose,
             reset_world_or_sim="WORLD",
             log_reset=log_reset,
+            pause_simulation=self._pause_after_step
+            if hasattr(self, "_pause_after_step")
+            else False,
             publish_rviz_training_info_overlay=self._load_rviz
             if hasattr(self, "_load_rviz")
             else True,
