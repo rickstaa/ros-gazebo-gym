@@ -28,7 +28,7 @@ tailored for integration with the `stable-baselines3`_ package. The current sele
 
 To embark on a training session for a reaching task involving a (simulated) `Panda Emika Franka`_ robot using the `Stable Baselines SAC algorithm`_, follow these steps:
 
-1. Clone the ``ros_gazebo_gym_examples`` package within the Catkin workspace established for the ``ros_gazebo_gym`` package.
+1. Clone the  :ros-gazebo-gym-examples:`ros_gazebo_gym_examples <>` package within the Catkin workspace established for the ``ros_gazebo_gym`` package.
 2. Complete the installation of all requisite ROS dependencies and perform the catkin workspace reconstruction (refer to :ref:`install_dependencies` and :ref:`build_package`).
 3. Source the Catkin workspace (e.g., execute ``. ../develop/setup.bash``).
 4. Launch any of the examples from the :ros-gazebo-gym-examples:`ros_gazebo_gym_examples <>` package using the ``roslaunch`` command.
@@ -69,8 +69,9 @@ the reward mechanism, and the control type employed in the ``PandaReach-v1`` tas
 
    env = gym.make("ros_gazebo_gym:PandaReach-v1", max_episode_steps=1000, positive_reward=False, control_type="effort")
 
-Additionally, each environment provides a corresponding ``yaml`` configuration file. These files are invaluable for precise fine-tuning and reside in the ``config`` folder alongside the respective task environment. When you create
-a task environment, these configuration files are automatically loaded. The parameters in these configuration files are also directly accessible through the ROS parameter server. 
+Additionally, each task environment provides a corresponding ``yaml`` configuration file. These files are invaluable for precise fine-tuning and reside in the ``config`` folder alongside the respective task environment  (e.g. 
+:ros-gazebo-gym:`task_envs/panda/config/panda_reach.yaml <blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_reach.yaml>`). When you create a task environment, these configuration files are automatically loaded. The
+parameters in these configuration files are also directly accessible through the ROS parameter server. 
 
 .. _troubleshooting:
 

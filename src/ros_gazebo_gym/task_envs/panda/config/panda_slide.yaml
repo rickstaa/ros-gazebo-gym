@@ -4,11 +4,11 @@ panda_slide:
   # Control settings #####################
   ########################################
   control:
-    direct_control: True # Directly control the panda robot by publishing on the controller command topics (FAST). When ``False`` the 'panda_gazebo' control services will be used (SLOWER).
+    direct_control: True # Directly control the panda robot by publishing on the controller command topics (FAST). When `False` the 'panda_gazebo' control services will be used (SLOWER).
     ee_link: "panda_link8" # End effector link. Defaults to 'panda_link8' or 'panda_hand' based on 'load_gripper'.
     # NOTE: We don't load the gripper since the gravity compensation currently does not work with the hand attached (see https://github.com/frankaemika/franka_ros/issues/160#issuecomment-992776684).
     load_gripper: False # Whether you want to load the gripper.
-    grasping: False # Whether the gripper should grasp objects.
+    grasping: False # Enables gripper for easy grasping. Applies 10N if 'gripper_max_effort' is unset.
     arm_wait: False # Wait for the arm control to complete before continuing to the next step.
     hand_wait: False # Wait for the hand control to complete before continuing to the next step.
     ee_control_coordinates: # Control variables used during ee-control.
@@ -46,13 +46,13 @@ panda_slide:
   ########################################
   # Initial pose
   pose_sampling:
-    visualize_init_pose_bounds: True # RViz pose sampling region visualization. Only works for 'pose_sampling_type` is 'ee_pose'.
+    visualize_init_pose_bounds: True # RViz pose sampling region visualization. Only works for 'pose_sampling_type' is 'ee_pose'.
     reset_init_pose: True # Reset the initial pose when resetting the simulation.
     random_init_pose: True # Use a random initial pose. The 'init_pose' field below will be used if set to `False`.
     randomize_first_episode: True # Also randomize the pose in the first episode.
     attempts: 10 # Maximum number of attempts for sampling a random initial pose within the set bounds.
     pose_sampling_type: "end_effector_pose" # From which set we should sample the initial pose. Options: 'end_effector_pose' and 'joint_positions'.
-    moveit_control: False # Use MoveIt to set the initial pose. If `false` the Gazebo `set_model_configuration` service will be used.
+    moveit_control: False # Use MoveIt to set the initial pose. If `False` the Gazebo 'set_model_configuration' service will be used.
 
     # The initial robot pose (used when random is disabled).
     init_pose:

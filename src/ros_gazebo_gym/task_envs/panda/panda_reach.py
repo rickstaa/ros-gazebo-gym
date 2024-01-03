@@ -72,6 +72,11 @@ Action space:
         - **gripper_max_effort** (:obj:`float`): The maximum effort of the gripper -
           only if the gripper is loaded.
 
+        .. attention::
+            The gripper width is ignored when the ``grasping`` parameter is set to ``true`` in the
+            :ros-gazebo-gym:`task environment config file <blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_reach.yaml>`.
+            or when the ``gripper_max_effort`` is set to a value greater than zero.
+
 Episode termination:
     The episode terminates when the end-effector is within a certain distance of the
     goal position. The distance is defined by the ``distance_threshold`` parameter in
