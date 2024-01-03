@@ -829,6 +829,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 self._collision_penalty = 0.0
             # == Retrieve environment variables ==
             try:
+                self._pause_after_step = rospy.get_param(
+                    f"/{ns}/environment/pause_after_step"
+                )
+            except KeyError:
+                self._pause_after_step = False
+            try:
                 self._action_bounds = rospy.get_param(
                     f"/{ns}/environment/action_space/bounds"
                 )

@@ -73,8 +73,8 @@ class RobotGazeboGoalEnv(gymrobot.GoalEnv):
                 positions). Defaults to "SIMULATION".
             log_reset (bool, optional): Whether we want to print a log statement when
                 the world/simulation is reset. Defaults to ``True``.
-            pause_sim (bool, optional): Whether the simulation should be paused after it
-                has been reset. Defaults to ``False``.
+            pause_sim (bool, optional): Whether the simulation should be paused after
+                each step (i.e. after each action). Defaults to ``False``.
             publish_rviz_training_info_overlay (bool, optional): Whether a RViz overlay
                 should be published with the training results. Defaults to ``False``.
         """
