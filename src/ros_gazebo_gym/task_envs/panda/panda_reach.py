@@ -173,6 +173,7 @@ PANDA_REST_CONFIGURATION = [
     0.001,
 ]
 LOG_STEP_DEBUG_INFO = False
+AVAILABLE_HAND_COMMANDS = ["gripper_width", "gripper_max_effort"]
 
 
 #################################################
@@ -318,7 +319,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         super(PandaReachEnv, self).__init__(
             robot_EE_link=self._ee_link,
             load_gripper=self._load_gripper,
-            block_gripper=self._block_gripper,
+            lock_gripper=self._lock_gripper,
             control_type=control_type,
             workspace_path=workspace_path,
             log_reset=self._log_reset,
@@ -533,6 +534,19 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             )
         )
 
+        # Throw warning if action space joints are locked.
+        locked_action_space_joints = [
+            joint
+            for joint in self._action_space_joints
+            if joint in self._locked_arm_joints
+        ]
+        if locked_action_space_joints:
+            rospy.logwarn(
+                f"The following joints in the action space are locked: "
+                f"{list_2_human_text(locked_action_space_joints)}. As a result, the "
+                "control applied to these joints will not have any effect."
+            )
+
         rospy.logwarn("PandaEnv task environment initialized.")
 
     ################################################
@@ -617,7 +631,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         """
         self._task_env = ns
         try:
-            # Retrieve control variables.
+            # == Retrieve control variables ==
             try:
                 self._direct_control = rospy.get_param(f"/{ns}/control/direct_control")
             except KeyError:
@@ -630,10 +644,6 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 self._ee_link = rospy.get_param(f"/{ns}/control/ee_link")
             except KeyError:
                 self._ee_link = "panda_hand" if self._load_gripper else "panda_link8"
-            try:
-                self._block_gripper = rospy.get_param(f"/{ns}/control/block_gripper")
-            except KeyError:
-                self._block_gripper = False
             try:
                 self._grasping = rospy.get_param(f"/{ns}/control/grasping")
             except KeyError:
@@ -658,7 +668,17 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 )
             except KeyError:
                 self._controlled_joints = None
-            # Retrieve sampling variables.
+            try:
+                self._locked_arm_joints = rospy.get_param(
+                    f"/{ns}/control/locked_arm_joints"
+                )
+            except KeyError:
+                self._locked_arm_joints = []
+            try:
+                self._lock_gripper = rospy.get_param(f"/{ns}/control/lock_gripper")
+            except KeyError:
+                self._lock_gripper = False
+            # == Retrieve sampling variables ==
             try:
                 self._visualize_init_pose_bounds = rospy.get_param(
                     f"/{ns}/pose_sampling/visualize_init_pose_bounds"
@@ -782,7 +802,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                         "z_min": 0.0,
                         "z_max": 1.3,
                     }
-            # Retrieve reward variables.
+            # == Retrieve reward variables ==
             try:
                 self._reward_type = rospy.get_param(f"/{ns}/training/reward_type")
             except KeyError:
@@ -807,7 +827,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 )
             except KeyError:
                 self._collision_penalty = 0.0
-            # Retrieve environment variables.
+            # == Retrieve environment variables ==
             try:
                 self._action_bounds = rospy.get_param(
                     f"/{ns}/environment/action_space/bounds"
@@ -879,7 +899,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                         },
                     },
                 }
-            # Retrieve global variables.
+            # == Retrieve global variables ==
             try:
                 self._physics = rospy.get_param(f"/{ns}/physics").lower()
             except KeyError:
@@ -914,7 +934,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 )
             except KeyError:
                 self._roslaunch_log_to_console = False
-            # Retrieve other variables.
+            # == Retrieve other variables ==
             try:
                 self._max_velocity_scaling_factor = rospy.get_param(
                     "/panda_moveit_planner_server/max_velocity_scaling_factor"
@@ -1102,17 +1122,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                         invalid_ee_coordinates.append(joint)
 
         # Validate control_joints.
-        hand_joints = ["gripper_width", "gripper_max_effort"]
         invalid_joints = []
         if self._controlled_joints:
-            valid_joints = self.joints["arm"] + hand_joints
+            valid_joints = self.joints["arm"] + AVAILABLE_HAND_COMMANDS
             for joint in self._controlled_joints:
                 if joint not in valid_joints:
                     invalid_joints.append(joint)
-        if not self._load_gripper:
-            self._controlled_joints = [
-                item for item in self._controlled_joints if item not in hand_joints
-            ]
 
         # Throw error and shutdown node if invalid joint was found.
         if invalid_ee_coordinates or invalid_joints:
@@ -1186,18 +1201,26 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 action_space_joints.extend(["gripper_width", "gripper_max_effort"])
         else:
             if self._controlled_joints:
-                action_space_joints = self._controlled_joints
+                controlled_joints = self._controlled_joints
+                if not self._load_gripper:
+                    controlled_joints = [
+                        item
+                        for item in self._controlled_joints
+                        if item not in AVAILABLE_HAND_COMMANDS
+                    ]
+                    if len(controlled_joints) != len(self._controlled_joints):
+                        rospy.logdebug(
+                            "Hand gripper commands were removed from the controlled "
+                            "joints since the gripper is not loaded."
+                        )
+                action_space_joints = controlled_joints
             else:
                 action_space_joints = self.joints["arm"]
                 if self._load_gripper:
                     action_space_joints = flatten_list(
-                        ["gripper_width", "gripper_max_effort", action_space_joints]
+                        [AVAILABLE_HAND_COMMANDS, action_space_joints]
                         if self.joints["both"][0] in self.joints["hand"]
-                        else [
-                            action_space_joints,
-                            "gripper_width",
-                            "gripper_max_effort",
-                        ]
+                        else [action_space_joints, AVAILABLE_HAND_COMMANDS]
                     )
 
         return action_space_joints
@@ -1310,12 +1333,21 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             `https://github.com/frankaemika/franka_ros/issues/225 <https://github.com/frankaemika/franka_ros/issues/225>`_.
         """  # noqa: E501
         if hasattr(self, "_set_franka_model_configuration_srv"):
+            # Unlock locked joints.
+            if self._locked_arm_joints:
+                self.unlock_joints(self._locked_arm_joints)
+
+            # Set joint configuration.
             resp = self._set_franka_model_configuration_srv.call(
                 self.franka_msgs.srv.SetJointConfigurationRequest(
                     configuration=JointState(name=joint_names, position=joint_positions)
                 )
             )
             retval = resp.success
+
+            # Lock locked joints.
+            if self._locked_arm_joints:
+                self.lock_joints(self._locked_arm_joints)
         else:
             retval = False
 
@@ -1482,7 +1514,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             gripper_max_effort = action_dict.pop("gripper_max_effort", None)
             if self.robot_control_type == "end_effector":
                 self.set_ee_pose(action_dict)
-                if self._load_gripper and not self._block_gripper:
+                if self._load_gripper and not self._lock_gripper:
                     self.set_gripper_width(
                         gripper_with,
                         wait=self._hand_wait,
@@ -1490,14 +1522,14 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     )
             else:
                 self.set_arm_joint_trajectory(action_dict, wait=self._arm_wait)
-                if self._load_gripper and not self._block_gripper:
+                if self._load_gripper and not self._lock_gripper:
                     self.set_gripper_width(
                         gripper_with,
                         wait=self._hand_wait,
                         max_effort=gripper_max_effort,
                     )
         else:
-            if self._load_gripper and self._block_gripper:
+            if self._load_gripper and self._lock_gripper:
                 action_dict.pop("gripper_width", None)
                 action_dict.pop("gripper_max_effort", None)
             self.set_joint_commands(
@@ -1656,7 +1688,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                         if self._load_gripper:
                             random_joint_positions["gripper_width"] = (
                                 split_pose_dict(self._init_pose)[1]["gripper_width"]
-                                if self._block_gripper
+                                if self._lock_gripper
                                 else random_joint_positions.pop(
                                     self.joints["hand"][0], 0.0
                                 )
@@ -1714,7 +1746,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     if self._load_gripper:
                         random_joint_positions["gripper_width"] = (
                             split_pose_dict(self._init_pose)[1]["gripper_width"]
-                            if self._block_gripper
+                            if self._lock_gripper
                             else self._get_random_joint_positions().pop(
                                 self.joints["hand"][0], 0.0
                             )
@@ -1808,6 +1840,12 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                 if hasattr(self, "_moveit_set_joint_positions_srv"):
                     prev_control_type = self.robot_control_type
                     self.robot_control_type = "trajectory"
+
+                    # Unlock locked joints.
+                    if self._locked_arm_joints:
+                        self.unlock_joints(self._locked_arm_joints)
+
+                    # Set initial model configuration.
                     resp = self._moveit_set_joint_positions_srv.call(
                         self.panda_gazebo.srv.SetJointPositionsRequest(
                             joint_names=self._init_model_configuration.keys(),
@@ -1818,6 +1856,11 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     self.robot_control_type = prev_control_type
                     if not resp.success:
                         rospy.logwarn("Setting initial robot pose failed.")
+
+                    # Lock locked joints.
+                    if self._locked_arm_joints:
+                        self.lock_joints(self._locked_arm_joints)
+
                     return resp.success
                 rospy.logwarn(
                     "The initial pose failed since the {} service was not "

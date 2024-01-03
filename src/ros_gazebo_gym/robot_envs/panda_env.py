@@ -12,10 +12,10 @@
     for the ``position`` and ``effort`` control. Other control methods like
     ``trajectory`` and ``end_effector`` control will use the PROXY based method.
 """  # noqa: E501
+import copy
 from datetime import datetime
 from itertools import compress
 
-import copy
 import actionlib
 import numpy as np
 import rospy
@@ -26,15 +26,15 @@ from ros_gazebo_gym.common.helpers import (
     action_server_exists,
     flatten_list,
     get_orientation_euler,
+    is_sublist,
+    list_2_human_text,
     lower_first_char,
     normalize_quaternion,
-    list_2_human_text,
     suppress_stderr,
-    is_sublist,
 )
-from ros_gazebo_gym.core.ros_launcher import ROSLauncher
-from ros_gazebo_gym.core.lazy_importer import LazyImporter
 from ros_gazebo_gym.core.helpers import get_log_path, ros_exit_gracefully
+from ros_gazebo_gym.core.lazy_importer import LazyImporter
+from ros_gazebo_gym.core.ros_launcher import ROSLauncher
 from ros_gazebo_gym.exceptions import EePoseLookupError, EeRpyLookupError
 from ros_gazebo_gym.robot_envs.helpers import (
     remove_gripper_commands_from_joint_commands_msg,
@@ -52,6 +52,7 @@ MOVEIT_SET_EE_POSE_TOPIC = "panda_moveit_planner_server/panda_arm/set_ee_pose"
 MOVEIT_GET_EE_POSE_JOINT_CONFIG_TOPIC = (
     "panda_moveit_planner_server/panda_arm/get_ee_pose_joint_config"
 )
+LOCK_UNLOCK_TOPIC = "lock_unlock_panda_joints"
 GET_CONTROLLED_JOINTS_TOPIC = "panda_control_server/get_controlled_joints"
 SET_JOINT_COMMANDS_TOPIC = "panda_control_server/set_joint_commands"
 SET_GRIPPER_WIDTH_TOPIC = "panda_control_server/panda_hand/set_gripper_width"
@@ -108,7 +109,7 @@ class PandaEnv(RobotGazeboGoalEnv):
             reset.
         robot_EE_link (str): The link used for the end effector control.
         load_gripper (bool): Whether the gripper was loaded.
-        block_gripper (bool): Whether the gripper was blocked.
+        lock_gripper (bool): Whether the gripper should be locked (i.e. not move).
         joint_states (:obj:`sensor_msgs.msg.JointState`): The current joint states.
         franka_states (:obj:`franka_msgs.msg.FrankaState`): The current franka states.
             These give robot specific information about the panda robot.
@@ -125,7 +126,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         robot_name_space="",
         robot_EE_link="panda_link8",
         load_gripper=True,
-        block_gripper=False,
+        lock_gripper=False,
         control_type="effort",
         reset_robot_pose=True,
         workspace_path=None,
@@ -141,8 +142,8 @@ class PandaEnv(RobotGazeboGoalEnv):
                 ``panda_link8``.
             load_gripper (bool, optional): Whether we want to load the parallel-jaw
                 gripper. Defaults to ``True``.
-            load_gripper (bool, optional): Whether we want to block the parallel-jaw
-                gripper. Defaults to ``False``.
+            lock_gripper (bool, optional): Whether we want to lock the parallel-jaw
+                gripper (i.e. not move). Defaults to ``False``.
             control_Type (str, optional): The type of control you want to use for the
                 panda robot (i.e. hand and arm). Options are: ``trajectory``,
                 ``position``, ``effort`` or ``end_effector``. Defaults to ``effort``.
@@ -169,7 +170,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         self.reset_controls = True
         self.robot_EE_link = robot_EE_link
         self.load_gripper = load_gripper
-        self.block_gripper = block_gripper
+        self.lock_gripper = lock_gripper
         self._ros_shutdown_requested = False
         self._connection_timeout = CONNECTION_TIMEOUT
         self._joint_traj_action_server_default_step_size = 1
@@ -182,6 +183,8 @@ class PandaEnv(RobotGazeboGoalEnv):
             if not hasattr(self, "_log_step_debug_info")
             else self._log_step_debug_info
         )
+        self._joint_lock_client_connected = False
+        self._get_controlled_joints_client_connected = False
         self._moveit_set_ee_pose_client_connected = False
         self._moveit_get_ee_pose_joint_config_client_connected = False
         self._arm_joint_traj_control_client_connected = False
@@ -193,6 +196,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         self.__robot_control_type = control_type.lower()
         self.__joints = {}
         self.__in_collision = False
+        self.__locked_joints = []
 
         # Thrown control warnings.
         if self._direct_control and self.robot_control_type in [
@@ -385,6 +389,27 @@ class PandaEnv(RobotGazeboGoalEnv):
         )
 
         ################################
+        # Joint Locker #################
+        ################################
+
+        # Connect to the 'panda_gazebo' joint lock/unlock service.
+        # NOTE: Used to lock specific panda arm joints.
+        try:
+            joint_lock_srv_topic = f"{self.robot_name_space}/{LOCK_UNLOCK_TOPIC}"
+            rospy.logdebug("Connecting to '%s' service." % joint_lock_srv_topic)
+            rospy.wait_for_service(
+                joint_lock_srv_topic, timeout=self._connection_timeout
+            )
+            self._joint_lock_client = rospy.ServiceProxy(
+                joint_lock_srv_topic,
+                self.panda_gazebo.srv.LockJoints,
+            )
+            rospy.logdebug("Connected to '%s' service!" % joint_lock_srv_topic)
+            self._joint_lock_client_connected = True
+        except (rospy.ServiceException, ROSException, ROSInterruptException):
+            rospy.logwarn("Failed to connect to '%s' service!" % joint_lock_srv_topic)
+
+        ################################
         # MoveIt Control services ######
         ################################
 
@@ -407,6 +432,7 @@ class PandaEnv(RobotGazeboGoalEnv):
             rospy.logdebug(
                 "Connected to '%s' service!" % get_controlled_joints_srv_topic
             )
+            self._get_controlled_joints_client_connected = True
         except (rospy.ServiceException, ROSException, ROSInterruptException):
             rospy.logwarn(
                 "Failed to connect to '%s' service!" % get_controlled_joints_srv_topic
@@ -987,8 +1013,8 @@ class PandaEnv(RobotGazeboGoalEnv):
             req.arm_wait = arm_wait
             req.hand_wait = hand_wait
 
-            # Ensure that the gripper is blocked if self.block_gripper is True.
-            if self.block_gripper:
+            # Ensure that the gripper is blocked if self.lock_gripper is True.
+            if self.lock_gripper:
                 req = self._block_gripper_commands(req)
 
             # Prevent duplicate gripper commands from being sent.
@@ -1041,7 +1067,7 @@ class PandaEnv(RobotGazeboGoalEnv):
                 control_type="position",
                 joint_setpoint=list(arm_commands.values()),
             )
-        if self.load_gripper and not self.block_gripper and gripper_width is not None:
+        if self.load_gripper and not self.lock_gripper and gripper_width is not None:
             req = GripperCommandGoal()
             req.command.position = (
                 gripper_width / 2
@@ -1150,8 +1176,8 @@ class PandaEnv(RobotGazeboGoalEnv):
             req.arm_wait = arm_wait
             req.hand_wait = hand_wait
 
-            # Ensure that the gripper is blocked if self.block_gripper is True.
-            if self.block_gripper:
+            # Ensure that the gripper is blocked if self.lock_gripper is True.
+            if self.lock_gripper:
                 req = self._block_gripper_commands(req)
 
             # Send arm and hand control commands.
@@ -1202,7 +1228,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         #         control_type="effort",
         #         joint_setpoint=list(arm_commands.values())
         #     )
-        if self.load_gripper and not self.block_gripper and gripper_width is not None:
+        if self.load_gripper and not self.lock_gripper and gripper_width is not None:
             req = GripperCommandGoal()
             req.command.position = (
                 gripper_width / 2
@@ -1508,6 +1534,28 @@ class PandaEnv(RobotGazeboGoalEnv):
 
         return True
 
+    def lock_joints(self, joint_names):
+        """Locks specific panda joints.
+
+        Args:
+            joint_names (list): The names of the joints to lock.
+        """
+        resp = self._joint_lock_client.call(
+            self.panda_gazebo.srv.LockJointsRequest(joint_names=joint_names, lock=True)
+        )
+        self.__locked_joints = joint_names if resp.success else []
+
+    def unlock_joints(self, joint_names):
+        """Unlocks specific panda joints.
+
+        Args:
+            joint_names (list): The names of the joints to unlock.
+        """
+        resp = self._joint_lock_client.call(
+            self.panda_gazebo.srv.LockJointsRequest(joint_names=joint_names, lock=False)
+        )
+        self.__locked_joints = [] if resp.success else joint_names
+
     ################################################
     # Panda Robot env helper methods ###############
     ################################################
@@ -1640,7 +1688,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         """
         gripper_width = None
         gripper_max_effort = None
-        if self.load_gripper and not self.block_gripper:
+        if self.load_gripper and not self.lock_gripper:
             # Block gripper if requested and set max effort to 10N if grasping.
             gripper_width = joint_commands.pop("gripper_width", None)
             gripper_max_effort = joint_commands.pop(
@@ -1649,7 +1697,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         return gripper_width, gripper_max_effort
 
     def _block_gripper_commands(self, joint_commands_msg):
-        """Modifies the joint commands message to block the gripper.
+        """Modifies the joint commands message to block the gripper commands.
 
         Args:
             joint_commands_msg (:obj:`panda_gazebo.msg.JointCommands`): The joint
@@ -1676,30 +1724,36 @@ class PandaEnv(RobotGazeboGoalEnv):
             re-fetch the currently controlled joints.
         """
         if not self.__joints:
-            resp = self._get_controlled_joints_client.call(
-                self.panda_gazebo.srv.GetControlledJointsRequest(
-                    control_type=self.robot_control_type
+            if self._get_controlled_joints_client_connected:
+                resp = self._get_controlled_joints_client.call(
+                    self.panda_gazebo.srv.GetControlledJointsRequest(
+                        control_type=self.robot_control_type
+                    )
                 )
-            )
-            self.__joints["arm"] = (
-                resp.controlled_joints_arm
-                if (resp.success and resp.controlled_joints_arm)
-                else PANDA_JOINTS_FALLBACK["arm"]
-            )
-            self.__joints["hand"] = (
-                resp.controlled_joints_hand
-                if (
-                    not self.load_gripper
-                    or resp.success
-                    and resp.controlled_joints_hand
+                self.__joints["arm"] = (
+                    resp.controlled_joints_arm
+                    if (resp.success and resp.controlled_joints_arm)
+                    else PANDA_JOINTS_FALLBACK["arm"]
                 )
-                else PANDA_JOINTS_FALLBACK["hand"]
-            )
-            self.__joints["both"] = (
-                flatten_list([self.__joints["arm"], self.__joints["hand"]])
-                if self.joint_states.name[0] in self.__joints["arm"]
-                else flatten_list([self.__joints["hand"], self.__joints["arm"]])
-            )
+                self.__joints["hand"] = (
+                    resp.controlled_joints_hand
+                    if (
+                        not self.load_gripper
+                        or resp.success
+                        and resp.controlled_joints_hand
+                    )
+                    else PANDA_JOINTS_FALLBACK["hand"]
+                )
+                self.__joints["both"] = (
+                    flatten_list([self.__joints["arm"], self.__joints["hand"]])
+                    if self.joint_states.name[0] in self.__joints["arm"]
+                    else flatten_list([self.__joints["hand"], self.__joints["arm"]])
+                )
+            else:
+                rospy.logwarn_once(
+                    "Retrieving controlled joints failed since the "
+                    f"'{GET_CONTROLLED_JOINTS_TOPIC}' service was not available."
+                )
         return self.__joints
 
     def refresh_joints(self):
@@ -1795,6 +1849,11 @@ class PandaEnv(RobotGazeboGoalEnv):
             bool: Whether the end effector link exists in the robot model.
         """
         return any(link.name == self.robot_EE_link for link in self._robot.links)
+
+    @property
+    def locked_joints(self):
+        """Returns the currently locked joints."""
+        return self.__locked_joints
 
     ################################################
     # Overload Gazebo env virtual methods ##########
