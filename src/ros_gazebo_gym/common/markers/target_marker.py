@@ -6,7 +6,7 @@
 """
 import rospy
 import tf2_ros
-from geometry_msgs.msg import Pose, Vector3, TransformStamped, Transform
+from geometry_msgs.msg import Pose, Transform, TransformStamped, Vector3
 from ros_gazebo_gym.common.helpers import normalize_quaternion
 from rospy.exceptions import ROSInitException
 from std_msgs.msg import ColorRGBA, Header

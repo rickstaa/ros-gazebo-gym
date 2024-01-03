@@ -19,8 +19,8 @@ Goal:
 """  # noqa: E501
 import rospy
 from gymnasium import utils
-from ros_gazebo_gym.task_envs.panda.panda_pick_and_place import PandaPickAndPlaceEnv
 from ros_gazebo_gym.task_envs.panda.markers.puck_marker import PuckMarker
+from ros_gazebo_gym.task_envs.panda.panda_pick_and_place import PandaPickAndPlaceEnv
 
 # Specify topics and other script variables.
 CONFIG_FILE_PATH = "config/panda_slide.yaml"
