@@ -839,7 +839,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     f"/{ns}/environment/pause_after_step"
                 )
             except KeyError:
-                self._pause_after_step = False
+                self._pause_after_step = True
             try:
                 self._action_bounds = rospy.get_param(
                     f"/{ns}/environment/action_space/bounds"
