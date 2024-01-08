@@ -8,7 +8,7 @@
 [![Contributions](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![DOI](https://zenodo.org/badge/453634930.svg)](https://zenodo.org/badge/latestdoi/453634930)
 
-The ROS Gazebo Gym framework integrates [ROS](https://www.ros.org/) and [Gazebo](http://gazebosim.org/) with [gymnasium](https://gymnasium.farama.org/) to facilitate the development and training of RL algorithms in realistic robot simulations. It provides a streamlined way to apply simulation-trained algorithms to actual robots, enhancing their real-world applicability. By providing this framework, we aim to offer a robust foundation for RL research in robotics and promote advancements in practical, real-world robot control.
+The ROS Gazebo Gym framework integrates [ROS](https://www.ros.org/) and [Gazebo](http://gazebosim.org/) with [gymnasium](https://gymnasium.farama.org/) to facilitate the development and training of RL algorithms in realistic robot simulations. It comes equipped with several ready-to-use simulation environments, allowing for a diverse range of applications and experimentation. This framework provides a streamlined way to apply simulation-trained algorithms to actual robots, thereby enhancing their real-world applicability. Our goal with ROS Gazebo Gym is to establish a robust foundation for RL research in robotics, aiding in the advancement of practical, real-world robot control."
 
 ## Installation and Usage
 
