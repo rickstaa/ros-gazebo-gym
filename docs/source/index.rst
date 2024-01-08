@@ -5,16 +5,16 @@ Welcome to ros_gazebo_gym's documentation
 .. image:: /images/ros_gazebo_gym.png
    :alt: ROS Gazebo Gym
 
-Welcome to the ROS Gazebo Gym framework! This framework provides all the tools necessary to create robot environments based on :ros:`ROS <>`, :gazebo:`Gazebo <>` and :gymnasium:`gymnasium <>`, and to train reinforcement
-learning (RL) algorithms in these environments. It also contains pre-made environments for testing and benchmarking RL algorithms. 
+Welcome to the ROS Gazebo Gym framework! This framework provides all the tools required for integrating :ros:`ROS <>` and :gazebo:`Gazebo <>` with :gymnasium:`gymnasium <>`, streamlining the development and training of RL algorithms in realistic robot simulations.
 
-RL algorithms have achieved impressive results in `games and simulations`_, but translating these results to real-world robots is challenging due to safety
-and time constraints. Simulations are often used to train RL algorithms for real-world robots, but :gymnasium:`gymnasium <>`, often used for developing and comparing RL algorithms, is not
-directly compatible with the simulated environments used in robotics research. The :ros-gazebo-gym:`ROS Gazebo Gym <>` framework provides a way to translate ROS :gazebo:`Gazebo <>` simulations into
-gymnasium environments, focusing on delivering real-world-ready solutions. This means that algorithms trained in simulation can be readily applied to real robots. We aim to create a
-common ground for people who use RL with real robots and accelerate research in this area.
+RL algorithms have recently achieved impressive results in games and simulated environments. For example, the DeepMind team trained an RL algorithm that outperforms humans in all of the `Atari games`_ and `another one that beat professional Dota 2 players`_. However, translating these results to real-world robots requires considerable work. Most RL algorithms cannot be trained directly on real robots due to safety and time constraints, necessitating reliance on simulations. While :gymnasium:`Gymnasium <>` provides a valuable toolkit for developing and comparing reinforcement learning algorithms, it is not directly compatible with the simulated environments often used in robotics research.
 
+The :ros-gazebo-gym:`ros-gazebo-gym <>` framework effectively translates ROS Gazebo simulations into gymnasium environments, optimizing for real-world applicability. This enables the practical application of simulation-trained algorithms to real robots. However, users should be mindful of `the real-to-sim gap`_ and the necessity for additional adjustments and safety evaluations. Our objective with the ros_gazebo_gym package is to provide a foundational tool for RL research with real robots to bridge this gap and foster advancements in the field.
+
+.. _`Atari games`: https://arxiv.org/abs/2003.13350
+.. _`another one that beat professional Dota 2 players`: https://arxiv.org/abs/1912.06680
 .. _`games and simulations`: https://arxiv.org/abs/1912.06680
+.. _`the real-to-sim gap`: https://ieeexplore.ieee.org/abstract/document/9308468/
 
 Package structure
 =================

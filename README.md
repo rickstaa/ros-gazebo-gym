@@ -8,11 +8,7 @@
 [![Contributions](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![DOI](https://zenodo.org/badge/453634930.svg)](https://zenodo.org/badge/latestdoi/453634930)
 
-The ROS Gazebo Gym framework provides all the tools required to create ROS based [gymnasium](https://gymnasium.farama.org/) robot environments.
-
-RL algorithms have achieved impressive results in games and simulated environments in the last few years. For example, the Deep-mind team was able to train an RL algorithm that outperforms humans on all of the [Atari games](https://arxiv.org/abs/2003.13350) and [another one that even beat professional dota 2 players](https://arxiv.org/abs/1912.06680). However, much work needs to be done to translate these results to real-world robots. Due to safety and time constraints, most RL algorithms can not be directly trained on real robots. As a result, people have to rely on simulations. [Gymnasium](https://gymnasium.farama.org/) provides a valuable toolkit for developing and comparing reinforcement learning algorithms. This toolkit, however, is not directly compatible with the simulated environments often used in robotics research.
-
-The [ros-gazebo-gym](https://github.com/rickstaa/ros-gazebo-gym) framework provides a way to translate ROS Gazebo simulations into gymnasium environments easily. While doing this, the focus lies on delivering real-world ready solutions, meaning algorithms trained in simulation can readily be applied to the Real robot. We hope to create a common ground for people who use RL with real robots and accelerate the research in this area.
+The ROS Gazebo Gym framework integrates [ROS](https://www.ros.org/) and [Gazebo](http://gazebosim.org/) with [gymnasium](https://gymnasium.farama.org/) to facilitate the development and training of RL algorithms in realistic robot simulations. It provides a streamlined way to apply simulation-trained algorithms to actual robots, enhancing their real-world applicability. By providing this framework, we aim to offer a robust foundation for RL research in robotics and promote advancements in practical, real-world robot control.
 
 ## Installation and Usage
 
