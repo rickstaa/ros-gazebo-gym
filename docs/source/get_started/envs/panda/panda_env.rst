@@ -55,7 +55,7 @@ Task environments
 The panda :ros-gazebo-gym:`ros_gazebo_gym <>` package comprises task environments adapted from the fetch environments in the :gymnasium:`gymnasium <>` package. Currently, it includes the following task environments:
 
 * :class:`PandaReach-v1 <ros_gazebo_gym.task_envs.panda.panda_reach>`: Move the Panda robot to a goal position.
-* :class:`PandaPickAndPlace-v1 <ros_gazebo_gym.task_envs.panda.panda_pick_and_place>`: Lift a block into the air.
+* :class:`PandaPickAndPlace-v1 <ros_gazebo_gym.task_envs.panda.panda_pick_and_place>`: Lift and place a block at a goal.
 * :class:`PandaPush-v1 <ros_gazebo_gym.task_envs.panda.panda_push>`: Push a block to a goal position.
 * :class:`PandaSlide-v1 <ros_gazebo_gym.task_envs.panda.panda_slide>`: Slide a puck to a goal position.
 
