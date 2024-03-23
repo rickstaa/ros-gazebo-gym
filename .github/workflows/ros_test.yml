@@ -39,8 +39,5 @@ jobs:
           image: ros_gazebo_gym:noetic
           options: -v ${{github.workspace}}/src:/src/ -v ${{github.workspace}}/devel:/devel/
           run: |
-            rosdep install --from-paths /src --ignore-src --rosdistro noetic -y --simulate  # Check if all dependencies were in the Docker File.
-            apt-get update
-            rosdep install --from-paths /src --ignore-src --rosdistro noetic -y
             catkin config --init --extend /opt/ros/noetic
             catkin build --interleave-output --verbose

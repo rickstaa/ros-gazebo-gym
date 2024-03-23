@@ -1,4 +1,4 @@
 # Adds custom rosdep rules to the rosdep database.
 # NOTE: Done because gymnasium and gymnasium-robotics require numpy>=1.20.1 while 
 # python==1.17.4 is installed on Ubuntu 20.04 by default.
-yaml https://github.com/rickstaa/ros-gazebo-gym/rosdep/rosdep.yaml
+yaml https://raw.githubusercontent.com/rickstaa/ros-gazebo-gym/noetic/rosdep/rosdep.yaml
