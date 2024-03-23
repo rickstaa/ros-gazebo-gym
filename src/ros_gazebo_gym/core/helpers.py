@@ -2,6 +2,7 @@
 :ros-gazebo-gym:`ros_gazebo_gym <>` package for the setup of the ROS Gazebo Gym
 gymnasium environments.
 """
+
 import atexit
 import os
 import subprocess
@@ -18,7 +19,7 @@ import pygit2
 import rosparam
 import rospkg
 import rospy
-import ruamel.yaml as yaml
+from ruamel.yaml import YAML, YAMLError
 from ros_gazebo_gym.common.helpers import remove_dict_none_values
 from tqdm import tqdm
 
@@ -501,8 +502,8 @@ def install_package(  # noqa: C901
     rosdep_index_path = Path(__file__).parent.joinpath(ROSDEP_INDEX_PATH).resolve()
     try:
         with open(rosdep_index_path) as stream:
-            rosdep_index = yaml.safe_load(stream)
-    except Exception:
+            rosdep_index = YAML(typ="safe").load(stream)
+    except YAMLError:
         warn_msg = (
             f"Could not check whether '{package_name}' and its dependencies are "
             "installed since something went wrong while trying to load the "
@@ -551,9 +552,11 @@ def install_package(  # noqa: C901
                 clone_repo(
                     package_clone_path,
                     rosdep_index[package_name]["git_url"],
-                    branch=rosdep_index[package_name]["git_branch"]
-                    if "git_branch" in rosdep_index[package_name].keys()
-                    else "main",
+                    branch=(
+                        rosdep_index[package_name]["git_branch"]
+                        if "git_branch" in rosdep_index[package_name].keys()
+                        else "main"
+                    ),
                     recursive=True,
                 )
                 deps_cloned = True
@@ -609,9 +612,11 @@ def install_package(  # noqa: C901
                         clone_repo(
                             dep_clone_path,
                             dep_index_info["git_url"],
-                            branch=dep_index_info["git_branch"]
-                            if "git_branch" in dep_index_info.keys()
-                            else "main",
+                            branch=(
+                                dep_index_info["git_branch"]
+                                if "git_branch" in dep_index_info.keys()
+                                else "main"
+                            ),
                             recursive=True,
                         )
                         deps_cloned = True
