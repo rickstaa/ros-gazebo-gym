@@ -11,7 +11,7 @@ To use these rules, follow these steps:
 
 1.  Copy or download the [19-ros-gazebo-gym.list](https://github.com/rickstaa/ros-gazebo-gym/tree/noetic/rosdep/19-ros-gazebo-gym.list) file to the `/etc/ros/rosdep/sources.list.d/` folder.
 2.  Run `rosdep update` to update the rosdep database.
-3.  Run `rosdep install --reinstall ros-gazebo-gym` to install the dependencies of the `ros-gazebo-gym` package. Note that the `--reinstall` flag is necessary because `python3-numpy` is already installed when ROS is installed.
+3.  Run `rosdep install --reinstall --from-path src --ignore-src -r -y` to install the ROS dependencies of the `ros_gazebo_gym` package. Note that the `--reinstall` flag is necessary because `python3-numpy` is already installed when ROS is installed.
 
 ## Restoring Default Rules
 
