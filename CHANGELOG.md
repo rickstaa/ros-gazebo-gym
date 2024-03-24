@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.9.5...v2.0.0) (2024-03-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* block_gripper now is named lock_gripper
+
+### Features
+
+* add ability to pause simulation after step ([#76](https://github.com/rickstaa/ros-gazebo-gym/issues/76)) ([2c7a34a](https://github.com/rickstaa/ros-gazebo-gym/commit/2c7a34ab70347f6e310962e9049215a9b061610e))
+* add joint lock feature and rename 'block_gripper' ([#75](https://github.com/rickstaa/ros-gazebo-gym/issues/75)) ([d8e7b90](https://github.com/rickstaa/ros-gazebo-gym/commit/d8e7b901e6df4c6d12b8939c9d7ff87554345353))
+* change default physics engine to ODE ([d320d6c](https://github.com/rickstaa/ros-gazebo-gym/commit/d320d6c99734594ad47539ea5abcc03f197c885c))
+* **gazebo:** add controller pause/unpause ([#68](https://github.com/rickstaa/ros-gazebo-gym/issues/68)) ([df877f1](https://github.com/rickstaa/ros-gazebo-gym/commit/df877f1a06c41c4a94dc3d99f79847f1e11bdcf8))
+
+
+### Bug Fixes
+
+* ensure control is compatible with panda_gazebo v2.16.1 ([#70](https://github.com/rickstaa/ros-gazebo-gym/issues/70)) ([6b0f9e0](https://github.com/rickstaa/ros-gazebo-gym/commit/6b0f9e0c566b876ec54ce67fcbaff2d24f0c3715))
+* ensure the max vel and acc scaling are correctly applied ([#72](https://github.com/rickstaa/ros-gazebo-gym/issues/72)) ([5c9b5f7](https://github.com/rickstaa/ros-gazebo-gym/commit/5c9b5f7365384f1bd437a2c16f662f53a97c5401))
+* fix flake8 errors ([b3f52a7](https://github.com/rickstaa/ros-gazebo-gym/commit/b3f52a729c9e43f85c64b4a6d31b8c959faf4117))
+* fix max vel/acc scaling undefined error ([#77](https://github.com/rickstaa/ros-gazebo-gym/issues/77)) ([75a1308](https://github.com/rickstaa/ros-gazebo-gym/commit/75a1308dad44a16020ceccbbc4d4e108c7a1e8b5))
+* fix ROS param none value bug ([#74](https://github.com/rickstaa/ros-gazebo-gym/issues/74)) ([b815722](https://github.com/rickstaa/ros-gazebo-gym/commit/b815722d7886aaafa7c70fa9c5f6f2a75a855390))
+* **panda:** fix panda joint locking and EE pose retrieval ([#96](https://github.com/rickstaa/ros-gazebo-gym/issues/96)) ([8f4d3b1](https://github.com/rickstaa/ros-gazebo-gym/commit/8f4d3b1aaed0ca5446792dd70649467e56f2c843))
+* prevent ros shutdown racing condition ([#71](https://github.com/rickstaa/ros-gazebo-gym/issues/71)) ([d688946](https://github.com/rickstaa/ros-gazebo-gym/commit/d688946d8717352ca6e49c253d8c4642c9f48a83))
+* resolve ruamel safe_load deprecation issue ([5eea308](https://github.com/rickstaa/ros-gazebo-gym/commit/5eea30868420e55aa138c4b7fa3050076bf921b0))
+* temporary remove ee_frame_offset parameter ([#73](https://github.com/rickstaa/ros-gazebo-gym/issues/73)) ([4e9ce6c](https://github.com/rickstaa/ros-gazebo-gym/commit/4e9ce6c7af197afc88aa4eb602696b9668716241))
+
+
+### Documentation
+
+* add panda env known issues section ([75c7e67](https://github.com/rickstaa/ros-gazebo-gym/commit/75c7e67e75c08d35b363c7489554303dc2f95ad2))
+* fix broken README link ([052e468](https://github.com/rickstaa/ros-gazebo-gym/commit/052e468a5a409f4d65e93e20f54d8291e49b4f77))
+* fix doc run commands ([4acf477](https://github.com/rickstaa/ros-gazebo-gym/commit/4acf47768e0c2489d6ddbf449862211b8c4bf3bb))
+* improve docs ([0b3ee4e](https://github.com/rickstaa/ros-gazebo-gym/commit/0b3ee4e1e08bb3bf710dfa162f7718496f488a78))
+* improve documentation ([a108ff4](https://github.com/rickstaa/ros-gazebo-gym/commit/a108ff43a0b5bedcbd24b138247dec0173140902))
+* improve documentation ([e19e85f](https://github.com/rickstaa/ros-gazebo-gym/commit/e19e85f091e9309cf90f1e87807ac1dc9ac84a19))
+* improve Panda 'Known Issues' section doc links ([595f708](https://github.com/rickstaa/ros-gazebo-gym/commit/595f7086ef2f535d8a5664f17ca981b650de822e))
+* **panda:** improve task env description ([#86](https://github.com/rickstaa/ros-gazebo-gym/issues/86)) ([ebcfd13](https://github.com/rickstaa/ros-gazebo-gym/commit/ebcfd13e08adc63a7ccb7db31a2d106a9e3c600f))
+
 ## [1.9.5](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.9.4...v1.9.5) (2023-10-05)
 
 
