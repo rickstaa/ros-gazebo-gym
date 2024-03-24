@@ -1,0 +1,200 @@
+:py:mod:`ros_gazebo_gym.task_envs.panda`
+========================================
+
+.. py:module:: ros_gazebo_gym.task_envs.panda
+
+.. autoapi-nested-parse::
+
+   The Panda task environments.
+
+   isort:skip_file
+
+
+
+Subpackages
+-----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 3
+
+   markers/index.rst
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   panda_pick_and_place/index.rst
+   panda_push/index.rst
+   panda_reach/index.rst
+   panda_slide/index.rst
+
+
+Package Contents
+----------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.task_envs.panda.PandaReachEnv
+   ros_gazebo_gym.task_envs.panda.PandaPickAndPlaceEnv
+   ros_gazebo_gym.task_envs.panda.PandaPushEnv
+   ros_gazebo_gym.task_envs.panda.PandaSlideEnv
+
+
+
+
+.. py:class:: PandaReachEnv(control_type='effort', positive_reward=False, config_path=CONFIG_FILE_PATH, gazebo_world_launch_file='start_reach_world.launch', visualize=None, action_space_dtype=np.float64, observation_space_dtype=np.float64)
+
+
+   Bases: :py:obj:`ros_gazebo_gym.robot_envs.panda_env.PandaEnv`, :py:obj:`gymnasium.utils.EzPickle`
+
+   Class that provides all the methods used for the algorithm training.
+
+   .. attribute:: action_space
+
+      Gym action space object.
+
+      :type: :obj:`gym.spaces.box.Box`
+
+   .. attribute:: observation_space
+
+      Gym observation space object.
+
+      :type: :obj:`gym.spaces.dict.Dict`
+
+   .. attribute:: goal
+
+      The current goal.
+
+      :type: :obj:`geometry_msgs.PoseStamped`
+
+   Initializes a Panda Task Environment.
+
+   :param control_Type: The type of control you want to use for the
+                        panda robot (i.e. hand and arm). Options are: ``trajectory``,
+                        ``position``, ``effort`` or ``end_effector``. Defaults to ``effort``.
+   :type control_Type: str, optional
+   :param positive_reward: Whether you want to use a positive
+                           reward instead of a negative reward. Defaults to ``False``.
+   :type positive_reward: bool, optional
+   :param config_path: Path where the environment configuration
+                       value are found. The path is resolved relative to the
+                       :class:`~ros_gazebo_gym.task_envs.panda.panda_reach` class file.
+   :type config_path: str, optional
+   :param gazebo_world_launch_file: Name of the launch file that loads
+                                    the gazebo world. Currently only the launch files inside the
+                                    `panda_gazebo <https://github.com/rickstaa/panda-gazebo>`_ package are
+                                    supported. Defaults to ``start_reach_world.launch``.
+   :type gazebo_world_launch_file: str, optional
+   :param visualize: Whether you want to show the RViz visualization.
+                     Defaults to ``None`` meaning the task configuration file values will
+                     be used.
+   :type visualize: bool, optional
+   :param action_space_dtype: The data type of the
+                              action space. Defaults to ``np.float64``.
+   :type action_space_dtype: union[numpy.dtype, str], optional
+   :param observation_space_dtype: The data type
+                                   of the observation space. Defaults to ``np.float64``.
+   :type observation_space_dtype: union[numpy.dtype, str], optional
+
+   .. important::
+       In this environment, the joint trajectory control is not implemented yet for
+       multiple waypoints. This is because the action space only contains one
+       waypoint. The :obj:`~PandaEnv.set_arm_joint_trajectory` method, however,
+       already accepts multiple waypoints. As a result, task environment can be
+       easily extended to work with multiple waypoints by modifying the
+       :obj:`PandaReachEnv~._create_action_space` method.
+
+
+.. py:class:: PandaPickAndPlaceEnv(config_path=CONFIG_FILE_PATH, gazebo_world_launch_file='start_pick_and_place_world.launch', *args, **kwargs)
+
+
+   Bases: :py:obj:`ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv`, :py:obj:`gymnasium.utils.EzPickle`
+
+   Classed used to create a Panda pick and place environment.
+
+   .. attribute:: object_marker_class
+
+      The RViz marker
+      class used for displaying the object. Can be overwritten by child
+      environments to change the visualization of the object.
+
+      :type: :obj:`visualization_msgs.msg.Marker`
+
+   .. attribute:: object_frame_name
+
+      The name used for the object tf frame.
+
+      :type: str
+
+   Initializes a Panda pick and place task environment.
+
+   :param config_path: Path where the environment configuration
+                       value are found. The path is resolved relative to the
+                       :class:`~ros_gazebo_gym.task_envs.panda.panda_reach` class file.
+   :type config_path: str, optional
+   :param gazebo_world_launch_file: Name of the launch file that loads
+                                    the gazebo world. Currently only the launch files inside the
+                                    `panda_gazebo <https://github.com/rickstaa/panda-gazebo>`_ package are
+                                    supported. Defaults to ``start_pick_and_place_world.launch``.
+   :type gazebo_world_launch_file: str, optional
+   :param \*args: Arguments passed to the
+                  :class:`~ros_gazebo_gym.task_envs.panda.PandaReachEnv` super class.
+   :param \*\*kwargs: Keyword arguments that are passed to the
+                      :class:`~ros_gazebo_gym.task_envs.panda.PandaReachEnv` super class.
+
+   .. py:property:: contains_object
+
+      Checks whether the simulation contains the object.
+
+      :returns: Whether the object was found in the simulation.
+      :rtype: bool
+
+   .. py:property:: object_position
+
+      Retrieves the current object position.
+
+   .. py:property:: object_rot
+
+      Retrieves the current object rotation.
+
+   .. py:property:: object_pose
+
+      Retrieves the current object pose.
+
+
+.. py:class:: PandaPushEnv(*args, **kwargs)
+
+
+   Bases: :py:obj:`ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv`, :py:obj:`gymnasium.utils.EzPickle`
+
+   Classed used to create a Panda push environment.
+
+   Initializes a Panda Push task environment.
+
+   :param \*args: Arguments passed to the
+                  :class:`~ros_gazebo_gym.task_envs.panda.PandaPushEnv` super class.
+   :param \*\*kwargs: Keyword arguments that are passed to the
+                      :class:`~ros_gazebo_gym.task_envs.panda.PandaPushEnv` super class.
+
+
+.. py:class:: PandaSlideEnv(*args, **kwargs)
+
+
+   Bases: :py:obj:`ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv`, :py:obj:`gymnasium.utils.EzPickle`
+
+   Classed used to create a Panda slide environment.
+
+   Initializes a Panda Slide task environment.
+
+   :param \*args: Arguments passed to the
+                  :class:`~ros_gazebo_gym.task_envs.panda.PandaSlideEnv` super class.
+   :param \*\*kwargs: Keyword arguments that are passed to the
+                      :class:`~ros_gazebo_gym.task_envs.panda.PandaSlideEnv` super class.
+
+

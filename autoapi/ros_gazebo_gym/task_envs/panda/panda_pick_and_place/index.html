@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ros_gazebo_gym.task_envs.panda.panda_pick_and_place &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../../../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="next" title="ros_gazebo_gym.task_envs.panda.panda_push" href="../panda_push/index.html" />
+    <link rel="prev" title="ros_gazebo_gym.task_envs.panda.markers.puck_marker" href="../markers/puck_marker/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html">
+            
+              <img src="../../../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../get_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../get_started/usage.html">How to use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../get_started/envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../dev/contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../dev/add_nev_env.html">Add new environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../dev/doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../dev/license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../dev/openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../../../index.html#ros-api">ROS API</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../../../index.html#python-api">Python API</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code></a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../../../index.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../index.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs</span></code></a></li>
+          <li class="breadcrumb-item"><a href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda</span></code></a></li>
+      <li class="breadcrumb-item active"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_pick_and_place</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/docs/source/autoapi/ros_gazebo_gym/task_envs/panda/panda_pick_and_place/index.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-ros_gazebo_gym.task_envs.panda.panda_pick_and_place">
+<span id="ros-gazebo-gym-task-envs-panda-panda-pick-and-place"></span><h1><a class="reference internal" href="#module-ros_gazebo_gym.task_envs.panda.panda_pick_and_place" title="ros_gazebo_gym.task_envs.panda.panda_pick_and_place"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_pick_and_place</span></code></a><a class="headerlink" href="#module-ros_gazebo_gym.task_envs.panda.panda_pick_and_place" title="Permalink to this heading"></a></h1>
+<p>An ROS Panda pick and place gymnasium environment.</p>
+<img alt="Panda pick and place environment" src="../../../../../_images/panda_pick_and_place_env.png" />
+<p>This environment is an extension of the <a class="reference internal" href="../panda_reach/index.html#ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv" title="ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">PandaReachEnv</span></code></a> task environment,
+sharing most features such as the action spaces. Notable distinctions are detailed below.</p>
+<dl class="simple">
+<dt>Observation space:</dt><dd><p>The observation space was extended with the 11 observations:</p>
+<ul class="simple">
+<li><p>Object x position.</p></li>
+<li><p>Object y position.</p></li>
+<li><p>Object z position.</p></li>
+<li><p>x distance between object and end-effector.</p></li>
+<li><p>y distance between object and end-effector.</p></li>
+<li><p>z distance between object and end-effector.</p></li>
+<li><p>Object yaw rotation.</p></li>
+<li><p>Object pitch rotation.</p></li>
+<li><p>Object roll rotation.</p></li>
+<li><p>Object translational velocity.</p></li>
+<li><p>Object rotational velocity.</p></li>
+</ul>
+</dd>
+<dt>Goal:</dt><dd><p>In this environment the agent has to learn to lift a block up to reach the desired
+goal position. It was based on the <a class="reference external" href="https://robotics.farama.org/envs/fetch/pick_and_place/">FetchPickAndPlace-v2</a>
+gymnasium environment.</p>
+</dd>
+</dl>
+<div class="important admonition">
+<p class="admonition-title">Configuration</p>
+<p>The configuration files for this environment are found in the
+<a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_pick_and_place.yaml">panda task environment config folder</a>.</p>
+</div>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv" title="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PandaPickAndPlaceEnv</span></code></a></p></td>
+<td><p>Classed used to create a Panda pick and place environment.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.CONNECTION_TIMEOUT" title="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.CONNECTION_TIMEOUT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CONNECTION_TIMEOUT</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.TARGET_OBJECT_SPAWN_TIMEOUT" title="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.TARGET_OBJECT_SPAWN_TIMEOUT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TARGET_OBJECT_SPAWN_TIMEOUT</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.TARGET_OBJECT_POSE_PUBLISH_RATE" title="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.TARGET_OBJECT_POSE_PUBLISH_RATE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TARGET_OBJECT_POSE_PUBLISH_RATE</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.MOVEIT_ADD_BOX_TOPIC" title="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.MOVEIT_ADD_BOX_TOPIC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MOVEIT_ADD_BOX_TOPIC</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.CONFIG_FILE_PATH" title="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.CONFIG_FILE_PATH"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CONFIG_FILE_PATH</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.CONNECTION_TIMEOUT">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_pick_and_place.</span></span><span class="sig-name descname"><span class="pre">CONNECTION_TIMEOUT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_pick_and_place.html#CONNECTION_TIMEOUT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.CONNECTION_TIMEOUT" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.TARGET_OBJECT_SPAWN_TIMEOUT">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_pick_and_place.</span></span><span class="sig-name descname"><span class="pre">TARGET_OBJECT_SPAWN_TIMEOUT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">60</span></em><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_pick_and_place.html#TARGET_OBJECT_SPAWN_TIMEOUT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.TARGET_OBJECT_SPAWN_TIMEOUT" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.TARGET_OBJECT_POSE_PUBLISH_RATE">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_pick_and_place.</span></span><span class="sig-name descname"><span class="pre">TARGET_OBJECT_POSE_PUBLISH_RATE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">60</span></em><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_pick_and_place.html#TARGET_OBJECT_POSE_PUBLISH_RATE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.TARGET_OBJECT_POSE_PUBLISH_RATE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.MOVEIT_ADD_BOX_TOPIC">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_pick_and_place.</span></span><span class="sig-name descname"><span class="pre">MOVEIT_ADD_BOX_TOPIC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'panda_moveit_planner_server/planning_scene/add_box'</span></em><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_pick_and_place.html#MOVEIT_ADD_BOX_TOPIC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.MOVEIT_ADD_BOX_TOPIC" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.CONFIG_FILE_PATH">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_pick_and_place.</span></span><span class="sig-name descname"><span class="pre">CONFIG_FILE_PATH</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'config/panda_pick_and_place.yaml'</span></em><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_pick_and_place.html#CONFIG_FILE_PATH"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.CONFIG_FILE_PATH" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_pick_and_place.</span></span><span class="sig-name descname"><span class="pre">PandaPickAndPlaceEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">CONFIG_FILE_PATH</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gazebo_world_launch_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'start_pick_and_place_world.launch'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_pick_and_place.html#PandaPickAndPlaceEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../panda_reach/index.html#ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv" title="ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv</span></code></a>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">gymnasium.utils.EzPickle</span></code></p>
+<p>Classed used to create a Panda pick and place environment.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv.object_marker_class">
+<span class="sig-name descname"><span class="pre">object_marker_class</span></span><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv.object_marker_class" title="Permalink to this definition"></a></dt>
+<dd><p>The RViz marker
+class used for displaying the object. Can be overwritten by child
+environments to change the visualization of the object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">visualization_msgs.msg.Marker</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv.object_frame_name">
+<span class="sig-name descname"><span class="pre">object_frame_name</span></span><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv.object_frame_name" title="Permalink to this definition"></a></dt>
+<dd><p>The name used for the object tf frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Initializes a Panda pick and place task environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – Path where the environment configuration
+value are found. The path is resolved relative to the
+<a class="reference internal" href="../panda_reach/index.html#module-ros_gazebo_gym.task_envs.panda.panda_reach" title="ros_gazebo_gym.task_envs.panda.panda_reach"><code class="xref py py-class docutils literal notranslate"><span class="pre">panda_reach</span></code></a> class file.</p></li>
+<li><p><strong>gazebo_world_launch_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – Name of the launch file that loads
+the gazebo world. Currently only the launch files inside the
+<a class="reference external" href="https://github.com/rickstaa/panda-gazebo">panda_gazebo</a> package are
+supported. Defaults to <code class="docutils literal notranslate"><span class="pre">start_pick_and_place_world.launch</span></code>.</p></li>
+<li><p><strong>*args</strong> – Arguments passed to the
+<a class="reference internal" href="../index.html#ros_gazebo_gym.task_envs.panda.PandaReachEnv" title="ros_gazebo_gym.task_envs.panda.PandaReachEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">PandaReachEnv</span></code></a> super class.</p></li>
+<li><p><strong>**kwargs</strong> – Keyword arguments that are passed to the
+<a class="reference internal" href="../index.html#ros_gazebo_gym.task_envs.panda.PandaReachEnv" title="ros_gazebo_gym.task_envs.panda.PandaReachEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">PandaReachEnv</span></code></a> super class.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv.contains_object">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">contains_object</span></span><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_pick_and_place.html#PandaPickAndPlaceEnv.contains_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv.contains_object" title="Permalink to this definition"></a></dt>
+<dd><p>Checks whether the simulation contains the object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Whether the object was found in the simulation.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv.object_position">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">object_position</span></span><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_pick_and_place.html#PandaPickAndPlaceEnv.object_position"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv.object_position" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves the current object position.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv.object_rot">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">object_rot</span></span><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_pick_and_place.html#PandaPickAndPlaceEnv.object_rot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv.object_rot" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves the current object rotation.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv.object_pose">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">object_pose</span></span><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_pick_and_place.html#PandaPickAndPlaceEnv.object_pose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv.object_pose" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves the current object pose.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../markers/puck_marker/index.html" class="btn btn-neutral float-left" title="ros_gazebo_gym.task_envs.panda.markers.puck_marker" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../panda_push/index.html" class="btn btn-neutral float-right" title="ros_gazebo_gym.task_envs.panda.panda_push" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

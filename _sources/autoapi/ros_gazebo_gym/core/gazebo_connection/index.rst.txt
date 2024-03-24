@@ -1,0 +1,406 @@
+:py:mod:`ros_gazebo_gym.core.gazebo_connection`
+===============================================
+
+.. py:module:: ros_gazebo_gym.core.gazebo_connection
+
+.. autoapi-nested-parse::
+
+   Contains a small python utility class that makes it easier to interact with the
+   Gazebo simulator.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.core.gazebo_connection.GazeboConnection
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.core.gazebo_connection.GAZEBO_PAUSE_PHYSICS_TOPIC
+   ros_gazebo_gym.core.gazebo_connection.GAZEBO_UNPAUSE_PHYSICS_TOPIC
+   ros_gazebo_gym.core.gazebo_connection.GAZEBO_RESET_SIM_TOPIC
+   ros_gazebo_gym.core.gazebo_connection.GAZEBO_RESET_WORLD_TOPIC
+   ros_gazebo_gym.core.gazebo_connection.GAZEBO_CLOCK_TOPIC
+   ros_gazebo_gym.core.gazebo_connection.GAZEBO_SPAWN_SDF_MODEL_TOPIC
+   ros_gazebo_gym.core.gazebo_connection.GAZEBO_SPAWN_URDF_MODEL_TOPIC
+   ros_gazebo_gym.core.gazebo_connection.GAZEBO_LINK_STATES_TOPIC
+   ros_gazebo_gym.core.gazebo_connection.GAZEBO_MODEL_STATES_TOPIC
+   ros_gazebo_gym.core.gazebo_connection.GAZEBO_GET_MODEL_STATE_TOPIC
+   ros_gazebo_gym.core.gazebo_connection.GAZEBO_SET_MODEL_STATE_TOPIC
+   ros_gazebo_gym.core.gazebo_connection.GAZEBO_GET_LINK_STATE_TOPIC
+   ros_gazebo_gym.core.gazebo_connection.GAZEBO_SET_MODEL_CONFIGURATION_TOPIC
+   ros_gazebo_gym.core.gazebo_connection.GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC
+   ros_gazebo_gym.core.gazebo_connection.GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC
+   ros_gazebo_gym.core.gazebo_connection.PHYSICS_UPDATE_RATE
+   ros_gazebo_gym.core.gazebo_connection.SERVICES_CONNECTION_TIMEOUTS
+
+
+.. py:data:: GAZEBO_PAUSE_PHYSICS_TOPIC
+   :value: '/gazebo/pause_physics'
+
+   
+
+.. py:data:: GAZEBO_UNPAUSE_PHYSICS_TOPIC
+   :value: '/gazebo/unpause_physics'
+
+   
+
+.. py:data:: GAZEBO_RESET_SIM_TOPIC
+   :value: '/gazebo/reset_simulation'
+
+   
+
+.. py:data:: GAZEBO_RESET_WORLD_TOPIC
+   :value: '/gazebo/reset_world'
+
+   
+
+.. py:data:: GAZEBO_CLOCK_TOPIC
+   :value: '/clock'
+
+   
+
+.. py:data:: GAZEBO_SPAWN_SDF_MODEL_TOPIC
+   :value: '/gazebo/spawn_sdf_model'
+
+   
+
+.. py:data:: GAZEBO_SPAWN_URDF_MODEL_TOPIC
+   :value: '/gazebo/spawn_urdf_model'
+
+   
+
+.. py:data:: GAZEBO_LINK_STATES_TOPIC
+   :value: '/gazebo/link_states'
+
+   
+
+.. py:data:: GAZEBO_MODEL_STATES_TOPIC
+   :value: '/gazebo/model_states'
+
+   
+
+.. py:data:: GAZEBO_GET_MODEL_STATE_TOPIC
+   :value: '/gazebo/get_model_state'
+
+   
+
+.. py:data:: GAZEBO_SET_MODEL_STATE_TOPIC
+   :value: '/gazebo/set_model_state'
+
+   
+
+.. py:data:: GAZEBO_GET_LINK_STATE_TOPIC
+   :value: '/gazebo/get_link_state'
+
+   
+
+.. py:data:: GAZEBO_SET_MODEL_CONFIGURATION_TOPIC
+   :value: '/gazebo/set_model_configuration'
+
+   
+
+.. py:data:: GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC
+   :value: '/gazebo/get_physics_properties'
+
+   
+
+.. py:data:: GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC
+   :value: '/gazebo/set_physics_properties'
+
+   
+
+.. py:data:: PHYSICS_UPDATE_RATE
+   :value: 1000
+
+   
+
+.. py:data:: SERVICES_CONNECTION_TIMEOUTS
+   :value: 5
+
+   
+
+.. py:class:: GazeboConnection(reset_world_or_sim='WORLD', max_retry=20, retry_rate=5, log_reset=True)
+
+
+   Class that contains several methods that can be used to interact with the Gazebo
+   simulation.
+
+   .. attribute:: pause_proxy
+
+      ROS service that
+      pauses the gazebo simulator.
+
+      :type: :obj:`rospy.impl.tcpros_service.ServiceProxy`
+
+   .. attribute:: unpause_proxy
+
+      ROS service that
+      un-pauses the gazebo simulator.
+
+      :type: :obj:`rospy.impl.tcpros_service.ServiceProxy`
+
+   .. attribute:: reset_simulation_proxy
+
+      ROS
+      service that resets the gazebo simulator.
+
+      :type: :obj:`rospy.impl.tcpros_service.ServiceProxy`
+
+   .. attribute:: reset_world_proxy
+
+      ROS service
+      that resets the gazebo world.
+
+      :type: :obj:`rospy.impl.tcpros_service.ServiceProxy`
+
+   .. attribute:: spawn_sdf_proxy
+
+      ROS service
+      that spawns a sdf model.
+
+      :type: :obj:`rospy.impl.tcpros_service.ServiceProxy`
+
+   .. attribute:: spawn_urdf_proxy
+
+      ROS service
+      that spawns a urdf model.
+
+      :type: :obj:`rospy.impl.tcpros_service.ServiceProxy`
+
+   .. attribute:: get_model_state_proxy
+
+      ROS
+      service used to set get model states.
+
+      :type: :obj:`rospy.impl.tcpros_service.ServiceProxy`
+
+   .. attribute:: set_model_state_proxy
+
+      ROS
+      service used to set the model state of a object.
+
+      :type: :obj:`rospy.impl.tcpros_service.ServiceProxy`
+
+   .. attribute:: set_link_state_proxy
+
+      ROS
+      service used to set the link states.
+
+      :type: :obj:`rospy.impl.tcpros_service.ServiceProxy`
+
+   .. attribute:: get_link_state_proxy
+
+      ROS
+      service used to get the link states.
+
+      :type: :obj:`rospy.impl.tcpros_service.ServiceProxy`
+
+   .. attribute:: set_model_configuration_proxy
+
+      ROS service that sets the configuration of a model.
+
+      :type: :obj:`rospy.impl.tcpros_service.ServiceProxy`
+
+   .. attribute:: get_physics_proxy
+
+      ROS
+      service used to retrieve the physics properties.
+
+      :type: :obj:`rospy.impl.tcpros_service.ServiceProxy`
+
+   .. attribute:: set_physics_proxy
+
+      ROS
+      service used to set the physics properties.
+
+      :type: :obj:`rospy.impl.tcpros_service.ServiceProxy`
+
+   Initiate the GazeboConnection instance.
+
+   :param reset_world_or_sim: Whether you want to reset the whole
+                              simulation "SIMULATION" at startup or only the world "WORLD" (object
+                              positions). Defaults to "WORLD".
+   :type reset_world_or_sim: str, optional
+   :param max_retry: How many times a command to the simulator is
+                     retried before giving up. Defaults to ``30``.
+   :type max_retry: int, optional
+   :param retry_rate: The rate at which the retry is done. Defaults to
+                      ``2`` (i.e. 0.5 seconds).
+   :type retry_rate: int, optional
+   :param log_reset: Whether we want to print a log statement when
+                     the world/simulation is reset. Defaults to ``True``.
+   :type log_reset: bool, optional
+
+   .. py:property:: physics_properties
+
+      Retrieves the physics properties from gazebo.
+
+   .. py:property:: time
+
+      Retrieves the Gazebo time.
+
+   .. py:method:: pause_sim()
+
+      Pause the simulation.
+
+
+   .. py:method:: unpause_sim()
+
+      Unpauses the simulation.
+
+
+   .. py:method:: reset_sim()
+
+      Reset the simulation or the world.
+
+      .. note::
+          Implemented like this since in some simulations, when reset the simulation
+          the systems that work with TF break. In this case we ONLY resets the object
+          position, not the entire simulation.
+
+
+   .. py:method:: get_model_state(model_name)
+
+      Retrieve the current state of a model.
+
+      :param model_name: The name of the model for which you want to retrieve the
+                         state.
+      :type model_name: str
+
+      :returns: The pose of the model.
+      :rtype: :obj:`numpy.ndarray`
+
+      :raises ros_gazebo_gym.exceptions.GetModelStateError: Thrown when the model
+          state retrieval failed.
+
+
+   .. py:method:: set_model_state(model_state)
+
+      Sets the state of a model.
+
+      :param model_state: The model_state object.
+      :type model_state: :obj:`gazebo_msgs.msg.SetModelState`
+
+      :returns: Boolean specifying whether the model state was set successfully.
+      :rtype: bool
+
+      :raises ros_gazebo_gym.exceptions.SetModelStateError: Thrown when the model
+          state could not be set.
+
+
+   .. py:method:: get_link_state(link_name)
+
+      Retrieve the current state of a model.
+
+      :param link_name: The name of the robot link.
+      :type link_name: str
+
+      :returns: The pose of the robot link.
+      :rtype: :obj:`numpy.ndarray`
+
+      :raises GetLinkStateError: Thrown when the link state retrieval failed.
+
+
+   .. py:method:: set_model_configuration(model_name, joint_names, joint_positions, pause=True)
+
+      Sets the configuration of a model.
+
+      :param model_name: Model to set the configuration for.
+      :type model_name: string
+      :param joint_names: The joint names for which you want to set the
+                          configuration.
+      :type joint_names: list
+      :param joint_positions: The joint positions you want to set.
+      :type joint_positions: list
+      :param pause: Pause the simulation while setting the model pose.
+                    Defaults to ``True``.
+      :type pause: bool, optional
+
+      :returns:
+
+                Boolean specifying whether the model configuration was set
+                    successfully.
+      :rtype: bool
+
+      :raises ros_gazebo_gym.exceptions.SetModelConfigurationError: Thrown when the
+          model configuration could not be set.
+
+
+   .. py:method:: get_physics_properties()
+
+      Retrieve physics properties from gazebo.
+
+      :returns:
+
+                Physics properties
+                    message.
+      :rtype: :obj:`gazebo_msgs.srv.GetPhysicsPropertiesResponse`
+
+      :raises ros_gazebo_gym.errors.GetPhysicsPropertiesError: Thrown when
+          something goes wrong while trying to retrieve the physics properties.
+
+
+   .. py:method:: set_physics_properties(**kwargs)
+
+      Change physics properties of the gazebo physics engine. These properties have
+      to be supplied as a keyword argument.
+
+      .. tip::
+          You can use the :obj:`GazeboConnection.set_physics_proxy` If you want to
+          send a :obj:`gazebo_msgs.srv.SetPhysicsProperties` message directly.
+
+      :param \*\*kwargs: Keyword arguments specifying the physics properties you want to
+                         set.
+
+      :raises SetPhysicsPropertiesError: Thrown when something goes wrong while setting
+          the physics properties.
+
+
+   .. py:method:: change_gravity(x, y, z)
+
+      Changes the gravity vector
+
+      :param x: Gravity vector x coordinate.
+      :type x: float
+      :param y: Gravity vector y coordinate.
+      :type y: float
+      :param z: Gravity vector z coordinate.
+      :type z: float
+
+
+   .. py:method:: spawn_object(object_name, model_name, models_folder_path, pose=None)
+
+      Spawns a object from the model directory into gazebo.
+
+      :param object_name: The name you want the model to have.
+      :type object_name: str
+      :param model_name: The model type (The name of the xml file you want to use).
+      :type model_name: str
+      :param models_folder_path: The folder in which you want to search for the
+                                 models.
+      :type models_folder_path: str
+      :param pose: The pose of the model, by
+                   default :py:class:`geometry_msgs.msg.Pose`.
+      :type pose: :obj:`geometry_msgs.msg.Pose`, optional
+
+      :returns: A boolean specifying whether the model was successfully spawned.
+      :rtype: bool
+
+      :raises ros_gazebo_gym.exceptions.SpawnModelError: When model was not spawned
+          successfully.
+
+
+

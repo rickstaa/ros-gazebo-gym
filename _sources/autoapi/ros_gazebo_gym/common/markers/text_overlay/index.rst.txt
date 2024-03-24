@@ -1,0 +1,108 @@
+:py:mod:`ros_gazebo_gym.common.markers.text_overlay`
+====================================================
+
+.. py:module:: ros_gazebo_gym.common.markers.text_overlay
+
+.. autoapi-nested-parse::
+
+   Contains a class that can be used for displaying text in RViz.
+
+   .. note::
+       This class overloads the
+       :obj:`jsk_rviz_plugins.msgs.OverlayText` class in order to pre-initialize some of
+       its attributes. It further automatically makes sure the text width and height are
+       not to small.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.common.markers.text_overlay.TextOverlay
+
+
+
+
+.. py:class:: TextOverlay(*args, **kwargs)
+
+
+   Bases: :py:obj:`jsk_rviz_plugins.msg.OverlayText`
+
+   RViz text overlay.
+
+   .. note::
+       When no width or height are supplied it makes sure that the display fits all the
+       text.
+
+   .. attribute:: action
+
+      The marker message action (add or remove).
+
+      :type: float
+
+   .. attribute:: width
+
+      The overlay width.
+
+      :type: int
+
+   .. attribute:: height
+
+      The overlay height.
+
+      :type: int
+
+   .. attribute:: left
+
+      Position relative to the left.
+
+      :type: int
+
+   .. attribute:: top
+
+      Position relative to the top.
+
+      :type: int
+
+   .. attribute:: bg_color
+
+      The overlay background color.
+
+      :type: :obj:`std_msgs.ColorRGBA`
+
+   .. attribute:: fg_color
+
+      The text color.
+
+      :type: :obj:`std_msgs.ColorRGBA`
+
+   .. attribute:: line_width
+
+      The text line width.
+
+      :type: int
+
+   .. attribute:: font
+
+      The font.
+
+      :type: str
+
+   .. attribute:: text
+
+      The text.
+
+      :type: str
+
+   Initialize text overlay object.
+
+   .. py:property:: text_size
+
+      Retrieve the text size.
+
+

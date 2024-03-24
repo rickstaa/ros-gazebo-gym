@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ros_gazebo_gym.task_envs.panda.panda_slide &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html">
+            
+              <img src="../../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../get_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../get_started/usage.html">How to use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../get_started/envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/add_nev_env.html">Add new environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../ros_gazebo_gym.html">ros_gazebo_gym</a></li>
+      <li class="breadcrumb-item active">ros_gazebo_gym.task_envs.panda.panda_slide</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ros_gazebo_gym.task_envs.panda.panda_slide</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;An ROS Panda slide gymnasium environment.</span>
+
+<span class="sd">.. image:: /images/panda/panda_slide_env.png</span>
+<span class="sd">   :alt: Panda slide environment</span>
+
+<span class="sd">This environment is an extension of the :class:`~ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv` task environment,</span>
+<span class="sd">sharing most features such as observation and action spaces. Notable distinctions are detailed below.</span>
+
+<span class="sd">Goal:</span>
+<span class="sd">    In this environment the agent has to learn to slide a puck to a desired goal</span>
+<span class="sd">    position. It was based on the :gymnasium-robotics:`FetchSlide-v2 &lt;envs/fetch/slide/&gt;`</span>
+<span class="sd">    gymnasium environment.</span>
+
+<span class="sd">.. admonition:: Configuration</span>
+<span class="sd">    :class: important</span>
+
+<span class="sd">    The configuration files for this environment are found in the</span>
+<span class="sd">    :ros-gazebo-gym:`panda task environment config folder &lt;blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_slide.yaml&gt;`.</span>
+<span class="sd">&quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">gymnasium</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.task_envs.panda.markers.puck_marker</span> <span class="kn">import</span> <span class="n">PuckMarker</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.task_envs.panda.panda_pick_and_place</span> <span class="kn">import</span> <span class="n">PandaPickAndPlaceEnv</span>
+
+<span class="c1"># Specify topics and other script variables.</span>
+<div class="viewcode-block" id="CONFIG_FILE_PATH"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/task_envs/panda/panda_slide/index.html#ros_gazebo_gym.task_envs.panda.CONFIG_FILE_PATH">[docs]</a><span class="n">CONFIG_FILE_PATH</span> <span class="o">=</span> <span class="s2">&quot;config/panda_slide.yaml&quot;</span></div>
+
+
+<span class="c1">#################################################</span>
+<span class="c1"># Panda slide environment class ##################</span>
+<span class="c1">#################################################</span>
+<div class="viewcode-block" id="PandaSlideEnv"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/task_envs/panda/panda_slide/index.html#ros_gazebo_gym.task_envs.panda.PandaSlideEnv">[docs]</a><span class="k">class</span> <span class="nc">PandaSlideEnv</span><span class="p">(</span><span class="n">PandaPickAndPlaceEnv</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">EzPickle</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Classed used to create a Panda slide environment.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes a Panda Slide task environment.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *args: Arguments passed to the</span>
+<span class="sd">                :class:`~ros_gazebo_gym.task_envs.panda.PandaSlideEnv` super class.</span>
+<span class="sd">            **kwargs: Keyword arguments that are passed to the</span>
+<span class="sd">                :class:`~ros_gazebo_gym.task_envs.panda.PandaSlideEnv` super class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s2">&quot;Initialize Panda slide environment.&quot;</span><span class="p">)</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">EzPickle</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="o">**</span><span class="nb">locals</span><span class="p">()</span>
+        <span class="p">)</span>  <span class="c1"># Makes sure the env is pickable when it wraps C++ code.</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">config_path</span><span class="o">=</span><span class="n">CONFIG_FILE_PATH</span><span class="p">,</span>
+            <span class="n">gazebo_world_launch_file</span><span class="o">=</span><span class="s2">&quot;start_slide_world.launch&quot;</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Change object marker properties.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">object_marker_class</span> <span class="o">=</span> <span class="n">PuckMarker</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">object_frame_name</span> <span class="o">=</span> <span class="s2">&quot;puck&quot;</span>
+
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s2">&quot;Panda slide environment initialized.&quot;</span><span class="p">)</span>
+
+    <span class="c1">################################################</span>
+    <span class="c1"># Overload Reach environment methods ###########</span>
+    <span class="c1">################################################</span>
+    <span class="k">def</span> <span class="nf">_get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># noqa: C901</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve task environment configuration parameters from parameter server.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_get_params</span><span class="p">(</span><span class="n">ns</span><span class="o">=</span><span class="s2">&quot;panda_slide&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_init_env_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Inits variables needed to be initialized each time we reset at the start</span>
+<span class="sd">        of an episode.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_init_obj_pose</span><span class="p">()</span>
+
+        <span class="c1"># Sample and visualize goal.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_goal</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goal</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">object_position</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.02</span>
+        <span class="p">)</span>  <span class="c1"># Make sure object stays in contact with the platform.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_visualize_target</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_visualize_goal</span><span class="p">(</span>
+                <span class="n">offset</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">]</span>
+            <span class="p">)</span>  <span class="c1"># Apply offset to make goal marker visible.</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

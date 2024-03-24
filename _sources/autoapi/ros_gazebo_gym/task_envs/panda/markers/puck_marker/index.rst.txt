@@ -1,0 +1,120 @@
+:py:mod:`ros_gazebo_gym.task_envs.panda.markers.puck_marker`
+============================================================
+
+.. py:module:: ros_gazebo_gym.task_envs.panda.markers.puck_marker
+
+.. autoapi-nested-parse::
+
+   Contains a class that cna be used used for displaying a marker for the puck object in
+   RViz.
+
+   .. note::
+       This class overloads
+       the :obj:`ros_gazebo_gym.common.markers.target_marker.TargetMarker` class in order
+       to pre-initialize some of its attributes. Most importantly, a pose offset was
+       applied to align the marker frame with the object frame.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.task_envs.panda.markers.puck_marker.PuckMarker
+
+
+
+
+.. py:class:: PuckMarker(*args, **kwargs)
+
+
+   Bases: :py:obj:`ros_gazebo_gym.common.markers.TargetMarker`
+
+   RViz sliding puck marker.
+
+   .. attribute:: id
+
+      The marker object id.
+
+      :type: int
+
+   .. attribute:: type
+
+      The marker type.
+
+      :type: str
+
+   .. attribute:: action
+
+      The marker message action (add or remove).
+
+      :type: float
+
+   .. attribute:: scale
+
+      The marker scale.
+
+      :type: :obj:`geometry_msgs.Vector3`
+
+   .. attribute:: color
+
+      The marker color.
+
+      :type: :obj:`std_msgs.ColorRGBA`
+
+   .. attribute:: lifetime
+
+      The lifetime duration.
+
+      :type: :obj:`rospy.duration`
+
+   .. attribute:: frame_locked
+
+      Boolean specifying whether the marker frame is locked to
+      the world.
+
+      :type: bool
+
+   .. attribute:: point
+
+      The marker points.
+
+      :type: :obj:`geometry_msgs.Point`
+
+   .. attribute:: text
+
+      The text that is used for text markers.
+
+      :type: str
+
+   .. attribute:: mesh_resource
+
+      Marker mess location.
+
+      :type: str
+
+   .. attribute:: mesh_use_embedded_materials
+
+      Boolean specifying whether we want to use a
+      mesh.
+
+      :type: bool
+
+   .. important::
+       If both the ``x``, ``y``, ``z`` positions and a Pose is supplied the
+       ``x``, ``y``, ``z`` positions are used.
+
+   Initialize PuckMarker object.
+
+   :param \*args: Arguments passed to the
+                  :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super
+                  class.
+   :param \*\*kwargs: Keyword arguments that are passed to the
+                      :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super
+                      class.
+
+

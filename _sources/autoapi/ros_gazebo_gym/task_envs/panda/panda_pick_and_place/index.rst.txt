@@ -1,0 +1,150 @@
+:py:mod:`ros_gazebo_gym.task_envs.panda.panda_pick_and_place`
+=============================================================
+
+.. py:module:: ros_gazebo_gym.task_envs.panda.panda_pick_and_place
+
+.. autoapi-nested-parse::
+
+   An ROS Panda pick and place gymnasium environment.
+
+   .. image:: /images/panda/panda_pick_and_place_env.png
+      :alt: Panda pick and place environment
+
+   This environment is an extension of the :class:`~ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv` task environment,
+   sharing most features such as the action spaces. Notable distinctions are detailed below.
+
+   Observation space:
+       The observation space was extended with the 11 observations:
+
+       - Object x position.
+       - Object y position.
+       - Object z position.
+       - x distance between object and end-effector.
+       - y distance between object and end-effector.
+       - z distance between object and end-effector.
+       - Object yaw rotation.
+       - Object pitch rotation.
+       - Object roll rotation.
+       - Object translational velocity.
+       - Object rotational velocity.
+
+   Goal:
+       In this environment the agent has to learn to lift a block up to reach the desired
+       goal position. It was based on the :gymnasium-robotics:`FetchPickAndPlace-v2 <envs/fetch/pick_and_place/>`
+       gymnasium environment.
+
+   .. admonition:: Configuration
+       :class: important
+
+       The configuration files for this environment are found in the
+       :ros-gazebo-gym:`panda task environment config folder <blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_pick_and_place.yaml>`.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.task_envs.panda.panda_pick_and_place.CONNECTION_TIMEOUT
+   ros_gazebo_gym.task_envs.panda.panda_pick_and_place.TARGET_OBJECT_SPAWN_TIMEOUT
+   ros_gazebo_gym.task_envs.panda.panda_pick_and_place.TARGET_OBJECT_POSE_PUBLISH_RATE
+   ros_gazebo_gym.task_envs.panda.panda_pick_and_place.MOVEIT_ADD_BOX_TOPIC
+   ros_gazebo_gym.task_envs.panda.panda_pick_and_place.CONFIG_FILE_PATH
+
+
+.. py:data:: CONNECTION_TIMEOUT
+   :value: 5
+
+   
+
+.. py:data:: TARGET_OBJECT_SPAWN_TIMEOUT
+   :value: 60
+
+   
+
+.. py:data:: TARGET_OBJECT_POSE_PUBLISH_RATE
+   :value: 60
+
+   
+
+.. py:data:: MOVEIT_ADD_BOX_TOPIC
+   :value: 'panda_moveit_planner_server/planning_scene/add_box'
+
+   
+
+.. py:data:: CONFIG_FILE_PATH
+   :value: 'config/panda_pick_and_place.yaml'
+
+   
+
+.. py:class:: PandaPickAndPlaceEnv(config_path=CONFIG_FILE_PATH, gazebo_world_launch_file='start_pick_and_place_world.launch', *args, **kwargs)
+
+
+   Bases: :py:obj:`ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv`, :py:obj:`gymnasium.utils.EzPickle`
+
+   Classed used to create a Panda pick and place environment.
+
+   .. attribute:: object_marker_class
+
+      The RViz marker
+      class used for displaying the object. Can be overwritten by child
+      environments to change the visualization of the object.
+
+      :type: :obj:`visualization_msgs.msg.Marker`
+
+   .. attribute:: object_frame_name
+
+      The name used for the object tf frame.
+
+      :type: str
+
+   Initializes a Panda pick and place task environment.
+
+   :param config_path: Path where the environment configuration
+                       value are found. The path is resolved relative to the
+                       :class:`~ros_gazebo_gym.task_envs.panda.panda_reach` class file.
+   :type config_path: str, optional
+   :param gazebo_world_launch_file: Name of the launch file that loads
+                                    the gazebo world. Currently only the launch files inside the
+                                    `panda_gazebo <https://github.com/rickstaa/panda-gazebo>`_ package are
+                                    supported. Defaults to ``start_pick_and_place_world.launch``.
+   :type gazebo_world_launch_file: str, optional
+   :param \*args: Arguments passed to the
+                  :class:`~ros_gazebo_gym.task_envs.panda.PandaReachEnv` super class.
+   :param \*\*kwargs: Keyword arguments that are passed to the
+                      :class:`~ros_gazebo_gym.task_envs.panda.PandaReachEnv` super class.
+
+   .. py:property:: contains_object
+
+      Checks whether the simulation contains the object.
+
+      :returns: Whether the object was found in the simulation.
+      :rtype: bool
+
+   .. py:property:: object_position
+
+      Retrieves the current object position.
+
+   .. py:property:: object_rot
+
+      Retrieves the current object rotation.
+
+   .. py:property:: object_pose
+
+      Retrieves the current object pose.
+
+

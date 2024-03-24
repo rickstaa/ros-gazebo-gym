@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ros_gazebo_gym.robot_envs &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="ros_gazebo_gym.robot_envs.helpers" href="helpers/index.html" />
+    <link rel="prev" title="ros_gazebo_gym.msg" href="../msg/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/usage.html">How to use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/add_nev_env.html">Add new environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#ros-api">ROS API</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html#python-api">Python API</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code></a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code></a></li>
+      <li class="breadcrumb-item active"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.robot_envs</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/docs/source/autoapi/ros_gazebo_gym/robot_envs/index.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-ros_gazebo_gym.robot_envs">
+<span id="ros-gazebo-gym-robot-envs"></span><h1><a class="reference internal" href="#module-ros_gazebo_gym.robot_envs" title="ros_gazebo_gym.robot_envs"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.robot_envs</span></code></a><a class="headerlink" href="#module-ros_gazebo_gym.robot_envs" title="Permalink to this heading"></a></h1>
+<p>Contains all ros_gazebo_gym robot environments.</p>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="helpers/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.robot_envs.helpers</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="panda_env/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.robot_envs.panda_env</span></code></a></li>
+</ul>
+</div>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.robot_envs.PandaEnv" title="ros_gazebo_gym.robot_envs.PandaEnv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PandaEnv</span></code></a></p></td>
+<td><p>Used for controlling the panda robot and retrieving sensor data.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.robot_envs.</span></span><span class="sig-name descname"><span class="pre">PandaEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_name_space</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">robot_EE_link</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'panda_link8'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ee_frame_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_gripper</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock_gripper</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grasping</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'effort'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_robot_pose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_reset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_envs/panda_env.html#PandaEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../robot_gazebo_goal_env/index.html#ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv" title="ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv</span></code></a></p>
+<p>Used for controlling the panda robot and retrieving sensor data.</p>
+<p>To check any topic we need to have the simulations running, we need to do two
+things:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Un-pause the simulation: without that the stream of data doesn’t flow. This
+is for simulations that are paused for whatever the reason.</p></li>
+<li><p>If the simulation was running already for some reason, we need to reset the
+controllers.</p></li>
+</ol>
+</div></blockquote>
+<p>This has to do with the fact that some plugins with tf, don’t understand the
+reset of the simulation and need to be reset to work properly.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.robot_name_space">
+<span class="sig-name descname"><span class="pre">robot_name_space</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.robot_name_space" title="Permalink to this definition"></a></dt>
+<dd><p>The robot name space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.reset_controls">
+<span class="sig-name descname"><span class="pre">reset_controls</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.reset_controls" title="Permalink to this definition"></a></dt>
+<dd><p>Whether the controllers are reset when the simulation is
+reset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.robot_EE_link">
+<span class="sig-name descname"><span class="pre">robot_EE_link</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.robot_EE_link" title="Permalink to this definition"></a></dt>
+<dd><p>The link used for the end effector control.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.ee_frame_offset">
+<span class="sig-name descname"><span class="pre">ee_frame_offset</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.ee_frame_offset" title="Permalink to this definition"></a></dt>
+<dd><p>Dictionary containing the used end effector offset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.load_gripper">
+<span class="sig-name descname"><span class="pre">load_gripper</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.load_gripper" title="Permalink to this definition"></a></dt>
+<dd><p>Whether the gripper was loaded.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.lock_gripper">
+<span class="sig-name descname"><span class="pre">lock_gripper</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.lock_gripper" title="Permalink to this definition"></a></dt>
+<dd><p>Whether the gripper should be locked (i.e. not move).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.joint_states">
+<span class="sig-name descname"><span class="pre">joint_states</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.joint_states" title="Permalink to this definition"></a></dt>
+<dd><p>The current joint states.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sensor_msgs.msg.JointState</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.franka_states">
+<span class="sig-name descname"><span class="pre">franka_states</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.franka_states" title="Permalink to this definition"></a></dt>
+<dd><p>The current franka states.
+These give robot specific information about the panda robot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">franka_msgs.msg.FrankaState</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.tf_buffer">
+<span class="sig-name descname"><span class="pre">tf_buffer</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.tf_buffer" title="Permalink to this definition"></a></dt>
+<dd><p>Tf buffer object can be used to
+request transforms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tf2_ros.buffer.Buffer</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.panda_gazebo">
+<span class="sig-name descname"><span class="pre">panda_gazebo</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.panda_gazebo" title="Permalink to this definition"></a></dt>
+<dd><p>Lazy importer for the
+<a class="reference external" href="https://github.com/rickstaa/panda-gazebo/">panda_gazebo</a> package.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../core/index.html#ros_gazebo_gym.core.LazyImporter" title="ros_gazebo_gym.core.LazyImporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ros_gazebo_gym.core.LazyImporter</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.franka_msgs">
+<span class="sig-name descname"><span class="pre">franka_msgs</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.franka_msgs" title="Permalink to this definition"></a></dt>
+<dd><p>Lazy importer for the
+<a class="reference external" href="https://github.com/frankaemika/franka_ros/tree/develop/franka_msgs">franka_msgs</a> package.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../core/index.html#ros_gazebo_gym.core.LazyImporter" title="ros_gazebo_gym.core.LazyImporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ros_gazebo_gym.core.LazyImporter</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Initializes a new Panda Robot environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robot_name_space</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – The namespace the robot is on. Defaults to
+<code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>.</p></li>
+<li><p><strong>robot_EE_link</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – Robot end effector link name. Defaults to
+<code class="docutils literal notranslate"><span class="pre">panda_link8</span></code>.</p></li>
+<li><p><strong>ee_frame_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>, </em><em>optional</em>) – Dictionary containing the end effector
+offset. Used when retrieving and setting the end effector pose. Defaults
+to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>load_gripper</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether we want to load the parallel-jaw
+gripper. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>lock_gripper</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether we want to lock the parallel-jaw
+gripper (i.e. not move). Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>grasping</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether we want to use the gripper for grasping.
+If <code class="docutils literal notranslate"><span class="pre">True</span></code> and <cite>gripper_max_effort</cite> is unset, applies 10N effort.
+Defaults to False.</p></li>
+<li><p><strong>control_Type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – The type of control you want to use for the
+panda robot (i.e. hand and arm). Options are: <code class="docutils literal notranslate"><span class="pre">trajectory</span></code>,
+<code class="docutils literal notranslate"><span class="pre">position</span></code>, <code class="docutils literal notranslate"><span class="pre">effort</span></code> or <code class="docutils literal notranslate"><span class="pre">end_effector</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">effort</span></code>.</p></li>
+<li><p><strong>reset_robot_pose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Boolean specifying whether to reset the
+robot pose when the simulation is reset. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>workspace_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – The path of the workspace in which the
+panda_gazebo package should be found. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>log_reset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether we want to print a log statement when
+the world/simulation is reset. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>visualize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether you want to show the RViz visualization.
+Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code> meaning the task configuration file values will be
+used.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.joints">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">joints</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.joints" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the joints that can be controlled when using the current Panda arm
+and hand control types.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>For performance reasons the controlled joints are currently fetched at the
+first call. Please call the <a class="reference internal" href="#ros_gazebo_gym.robot_envs.PandaEnv.refresh_joints" title="ros_gazebo_gym.robot_envs.PandaEnv.refresh_joints"><code class="xref py py-meth docutils literal notranslate"><span class="pre">refresh_joints()</span></code></a> method to
+re-fetch the currently controlled joints.</p>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.gripper_width">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gripper_width</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.gripper_width" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the gripper width as calculated based on the Panda finger joints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The gripper width.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.arm_positions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm_positions</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.arm_positions" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the current arm joint positions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The arm joint positions.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.arm_velocities">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm_velocities</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.arm_velocities" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the current arm joint velocities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The arm joint velocities.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.arm_efforts">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm_efforts</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.arm_efforts" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the current arm joint efforts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The arm joint efforts.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.robot_control_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">robot_control_type</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.robot_control_type" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the currently set robot control type.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.in_collision">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">in_collision</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.in_collision" title="Permalink to this definition"></a></dt>
+<dd><p>Whether the robot is in collision.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.locked_joints">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">locked_joints</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.locked_joints" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the currently locked joints.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.ee_link_exists">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ee_link_exists</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.ee_link_exists" title="Permalink to this definition"></a></dt>
+<dd><p>Returns whether the end effector link exists in the robot model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Whether the end effector link exists in the robot model.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.ee_pose">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ee_pose</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.ee_pose" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the current end-effector pose while taking the <code class="docutils literal notranslate"><span class="pre">ee_frame_offset</span></code>
+into account. If the offset is zero then it is equal to the
+<a class="reference internal" href="#ros_gazebo_gym.robot_envs.PandaEnv.robot_EE_link" title="ros_gazebo_gym.robot_envs.PandaEnv.robot_EE_link"><code class="xref py py-attr docutils literal notranslate"><span class="pre">robot_EE_link</span></code></a> pose.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The end-effector pose.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">geometry_msgs.msg.PoseStamped</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.ee_offset_is_zero">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ee_offset_is_zero</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.ee_offset_is_zero" title="Permalink to this definition"></a></dt>
+<dd><p>Returns whether the end-effector frame offset is zero.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Whether the end-effector frame offset is zero.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ee_frame_offset</span></span><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the end-effector frame offset relative to the actual ee_link (i.e.
+<a class="reference internal" href="#ros_gazebo_gym.robot_envs.PandaEnv.robot_EE_link" title="ros_gazebo_gym.robot_envs.PandaEnv.robot_EE_link"><code class="xref py py-attr docutils literal notranslate"><span class="pre">robot_EE_link</span></code></a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The ee frame offset pose.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">geometry_msgs.msg.Pose</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.ee_frame_offset_stamped">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ee_frame_offset_stamped</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.ee_frame_offset_stamped" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the end-effector frame offset relative to the actual ee_link (i.e.
+<a class="reference internal" href="#ros_gazebo_gym.robot_envs.PandaEnv.robot_EE_link" title="ros_gazebo_gym.robot_envs.PandaEnv.robot_EE_link"><code class="xref py py-attr docutils literal notranslate"><span class="pre">robot_EE_link</span></code></a>) as a stamped pose.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The ee frame offset pose.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">geometry_msgs.msg.PoseStamped</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.get_ee_pose">
+<span class="sig-name descname"><span class="pre">get_ee_pose</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_envs/panda_env.html#PandaEnv.get_ee_pose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.get_ee_pose" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the current end-effector pose while taking the <code class="docutils literal notranslate"><span class="pre">ee_frame_offset</span></code>
+into account. If the offset is zero then it is equal to the
+<a class="reference internal" href="#ros_gazebo_gym.robot_envs.PandaEnv.robot_EE_link" title="ros_gazebo_gym.robot_envs.PandaEnv.robot_EE_link"><code class="xref py py-attr docutils literal notranslate"><span class="pre">robot_EE_link</span></code></a> pose.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The end-effector pose.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">geometry_msgs.msg.PoseStamped</span></code></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ros_gazebo_gym.errors.EePoseLookupError</strong> – Error thrown when error
+occurred while trying to retrieve the EE pose.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.get_ee_rpy">
+<span class="sig-name descname"><span class="pre">get_ee_rpy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_envs/panda_env.html#PandaEnv.get_ee_rpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.get_ee_rpy" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the end effector EE orientation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Object containing the roll (x),</dt><dd><p>yaw (z), pitch (y) euler angles.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">panda_gazebo.srv.GetEeRpyResponse</span></code></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ros_gazebo_gym.errors.EeRpyLookupError</strong> – Error thrown when error
+occurred while trying to retrieve the EE rpy rotation using the
+<code class="docutils literal notranslate"><span class="pre">get_ee_pose</span></code> service.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.get_ee_pose_joint_config">
+<span class="sig-name descname"><span class="pre">get_ee_pose_joint_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ee_pose</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_envs/panda_env.html#PandaEnv.get_ee_pose_joint_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.get_ee_pose_joint_config" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a set of possible arm joint configurations for a given end-effector
+pose.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ee_pose</strong> (union[<code class="xref py py-obj docutils literal notranslate"><span class="pre">geometry_msgs.msg.Pose</span></code>, list]) – A list or pose message
+containing the end effector position (x, y, z) and orientation
+(x, y, z, w).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt><cite>dict</cite>: Dictionary with joint positions that result in a given EE pose.</dt><dd><p>Empty dictionary is returned if no joint positions could be found.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>obj</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.set_ee_pose">
+<span class="sig-name descname"><span class="pre">set_ee_pose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ee_pose</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_envs/panda_env.html#PandaEnv.set_ee_pose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.set_ee_pose" title="Permalink to this definition"></a></dt>
+<dd><p>Sets the Panda end effector pose.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ee_pose</strong> (union[<code class="xref py py-obj docutils literal notranslate"><span class="pre">geometry_msgs.msg.Pose</span></code>, list]) – A list or pose message
+containing the end effector position (x, y, z) and orientation
+(x, y, z, w).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Boolean specifying if the ee pose was set successfully.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.set_joint_commands">
+<span class="sig-name descname"><span class="pre">set_joint_commands</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">joint_commands</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arm_wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hand_wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_envs/panda_env.html#PandaEnv.set_joint_commands"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.set_joint_commands" title="Permalink to this definition"></a></dt>
+<dd><p>Sets the Panda arm and hand joint commands based on the set
+<a class="reference internal" href="#ros_gazebo_gym.robot_envs.PandaEnv.robot_control_type" title="ros_gazebo_gym.robot_envs.PandaEnv.robot_control_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">robot_control_type</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>joint_commands</strong> (union[<code class="xref py py-obj docutils literal notranslate"><span class="pre">panda_gazebo.srv.SetJointCommands</span></code>, list, dict]) – The Panda arm joint positions and gripper width.</p></li>
+<li><p><strong>arm_wait</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Wait till the arm control has finished. Defaults
+to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>hand_wait</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Wait till the hand control has finished.
+Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Boolean specifying if the joint commands were set successfully.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.set_joint_positions">
+<span class="sig-name descname"><span class="pre">set_joint_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">joint_commands</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arm_wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hand_wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct_control</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_envs/panda_env.html#PandaEnv.set_joint_positions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.set_joint_positions" title="Permalink to this definition"></a></dt>
+<dd><p>Sets the Panda arm positions and gripper width.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>joint_commands</strong> (union[<code class="xref py py-obj docutils literal notranslate"><span class="pre">panda_gazebo.srv.SetJointCommands</span></code>, list, dict]) – The Panda arm joint positions and gripper width.</p></li>
+<li><p><strong>arm_wait</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Wait till the arm control has finished. Defaults
+to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>hand_wait</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Wait till the hand control has finished.
+Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>direct_control</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether we want to directly control the panda by
+publishing to the controller topics or we want to use the
+<code class="docutils literal notranslate"><span class="pre">panda_gazebo</span></code> control proxy. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Boolean specifying if the joint positions were set successfully.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.set_joint_efforts">
+<span class="sig-name descname"><span class="pre">set_joint_efforts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">joint_commands</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arm_wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hand_wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct_control</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_envs/panda_env.html#PandaEnv.set_joint_efforts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.set_joint_efforts" title="Permalink to this definition"></a></dt>
+<dd><p>Sets the Panda arm efforts and the gripper width.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>joint_commands</strong> (union[<code class="xref py py-obj docutils literal notranslate"><span class="pre">panda_gazebo.srv.SetJointCommandsRequest</span></code>, list, dict]) – The panda joint efforts and gripper width.</p></li>
+<li><p><strong>direct_control</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether we want to directly control the panda by
+publishing to the controller topics or we want to use the
+<code class="docutils literal notranslate"><span class="pre">panda_gazebo</span></code> control proxy. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>arm_wait</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Wait till the arm control has finished. Defaults
+to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>hand_wait</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Wait till the hand control has finished.
+Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Boolean specifying if the joint efforts were set successfully.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.set_arm_joint_trajectory">
+<span class="sig-name descname"><span class="pre">set_arm_joint_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">joint_trajectory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_from_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_envs/panda_env.html#PandaEnv.set_arm_joint_trajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.set_arm_joint_trajectory" title="Permalink to this definition"></a></dt>
+<dd><p>Sets the panda arm joint trajectory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>joint_trajectory</strong> (union[<code class="xref py py-obj docutils literal notranslate"><span class="pre">panda_gazebo.msg.FollowJointTrajectoryActionGoal</span></code>, np.array, list, dict]) – The joint trajectory you want to set.</p></li>
+<li><p><strong>wait</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Wait till the control has finished. Defaults to
+<code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>time_from_start</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – At what time a trajectory point
+should be reach in seconds. Only used when a single trajectory point is
+given (i.e. list, dict)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Boolean specifying if the joint trajectory was set successfully.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – If the input trajectory is invalid.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you input a <code class="docutils literal notranslate"><span class="pre">tuple</span></code>, <code class="docutils literal notranslate"><span class="pre">list</span></code>, <code class="docutils literal notranslate"><span class="pre">int</span></code> or <code class="docutils literal notranslate"><span class="pre">float</span></code> a joint trajectory
+message will be constructed with one waypoint point. To set multiple
+waypoints, you must supply a 2D numpy array or a dictionary containing an
+equal number of joint commands for each joint, one for each waypoint.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.set_gripper_width">
+<span class="sig-name descname"><span class="pre">set_gripper_width</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gripper_width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grasping</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_effort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_envs/panda_env.html#PandaEnv.set_gripper_width"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.set_gripper_width" title="Permalink to this definition"></a></dt>
+<dd><p>Sets the Panda gripper width.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gripper_width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – The desired gripper width.</p></li>
+<li><p><strong>wait</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Wait till the gripper control has finished. Defaults
+to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>grasp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether we want to grasp a object. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>. Can
+be overwritten by setting the <code class="docutils literal notranslate"><span class="pre">&lt;NS&gt;/control/grasping</span></code> ROS parameter.</p></li>
+<li><p><strong>max_effort</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – The max effort used when grasping. Defaults to
+<code class="docutils literal notranslate"><span class="pre">None</span></code>. Meaning the action service default is used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Boolean specifying if the gripper width was set successfully.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.lock_joints">
+<span class="sig-name descname"><span class="pre">lock_joints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">joint_names</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_envs/panda_env.html#PandaEnv.lock_joints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.lock_joints" title="Permalink to this definition"></a></dt>
+<dd><p>Locks specific panda joints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>joint_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a>) – The names of the joints to lock.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.unlock_joints">
+<span class="sig-name descname"><span class="pre">unlock_joints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">joint_names</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_envs/panda_env.html#PandaEnv.unlock_joints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.unlock_joints" title="Permalink to this definition"></a></dt>
+<dd><p>Unlocks specific panda joints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>joint_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a>) – The names of the joints to unlock.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_envs.PandaEnv.refresh_joints">
+<span class="sig-name descname"><span class="pre">refresh_joints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_envs/panda_env.html#PandaEnv.refresh_joints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_envs.PandaEnv.refresh_joints" title="Permalink to this definition"></a></dt>
+<dd><p>Re-fetches the currently active joints.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../msg/index.html" class="btn btn-neutral float-left" title="ros_gazebo_gym.msg" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="helpers/index.html" class="btn btn-neutral float-right" title="ros_gazebo_gym.robot_envs.helpers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

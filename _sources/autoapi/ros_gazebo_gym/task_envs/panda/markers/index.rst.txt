@@ -1,0 +1,305 @@
+:py:mod:`ros_gazebo_gym.task_envs.panda.markers`
+================================================
+
+.. py:module:: ros_gazebo_gym.task_envs.panda.markers
+
+.. autoapi-nested-parse::
+
+   Contains several `RViz <http://wiki.ros.org/rviz>`_ markers used by the Panda task
+   environments.
+
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   cube_marker/index.rst
+   frame_origin_marker/index.rst
+   puck_marker/index.rst
+
+
+Package Contents
+----------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.task_envs.panda.markers.CubeMarker
+   ros_gazebo_gym.task_envs.panda.markers.FrameOriginMarker
+   ros_gazebo_gym.task_envs.panda.markers.PuckMarker
+
+
+
+
+.. py:class:: CubeMarker(*args, **kwargs)
+
+
+   Bases: :py:obj:`ros_gazebo_gym.common.markers.TargetMarker`
+
+   RViz grasping cube marker.
+
+   .. attribute:: id
+
+      The marker object id.
+
+      :type: int
+
+   .. attribute:: type
+
+      The marker type.
+
+      :type: str
+
+   .. attribute:: action
+
+      The marker message action (add or remove).
+
+      :type: float
+
+   .. attribute:: scale
+
+      The marker scale.
+
+      :type: :obj:`geometry_msgs.Vector3`
+
+   .. attribute:: color
+
+      The marker color.
+
+      :type: :obj:`std_msgs.ColorRGBA`
+
+   .. attribute:: lifetime
+
+      The lifetime duration.
+
+      :type: :obj:`rospy.duration`
+
+   .. attribute:: frame_locked
+
+      Boolean specifying whether the marker frame is locked to
+      the world.
+
+      :type: bool
+
+   .. attribute:: point
+
+      The marker points.
+
+      :type: :obj:`geometry_msgs.Point`
+
+   .. attribute:: text
+
+      The text that is used for text markers.
+
+      :type: str
+
+   .. attribute:: mesh_resource
+
+      Marker mess location.
+
+      :type: str
+
+   .. attribute:: mesh_use_embedded_materials
+
+      Boolean specifying whether we want to use a
+      mesh.
+
+      :type: bool
+
+   .. important::
+       If both the ``x``, ``y``, ``z`` positions and a Pose is supplied the
+       ``x``, ``y``, ``z`` positions are used.
+
+   Initialize CubeMarker object.
+
+   :param \*args: Arguments passed to the
+                  :class:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super
+                  class.
+   :param \*\*kwargs: Keyword arguments that are passed to the
+                      :class:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super
+                      class.
+
+
+.. py:class:: FrameOriginMarker(*args, **kwargs)
+
+
+   Bases: :py:obj:`ros_gazebo_gym.common.markers.TargetMarker`
+
+   RViz object frame origin marker.
+
+   .. attribute:: id
+
+      The marker object id.
+
+      :type: int
+
+   .. attribute:: type
+
+      The marker type.
+
+      :type: str
+
+   .. attribute:: action
+
+      The marker message action (add or remove).
+
+      :type: float
+
+   .. attribute:: scale
+
+      The marker scale.
+
+      :type: :obj:`geometry_msgs.Vector3`
+
+   .. attribute:: color
+
+      The marker color.
+
+      :type: :obj:`std_msgs.ColorRGBA`
+
+   .. attribute:: lifetime
+
+      The lifetime duration.
+
+      :type: :obj:`rospy.duration`
+
+   .. attribute:: frame_locked
+
+      Boolean specifying whether the marker frame is locked to
+      the world.
+
+      :type: bool
+
+   .. attribute:: point
+
+      The marker points.
+
+      :type: :obj:`geometry_msgs.Point`
+
+   .. attribute:: text
+
+      The text that is used for text markers.
+
+      :type: str
+
+   .. attribute:: mesh_resource
+
+      Marker mess location.
+
+      :type: str
+
+   .. attribute:: mesh_use_embedded_materials
+
+      Boolean specifying whether we want to use a
+      mesh.
+
+      :type: bool
+
+   .. important::
+       If both the ``x``, ``y``, ``z`` positions and a Pose is supplied the
+       ``x``, ``y``, ``z`` positions are used.
+
+   Initialize FrameOriginMarker object.
+
+   :param \*args: Arguments passed to the
+                  :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super
+                  class.
+   :param \*\*kwargs: Keyword arguments that are passed to the
+                      :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super
+                      class.
+
+
+.. py:class:: PuckMarker(*args, **kwargs)
+
+
+   Bases: :py:obj:`ros_gazebo_gym.common.markers.TargetMarker`
+
+   RViz sliding puck marker.
+
+   .. attribute:: id
+
+      The marker object id.
+
+      :type: int
+
+   .. attribute:: type
+
+      The marker type.
+
+      :type: str
+
+   .. attribute:: action
+
+      The marker message action (add or remove).
+
+      :type: float
+
+   .. attribute:: scale
+
+      The marker scale.
+
+      :type: :obj:`geometry_msgs.Vector3`
+
+   .. attribute:: color
+
+      The marker color.
+
+      :type: :obj:`std_msgs.ColorRGBA`
+
+   .. attribute:: lifetime
+
+      The lifetime duration.
+
+      :type: :obj:`rospy.duration`
+
+   .. attribute:: frame_locked
+
+      Boolean specifying whether the marker frame is locked to
+      the world.
+
+      :type: bool
+
+   .. attribute:: point
+
+      The marker points.
+
+      :type: :obj:`geometry_msgs.Point`
+
+   .. attribute:: text
+
+      The text that is used for text markers.
+
+      :type: str
+
+   .. attribute:: mesh_resource
+
+      Marker mess location.
+
+      :type: str
+
+   .. attribute:: mesh_use_embedded_materials
+
+      Boolean specifying whether we want to use a
+      mesh.
+
+      :type: bool
+
+   .. important::
+       If both the ``x``, ``y``, ``z`` positions and a Pose is supplied the
+       ``x``, ``y``, ``z`` positions are used.
+
+   Initialize PuckMarker object.
+
+   :param \*args: Arguments passed to the
+                  :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super
+                  class.
+   :param \*\*kwargs: Keyword arguments that are passed to the
+                      :obj:`~ros_gazebo_gym.common.markers.target_marker.TargetMarker` super
+                      class.
+
+

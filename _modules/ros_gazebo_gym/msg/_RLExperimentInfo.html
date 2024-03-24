@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ros_gazebo_gym.msg._RLExperimentInfo &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/usage.html">How to use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/add_nev_env.html">Add new environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../ros_gazebo_gym.html">ros_gazebo_gym</a></li>
+      <li class="breadcrumb-item active">ros_gazebo_gym.msg._RLExperimentInfo</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ros_gazebo_gym.msg._RLExperimentInfo</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This Python file uses the following encoding: utf-8</span>
+<span class="sd">&quot;&quot;&quot;autogenerated by genpy from ros_gazebo_gym/RLExperimentInfo.msg. Do not edit.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">codecs</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<div class="viewcode-block" id="python3"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/msg/index.html#ros_gazebo_gym.msg._RLExperimentInfo.python3">[docs]</a><span class="n">python3</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">hexversion</span> <span class="o">&gt;</span> <span class="mh">0x03000000</span> <span class="k">else</span> <span class="kc">False</span></div>
+<span class="kn">import</span> <span class="nn">genpy</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+
+
+<div class="viewcode-block" id="RLExperimentInfo"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/msg/index.html#ros_gazebo_gym.msg._RLExperimentInfo.RLExperimentInfo">[docs]</a><span class="k">class</span> <span class="nc">RLExperimentInfo</span><span class="p">(</span><span class="n">genpy</span><span class="o">.</span><span class="n">Message</span><span class="p">):</span>
+  <span class="n">_md5sum</span> <span class="o">=</span> <span class="s2">&quot;c19794b666c4451be032d9f41dd657c4&quot;</span>
+  <span class="n">_type</span> <span class="o">=</span> <span class="s2">&quot;ros_gazebo_gym/RLExperimentInfo&quot;</span>
+  <span class="n">_has_header</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># flag to mark the presence of a Header object</span>
+  <span class="n">_full_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;# Message used to send training related information.</span>
+<span class="s2">int32 episode_number</span>
+<span class="s2">int32 step_number</span>
+<span class="s2">float32 reward</span>
+<span class="s2">&quot;&quot;&quot;</span>
+  <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;episode_number&#39;</span><span class="p">,</span><span class="s1">&#39;step_number&#39;</span><span class="p">,</span><span class="s1">&#39;reward&#39;</span><span class="p">]</span>
+  <span class="n">_slot_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;int32&#39;</span><span class="p">,</span><span class="s1">&#39;int32&#39;</span><span class="p">,</span><span class="s1">&#39;float32&#39;</span><span class="p">]</span>
+
+  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Constructor. Any message fields that are implicitly/explicitly</span>
+<span class="sd">    set to None will be assigned a default value. The recommend</span>
+<span class="sd">    use is keyword arguments as this is more robust to future message</span>
+<span class="sd">    changes.  You cannot mix in-order arguments and keyword arguments.</span>
+
+<span class="sd">    The available fields are:</span>
+<span class="sd">       episode_number,step_number,reward</span>
+
+<span class="sd">    :param args: complete set of field values, in .msg order</span>
+<span class="sd">    :param kwds: use keyword arguments corresponding to message field names</span>
+<span class="sd">    to set specific fields.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">or</span> <span class="n">kwds</span><span class="p">:</span>
+      <span class="nb">super</span><span class="p">(</span><span class="n">RLExperimentInfo</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+      <span class="c1"># message fields cannot be None, assign default values for those that are</span>
+      <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">episode_number</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">episode_number</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_number</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_number</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">episode_number</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">step_number</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">reward</span> <span class="o">=</span> <span class="mf">0.</span>
+
+  <span class="k">def</span> <span class="nf">_get_types</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    internal API method</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slot_types</span>
+
+<div class="viewcode-block" id="RLExperimentInfo.serialize"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/msg/index.html#ros_gazebo_gym.msg._RLExperimentInfo.RLExperimentInfo.serialize">[docs]</a>  <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buff</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    serialize message into buffer</span>
+<span class="sd">    :param buff: buffer, ``StringIO``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">_x</span> <span class="o">=</span> <span class="bp">self</span>
+      <span class="n">buff</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">_get_struct_2if</span><span class="p">()</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">_x</span><span class="o">.</span><span class="n">episode_number</span><span class="p">,</span> <span class="n">_x</span><span class="o">.</span><span class="n">step_number</span><span class="p">,</span> <span class="n">_x</span><span class="o">.</span><span class="n">reward</span><span class="p">))</span>
+    <span class="k">except</span> <span class="n">struct</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">se</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_types</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: &#39;</span><span class="si">%s</span><span class="s2">&#39; when writing &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">se</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">se</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_x&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)))))</span>
+    <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">te</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_types</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: &#39;</span><span class="si">%s</span><span class="s2">&#39; when writing &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">te</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">te</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_x&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)))))</span></div>
+
+<div class="viewcode-block" id="RLExperimentInfo.deserialize"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/msg/index.html#ros_gazebo_gym.msg._RLExperimentInfo.RLExperimentInfo.deserialize">[docs]</a>  <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    unpack serialized message in str into this message instance</span>
+<span class="sd">    :param str: byte array of serialized message, ``str``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">python3</span><span class="p">:</span>
+      <span class="n">codecs</span><span class="o">.</span><span class="n">lookup_error</span><span class="p">(</span><span class="s2">&quot;rosmsg&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">msg_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_type</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">end</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="n">_x</span> <span class="o">=</span> <span class="bp">self</span>
+      <span class="n">start</span> <span class="o">=</span> <span class="n">end</span>
+      <span class="n">end</span> <span class="o">+=</span> <span class="mi">12</span>
+      <span class="p">(</span><span class="n">_x</span><span class="o">.</span><span class="n">episode_number</span><span class="p">,</span> <span class="n">_x</span><span class="o">.</span><span class="n">step_number</span><span class="p">,</span> <span class="n">_x</span><span class="o">.</span><span class="n">reward</span><span class="p">,)</span> <span class="o">=</span> <span class="n">_get_struct_2if</span><span class="p">()</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="nb">str</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">])</span>
+      <span class="k">return</span> <span class="bp">self</span>
+    <span class="k">except</span> <span class="n">struct</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">genpy</span><span class="o">.</span><span class="n">DeserializationError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>  <span class="c1"># most likely buffer underfill</span></div>
+
+
+<div class="viewcode-block" id="RLExperimentInfo.serialize_numpy"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/msg/index.html#ros_gazebo_gym.msg._RLExperimentInfo.RLExperimentInfo.serialize_numpy">[docs]</a>  <span class="k">def</span> <span class="nf">serialize_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buff</span><span class="p">,</span> <span class="n">numpy</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    serialize message with numpy array types into buffer</span>
+<span class="sd">    :param buff: buffer, ``StringIO``</span>
+<span class="sd">    :param numpy: numpy python module</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">_x</span> <span class="o">=</span> <span class="bp">self</span>
+      <span class="n">buff</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">_get_struct_2if</span><span class="p">()</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">_x</span><span class="o">.</span><span class="n">episode_number</span><span class="p">,</span> <span class="n">_x</span><span class="o">.</span><span class="n">step_number</span><span class="p">,</span> <span class="n">_x</span><span class="o">.</span><span class="n">reward</span><span class="p">))</span>
+    <span class="k">except</span> <span class="n">struct</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">se</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_types</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: &#39;</span><span class="si">%s</span><span class="s2">&#39; when writing &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">se</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">se</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_x&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)))))</span>
+    <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">te</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_types</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: &#39;</span><span class="si">%s</span><span class="s2">&#39; when writing &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">te</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">te</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_x&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)))))</span></div>
+
+<div class="viewcode-block" id="RLExperimentInfo.deserialize_numpy"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/msg/index.html#ros_gazebo_gym.msg._RLExperimentInfo.RLExperimentInfo.deserialize_numpy">[docs]</a>  <span class="k">def</span> <span class="nf">deserialize_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">numpy</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    unpack serialized message in str into this message instance using numpy for array types</span>
+<span class="sd">    :param str: byte array of serialized message, ``str``</span>
+<span class="sd">    :param numpy: numpy python module</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">python3</span><span class="p">:</span>
+      <span class="n">codecs</span><span class="o">.</span><span class="n">lookup_error</span><span class="p">(</span><span class="s2">&quot;rosmsg&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">msg_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_type</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">end</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="n">_x</span> <span class="o">=</span> <span class="bp">self</span>
+      <span class="n">start</span> <span class="o">=</span> <span class="n">end</span>
+      <span class="n">end</span> <span class="o">+=</span> <span class="mi">12</span>
+      <span class="p">(</span><span class="n">_x</span><span class="o">.</span><span class="n">episode_number</span><span class="p">,</span> <span class="n">_x</span><span class="o">.</span><span class="n">step_number</span><span class="p">,</span> <span class="n">_x</span><span class="o">.</span><span class="n">reward</span><span class="p">,)</span> <span class="o">=</span> <span class="n">_get_struct_2if</span><span class="p">()</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="nb">str</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">])</span>
+      <span class="k">return</span> <span class="bp">self</span>
+    <span class="k">except</span> <span class="n">struct</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">genpy</span><span class="o">.</span><span class="n">DeserializationError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>  <span class="c1"># most likely buffer underfill</span></div></div>
+
+<span class="n">_struct_I</span> <span class="o">=</span> <span class="n">genpy</span><span class="o">.</span><span class="n">struct_I</span>
+<span class="k">def</span> <span class="nf">_get_struct_I</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">_struct_I</span>
+    <span class="k">return</span> <span class="n">_struct_I</span>
+<span class="n">_struct_2if</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="k">def</span> <span class="nf">_get_struct_2if</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">_struct_2if</span>
+    <span class="k">if</span> <span class="n">_struct_2if</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_struct_2if</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;2if&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_struct_2if</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,177 @@
+:py:mod:`ros_gazebo_gym.common.markers.sample_region_marker`
+============================================================
+
+.. py:module:: ros_gazebo_gym.common.markers.sample_region_marker
+
+.. autoapi-nested-parse::
+
+   Contains a class that can be used for displaying a sampling region marker in RViz.
+
+   .. note::
+       This class overloads the :obj:`visualization_msgs.msgs.Marker` class in order to
+       pre-initialize some of its attributes. It further also adds the ability to specify
+       the marker scale using s``x``, ``y``, ``z`` max and min values.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.common.markers.sample_region_marker.SampleRegionMarker
+
+
+
+
+.. py:class:: SampleRegionMarker(x=0, y=0, z=0, x_min=None, y_min=None, z_min=None, x_max=None, y_max=None, z_max=None, frame_id=None, *args, **kwargs)
+
+
+   Bases: :py:obj:`visualization_msgs.msg.Marker`
+
+   RViz goal sample region marker.
+
+   .. attribute:: id
+
+      The marker object id.
+
+      :type: int
+
+   .. attribute:: type
+
+      The marker type.
+
+      :type: str
+
+   .. attribute:: action
+
+      The marker message action (add or remove).
+
+      :type: float
+
+   .. attribute:: color
+
+      The marker color.
+
+      :type: :obj:`std_msgs.ColorRGBA`
+
+   .. attribute:: lifetime
+
+      The lifetime duration.
+
+      :type: :obj:`:rospy.Duration`
+
+   .. attribute:: frame_locked
+
+      Boolean specifying whether the marker frame is locked to
+      the world.
+
+      :type: bool
+
+   .. attribute:: point
+
+      The marker points.
+
+      :type: :obj:`geometry_msgs.Point`
+
+   .. attribute:: text
+
+      The text that is used for text markers.
+
+      :type: str
+
+   .. attribute:: mesh_resource
+
+      Marker mess location.
+
+      :type: str
+
+   .. attribute:: mesh_use_embedded_materials
+
+      Boolean specifying whether we want to use a
+      mesh.
+
+      :type: bool
+
+   .. important::
+       The x, y, z min/max values take precedence over x y z position values, which
+       take precedence over position and scale values.
+
+   Initialize SampleRegionMarker object.
+
+   :param x_min: The min x position of the marker. Defaults to
+                 ``None``.
+   :type x_min: float, optional
+   :param y_min: The min y position of the marker. Defaults to
+                 ``None``.
+   :type y_min: float, optional
+   :param z_min: The min z position of the marker. Defaults to
+                 ``None``.
+   :type z_min: float, optional
+   :param x_max: The max x position of the marker. Defaults to
+                 ``None``.
+   :type x_max: float, optional
+   :param y_max: The max y position of the marker. Defaults to
+                 ``None``.
+   :type y_max: float, optional
+   :param z_max: The max z position of the marker. Defaults to
+                 ``None``.
+   :type z_max: float, optional
+   :param frame_id: The frame the position/orientation are relative
+                    to. Defaults to ``None``.
+   :type frame_id: str, optional
+   :param \*args: Arguments passed to the
+                  :obj:`~visualization_msgs.msg.Marker` super class.
+   :param \*\*kwargs: Keyword arguments that are passed to the
+                      :obj:`~visualization_msgs.msg.Marker` super class.
+
+   :raises Exception: Thrown when the ROS time is not initialised.
+
+   .. py:property:: x
+
+      Retrieve the marker x position.
+
+   .. py:property:: y
+
+      Retrieve the marker y position.
+
+   .. py:property:: z
+
+      Retrieve the marker z position.
+
+   .. py:property:: x_min
+
+      Retrieve the value of x_min.
+
+   .. py:property:: y_min
+
+      Retrieve the value of y_min.
+
+   .. py:property:: z_min
+
+      Retrieve the value of z_min.
+
+   .. py:property:: x_max
+
+      Retrieve the value of x_max.
+
+   .. py:property:: y_max
+
+      Retrieve the value of y_max.
+
+   .. py:property:: z_max
+
+      Retrieve the value of z_max.
+
+   .. py:property:: scale
+
+      Get marker scale.
+
+   .. py:property:: pose
+
+      Retrieve marker pose.
+
+

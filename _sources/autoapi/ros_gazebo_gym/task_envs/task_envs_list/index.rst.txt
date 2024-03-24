@@ -1,0 +1,31 @@
+:py:mod:`ros_gazebo_gym.task_envs.task_envs_list`
+=================================================
+
+.. py:module:: ros_gazebo_gym.task_envs.task_envs_list
+
+.. autoapi-nested-parse::
+
+   Contains a list of available :ros-gazebo-gym:`ros_gazebo_gym <>` gymnasium
+   environments.
+
+   .. important::
+       This is where you put new environments such that they are registered inside the
+       gymnasium namespace.
+
+   Source code
+   -----------
+
+   .. literalinclude:: ../../../../../../src/ros_gazebo_gym/task_envs/task_envs_list.py
+      :language: python
+      :linenos:
+      :lines: 17-
+
+
+
+Module Contents
+---------------
+
+.. py:data:: ENVS
+
+   
+

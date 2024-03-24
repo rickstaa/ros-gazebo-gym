@@ -1,0 +1,44 @@
+:py:mod:`ros_gazebo_gym.core.lazy_importer`
+===========================================
+
+.. py:module:: ros_gazebo_gym.core.lazy_importer
+
+.. autoapi-nested-parse::
+
+   Contains the LazyImporter class which can be used to import modules lazily.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.core.lazy_importer.LazyImporter
+
+
+
+
+.. py:class:: LazyImporter(module_name)
+
+
+   A class for importing modules lazily.
+
+   This class can be used to import modules and module objects lazily. It caches
+   imported modules and module objects to avoid repeated imports.
+
+   .. attribute:: module_name
+
+      The name of the module to import.
+
+      :type: str
+
+   Initialize a new LazyImporter object.
+
+   :param module_name: The name of the module to import.
+   :type module_name: str
+
+

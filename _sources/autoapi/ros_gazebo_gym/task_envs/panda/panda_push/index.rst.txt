@@ -1,0 +1,69 @@
+:py:mod:`ros_gazebo_gym.task_envs.panda.panda_push`
+===================================================
+
+.. py:module:: ros_gazebo_gym.task_envs.panda.panda_push
+
+.. autoapi-nested-parse::
+
+   An ROS Panda push gymnasium environment.
+
+   .. image:: /images/panda/panda_push_env.png
+      :alt: Panda push environment
+
+   This environment is an extension of the :class:`~ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv` task environment,
+   sharing most features such as observation and action spaces. Notable distinctions are detailed below.
+
+   Goal:
+       In this environment the agent has to learn to push a puck to a desired goal
+       position. It was based on the :gymnasium-robotics:`FetchPush-v2 <envs/fetch/push/>`
+       gymnasium environment.
+
+   .. admonition:: Configuration
+       :class: important
+
+       The configuration files for this environment are found in the
+       :ros-gazebo-gym:`panda task environment config folder <blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_push.yaml>`.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.task_envs.panda.panda_push.PandaPushEnv
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.task_envs.panda.panda_push.CONFIG_FILE_PATH
+
+
+.. py:data:: CONFIG_FILE_PATH
+   :value: 'config/panda_push.yaml'
+
+   
+
+.. py:class:: PandaPushEnv(*args, **kwargs)
+
+
+   Bases: :py:obj:`ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv`, :py:obj:`gymnasium.utils.EzPickle`
+
+   Classed used to create a Panda push environment.
+
+   Initializes a Panda Push task environment.
+
+   :param \*args: Arguments passed to the
+                  :class:`~ros_gazebo_gym.task_envs.panda.PandaPushEnv` super class.
+   :param \*\*kwargs: Keyword arguments that are passed to the
+                      :class:`~ros_gazebo_gym.task_envs.panda.PandaPushEnv` super class.
+
+

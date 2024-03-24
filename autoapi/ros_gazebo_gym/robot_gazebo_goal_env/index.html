@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ros_gazebo_gym.robot_gazebo_goal_env &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="ros_gazebo_gym.version" href="../version/index.html" />
+    <link rel="prev" title="ros_gazebo_gym.robot_gazebo_env" href="../robot_gazebo_env/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/usage.html">How to use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/add_nev_env.html">Add new environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#ros-api">ROS API</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html#python-api">Python API</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code></a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../index.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code></a></li>
+      <li class="breadcrumb-item active"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.robot_gazebo_goal_env</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/docs/source/autoapi/ros_gazebo_gym/robot_gazebo_goal_env/index.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-ros_gazebo_gym.robot_gazebo_goal_env">
+<span id="ros-gazebo-gym-robot-gazebo-goal-env"></span><h1><a class="reference internal" href="#module-ros_gazebo_gym.robot_gazebo_goal_env" title="ros_gazebo_gym.robot_gazebo_goal_env"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.robot_gazebo_goal_env</span></code></a><a class="headerlink" href="#module-ros_gazebo_gym.robot_gazebo_goal_env" title="Permalink to this heading"></a></h1>
+<p>The Gazebo GOAL environment is mainly used to connect the simulated Gym GOAL
+environment to the Gazebo simulator. It takes care of the resets of the simulator after
+each step or the resets of the controllers (if needed), it also takes care of all the
+steps that need to be done on the simulator when doing a training step or a training
+reset (typical steps in the reinforcement learning loop).</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>This class is similar to the
+<a class="reference internal" href="../robot_gazebo_env/index.html#ros_gazebo_gym.robot_gazebo_env.RobotGazeboEnv" title="ros_gazebo_gym.robot_gazebo_env.RobotGazeboEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">RobotGazeboEnv</span></code></a> class but now instead of
+the <code class="xref py py-class docutils literal notranslate"><span class="pre">gym.Env</span></code> class the <code class="xref py py-class docutils literal notranslate"><span class="pre">gym.GoalEnv</span></code> class is used as the superclass.
+As a result, a goal-based environment is created. You should use this goal based
+Gazebo environment when you are working with RL algorithms that require a spare
+reward space (i.e. <a class="reference external" href="https://stable-baselines.readthedocs.io/en/master/modules/her.html">Hindsight Experience Replay (HER)</a>).</p>
+<p>This goal-based environment just like any regular gymnasium environment, but it
+imposes a required structure on the observation_space. More concretely, the
+observation space is required to contain at least three elements, namely
+<code class="docutils literal notranslate"><span class="pre">observation</span></code>, <code class="docutils literal notranslate"><span class="pre">desired_goal</span></code>, and  <code class="docutils literal notranslate"><span class="pre">achieved_goal</span></code>. Here, <cite>desired_goal</cite>
+specifies the goal that the agent should attempt to achieve. <cite>achieved_goal</cite> is the
+goal that it currently achieved instead. <cite>observation</cite> contains the actual
+observations of the environment as per usual.</p>
+<p>Further with this goal env, not the cumulative cost is published to the
+<code class="docutils literal notranslate"><span class="pre">/ros_gazebo_gym/reward</span></code> reward topic during the env reset, like was the case in
+the <a class="reference internal" href="../robot_gazebo_env/index.html#ros_gazebo_gym.robot_gazebo_env.RobotGazeboEnv" title="ros_gazebo_gym.robot_gazebo_env.RobotGazeboEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">RobotGazeboEnv</span></code></a>, but the cost at each
+step.</p>
+</div>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv" title="ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RobotGazeboGoalEnv</span></code></a></p></td>
+<td><p>Connects the simulated GOAL gymnasium environment to the gazebo simulator.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.robot_gazebo_goal_env.</span></span><span class="sig-name descname"><span class="pre">RobotGazeboGoalEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_name_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_controls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controllers_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_robot_pose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_world_or_sim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SIMULATION'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_reset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pause_simulation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">publish_rviz_training_info_overlay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_gazebo_goal_env.html#RobotGazeboGoalEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">gymnasium_robotics.GoalEnv</span></code></p>
+<p>Connects the simulated GOAL gymnasium environment to the gazebo simulator.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.gazebo">
+<span class="sig-name descname"><span class="pre">gazebo</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.gazebo" title="Permalink to this definition"></a></dt>
+<dd><p>Gazebo connector which can be used to interact with the gazebo simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GazeboConnection" title="ros_gazebo_gym.core.gazebo_connection.GazeboConnection"><code class="xref py py-class docutils literal notranslate"><span class="pre">GazeboConnection</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.episode_num">
+<span class="sig-name descname"><span class="pre">episode_num</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.episode_num" title="Permalink to this definition"></a></dt>
+<dd><p>The current episode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.step_num">
+<span class="sig-name descname"><span class="pre">step_num</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.step_num" title="Permalink to this definition"></a></dt>
+<dd><p>The current step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.step_reward">
+<span class="sig-name descname"><span class="pre">step_reward</span></span><a class="headerlink" href="#ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.step_reward" title="Permalink to this definition"></a></dt>
+<dd><p>The reward achieved by the current step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Initiate the RobotGazebo environment instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robot_name_space</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The namespace the robot is on.</p></li>
+<li><p><strong>reset_controls</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether the controllers should be reset when the
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">RobotGazeboEnv.reset()</span></code> method is called.</p></li>
+<li><p><strong>controllers_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>, </em><em>optional</em>) – A list with currently available
+controllers to look for. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>, which means that the
+class will try to retrieve all the running controllers.</p></li>
+<li><p><strong>reset_robot_pose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Boolean specifying whether to reset the robot pose
+when the simulation is reset.</p></li>
+<li><p><strong>reset_world_or_sim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – Whether you want to reset the whole
+simulation “SIMULATION” at startup or only the world “WORLD” (object
+positions). Defaults to “SIMULATION”.</p></li>
+<li><p><strong>log_reset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether we want to print a log statement when
+the world/simulation is reset. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>pause_sim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether the simulation should be paused after
+each step (i.e. after each action). Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>publish_rviz_training_info_overlay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether a RViz overlay
+should be published with the training results. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_gazebo_goal_env.html#RobotGazeboGoalEnv.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.step" title="Permalink to this definition"></a></dt>
+<dd><p>Function executed each time step. Here we get the action execute it in a
+time step and retrieve the observations generated by that action. We also
+publish the step reward on the <code class="docutils literal notranslate"><span class="pre">/ros_gazebo_gym/reward</span></code> topic.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><em>numpy.ndarray</em></a>) – The action we want to perform in the environment.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>tuple containing:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>obs (<code class="xref py py-obj docutils literal notranslate"><span class="pre">np.ndarray</span></code>): Environment observation.</p></li>
+<li><p>cost (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): Cost of the action.</p></li>
+<li><p>terminated (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>): Whether the episode is terminated.</p></li>
+<li><p>truncated (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>): Whether the episode was truncated. This
+value is set by wrappers when for example a time limit is reached or
+the agent goes out of bounds.</p></li>
+<li><p>info (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>): Additional information about the environment.</p></li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>)</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Here we should convert the action num to movement action, execute the action
+in the simulation and get the observations result of performing that action.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_gazebo_goal_env.html#RobotGazeboGoalEnv.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.reset" title="Permalink to this definition"></a></dt>
+<dd><p>Function executed when resetting the environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – The seed to use for the random number generator.
+Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>options</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>, </em><em>optional</em>) – The options to pass to the environment. Defaults
+to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>tuple containing:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>obs (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>): The current state</p></li>
+<li><p>info_dict (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>): Dictionary with additional information.</p></li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_gazebo_goal_env.html#RobotGazeboGoalEnv.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.close" title="Permalink to this definition"></a></dt>
+<dd><p>Function executed when closing the environment. Use it for closing GUIS and
+other systems that need closing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.render">
+<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">render_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'human'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_gazebo_goal_env.html#RobotGazeboGoalEnv.render"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.render" title="Permalink to this definition"></a></dt>
+<dd><p>Overload render method since rendering is handled in Gazebo.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.pause_controllers">
+<span class="sig-name descname"><span class="pre">pause_controllers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">controllers_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_gazebo_goal_env.html#RobotGazeboGoalEnv.pause_controllers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.pause_controllers" title="Permalink to this definition"></a></dt>
+<dd><p>Pauses the controllers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>controller_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>, </em><em>optional</em>) – The controllers you want to pause.
+Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>, which means that the class will pause all the
+running controllers.</p></li>
+<li><p><strong>filter_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>, </em><em>optional</em>) – The controllers you want to ignore when
+pausing. Defaults to <code class="docutils literal notranslate"><span class="pre">[]</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.unpause_controllers">
+<span class="sig-name descname"><span class="pre">unpause_controllers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ros_gazebo_gym/robot_gazebo_goal_env.html#RobotGazeboGoalEnv.unpause_controllers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv.unpause_controllers" title="Permalink to this definition"></a></dt>
+<dd><p>Un-pauses the paused controllers.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../robot_gazebo_env/index.html" class="btn btn-neutral float-left" title="ros_gazebo_gym.robot_gazebo_env" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../version/index.html" class="btn btn-neutral float-right" title="ros_gazebo_gym.version" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

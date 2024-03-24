@@ -1,0 +1,33 @@
+:py:mod:`ros_gazebo_gym.robot_envs.helpers`
+===========================================
+
+.. py:module:: ros_gazebo_gym.robot_envs.helpers
+
+.. autoapi-nested-parse::
+
+   Contains several helper functions that are used in the robot environments.
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.robot_envs.helpers.remove_gripper_commands_from_joint_commands_msg
+
+
+
+.. py:function:: remove_gripper_commands_from_joint_commands_msg(joint_commands_msg)
+
+   Removes the gripper commands from the joint commands message.
+
+   :param joint_commands_msg: The joint
+                              commands message.
+   :type joint_commands_msg: :obj:`panda_gazebo.msg.JointCommands`
+
+

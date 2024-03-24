@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Reference &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ros_gazebo_gym" href="ros_gazebo_gym/index.html" />
+    <link rel="prev" title="Difference with openai_ros" href="../dev/openai_ros_diff.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/usage.html">How to use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/add_nev_env.html">Add new environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ros-api">ROS API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#python-api">Python API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ros_gazebo_gym/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API Reference</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/docs/source/autoapi/index.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading"></a></h1>
+<p>This page contains auto-generated API reference documentation <a class="footnote-reference brackets" href="#f1" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+<section id="ros-api">
+<span id="id2"></span><h2>ROS API<a class="headerlink" href="#ros-api" title="Permalink to this heading"></a></h2>
+<p>Auto-generated API documentation for this package’s ROS msgs/services/actions can be found <a class="reference external" href="../index-msg.html">here</a>.</p>
+</section>
+<section id="python-api">
+<span id="id3"></span><h2>Python API<a class="headerlink" href="#python-api" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ros_gazebo_gym/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ros_gazebo_gym/common/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.common</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ros_gazebo_gym/common/markers/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.common.markers</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ros_gazebo_gym/common/markers/sample_region_marker/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.common.markers.sample_region_marker</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ros_gazebo_gym/common/markers/target_marker/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.common.markers.target_marker</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ros_gazebo_gym/common/markers/text_overlay/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.common.markers.text_overlay</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ros_gazebo_gym/common/euler_angles/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.common.euler_angles</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ros_gazebo_gym/common/helpers/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.common.helpers</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ros_gazebo_gym/core/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.core</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ros_gazebo_gym/core/controllers_connection/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.core.controllers_connection</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ros_gazebo_gym/core/gazebo_connection/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.core.gazebo_connection</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ros_gazebo_gym/core/helpers/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.core.helpers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ros_gazebo_gym/core/lazy_importer/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.core.lazy_importer</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ros_gazebo_gym/core/ros_launcher/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.core.ros_launcher</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ros_gazebo_gym/msg/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.msg</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="ros_gazebo_gym/robot_envs/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.robot_envs</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ros_gazebo_gym/robot_envs/helpers/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.robot_envs.helpers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ros_gazebo_gym/robot_envs/panda_env/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.robot_envs.panda_env</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ros_gazebo_gym/task_envs/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ros_gazebo_gym/task_envs/panda/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ros_gazebo_gym/task_envs/panda/markers/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda.markers</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="ros_gazebo_gym/task_envs/panda/markers/cube_marker/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda.markers.cube_marker</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="ros_gazebo_gym/task_envs/panda/markers/frame_origin_marker/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda.markers.frame_origin_marker</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="ros_gazebo_gym/task_envs/panda/markers/puck_marker/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda.markers.puck_marker</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="ros_gazebo_gym/task_envs/panda/panda_pick_and_place/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_pick_and_place</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ros_gazebo_gym/task_envs/panda/panda_push/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_push</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ros_gazebo_gym/task_envs/panda/panda_reach/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ros_gazebo_gym/task_envs/panda/panda_slide/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_slide</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ros_gazebo_gym/task_envs/task_envs_list/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.task_envs_list</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ros_gazebo_gym/exceptions/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.exceptions</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="ros_gazebo_gym/robot_gazebo_env/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.robot_gazebo_env</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="ros_gazebo_gym/robot_gazebo_goal_env/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.robot_gazebo_goal_env</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="ros_gazebo_gym/version/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="f1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Created with <a class="reference external" href="https://github.com/readthedocs/sphinx-autoapi">sphinx-autoapi</a></p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../dev/openai_ros_diff.html" class="btn btn-neutral float-left" title="Difference with openai_ros" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ros_gazebo_gym/index.html" class="btn btn-neutral float-right" title="ros_gazebo_gym" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

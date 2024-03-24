@@ -1,0 +1,578 @@
+:py:mod:`ros_gazebo_gym.robot_envs.panda_env`
+=============================================
+
+.. py:module:: ros_gazebo_gym.robot_envs.panda_env
+
+.. autoapi-nested-parse::
+
+   Robot environment for the
+   `Panda Emika Franka Simulation <https://ros-planning.github.io/moveit_tutorials/doc/gazebo_simulation/gazebo_simulation.html>`_.
+
+   .. note::
+       The panda robot environment contains two methods of controlling the robot: ``DIRECT``
+       control (Default) and ``PROXY`` based control. Initially, I abstracted all the panda
+       control logic away in the :panda-gazebo:`panda_gazebo <>` package and made it
+       available through services. Later, however, I found that the service calls slowed
+       down the control. I then added the DIRECT control method, which directly publishes
+       the control commands on the controller ``command`` topic. This control method made
+       the training loop two times faster. Currently, the ``DIRECT`` mode is only available
+       for the ``position`` and ``effort`` control. Other control methods like
+       ``trajectory`` and ``end_effector`` control will use the PROXY based method.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.robot_envs.panda_env.PandaEnv
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.robot_envs.panda_env.CONNECTION_TIMEOUT
+   ros_gazebo_gym.robot_envs.panda_env.GAZEBO_SIM_CONNECTION_TIMEOUT
+   ros_gazebo_gym.robot_envs.panda_env.MOVEIT_SET_EE_POSE_TOPIC
+   ros_gazebo_gym.robot_envs.panda_env.MOVEIT_GET_EE_POSE_JOINT_CONFIG_TOPIC
+   ros_gazebo_gym.robot_envs.panda_env.LOCK_UNLOCK_TOPIC
+   ros_gazebo_gym.robot_envs.panda_env.GET_CONTROLLED_JOINTS_TOPIC
+   ros_gazebo_gym.robot_envs.panda_env.SET_JOINT_COMMANDS_TOPIC
+   ros_gazebo_gym.robot_envs.panda_env.SET_GRIPPER_WIDTH_TOPIC
+   ros_gazebo_gym.robot_envs.panda_env.SET_JOINT_TRAJECTORY_TOPIC
+   ros_gazebo_gym.robot_envs.panda_env.FRANKA_GRIPPER_COMMAND_TOPIC
+   ros_gazebo_gym.robot_envs.panda_env.JOINT_STATES_TOPIC
+   ros_gazebo_gym.robot_envs.panda_env.FRANKA_STATES_TOPIC
+   ros_gazebo_gym.robot_envs.panda_env.GET_PANDA_EE_FRAME_TRANSFORM_TIMEOUT
+   ros_gazebo_gym.robot_envs.panda_env.AVAILABLE_CONTROL_TYPES
+   ros_gazebo_gym.robot_envs.panda_env.PANDA_JOINTS_FALLBACK
+   ros_gazebo_gym.robot_envs.panda_env.ARM_POSITION_CONTROLLER
+   ros_gazebo_gym.robot_envs.panda_env.ARM_EFFORT_CONTROLLER
+   ros_gazebo_gym.robot_envs.panda_env.GRASP_FORCE
+   ros_gazebo_gym.robot_envs.panda_env.ARM_CONTROL_WAIT_TIMEOUT
+   ros_gazebo_gym.robot_envs.panda_env.ARM_JOINT_POSITION_WAIT_THRESHOLD
+   ros_gazebo_gym.robot_envs.panda_env.ARM_JOINT_EFFORT_WAIT_THRESHOLD
+   ros_gazebo_gym.robot_envs.panda_env.ARM_JOINT_VELOCITY_WAIT_THRESHOLD
+
+
+.. py:data:: CONNECTION_TIMEOUT
+   :value: 5
+
+   
+
+.. py:data:: GAZEBO_SIM_CONNECTION_TIMEOUT
+   :value: 60
+
+   
+
+.. py:data:: MOVEIT_SET_EE_POSE_TOPIC
+   :value: 'panda_moveit_planner_server/panda_arm/set_ee_pose'
+
+   
+
+.. py:data:: MOVEIT_GET_EE_POSE_JOINT_CONFIG_TOPIC
+   :value: 'panda_moveit_planner_server/panda_arm/get_ee_pose_joint_config'
+
+   
+
+.. py:data:: LOCK_UNLOCK_TOPIC
+   :value: 'lock_unlock_panda_joints'
+
+   
+
+.. py:data:: GET_CONTROLLED_JOINTS_TOPIC
+   :value: 'panda_control_server/get_controlled_joints'
+
+   
+
+.. py:data:: SET_JOINT_COMMANDS_TOPIC
+   :value: 'panda_control_server/set_joint_commands'
+
+   
+
+.. py:data:: SET_GRIPPER_WIDTH_TOPIC
+   :value: 'panda_control_server/panda_hand/set_gripper_width'
+
+   
+
+.. py:data:: SET_JOINT_TRAJECTORY_TOPIC
+   :value: 'panda_control_server/panda_arm/follow_joint_trajectory'
+
+   
+
+.. py:data:: FRANKA_GRIPPER_COMMAND_TOPIC
+   :value: 'franka_gripper/gripper_action'
+
+   
+
+.. py:data:: JOINT_STATES_TOPIC
+   :value: 'joint_states'
+
+   
+
+.. py:data:: FRANKA_STATES_TOPIC
+   :value: 'franka_state_controller/franka_states'
+
+   
+
+.. py:data:: GET_PANDA_EE_FRAME_TRANSFORM_TIMEOUT
+   :value: 1
+
+   
+
+.. py:data:: AVAILABLE_CONTROL_TYPES
+   :value: ['trajectory', 'position', 'effort', 'end_effector']
+
+   
+
+.. py:data:: PANDA_JOINTS_FALLBACK
+
+   
+
+.. py:data:: ARM_POSITION_CONTROLLER
+   :value: 'panda_arm_joint_position_controller'
+
+   
+
+.. py:data:: ARM_EFFORT_CONTROLLER
+   :value: 'panda_arm_joint_effort_controller'
+
+   
+
+.. py:data:: GRASP_FORCE
+   :value: 10
+
+   
+
+.. py:data:: ARM_CONTROL_WAIT_TIMEOUT
+   :value: 5
+
+   
+
+.. py:data:: ARM_JOINT_POSITION_WAIT_THRESHOLD
+   :value: 0.07
+
+   
+
+.. py:data:: ARM_JOINT_EFFORT_WAIT_THRESHOLD
+   :value: 7
+
+   
+
+.. py:data:: ARM_JOINT_VELOCITY_WAIT_THRESHOLD
+   :value: 0.07
+
+   
+
+.. py:class:: PandaEnv(robot_name_space='', robot_EE_link='panda_link8', ee_frame_offset=None, load_gripper=True, lock_gripper=False, grasping=False, control_type='effort', reset_robot_pose=True, workspace_path=None, log_reset=True, visualize=None)
+
+
+   Bases: :py:obj:`ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv`
+
+   Used for controlling the panda robot and retrieving sensor data.
+
+   To check any topic we need to have the simulations running, we need to do two
+   things:
+
+       1. Un-pause the simulation: without that the stream of data doesn't flow. This
+          is for simulations that are paused for whatever the reason.
+       2. If the simulation was running already for some reason, we need to reset the
+          controllers.
+
+   This has to do with the fact that some plugins with tf, don't understand the
+   reset of the simulation and need to be reset to work properly.
+
+   .. attribute:: robot_name_space
+
+      The robot name space.
+
+      :type: str
+
+   .. attribute:: reset_controls
+
+      Whether the controllers are reset when the simulation is
+      reset.
+
+      :type: bool
+
+   .. attribute:: robot_EE_link
+
+      The link used for the end effector control.
+
+      :type: str
+
+   .. attribute:: ee_frame_offset
+
+      Dictionary containing the used end effector offset.
+
+      :type: dict
+
+   .. attribute:: load_gripper
+
+      Whether the gripper was loaded.
+
+      :type: bool
+
+   .. attribute:: lock_gripper
+
+      Whether the gripper should be locked (i.e. not move).
+
+      :type: bool
+
+   .. attribute:: joint_states
+
+      The current joint states.
+
+      :type: :obj:`sensor_msgs.msg.JointState`
+
+   .. attribute:: franka_states
+
+      The current franka states.
+      These give robot specific information about the panda robot.
+
+      :type: :obj:`franka_msgs.msg.FrankaState`
+
+   .. attribute:: tf_buffer
+
+      Tf buffer object can be used to
+      request transforms.
+
+      :type: :obj:`tf2_ros.buffer.Buffer`
+
+   .. attribute:: panda_gazebo
+
+      Lazy importer for the
+      :panda-gazebo:`panda_gazebo <>` package.
+
+      :type: :obj:`ros_gazebo_gym.core.LazyImporter`
+
+   .. attribute:: franka_msgs
+
+      Lazy importer for the
+      :franka-ros:`franka_msgs <tree/develop/franka_msgs>` package.
+
+      :type: :obj:`ros_gazebo_gym.core.LazyImporter`
+
+   Initializes a new Panda Robot environment.
+
+   :param robot_name_space: The namespace the robot is on. Defaults to
+                            ``""``.
+   :type robot_name_space: str, optional
+   :param robot_EE_link: Robot end effector link name. Defaults to
+                         ``panda_link8``.
+   :type robot_EE_link: str, optional
+   :param ee_frame_offset: Dictionary containing the end effector
+                           offset. Used when retrieving and setting the end effector pose. Defaults
+                           to ``None``.
+   :type ee_frame_offset: dict, optional
+   :param load_gripper: Whether we want to load the parallel-jaw
+                        gripper. Defaults to ``True``.
+   :type load_gripper: bool, optional
+   :param lock_gripper: Whether we want to lock the parallel-jaw
+                        gripper (i.e. not move). Defaults to ``False``.
+   :type lock_gripper: bool, optional
+   :param grasping: Whether we want to use the gripper for grasping.
+                    If ``True`` and `gripper_max_effort` is unset, applies 10N effort.
+                    Defaults to False.
+   :type grasping: bool, optional
+   :param control_Type: The type of control you want to use for the
+                        panda robot (i.e. hand and arm). Options are: ``trajectory``,
+                        ``position``, ``effort`` or ``end_effector``. Defaults to ``effort``.
+   :type control_Type: str, optional
+   :param reset_robot_pose: Boolean specifying whether to reset the
+                            robot pose when the simulation is reset. Defaults to ``True``.
+   :type reset_robot_pose: bool, optional
+   :param workspace_path: The path of the workspace in which the
+                          panda_gazebo package should be found. Defaults to ``None``.
+   :type workspace_path: str, optional
+   :param log_reset: Whether we want to print a log statement when
+                     the world/simulation is reset. Defaults to ``True``.
+   :type log_reset: bool, optional
+   :param visualize: Whether you want to show the RViz visualization.
+                     Defaults to ``None`` meaning the task configuration file values will be
+                     used.
+   :type visualize: bool, optional
+
+   .. py:property:: joints
+
+      Returns the joints that can be controlled when using the current Panda arm
+      and hand control types.
+
+      .. important::
+          For performance reasons the controlled joints are currently fetched at the
+          first call. Please call the :meth:`~PandaEnv.refresh_joints` method to
+          re-fetch the currently controlled joints.
+
+   .. py:property:: gripper_width
+
+      Returns the gripper width as calculated based on the Panda finger joints.
+
+      :returns: The gripper width.
+      :rtype: float
+
+   .. py:property:: arm_positions
+
+      Returns the current arm joint positions.
+
+      :returns: The arm joint positions.
+      :rtype: dict
+
+   .. py:property:: arm_velocities
+
+      Returns the current arm joint velocities.
+
+      :returns: The arm joint velocities.
+      :rtype: dict
+
+   .. py:property:: arm_efforts
+
+      Returns the current arm joint efforts.
+
+      :returns: The arm joint efforts.
+      :rtype: dict
+
+   .. py:property:: robot_control_type
+
+      Returns the currently set robot control type.
+
+   .. py:property:: in_collision
+
+      Whether the robot is in collision.
+
+   .. py:property:: locked_joints
+
+      Returns the currently locked joints.
+
+   .. py:property:: ee_link_exists
+
+      Returns whether the end effector link exists in the robot model.
+
+      :returns: Whether the end effector link exists in the robot model.
+      :rtype: bool
+
+   .. py:property:: ee_pose
+
+      Returns the current end-effector pose while taking the ``ee_frame_offset``
+      into account. If the offset is zero then it is equal to the
+      :attr:`~PandaEnv.robot_EE_link` pose.
+
+      :returns: The end-effector pose.
+      :rtype: :obj:`geometry_msgs.msg.PoseStamped`
+
+   .. py:property:: ee_offset_is_zero
+
+      Returns whether the end-effector frame offset is zero.
+
+      :returns: Whether the end-effector frame offset is zero.
+      :rtype: bool
+
+   .. py:property:: ee_frame_offset
+
+      Returns the end-effector frame offset relative to the actual ee_link (i.e.
+      :attr:`~PandaEnv.robot_EE_link`).
+
+      :returns: The ee frame offset pose.
+      :rtype: :obj:`geometry_msgs.msg.Pose`
+
+   .. py:property:: ee_frame_offset_stamped
+
+      Returns the end-effector frame offset relative to the actual ee_link (i.e.
+      :attr:`~PandaEnv.robot_EE_link`) as a stamped pose.
+
+      :returns: The ee frame offset pose.
+      :rtype: :obj:`geometry_msgs.msg.PoseStamped`
+
+   .. py:method:: get_ee_pose()
+
+      Returns the current end-effector pose while taking the ``ee_frame_offset``
+      into account. If the offset is zero then it is equal to the
+      :attr:`~PandaEnv.robot_EE_link` pose.
+
+      :returns: The end-effector pose.
+      :rtype: :obj:`geometry_msgs.msg.PoseStamped`
+
+      :raises ros_gazebo_gym.errors.EePoseLookupError: Error thrown when error
+          occurred while trying to retrieve the EE pose.
+
+
+   .. py:method:: get_ee_rpy()
+
+      Returns the end effector EE orientation.
+
+      :returns:
+
+                Object containing the roll (x),
+                    yaw (z), pitch (y) euler angles.
+      :rtype: :obj:`panda_gazebo.srv.GetEeRpyResponse`
+
+      :raises ros_gazebo_gym.errors.EeRpyLookupError: Error thrown when error
+          occurred while trying to retrieve the EE rpy rotation using the
+          ``get_ee_pose`` service.
+
+
+   .. py:method:: get_ee_pose_joint_config(ee_pose)
+
+      Returns a set of possible arm joint configurations for a given end-effector
+      pose.
+
+      :param ee_pose: A list or pose message
+                      containing the end effector position (x, y, z) and orientation
+                      (x, y, z, w).
+      :type ee_pose: union[:obj:`geometry_msgs.msg.Pose`, list]
+
+      :returns:
+
+                `dict`: Dictionary with joint positions that result in a given EE pose.
+                    Empty dictionary is returned if no joint positions could be found.
+      :rtype: obj
+
+
+   .. py:method:: set_ee_pose(ee_pose)
+
+      Sets the Panda end effector pose.
+
+      :param ee_pose: A list or pose message
+                      containing the end effector position (x, y, z) and orientation
+                      (x, y, z, w).
+      :type ee_pose: union[:obj:`geometry_msgs.msg.Pose`, list]
+
+      :returns: Boolean specifying if the ee pose was set successfully.
+      :rtype: bool
+
+
+   .. py:method:: set_joint_commands(joint_commands, arm_wait=False, hand_wait=False)
+
+      Sets the Panda arm and hand joint commands based on the set
+      :obj:`~PandaEnv.robot_control_type`.
+
+      :param joint_commands: The Panda arm joint positions and gripper width.
+      :type joint_commands: union[:obj:`panda_gazebo.srv.SetJointCommands`, list, dict]
+      :param arm_wait: Wait till the arm control has finished. Defaults
+                       to ``False``.
+      :type arm_wait: bool, optional
+      :param hand_wait: Wait till the hand control has finished.
+                        Defaults to ``False``.
+      :type hand_wait: bool, optional
+
+      :returns: Boolean specifying if the joint commands were set successfully.
+      :rtype: bool
+
+
+   .. py:method:: set_joint_positions(joint_commands, arm_wait=False, hand_wait=False, direct_control=True)
+
+      Sets the Panda arm positions and gripper width.
+
+      :param joint_commands: The Panda arm joint positions and gripper width.
+      :type joint_commands: union[:obj:`panda_gazebo.srv.SetJointCommands`, list, dict]
+      :param arm_wait: Wait till the arm control has finished. Defaults
+                       to ``False``.
+      :type arm_wait: bool, optional
+      :param hand_wait: Wait till the hand control has finished.
+                        Defaults to ``False``.
+      :type hand_wait: bool, optional
+      :param direct_control: Whether we want to directly control the panda by
+                             publishing to the controller topics or we want to use the
+                             ``panda_gazebo`` control proxy. Defaults to ``True``.
+      :type direct_control: bool
+
+      :returns: Boolean specifying if the joint positions were set successfully.
+      :rtype: bool
+
+
+   .. py:method:: set_joint_efforts(joint_commands, arm_wait=False, hand_wait=False, direct_control=True)
+
+      Sets the Panda arm efforts and the gripper width.
+
+      :param joint_commands: The panda joint efforts and gripper width.
+      :type joint_commands: union[:obj:`panda_gazebo.srv.SetJointCommandsRequest`, list, dict]
+      :param direct_control: Whether we want to directly control the panda by
+                             publishing to the controller topics or we want to use the
+                             ``panda_gazebo`` control proxy. Defaults to ``True``.
+      :type direct_control: bool
+      :param arm_wait: Wait till the arm control has finished. Defaults
+                       to ``False``.
+      :type arm_wait: bool, optional
+      :param hand_wait: Wait till the hand control has finished.
+                        Defaults to ``False``.
+      :type hand_wait: bool, optional
+
+      :returns: Boolean specifying if the joint efforts were set successfully.
+      :rtype: bool
+
+
+   .. py:method:: set_arm_joint_trajectory(joint_trajectory, wait=False, time_from_start=None)
+
+      Sets the panda arm joint trajectory.
+
+      :param joint_trajectory: The joint trajectory you want to set.
+      :type joint_trajectory: union[:obj:`panda_gazebo.msg.FollowJointTrajectoryActionGoal`, np.array, list, dict]
+      :param wait: Wait till the control has finished. Defaults to
+                   ``False``.
+      :type wait: bool, optional
+      :param time_from_start: At what time a trajectory point
+                              should be reach in seconds. Only used when a single trajectory point is
+                              given (i.e. list, dict)
+      :type time_from_start: float
+
+      :returns: Boolean specifying if the joint trajectory was set successfully.
+      :rtype: bool
+
+      :raises ValueError: If the input trajectory is invalid.
+
+      .. note::
+          If you input a ``tuple``, ``list``, ``int`` or ``float`` a joint trajectory
+          message will be constructed with one waypoint point. To set multiple
+          waypoints, you must supply a 2D numpy array or a dictionary containing an
+          equal number of joint commands for each joint, one for each waypoint.
+
+
+   .. py:method:: set_gripper_width(gripper_width, wait=None, grasping=None, max_effort=None)
+
+      Sets the Panda gripper width.
+
+      :param gripper_width: The desired gripper width.
+      :type gripper_width: float
+      :param wait: Wait till the gripper control has finished. Defaults
+                   to ``False``.
+      :type wait: bool, optional
+      :param grasp: Whether we want to grasp a object. Defaults to ``False``. Can
+                    be overwritten by setting the ``<NS>/control/grasping`` ROS parameter.
+      :type grasp: bool
+      :param max_effort: The max effort used when grasping. Defaults to
+                         ``None``. Meaning the action service default is used.
+      :type max_effort: float, optional
+
+      :returns: Boolean specifying if the gripper width was set successfully.
+      :rtype: bool
+
+
+   .. py:method:: lock_joints(joint_names)
+
+      Locks specific panda joints.
+
+      :param joint_names: The names of the joints to lock.
+      :type joint_names: list
+
+
+   .. py:method:: unlock_joints(joint_names)
+
+      Unlocks specific panda joints.
+
+      :param joint_names: The names of the joints to unlock.
+      :type joint_names: list
+
+
+   .. py:method:: refresh_joints()
+
+      Re-fetches the currently active joints.
+
+
+

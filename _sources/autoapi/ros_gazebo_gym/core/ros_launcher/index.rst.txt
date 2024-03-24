@@ -1,0 +1,102 @@
+:py:mod:`ros_gazebo_gym.core.ros_launcher`
+==========================================
+
+.. py:module:: ros_gazebo_gym.core.ros_launcher
+
+.. autoapi-nested-parse::
+
+   Launches all the ROS nodes that are needed for a given
+   :ros-gazebo-gym:`ros_gazebo_gym <>` gymnasium environment.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.core.ros_launcher.ROSLauncher
+
+
+
+
+.. py:class:: ROSLauncher
+
+
+   Bases: :py:obj:`object`
+
+   Class used to launch ROS launch files.
+
+   .. attribute:: successful
+
+      Whether the launch file was successfully launched. *This
+      only specifies if the launchfile was successfully executed not if it
+      encountered errors*.
+
+      :type: bool
+
+   .. py:attribute:: launched
+
+      
+
+   .. py:method:: initialize()
+      :classmethod:
+
+      Make sure a ros master is running and ROS is initialized.
+
+
+   .. py:method:: list_processes()
+      :classmethod:
+
+      List all launched processes.
+
+
+   .. py:method:: terminate(process_name)
+      :classmethod:
+
+      Terminate a launched process.
+
+      :param process_name: The process name.
+      :type process_name: str
+
+
+   .. py:method:: terminate_all()
+      :classmethod:
+
+      Terminate all launched processes.
+
+
+   .. py:method:: launch(package_name, launch_file_name, workspace_path=None, log_file=None, critical=False, wait_time=2, outdated_warning=False, **kwargs)
+      :classmethod:
+
+      Launch a given launchfile while also installing the launchfile package and or
+      dependencies. This is done by using the ros_gazebo_gym dependency index.
+
+      :param package_name: The package that contains the launchfile.
+      :type package_name: str
+      :param launch_file_name: The launchfile name.
+      :type launch_file_name: str
+      :param workspace_path: The path of the catkin workspace. Defaults
+                             to ``None`` meaning the path will be determined.
+      :type workspace_path: str, optional
+      :param log_file: The log file to write the ``stdout`` to. Defaults
+                       to ``None`` meaning the ``stdout`` will be written to console.
+      :type log_file: str, optional
+      :param critical: Whether the process is critical and an error
+                       message should be shown when the process is no longer running.
+      :type critical: bool, optional
+      :param wait_time: The time to wait before checking if the was
+                        launched successfully and is still running. Defaults to ``2``.
+      :type wait_time: int, optional
+      :param outdated_warning: Whether to show a update warning when the
+                               package is outdated. Defaults to ``False``.
+      :type outdated_warning: bool, optional
+      :param \*\*kwargs: Keyword arguments you want to pass to the launchfile.
+
+      :raises Exception: When something went wrong when launching the launchfile.
+
+
+

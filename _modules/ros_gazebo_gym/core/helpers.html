@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ros_gazebo_gym.core.helpers &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/usage.html">How to use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/add_nev_env.html">Add new environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../ros_gazebo_gym.html">ros_gazebo_gym</a></li>
+      <li class="breadcrumb-item active">ros_gazebo_gym.core.helpers</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ros_gazebo_gym.core.helpers</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Contains several helper functions that are used by the</span>
+<span class="sd">:ros-gazebo-gym:`ros_gazebo_gym &lt;&gt;` package for the setup of the ROS Gazebo Gym</span>
+<span class="sd">gymnasium environments.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">atexit</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">TextIOWrapper</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span> <span class="nn">catkin</span>
+<span class="kn">import</span> <span class="nn">catkin_pkg</span>
+<span class="kn">import</span> <span class="nn">psutil</span>
+<span class="kn">import</span> <span class="nn">pygit2</span>
+<span class="kn">import</span> <span class="nn">rosparam</span>
+<span class="kn">import</span> <span class="nn">rospkg</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">ruamel.yaml</span> <span class="kn">import</span> <span class="n">YAML</span><span class="p">,</span> <span class="n">YAMLError</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.common.helpers</span> <span class="kn">import</span> <span class="n">remove_dict_none_values</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="c1"># Script settings.</span>
+<div class="viewcode-block" id="ROSDEP_INDEX_PATH"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.ROSDEP_INDEX_PATH">[docs]</a><span class="n">ROSDEP_INDEX_PATH</span> <span class="o">=</span> <span class="s2">&quot;../cfg/rosdep.yaml&quot;</span></div>
+
+
+<div class="viewcode-block" id="GitProgressCallback"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.GitProgressCallback">[docs]</a><span class="k">class</span> <span class="nc">GitProgressCallback</span><span class="p">(</span><span class="n">pygit2</span><span class="o">.</span><span class="n">RemoteCallbacks</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A :class:`pygit2.RemoteCallbacks` callback that shows a git clone progress bar.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the :class:`GitProgressCallback` class.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GitProgressCallback.transfer_progress"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.GitProgressCallback.transfer_progress">[docs]</a>    <span class="k">def</span> <span class="nf">transfer_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">statsTransferProgress</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Displays the current git transfer progress.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            statsTransferProgress (pygit2.statsTransferProgress): The progress up to</span>
+<span class="sd">                now.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pbar</span><span class="o">.</span><span class="n">total</span> <span class="o">=</span> <span class="n">statsTransferProgress</span><span class="o">.</span><span class="n">total_objects</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pbar</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">statsTransferProgress</span><span class="o">.</span><span class="n">received_objects</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pbar</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="PopenAutoCleanup"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.PopenAutoCleanup">[docs]</a><span class="k">class</span> <span class="nc">PopenAutoCleanup</span><span class="p">(</span><span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A :class:`subprocess.Popen` that cleans up after itself and terminates the</span>
+<span class="sd">    process when the main Python script exits. It also allows users to specify whether</span>
+<span class="sd">    the process is critical and show an error message when the process is no longer</span>
+<span class="sd">    running.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        critical (bool): Whether the process is critical and an error message should be</span>
+<span class="sd">            shown when the process is no longer running.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">critical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the :class:`PopenAutoCleanup` class.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *args: The positional arguments that are passed to the</span>
+<span class="sd">                :class:`subprocess.Popen` class.</span>
+<span class="sd">            critical (bool, optional): Whether the process is critical and an error</span>
+<span class="sd">                message should be shown when the process is no longer running.</span>
+<span class="sd">            **kwargs: The keyword arguments that are passed to the</span>
+<span class="sd">                :class:`subprocess.Popen` class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cmd</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_process_cleanup</span><span class="p">)</span>  <span class="c1"># Ensure cleanup when script exits.</span>
+
+        <span class="c1"># Retrieve log file path.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stderr&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_log_file</span><span class="p">,</span> <span class="n">TextIOWrapper</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;stderr&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="c1"># If critical, check if process is still running and show error message if not.</span>
+        <span class="k">if</span> <span class="n">critical</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">critical</span> <span class="o">=</span> <span class="n">critical</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_critical_check_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_critical_check</span><span class="p">,</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_process_cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cleans up the process when the script exits.&quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cleaning ROS launch process: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_cmd</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_critical_check</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_terminate_child_processes</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_terminate_child_processes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Terminates all child processes of the process.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">psutil</span><span class="o">.</span><span class="n">pid_exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pid</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Terminate child processes.</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">parent</span><span class="o">.</span><span class="n">children</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">psutil</span><span class="o">.</span><span class="n">pid_exists</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">pid</span><span class="p">):</span>
+                <span class="n">child</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+        <span class="n">psutil</span><span class="o">.</span><span class="n">wait_procs</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">children</span><span class="p">(),</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_critical_check</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks if the process is still running and exits the script if it is not and</span>
+<span class="sd">        the process is critical.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_critical_check_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critical</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_critical_check_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span>
+                    <span class="s2">&quot;A critical subprocess has exited unexpectedly. Check the stdout &quot;</span>
+                    <span class="s2">&quot;for more information.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span>
+                    <span class="s2">&quot;A critical subprocess has exited unexpectedly. Check the log &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;file for more information (i.e. &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_log_file</span><span class="si">}</span><span class="s2">).&quot;</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_stop_critical_check</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stops the critical check thread.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_critical_check_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+
+<div class="viewcode-block" id="PopenAutoCleanup.terminate"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.PopenAutoCleanup.terminate">[docs]</a>    <span class="k">def</span> <span class="nf">terminate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Terminates the process and stops the critical check thread.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_critical_check</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_terminate_child_processes</span><span class="p">()</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PopenAutoCleanup.kill"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.PopenAutoCleanup.kill">[docs]</a>    <span class="k">def</span> <span class="nf">kill</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Kills the process and stops the critical check thread.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_critical_check</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_terminate_child_processes</span><span class="p">()</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">kill</span><span class="p">()</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="get_catkin_workspace_path"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.get_catkin_workspace_path">[docs]</a><span class="k">def</span> <span class="nf">get_catkin_workspace_path</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve the path of the currently sourced catkin workspace.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The path of the currently sourced catkin workspace. Returns ``None`` if no</span>
+<span class="sd">            catkin workspace was sourced.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">catkin_ws_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">catkin</span><span class="o">.</span><span class="n">workspace</span><span class="o">.</span><span class="n">get_workspaces</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">ws_path</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">catkin_ws_path</span><span class="o">.</span><span class="n">parent</span> <span class="k">if</span> <span class="n">catkin_ws_path</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;devel&quot;</span> <span class="k">else</span> <span class="n">catkin_ws_path</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ws_path</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">ws_path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="query_yes_no"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.query_yes_no">[docs]</a><span class="k">def</span> <span class="nf">query_yes_no</span><span class="p">(</span><span class="n">question</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;yes&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ask the user a yes/no question via raw_input() and return the answer.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        question (str): String presented to the user.</span>
+<span class="sd">        default (str, optional): The presumed answer if the user just hits &lt;Enter&gt;. It</span>
+<span class="sd">            must be &quot;yes&quot; (the default), &quot;no&quot; or None (meaning an answer is required of</span>
+<span class="sd">            the user). Defaults to &quot;yes&quot;.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the default answer is not correct.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Returns the given answer.</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">        This function was based on the function given by `@fmark &lt;https://stackoverflow.com/users/103225/fmark&gt;`_ in</span>
+<span class="sd">        `this stackoverflow question &lt;https://stackoverflow.com/questions/3041986/apt-command-line-interface-like-yes-no-input&gt;`_</span>
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;yes&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;ye&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+    <span class="n">default</span> <span class="o">=</span> <span class="n">default</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">default</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="s2">&quot; [y/n] &quot;</span>
+    <span class="k">elif</span> <span class="n">default</span> <span class="o">==</span> <span class="s2">&quot;yes&quot;</span><span class="p">:</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="s2">&quot; [Y/n] &quot;</span>
+    <span class="k">elif</span> <span class="n">default</span> <span class="o">==</span> <span class="s2">&quot;no&quot;</span><span class="p">:</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="s2">&quot; [y/N] &quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid default answer: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">default</span><span class="p">)</span>
+
+    <span class="c1"># Loop until a valid answer is given.</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">question</span> <span class="o">+</span> <span class="n">prompt</span><span class="p">)</span>
+        <span class="n">choice</span> <span class="o">=</span> <span class="nb">input</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">choice</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">valid</span><span class="p">[</span><span class="n">default</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">choice</span> <span class="ow">in</span> <span class="n">valid</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">valid</span><span class="p">[</span><span class="n">choice</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Please respond with &#39;yes&#39; or &#39;no&#39; &quot;</span> <span class="s2">&quot;(or &#39;y&#39; or &#39;n&#39;).</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_global_pkg_path"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.get_global_pkg_path">[docs]</a><span class="k">def</span> <span class="nf">get_global_pkg_path</span><span class="p">(</span><span class="n">package_name</span><span class="p">,</span> <span class="n">workspace_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieves the global package path. Meaning the path of a package if it is</span>
+<span class="sd">    contained in the global ROS workspace. Returns ``None`` if the package is not</span>
+<span class="sd">    found.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        package_name (str): The name of the package you want to check.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The global package path.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rospack</span> <span class="o">=</span> <span class="n">rospkg</span><span class="o">.</span><span class="n">RosPack</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>  <span class="c1"># Try to retrieve workspace path.</span>
+        <span class="n">global_pkg_path</span> <span class="o">=</span> <span class="n">rospack</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">package_name</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Package &#39;</span><span class="si">{</span><span class="n">package_name</span><span class="si">}</span><span class="s2">&#39; found in your global catkin workspace.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># Try to source the catkin workspace and try again.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">workspace_path</span><span class="p">:</span>
+            <span class="n">workspace_path</span> <span class="o">=</span> <span class="n">get_catkin_workspace_path</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">global_pkg_path</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;. ./devel/setup.bash;rospack find </span><span class="si">{</span><span class="n">package_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">executable</span><span class="o">=</span><span class="s2">&quot;/bin/bash&quot;</span><span class="p">,</span>
+                <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">cwd</span><span class="o">=</span><span class="n">workspace_path</span><span class="p">,</span>
+                <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">global_pkg_path</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">global_pkg_path</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="k">else</span> <span class="n">global_pkg_path</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">global_pkg_path</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">global_pkg_path</span></div>
+
+
+<div class="viewcode-block" id="get_local_pkg_path"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.get_local_pkg_path">[docs]</a><span class="k">def</span> <span class="nf">get_local_pkg_path</span><span class="p">(</span><span class="n">package_name</span><span class="p">,</span> <span class="n">catkin_workspace</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieves the local package path. Meaning the path of a package in the catkin</span>
+<span class="sd">    workspace. Returns ``None`` if package is not found in the catkin workspace.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        package_name (str): The name of the package you want to check.</span>
+<span class="sd">        catkin_workspace (str): The catkin_workspace you want to check.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The local package path.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">local_pkg_path</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">key</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">catkin_pkg</span><span class="o">.</span><span class="n">packages</span><span class="o">.</span><span class="n">find_packages</span><span class="p">(</span><span class="n">catkin_workspace</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">package_name</span>
+    <span class="p">]</span>
+    <span class="k">if</span> <span class="n">local_pkg_path</span><span class="p">:</span>
+        <span class="n">local_pkg_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">catkin_workspace</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">local_pkg_path</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Package &#39;</span><span class="si">{</span><span class="n">package_name</span><span class="si">}</span><span class="s2">&#39; found in local catkin workspace.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">local_pkg_path</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">local_pkg_path</span></div>
+
+
+<div class="viewcode-block" id="clone_repo"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.clone_repo">[docs]</a><span class="k">def</span> <span class="nf">clone_repo</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">git_src</span><span class="p">,</span> <span class="n">branch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clones the repository of the dependency.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path (str): The path to which you want to clone the repository.</span>
+<span class="sd">        git_src (str): The git repository url.</span>
+<span class="sd">        branch(str, optional): The branch to checkout. Defaults to ``None``.</span>
+<span class="sd">        recursive(bool, optional): After the clone is created, initialize and clone</span>
+<span class="sd">            submodules within based on the provided pathspec. Defaults to ``False``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cloning &#39;</span><span class="si">{</span><span class="n">git_src</span><span class="si">}</span><span class="s2">&#39; into &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+        <span class="n">repo</span> <span class="o">=</span> <span class="n">pygit2</span><span class="o">.</span><span class="n">clone_repository</span><span class="p">(</span>
+            <span class="n">git_src</span><span class="p">,</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="n">checkout_branch</span><span class="o">=</span><span class="n">branch</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="n">GitProgressCallback</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">recursive</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Pulling submodules.&quot;</span><span class="p">)</span>
+            <span class="n">repo</span><span class="o">.</span><span class="n">init_submodules</span><span class="p">()</span>
+            <span class="n">repo</span><span class="o">.</span><span class="n">update_submodules</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">repo_name</span> <span class="o">=</span> <span class="n">git_src</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Could no clone the &#39;</span><span class="si">{</span><span class="n">repo_name</span><span class="si">}</span><span class="s2">&#39; package repository as </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">raise</span> <span class="n">e</span></div>
+
+
+<div class="viewcode-block" id="is_repo_up_to_date"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.is_repo_up_to_date">[docs]</a><span class="k">def</span> <span class="nf">is_repo_up_to_date</span><span class="p">(</span><span class="n">repo_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks if the local repository is up to date with the remote repository.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        repo_path (str): The path of the local repository.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: Whether the local repository is up to date with the remote repository.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Open the repository.</span>
+        <span class="n">repo</span> <span class="o">=</span> <span class="n">pygit2</span><span class="o">.</span><span class="n">Repository</span><span class="p">(</span><span class="n">repo_path</span><span class="p">)</span>
+
+        <span class="c1"># Get the current commit hash of the local repository.</span>
+        <span class="n">local_commit_hash</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">head</span><span class="o">.</span><span class="n">target</span>
+
+        <span class="c1"># Get the latest commit hash of the remote repository.</span>
+        <span class="n">repo</span><span class="o">.</span><span class="n">remotes</span><span class="p">[</span><span class="s2">&quot;origin&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">fetch</span><span class="p">()</span>
+        <span class="n">latest_remote_commit</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">revparse_single</span><span class="p">(</span><span class="s2">&quot;FETCH_HEAD&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">id</span>
+
+        <span class="c1"># Compare the commit hashes and return the result.</span>
+        <span class="k">return</span> <span class="n">local_commit_hash</span><span class="o">.</span><span class="n">hex</span> <span class="o">==</span> <span class="n">latest_remote_commit</span><span class="o">.</span><span class="n">hex</span>
+
+    <span class="k">except</span> <span class="n">pygit2</span><span class="o">.</span><span class="n">GitError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="ros_exit_gracefully"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.ros_exit_gracefully">[docs]</a><span class="k">def</span> <span class="nf">ros_exit_gracefully</span><span class="p">(</span><span class="n">shutdown_msg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exit_code</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shuts down the ROS node wait until it is shutdown and exits the script.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        shutdown_msg (str, optional): The shutdown message. Defaults to ``None``.</span>
+<span class="sd">        exit_code (int, optional): The exit code. Defaults to ``0``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">exit_code</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="n">shutdown_msg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="n">shutdown_msg</span><span class="p">)</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">signal_shutdown</span><span class="p">(</span><span class="n">shutdown_msg</span><span class="p">)</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">exit_code</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="build_catkin_ws"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.build_catkin_ws">[docs]</a><span class="k">def</span> <span class="nf">build_catkin_ws</span><span class="p">(</span><span class="n">workspace_path</span><span class="p">,</span> <span class="n">install_ros_deps</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Builds the catkin workspace and installs system dependencies while doing so if</span>
+<span class="sd">    requested.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        workspace_path (str): The path of the catkin workspace.</span>
+<span class="sd">        install_ros_deps (bool, optional): Whether you also want to install the system</span>
+<span class="sd">            dependencies using rosdep before building the workspace. Defaults to</span>
+<span class="sd">            ``False``.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        Exception: When something goes wrong while re-building the workspace.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">catkin_make_used</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">workspace_path</span> <span class="o">+</span> <span class="s2">&quot;/.catkin_workspace&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Install system dependencies using rosdep.</span>
+    <span class="k">if</span> <span class="n">install_ros_deps</span><span class="p">:</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+            <span class="s2">&quot;Several system dependencies are required to use the newly installed ROS &quot;</span>
+            <span class="s2">&quot;packages.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">answer</span> <span class="o">=</span> <span class="n">query_yes_no</span><span class="p">(</span>
+            <span class="s2">&quot;Do you want to install these ROS system dependencies?&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;no&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">answer</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="s2">&quot;Installing ROS system dependencies using rosdep. If asked please &quot;</span>
+                <span class="s2">&quot;supply your root password.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">rosdep_cmd</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;sudo -S rosdep install --from-path src --ignore-src -r -y &quot;</span>
+                <span class="s2">&quot;--rosdistro </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ROS_DISTRO&quot;</span><span class="p">))</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Try to install the system dependencies.</span>
+            <span class="n">rosdep_install</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">rosdep_cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">workspace_path</span><span class="p">)</span>
+
+            <span class="c1"># Check exit code and try again if error is known.</span>
+            <span class="k">if</span> <span class="n">rosdep_install</span><span class="o">.</span><span class="n">returncode</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                    <span class="s2">&quot;Something went wrong while trying to install the system &quot;</span>
+                    <span class="s2">&quot;dependencies. Trying again while first updating rosdep as the &quot;</span>
+                    <span class="s2">&quot;root user.&quot;</span>
+                <span class="p">)</span>
+                <span class="n">rosdep_sudo_update</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                    <span class="s2">&quot;sudo -S rosdep update&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">workspace_path</span>
+                <span class="p">)</span>
+                <span class="n">rosdep_install</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                    <span class="n">rosdep_cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">workspace_path</span>
+                <span class="p">)</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s2">&quot;Repairing permissions...&quot;</span><span class="p">)</span>
+                <span class="n">rosdep_repair</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                    <span class="s2">&quot;sudo -S rosdep fix-permissions&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">workspace_path</span>
+                <span class="p">)</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s2">&quot;Updating rosdep...&quot;</span><span class="p">)</span>
+                <span class="n">rosdep_update</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                    <span class="s2">&quot;rosdep update&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">workspace_path</span>
+                <span class="p">)</span>
+
+                <span class="c1"># Throw error if something went wrong.</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">rosdep_sudo_update</span><span class="o">.</span><span class="n">returncode</span>
+                    <span class="o">|</span> <span class="n">rosdep_install</span><span class="o">.</span><span class="n">returncode</span>
+                    <span class="o">|</span> <span class="n">rosdep_repair</span><span class="o">.</span><span class="n">returncode</span>
+                    <span class="o">|</span> <span class="n">rosdep_update</span><span class="o">.</span><span class="n">returncode</span>
+                <span class="p">):</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span>
+                        <span class="s2">&quot;System dependencies could not be installed automatically. &quot;</span>
+                        <span class="s2">&quot;Please run:</span><span class="se">\n\n\t</span><span class="s2"> rosdep install --from-path src --ignore-src &quot;</span>
+                        <span class="s2">&quot;-r -y</span><span class="se">\n\n</span><span class="s2">in the catkin workspace and try again (i.e. &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">workspace_path</span><span class="si">}</span><span class="s2">&#39;).&quot;</span>
+                    <span class="p">)</span>
+                    <span class="n">ros_exit_gracefully</span><span class="p">(</span>
+                        <span class="n">shutdown_msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Shutting down </span><span class="si">{</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exit_code</span><span class="o">=</span><span class="mi">1</span>
+                    <span class="p">)</span>
+
+    <span class="c1"># Build workspace.</span>
+    <span class="k">if</span> <span class="n">catkin_make_used</span><span class="p">:</span>
+        <span class="n">rosbuild_cmd</span> <span class="o">=</span> <span class="s2">&quot;catkin_make&quot;</span>
+        <span class="n">rosbuild_clean_cmd</span> <span class="o">=</span> <span class="s2">&quot;rm -r devel logs build -y&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">rosbuild_cmd</span> <span class="o">=</span> <span class="s2">&quot;catkin build&quot;</span>
+        <span class="n">rosbuild_clean_cmd</span> <span class="o">=</span> <span class="s2">&quot;catkin clean -y&quot;</span>
+    <span class="n">rosbuild_cmd</span> <span class="o">=</span> <span class="s2">&quot;catkin build&quot;</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s2">&quot;Re-building catkin workspace.&quot;</span><span class="p">)</span>
+    <span class="n">rosbuild</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">rosbuild_cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">workspace_path</span><span class="p">)</span>
+
+    <span class="c1"># Catch result, clean workspace and try again on fail.</span>
+    <span class="k">if</span> <span class="n">rosbuild</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Clean the workspace and try one more time.</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+            <span class="s2">&quot;Something went wrong while trying to build the catkin workspace.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">answer</span> <span class="o">=</span> <span class="n">query_yes_no</span><span class="p">(</span>
+            <span class="s2">&quot;Do you want to clean the catkin workspace and try again?&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;yes&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">answer</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s2">&quot;Cleaning the catkin workspace.&quot;</span><span class="p">)</span>
+            <span class="n">rosbuild_clean</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                <span class="n">rosbuild_clean_cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">workspace_path</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">rosbuild_clean</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                    <span class="s2">&quot;Something went wrong while trying to clean the catkin workspace.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s2">&quot;Re-building catkin workspace.&quot;</span><span class="p">)</span>
+                <span class="n">rosbuild</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">rosbuild_cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">workspace_path</span><span class="p">)</span>
+
+        <span class="c1"># Throw warning if something went wrong.</span>
+        <span class="k">if</span> <span class="n">rosbuild</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;Something went wrong while trying to build the catkin workspace.&quot;</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="install_package"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.install_package">[docs]</a><span class="k">def</span> <span class="nf">install_package</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+    <span class="n">package_name</span><span class="p">,</span> <span class="n">workspace_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">outdated_warning</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Install a given ROS package together with it&#39;s dependencies.</span>
+
+<span class="sd">    This function checks if a ROS package is installed and installs it if this is not</span>
+<span class="sd">    the case. It uses the :ros-gazebo-gym:`ros_gazebo_gym &lt;&gt;` package dependency index to</span>
+<span class="sd">    clone the package and dependencies in the local catkin workspace and subsequently</span>
+<span class="sd">    rebuilds this workspace. It also throws a warning if a package is installed but not</span>
+<span class="sd">    up to date.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        package_name (str): The package you want to install.</span>
+<span class="sd">        workspace_path (str, optional): The catkin workspace path. Defaults to ``None``</span>
+<span class="sd">            (i.e. path will be determined).</span>
+<span class="sd">        outdated_warning (bool, optional): Whether to show a update warning when the</span>
+<span class="sd">            package is outdated. Defaults to ``True``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: Whether the package and its dependencies are installed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Checking if all ROS dependencies for package &#39;</span><span class="si">{</span><span class="n">package_name</span><span class="si">}</span><span class="s2">&#39; are present.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Retrieve workspace path.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">workspace_path</span><span class="p">:</span>
+        <span class="n">workspace_path</span> <span class="o">=</span> <span class="n">get_catkin_workspace_path</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">workspace_path</span><span class="p">:</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span>
+            <span class="s2">&quot;Workspace path could not be found. Please make sure that you source &quot;</span>
+            <span class="s2">&quot;the workspace before calling the &#39;install_package&#39; function or supply the &quot;</span>
+            <span class="s2">&quot;function with a workspace_path.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">ros_exit_gracefully</span><span class="p">(</span>
+            <span class="n">shutdown_msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Shutting down </span><span class="si">{</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exit_code</span><span class="o">=</span><span class="mi">1</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Check if package exists in the global and local catkin workspaces.</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Checking if &#39;</span><span class="si">{</span><span class="n">package_name</span><span class="si">}</span><span class="s2">&#39; and its dependencies are installed.&quot;</span><span class="p">)</span>
+    <span class="n">global_pkg_path</span> <span class="o">=</span> <span class="n">get_global_pkg_path</span><span class="p">(</span><span class="n">package_name</span><span class="p">)</span>
+    <span class="n">local_pkg_path</span> <span class="o">=</span> <span class="n">get_local_pkg_path</span><span class="p">(</span><span class="n">package_name</span><span class="p">,</span> <span class="n">workspace_path</span><span class="p">)</span>
+
+    <span class="c1"># Load ROS dependency index.</span>
+    <span class="n">rosdep_index_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">ROSDEP_INDEX_PATH</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">rosdep_index_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="n">rosdep_index</span> <span class="o">=</span> <span class="n">YAML</span><span class="p">(</span><span class="n">typ</span><span class="o">=</span><span class="s2">&quot;safe&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">YAMLError</span><span class="p">:</span>
+        <span class="n">warn_msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Could not check whether &#39;</span><span class="si">{</span><span class="n">package_name</span><span class="si">}</span><span class="s2">&#39; and its dependencies are &quot;</span>
+            <span class="s2">&quot;installed since something went wrong while trying to load the &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;ros_gazebo_gym&#39; index configuration file (i.e. &#39;</span><span class="si">{</span><span class="n">rosdep_index_path</span><span class="si">}</span><span class="s2">&#39;). &quot;</span>
+            <span class="s2">&quot;Please check the &#39;ros_gazebo_gym&#39; index configuration file.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">warn_msg</span><span class="p">)</span>
+
+    <span class="c1"># Download the package repository and its dependencies if it is not present.</span>
+    <span class="n">deps_cloned</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">rosdep_index</span> <span class="ow">and</span> <span class="n">package_name</span> <span class="ow">in</span> <span class="n">rosdep_index</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">package_clone_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">workspace_path</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;src&quot;</span><span class="p">,</span> <span class="s2">&quot;rosdeps&quot;</span><span class="p">,</span> <span class="n">package_name</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Clone package if it is not present in the local ROS workspace.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">local_pkg_path</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="n">global_pkg_path</span>
+            <span class="ow">or</span> <span class="p">(</span>
+                <span class="n">global_pkg_path</span>
+                <span class="ow">and</span> <span class="p">(</span>
+                    <span class="n">global_pkg_path</span> <span class="o">!=</span> <span class="n">local_pkg_path</span>
+                    <span class="ow">and</span> <span class="ow">not</span> <span class="n">rosdep_index</span><span class="p">[</span><span class="n">package_name</span><span class="p">][</span><span class="s2">&quot;binary&quot;</span><span class="p">]</span>
+                <span class="p">)</span>  <span class="c1"># Binary packages are allowed to be installed globally.</span>
+            <span class="p">)</span>
+        <span class="p">):</span>
+            <span class="c1"># Display warn message.</span>
+            <span class="n">warn_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Cloning &#39;</span><span class="si">{</span><span class="n">package_name</span><span class="si">}</span><span class="s2">&#39; into local catkin workspace.&quot;</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">global_pkg_path</span> <span class="o">!=</span> <span class="n">local_pkg_path</span>
+                <span class="ow">and</span> <span class="ow">not</span> <span class="n">rosdep_index</span><span class="p">[</span><span class="n">package_name</span><span class="p">][</span><span class="s2">&quot;binary&quot;</span><span class="p">]</span>
+            <span class="p">):</span>
+                <span class="n">warn_message</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Package &#39;</span><span class="si">{</span><span class="n">package_name</span><span class="si">}</span><span class="s2">&#39; is not set as a binary package in the &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;&#39;ros_gazebo_gym&#39; package index (i.e. &#39;rosdep_index_path&#39;) and &quot;</span>
+                    <span class="s2">&quot;should therefore be installed in the local catkin workspace. &quot;</span>
+                    <span class="o">+</span> <span class="n">warn_message</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warn_message</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;ROS dependency &#39;</span><span class="si">{</span><span class="n">package_name</span><span class="si">}</span><span class="s2">&#39; not installed. &quot;</span> <span class="o">+</span> <span class="n">warn_message</span>
+                <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">warn_message</span><span class="p">)</span>
+
+            <span class="c1"># Download package repository.</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">clone_repo</span><span class="p">(</span>
+                    <span class="n">package_clone_path</span><span class="p">,</span>
+                    <span class="n">rosdep_index</span><span class="p">[</span><span class="n">package_name</span><span class="p">][</span><span class="s2">&quot;git_url&quot;</span><span class="p">],</span>
+                    <span class="n">branch</span><span class="o">=</span><span class="p">(</span>
+                        <span class="n">rosdep_index</span><span class="p">[</span><span class="n">package_name</span><span class="p">][</span><span class="s2">&quot;git_branch&quot;</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="s2">&quot;git_branch&quot;</span> <span class="ow">in</span> <span class="n">rosdep_index</span><span class="p">[</span><span class="n">package_name</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                        <span class="k">else</span> <span class="s2">&quot;main&quot;</span>
+                    <span class="p">),</span>
+                    <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">deps_cloned</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">warn_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;ROS dependency &#39;</span><span class="si">{</span><span class="n">package_name</span><span class="si">}</span><span class="s2">&#39; could not be cloned.&quot;</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">warn_msg</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Throw warning if package is installed but not up to date.</span>
+            <span class="k">if</span> <span class="n">outdated_warning</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_repo_up_to_date</span><span class="p">(</span><span class="n">package_clone_path</span><span class="p">):</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Package &#39;</span><span class="si">{</span><span class="n">package_name</span><span class="si">}</span><span class="s2">&#39; is installed but not up to date. &quot;</span>
+                    <span class="s2">&quot;If you want to have the latest version of the package, please &quot;</span>
+                    <span class="s2">&quot;update it manually by running &#39;git pull&#39; in the package directory &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;(i.e. &#39;</span><span class="si">{</span><span class="n">package_clone_path</span><span class="si">}</span><span class="s2">&#39;).&quot;</span>
+                <span class="p">)</span>
+
+        <span class="c1"># Download additional package dependencies.</span>
+        <span class="k">if</span> <span class="s2">&quot;deps&quot;</span> <span class="ow">in</span> <span class="n">rosdep_index</span><span class="p">[</span><span class="n">package_name</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">rosdep_index</span><span class="p">[</span><span class="n">package_name</span><span class="p">][</span><span class="s2">&quot;deps&quot;</span><span class="p">],</span> <span class="nb">dict</span>
+        <span class="p">):</span>
+            <span class="k">for</span> <span class="n">dep</span><span class="p">,</span> <span class="n">dep_index_info</span> <span class="ow">in</span> <span class="n">rosdep_index</span><span class="p">[</span><span class="n">package_name</span><span class="p">][</span><span class="s2">&quot;deps&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">global_dep_pkg_path</span> <span class="o">=</span> <span class="n">get_global_pkg_path</span><span class="p">(</span><span class="n">dep</span><span class="p">)</span>
+                <span class="n">local_dep_pkg_path</span> <span class="o">=</span> <span class="n">get_local_pkg_path</span><span class="p">(</span><span class="n">dep</span><span class="p">,</span> <span class="n">workspace_path</span><span class="p">)</span>
+                <span class="n">dep_clone_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+                    <span class="n">Path</span><span class="p">(</span><span class="n">workspace_path</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;src&quot;</span><span class="p">,</span> <span class="s2">&quot;rosdeps&quot;</span><span class="p">,</span> <span class="n">dep</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">local_dep_pkg_path</span> <span class="ow">and</span> <span class="p">(</span>
+                    <span class="ow">not</span> <span class="n">global_dep_pkg_path</span>
+                    <span class="ow">or</span> <span class="p">(</span>
+                        <span class="n">global_dep_pkg_path</span>
+                        <span class="ow">and</span> <span class="p">(</span>
+                            <span class="n">global_dep_pkg_path</span> <span class="o">!=</span> <span class="n">local_dep_pkg_path</span>
+                            <span class="ow">and</span> <span class="ow">not</span> <span class="n">dep_index_info</span><span class="p">[</span><span class="s2">&quot;binary&quot;</span><span class="p">]</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">):</span>
+                    <span class="n">warn_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Cloning &#39;</span><span class="si">{</span><span class="n">dep</span><span class="si">}</span><span class="s2">&#39; into local catkin workspace.&quot;</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="n">global_dep_pkg_path</span> <span class="o">!=</span> <span class="n">local_dep_pkg_path</span>
+                        <span class="ow">and</span> <span class="ow">not</span> <span class="n">dep_index_info</span><span class="p">[</span><span class="s2">&quot;binary&quot;</span><span class="p">]</span>
+                    <span class="p">):</span>
+                        <span class="n">warn_message</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Package &#39;</span><span class="si">{</span><span class="n">dep</span><span class="si">}</span><span class="s2">&#39; should be installed in the local &quot;</span>
+                            <span class="s2">&quot;catkin workspace. &quot;</span> <span class="o">+</span> <span class="n">warn_message</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">warn_message</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;ROS dependency &#39;</span><span class="si">{</span><span class="n">dep</span><span class="si">}</span><span class="s2">&#39; not installed. &quot;</span> <span class="o">+</span> <span class="n">warn_message</span>
+                        <span class="p">)</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">warn_message</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">clone_repo</span><span class="p">(</span>
+                            <span class="n">dep_clone_path</span><span class="p">,</span>
+                            <span class="n">dep_index_info</span><span class="p">[</span><span class="s2">&quot;git_url&quot;</span><span class="p">],</span>
+                            <span class="n">branch</span><span class="o">=</span><span class="p">(</span>
+                                <span class="n">dep_index_info</span><span class="p">[</span><span class="s2">&quot;git_branch&quot;</span><span class="p">]</span>
+                                <span class="k">if</span> <span class="s2">&quot;git_branch&quot;</span> <span class="ow">in</span> <span class="n">dep_index_info</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                                <span class="k">else</span> <span class="s2">&quot;main&quot;</span>
+                            <span class="p">),</span>
+                            <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="n">deps_cloned</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                        <span class="n">warn_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;ROS dependency &#39;</span><span class="si">{</span><span class="n">dep</span><span class="si">}</span><span class="s2">&#39; could not be installed.&quot;</span>
+                        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">warn_msg</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Throw warning if dependency is installed but not up to date.</span>
+                    <span class="k">if</span> <span class="n">outdated_warning</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_repo_up_to_date</span><span class="p">(</span><span class="n">dep_clone_path</span><span class="p">):</span>
+                        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Package dependency &#39;</span><span class="si">{</span><span class="n">dep</span><span class="si">}</span><span class="s2">&#39; is installed but not up to &quot;</span>
+                            <span class="s2">&quot;date. If you want to have the latest version of the &quot;</span>
+                            <span class="s2">&quot;package, please update it manually by running &#39;git pull&#39; &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;in the package directory (i.e. &#39;</span><span class="si">{</span><span class="n">dep_clone_path</span><span class="si">}</span><span class="s2">&#39;).&quot;</span>
+                        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">global_pkg_path</span> <span class="ow">or</span> <span class="n">local_pkg_path</span><span class="p">:</span>
+            <span class="n">space_str</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;global and local ROS workspaces&quot;</span>
+                <span class="k">if</span> <span class="n">global_pkg_path</span> <span class="ow">and</span> <span class="n">local_pkg_path</span>
+                <span class="k">else</span> <span class="p">(</span>
+                    <span class="s2">&quot;global ROS workspace&quot;</span>
+                    <span class="k">if</span> <span class="n">global_pkg_path</span>
+                    <span class="k">else</span> <span class="s2">&quot;local catkin workspace&quot;</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Although package &#39;</span><span class="si">{</span><span class="n">package_name</span><span class="si">}</span><span class="s2">&#39; was installed in the </span><span class="si">{</span><span class="n">space_str</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="s2">&quot;no information about it was found in the &#39;ros_gazebo_gym&#39; dependency &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;index (i.e. &#39;</span><span class="si">{</span><span class="n">rosdep_index_path</span><span class="si">}</span><span class="s2">&#39;). As a result, we could not &quot;</span>
+                <span class="s2">&quot;determine whether its dependencies were installed. Please add this &quot;</span>
+                <span class="s2">&quot;package to the index if you want to be sure all dependencies are &quot;</span>
+                <span class="s2">&quot;installed.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Package &#39;</span><span class="si">{</span><span class="n">package_name</span><span class="si">}</span><span class="s2">&#39; is not installed or present in the &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;ros_gazebo_gym&#39; dependency index (i.e. &#39;</span><span class="si">{</span><span class="n">rosdep_index_path</span><span class="si">}</span><span class="s2">&#39;). As a &quot;</span>
+                <span class="s2">&quot;result, it could not be installed. Please install the package in the &quot;</span>
+                <span class="s2">&quot;global or local ROS workspace or add its information to the &quot;</span>
+                <span class="s2">&quot;dependency index.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># (Re)-build the catkin workspace.</span>
+    <span class="k">if</span> <span class="n">deps_cloned</span><span class="p">:</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+            <span class="s2">&quot;Installing system dependencies and (re)-building catkin workspace &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">workspace_path</span><span class="si">}</span><span class="s2">&#39; since new packages were added.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">build_catkin_ws</span><span class="p">(</span><span class="n">workspace_path</span><span class="p">,</span> <span class="n">install_ros_deps</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span>
+                <span class="s2">&quot;While installing the package system dependencies and (re)-building &quot;</span>
+                <span class="s2">&quot;the Catkin workspace, something went wrong. Please install the &quot;</span>
+                <span class="s2">&quot;system dependencies, manually build the Catkin workspace, and try &quot;</span>
+                <span class="s2">&quot;again.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">ros_exit_gracefully</span><span class="p">(</span>
+                <span class="n">shutdown_msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Shutting down </span><span class="si">{</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exit_code</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="load_ros_params_from_yaml"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.load_ros_params_from_yaml">[docs]</a><span class="k">def</span> <span class="nf">load_ros_params_from_yaml</span><span class="p">(</span><span class="n">yaml_file_path</span><span class="p">,</span> <span class="n">ros_package_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Loads ros parameters from yaml file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        yaml_file_path (str): The configuration file path. Can be absolute or relative.</span>
+<span class="sd">            If relative, the path is relative to the package directory.</span>
+<span class="sd">        package_name (str): The package name that contains the configuration file.</span>
+<span class="sd">            Defaults to ``None``.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        :obj:`rosparam.RosParamException`: If the yaml file could not be loaded or the</span>
+<span class="sd">            ROS package could not be found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">yaml_file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">yaml_file_path</span><span class="p">)</span>
+
+    <span class="c1"># Look for the yaml file in the package directory.</span>
+    <span class="k">if</span> <span class="n">ros_package_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">yaml_file_path</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
+        <span class="n">rospack</span> <span class="o">=</span> <span class="n">rospkg</span><span class="o">.</span><span class="n">RosPack</span><span class="p">()</span>
+        <span class="n">pkg_path</span> <span class="o">=</span> <span class="n">rospack</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">ros_package_name</span><span class="p">)</span>
+        <span class="n">yaml_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pkg_path</span><span class="p">,</span> <span class="n">yaml_file_path</span><span class="p">)</span>
+
+    <span class="c1"># Load parameters from yaml file.</span>
+    <span class="n">paramlist</span> <span class="o">=</span> <span class="n">rosparam</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">yaml_file_path</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">params</span><span class="p">,</span> <span class="n">ns</span> <span class="ow">in</span> <span class="n">paramlist</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">remove_dict_none_values</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">rosparam</span><span class="o">.</span><span class="n">upload_params</span><span class="p">(</span><span class="n">ns</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_log_path"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.get_log_path">[docs]</a><span class="k">def</span> <span class="nf">get_log_path</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the &#39;ros_gazebo_gym&#39; package log folder path.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        :obj:`pathlib.Path`: The package log folder path.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;../../../../logs&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

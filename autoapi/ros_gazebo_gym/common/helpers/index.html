@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ros_gazebo_gym.common.helpers &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="ros_gazebo_gym.core" href="../../core/index.html" />
+    <link rel="prev" title="ros_gazebo_gym.common.euler_angles" href="../euler_angles/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html">
+            
+              <img src="../../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../get_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../get_started/usage.html">How to use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../get_started/envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/add_nev_env.html">Add new environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../../index.html#ros-api">ROS API</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../../index.html#python-api">Python API</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code></a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../../index.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../index.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code></a></li>
+          <li class="breadcrumb-item"><a href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.common</span></code></a></li>
+      <li class="breadcrumb-item active"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.common.helpers</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/docs/source/autoapi/ros_gazebo_gym/common/helpers/index.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-ros_gazebo_gym.common.helpers">
+<span id="ros-gazebo-gym-common-helpers"></span><h1><a class="reference internal" href="#module-ros_gazebo_gym.common.helpers" title="ros_gazebo_gym.common.helpers"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.common.helpers</span></code></a><a class="headerlink" href="#module-ros_gazebo_gym.common.helpers" title="Permalink to this heading"></a></h1>
+<p>Contains several helper functions that are used in the several environments.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.DummyFile" title="ros_gazebo_gym.common.helpers.DummyFile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DummyFile</span></code></a></p></td>
+<td><p>Dummy file class to redirect stderr to.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.model_state_msg_2_link_state_dict" title="ros_gazebo_gym.common.helpers.model_state_msg_2_link_state_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">model_state_msg_2_link_state_dict</span></code></a>(link_state_msgs)</p></td>
+<td><p>Converts the a <a class="reference external" href="https://docs.ros.org/en/jade/api/gazebo_msgs/html/msg/ModelState.html">gazebo_msgs/ModelState</a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.pose_msg_2_pose_dict" title="ros_gazebo_gym.common.helpers.pose_msg_2_pose_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pose_msg_2_pose_dict</span></code></a>(pose_msg)</p></td>
+<td><p>Create a pose dictionary <code class="docutils literal notranslate"><span class="pre">{x,</span> <span class="pre">y,</span> <span class="pre">z,</span> <span class="pre">rx,</span> <span class="pre">ry,</span> <span class="pre">rz,</span> <span class="pre">rw}</span></code> out of a</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.lower_first_char" title="ros_gazebo_gym.common.helpers.lower_first_char"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lower_first_char</span></code></a>(string)</p></td>
+<td><p>De-capitalize the first letter of a string.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.wrap_space_around" title="ros_gazebo_gym.common.helpers.wrap_space_around"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap_space_around</span></code></a>(text)</p></td>
+<td><p>Wrap one additional space around text if it is not already present.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.to_pascal_case" title="ros_gazebo_gym.common.helpers.to_pascal_case"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_pascal_case</span></code></a>(text)</p></td>
+<td><p>Convert a string to pascal case.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.to_snake_case" title="ros_gazebo_gym.common.helpers.to_snake_case"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_snake_case</span></code></a>(text)</p></td>
+<td><p>Convert a string to snake case.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.list_2_human_text" title="ros_gazebo_gym.common.helpers.list_2_human_text"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_2_human_text</span></code></a>(input_list[, separator, end_separator])</p></td>
+<td><p>Function converts a list of values into human readable sentence.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.split_dict" title="ros_gazebo_gym.common.helpers.split_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_dict</span></code></a>(input_dict, *args)</p></td>
+<td><p>Split a dictionary into smaller dictionaries based on the keys.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.split_bounds_dict" title="ros_gazebo_gym.common.helpers.split_bounds_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_bounds_dict</span></code></a>(bounds_dict)</p></td>
+<td><p>Splits the bounding region dictionary into two separate bounding dictionaries,</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.gripper_width_2_finger_joints_positions" title="ros_gazebo_gym.common.helpers.gripper_width_2_finger_joints_positions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gripper_width_2_finger_joints_positions</span></code></a>(input_dict, joints)</p></td>
+<td><p>Replaces a 'gripper_width' key in a dictionary with corresponding finger joint</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.split_pose_dict" title="ros_gazebo_gym.common.helpers.split_pose_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_pose_dict</span></code></a>(pose_dict)</p></td>
+<td><p>Splits a pose dictionary into two separate pose dictionaries, one for the</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.shallow_dict_merge" title="ros_gazebo_gym.common.helpers.shallow_dict_merge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_dict_merge</span></code></a>(*args[, order])</p></td>
+<td><p>Given several dicts, merge them into a new dict as a shallow copy.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.flatten_list" title="ros_gazebo_gym.common.helpers.flatten_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flatten_list</span></code></a>(input_list)</p></td>
+<td><p>Function used to flatten a list containing sublists. It does this by calling</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.deep_update" title="ros_gazebo_gym.common.helpers.deep_update"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deep_update</span></code></a>(d[, u, fixed])</p></td>
+<td><p>Updates a dictionary recursively (i.e. deep update). This function takes a update</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.is_sublist" title="ros_gazebo_gym.common.helpers.is_sublist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_sublist</span></code></a>(lst1, lst2)</p></td>
+<td><p>Checks whether lst1 is a sublist of lst2.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.remove_dict_none_values" title="ros_gazebo_gym.common.helpers.remove_dict_none_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_dict_none_values</span></code></a>(input_dict)</p></td>
+<td><p>Removes all the None values from a dictionary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.has_invalid_type" title="ros_gazebo_gym.common.helpers.has_invalid_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_invalid_type</span></code></a>(variable, variable_types[, ...])</p></td>
+<td><p>Validates whether a variable or its attributes has an invalid type.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.action_server_exists" title="ros_gazebo_gym.common.helpers.action_server_exists"><code class="xref py py-obj docutils literal notranslate"><span class="pre">action_server_exists</span></code></a>(topic_name)</p></td>
+<td><p>Checks whether a topic contains an action server</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.find_gazebo_model_path" title="ros_gazebo_gym.common.helpers.find_gazebo_model_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_gazebo_model_path</span></code></a>(model_name, models_directory_path)</p></td>
+<td><p>Finds the path of the <code class="docutils literal notranslate"><span class="pre">sdf</span></code> or <code class="docutils literal notranslate"><span class="pre">urdf</span></code> file that belongs to a given</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.get_orientation_euler" title="ros_gazebo_gym.common.helpers.get_orientation_euler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_orientation_euler</span></code></a>(quaternion)</p></td>
+<td><p>Converts pose (position, orientation) to euler angles.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.quaternion_norm" title="ros_gazebo_gym.common.helpers.quaternion_norm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quaternion_norm</span></code></a>(quaternion)</p></td>
+<td><p>Calculates the norm of a quaternion.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.normalize_quaternion" title="ros_gazebo_gym.common.helpers.normalize_quaternion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_quaternion</span></code></a>(quaternion)</p></td>
+<td><p>Normalizes a given quaternion.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.common.helpers.suppress_stderr" title="ros_gazebo_gym.common.helpers.suppress_stderr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">suppress_stderr</span></code></a>()</p></td>
+<td><p>Suppresses the stderr output of a code block.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.model_state_msg_2_link_state_dict">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">model_state_msg_2_link_state_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link_state_msgs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#model_state_msg_2_link_state_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.model_state_msg_2_link_state_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Converts the a <a class="reference external" href="https://docs.ros.org/en/jade/api/gazebo_msgs/html/msg/ModelState.html">gazebo_msgs/ModelState</a>
+message into a state dictionary. Contrary to the original ModelState message,
+in the model state dictionary the poses and twists are grouped per link/model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>link_state_msgs</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">gazebo_msgs.msg.ModelState</span></code>) – A ModelState message.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A model_state dictionary.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.pose_msg_2_pose_dict">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">pose_msg_2_pose_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pose_msg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#pose_msg_2_pose_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.pose_msg_2_pose_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Create a pose dictionary <code class="docutils literal notranslate"><span class="pre">{x,</span> <span class="pre">y,</span> <span class="pre">z,</span> <span class="pre">rx,</span> <span class="pre">ry,</span> <span class="pre">rz,</span> <span class="pre">rw}</span></code> out of a
+<a class="reference external" href="https://docs.ros.org/en/noetic/api/geometry_msgs/html/msg/Pose.html">geometry_msgs.msg.Pose</a>
+message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pose_msg</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">geometry_msgs.msg.Pose</span></code>) – A pose message</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary that contains the pose.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.lower_first_char">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">lower_first_char</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#lower_first_char"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.lower_first_char" title="Permalink to this definition"></a></dt>
+<dd><p>De-capitalize the first letter of a string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>string</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The input string.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The de-capitalized string.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function is not the exact opposite of the capitalize function of the
+standard library. For example, capitalize(‘abC’) returns Abc rather than AbC.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.wrap_space_around">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">wrap_space_around</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#wrap_space_around"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.wrap_space_around" title="Permalink to this definition"></a></dt>
+<dd><p>Wrap one additional space around text if it is not already present.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Text</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Text with extra spaces around it.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.to_pascal_case">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">to_pascal_case</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#to_pascal_case"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.to_pascal_case" title="Permalink to this definition"></a></dt>
+<dd><p>Convert a string to pascal case.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Text</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Text in pascal case.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.to_snake_case">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">to_snake_case</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#to_snake_case"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.to_snake_case" title="Permalink to this definition"></a></dt>
+<dd><p>Convert a string to snake case.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Text</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Text in snake case.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.list_2_human_text">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">list_2_human_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">',</span> <span class="pre">'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_separator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span> <span class="pre">&amp;</span> <span class="pre">'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#list_2_human_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.list_2_human_text" title="Permalink to this definition"></a></dt>
+<dd><p>Function converts a list of values into human readable sentence.</p>
+<p class="rubric">Example</p>
+<p>Using this function a list of 4 items <code class="docutils literal notranslate"><span class="pre">[item1,</span> <span class="pre">item2,</span> <span class="pre">item3,</span> <span class="pre">item4]</span></code> becomes
+<code class="docutils literal notranslate"><span class="pre">item2,</span> <span class="pre">item3</span> <span class="pre">&amp;</span> <span class="pre">item4</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a>) – A input list.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A human readable string that can be printed.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.split_dict">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">split_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dict</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#split_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.split_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Split a dictionary into smaller dictionaries based on the keys.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">split_dict_list</span> <span class="o">=</span> <span class="n">split_dict</span><span class="p">(</span>
+    <span class="n">input_dict</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;first_dict_key1&quot;</span><span class="p">,</span> <span class="s2">&quot;first_dict_key2&quot;</span><span class="p">],</span>
+    <span class="p">[</span><span class="s2">&quot;second_dict_key1&quot;</span><span class="p">,</span> <span class="s2">&quot;second_dict_key2&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – Input dictionary.</p></li>
+<li><p><strong>*args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a>) – Lists containing the keys you want to have in the successive
+dictionaries.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list containing the splitted dictionaries.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.split_bounds_dict">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">split_bounds_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounds_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#split_bounds_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.split_bounds_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Splits the bounding region dictionary into two separate bounding dictionaries,
+one for the <code class="docutils literal notranslate"><span class="pre">ee_pose</span></code> and one fore the <code class="docutils literal notranslate"><span class="pre">joint_pose</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bounds_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – Original bounds dictionary.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>tuple containing:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>: ee_pose bounding region dictionary.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>: joint_pose bounding region dictionary.</p></li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.gripper_width_2_finger_joints_positions">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">gripper_width_2_finger_joints_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joints</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#gripper_width_2_finger_joints_positions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.gripper_width_2_finger_joints_positions" title="Permalink to this definition"></a></dt>
+<dd><p>Replaces a ‘gripper_width’ key in a dictionary with corresponding finger joint
+position keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – The dictionary that contains the ‘gripper_Width’.</p></li>
+<li><p><strong>joints</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a>) – The available finger joints.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The new dictionary that contains the finger joint positions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.split_pose_dict">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">split_pose_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pose_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#split_pose_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.split_pose_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Splits a pose dictionary into two separate pose dictionaries, one for the
+<code class="docutils literal notranslate"><span class="pre">ee_pose</span></code> and one fore the <code class="docutils literal notranslate"><span class="pre">joint_pose</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bounding_region</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – Original bounds dictionary.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>tuple containing:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>: ee_pose bounding region dictionary.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>: joint_pose dictionary.</p></li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.shallow_dict_merge">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">shallow_dict_merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#shallow_dict_merge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.shallow_dict_merge" title="Permalink to this definition"></a></dt>
+<dd><p>Given several dicts, merge them into a new dict as a shallow copy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – The input dictionaries.</p></li>
+<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a>) – The order in which you want to have the keys.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The new merged dictionary.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.flatten_list">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">flatten_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#flatten_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.flatten_list" title="Permalink to this definition"></a></dt>
+<dd><p>Function used to flatten a list containing sublists. It does this by calling
+itself recursively.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a>) – A list containing strings or other lists.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The flattened list.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.deep_update">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">deep_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#deep_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.deep_update" title="Permalink to this definition"></a></dt>
+<dd><p>Updates a dictionary recursively (i.e. deep update). This function takes a update
+dictionary and/or keyword arguments. When a keyword argument is supplied, the
+key-value pair is changed if it exists somewhere in the dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – Dictionary you want to update.</p></li>
+<li><p><strong>u</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>, </em><em>optional</em>) – The update dictionary.</p></li>
+<li><p><strong>fixed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether you want the input dictionary to be fixed
+(i.e. only change keys that are already present). Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> – Keyword arguments used for creating the dictionary keys.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The updated dictionary.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Based on the answer given by <a class="reference external" href="https://stackoverflow.com/users/95810/alex-martelli">&#64;alex-martelli</a>
+on <a class="reference external" href="https://stackoverflow.com/questions/3232943/update-value-of-a-nested-dictionary-of-varying-depth">this stackoverflow question</a>.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.is_sublist">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">is_sublist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lst2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#is_sublist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.is_sublist" title="Permalink to this definition"></a></dt>
+<dd><p>Checks whether lst1 is a sublist of lst2.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lst1</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a>) – List 1.</p></li>
+<li><p><strong>lst2</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a>) – List 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Boolean specifying whether lst1 is a sublist of lst2.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.remove_dict_none_values">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">remove_dict_none_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#remove_dict_none_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.remove_dict_none_values" title="Permalink to this definition"></a></dt>
+<dd><p>Removes all the None values from a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – The input dictionary.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The dictionary without the None values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.has_invalid_type">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">has_invalid_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">items_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#has_invalid_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.has_invalid_type" title="Permalink to this definition"></a></dt>
+<dd><p>Validates whether a variable or its attributes has an invalid type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>variable</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><em>object</em></a>) – The variable you want to check.</p></li>
+<li><p><strong>variable_types</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a>) – The type the variable can have.</p></li>
+<li><p><strong>items_types</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a>) – The types the dictionary or list values can have.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>tuple containing:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>: A bool specifying whether a type was invalid.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>: The maximum depth at which the type was invalid.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a>: The types that were invalid.</p></li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.action_server_exists">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">action_server_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topic_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#action_server_exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.action_server_exists" title="Permalink to this definition"></a></dt>
+<dd><p>Checks whether a topic contains an action server
+is running.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>topic_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Action server topic name.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Boolean specifying whether the action service exists.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.find_gazebo_model_path">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">find_gazebo_model_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">models_directory_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#find_gazebo_model_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.find_gazebo_model_path" title="Permalink to this definition"></a></dt>
+<dd><p>Finds the path of the <code class="docutils literal notranslate"><span class="pre">sdf</span></code> or <code class="docutils literal notranslate"><span class="pre">urdf</span></code> file that belongs to a given
+<code class="docutils literal notranslate"><span class="pre">model_name</span></code>. This is done by searching in the <code class="docutils literal notranslate"><span class="pre">models_directory_path</span></code> folder.
+If no file was found the model file path is returned empty.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The name of the model for which you want to find the path.</p></li>
+<li><p><strong>models_directory_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The path of the folder that contains the gazebo
+models. extension (str, optional): The model path extension. Defaults to
+<code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> meaning that the function will first look for a <code class="docutils literal notranslate"><span class="pre">sdf</span></code> file and if
+that is not found it will look for a <code class="docutils literal notranslate"><span class="pre">urdf</span></code> file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>tuple containing:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>: The path where the <code class="docutils literal notranslate"><span class="pre">sdf</span></code> or <code class="docutils literal notranslate"><span class="pre">urdf</span></code> model file can be
+found.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>: Extension of the model file.</p></li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.get_orientation_euler">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">get_orientation_euler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quaternion</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#get_orientation_euler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.get_orientation_euler" title="Permalink to this definition"></a></dt>
+<dd><p>Converts pose (position, orientation) to euler angles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>quaternion</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">geometry_msgs.Pose</span></code>) – Input quaternion.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns=:</dt><dd><dl class="simple">
+<dt><a class="reference internal" href="../euler_angles/index.html#ros_gazebo_gym.common.euler_angles.EulerAngles" title="ros_gazebo_gym.common.euler_angles.EulerAngles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EulerAngles</span></code></a>: Object containing the</dt><dd><p>yaw (z), pitch (y) and roll (x) euler angles.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.quaternion_norm">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">quaternion_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quaternion</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#quaternion_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.quaternion_norm" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the norm of a quaternion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Quaternion</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">geometry_msgs.msg.Quaternion</span></code>) – A quaternion.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The norm of the quaternion.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.normalize_quaternion">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">normalize_quaternion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quaternion</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#normalize_quaternion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.normalize_quaternion" title="Permalink to this definition"></a></dt>
+<dd><p>Normalizes a given quaternion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>quaternion</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">geometry_msgs.msg.Quaternion</span></code>) – A quaternion.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The normalized quaternion.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">geometry_msgs.msg.Quaternion</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.DummyFile">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">DummyFile</span></span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#DummyFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.DummyFile" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Dummy file class to redirect stderr to.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.DummyFile.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#DummyFile.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.DummyFile.write" title="Permalink to this definition"></a></dt>
+<dd><p>Writes the given string to the dummy file.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.common.helpers.suppress_stderr">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.common.helpers.</span></span><span class="sig-name descname"><span class="pre">suppress_stderr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/common/helpers.html#suppress_stderr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.common.helpers.suppress_stderr" title="Permalink to this definition"></a></dt>
+<dd><p>Suppresses the stderr output of a code block.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">suppress_stderr</span><span class="p">():</span>
+    <span class="c1"># Code block that will not print stderr.</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;This will not be printed.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../euler_angles/index.html" class="btn btn-neutral float-left" title="ros_gazebo_gym.common.euler_angles" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../core/index.html" class="btn btn-neutral float-right" title="ros_gazebo_gym.core" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

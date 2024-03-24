@@ -1,0 +1,69 @@
+:py:mod:`ros_gazebo_gym.task_envs.panda.panda_slide`
+====================================================
+
+.. py:module:: ros_gazebo_gym.task_envs.panda.panda_slide
+
+.. autoapi-nested-parse::
+
+   An ROS Panda slide gymnasium environment.
+
+   .. image:: /images/panda/panda_slide_env.png
+      :alt: Panda slide environment
+
+   This environment is an extension of the :class:`~ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv` task environment,
+   sharing most features such as observation and action spaces. Notable distinctions are detailed below.
+
+   Goal:
+       In this environment the agent has to learn to slide a puck to a desired goal
+       position. It was based on the :gymnasium-robotics:`FetchSlide-v2 <envs/fetch/slide/>`
+       gymnasium environment.
+
+   .. admonition:: Configuration
+       :class: important
+
+       The configuration files for this environment are found in the
+       :ros-gazebo-gym:`panda task environment config folder <blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_slide.yaml>`.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.task_envs.panda.panda_slide.PandaSlideEnv
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.task_envs.panda.panda_slide.CONFIG_FILE_PATH
+
+
+.. py:data:: CONFIG_FILE_PATH
+   :value: 'config/panda_slide.yaml'
+
+   
+
+.. py:class:: PandaSlideEnv(*args, **kwargs)
+
+
+   Bases: :py:obj:`ros_gazebo_gym.task_envs.panda.panda_pick_and_place.PandaPickAndPlaceEnv`, :py:obj:`gymnasium.utils.EzPickle`
+
+   Classed used to create a Panda slide environment.
+
+   Initializes a Panda Slide task environment.
+
+   :param \*args: Arguments passed to the
+                  :class:`~ros_gazebo_gym.task_envs.panda.PandaSlideEnv` super class.
+   :param \*\*kwargs: Keyword arguments that are passed to the
+                      :class:`~ros_gazebo_gym.task_envs.panda.PandaSlideEnv` super class.
+
+

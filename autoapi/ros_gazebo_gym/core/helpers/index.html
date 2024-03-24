@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ros_gazebo_gym.core.helpers &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="ros_gazebo_gym.core.lazy_importer" href="../lazy_importer/index.html" />
+    <link rel="prev" title="ros_gazebo_gym.core.gazebo_connection" href="../gazebo_connection/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html">
+            
+              <img src="../../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../get_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../get_started/usage.html">How to use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../get_started/envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/add_nev_env.html">Add new environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../../index.html#ros-api">ROS API</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../../index.html#python-api">Python API</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code></a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../../index.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../index.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code></a></li>
+          <li class="breadcrumb-item"><a href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.core</span></code></a></li>
+      <li class="breadcrumb-item active"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.core.helpers</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/docs/source/autoapi/ros_gazebo_gym/core/helpers/index.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-ros_gazebo_gym.core.helpers">
+<span id="ros-gazebo-gym-core-helpers"></span><h1><a class="reference internal" href="#module-ros_gazebo_gym.core.helpers" title="ros_gazebo_gym.core.helpers"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.core.helpers</span></code></a><a class="headerlink" href="#module-ros_gazebo_gym.core.helpers" title="Permalink to this heading"></a></h1>
+<p>Contains several helper functions that are used by the
+<a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/">ros_gazebo_gym</a> package for the setup of the ROS Gazebo Gym
+gymnasium environments.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.core.helpers.GitProgressCallback" title="ros_gazebo_gym.core.helpers.GitProgressCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GitProgressCallback</span></code></a></p></td>
+<td><p>A <a class="reference external" href="https://www.pygit2.org/remotes.html#pygit2.RemoteCallbacks" title="(in pygit2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pygit2.RemoteCallbacks</span></code></a> callback that shows a git clone progress bar.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.core.helpers.PopenAutoCleanup" title="ros_gazebo_gym.core.helpers.PopenAutoCleanup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PopenAutoCleanup</span></code></a></p></td>
+<td><p>A <a class="reference external" href="https://docs.python.org/3/library/subprocess.html#subprocess.Popen" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">subprocess.Popen</span></code></a> that cleans up after itself and terminates the</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.core.helpers.get_catkin_workspace_path" title="ros_gazebo_gym.core.helpers.get_catkin_workspace_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_catkin_workspace_path</span></code></a>()</p></td>
+<td><p>Retrieve the path of the currently sourced catkin workspace.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.core.helpers.query_yes_no" title="ros_gazebo_gym.core.helpers.query_yes_no"><code class="xref py py-obj docutils literal notranslate"><span class="pre">query_yes_no</span></code></a>(question[, default])</p></td>
+<td><p>Ask the user a yes/no question via raw_input() and return the answer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.core.helpers.get_global_pkg_path" title="ros_gazebo_gym.core.helpers.get_global_pkg_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_global_pkg_path</span></code></a>(package_name[, workspace_path])</p></td>
+<td><p>Retrieves the global package path. Meaning the path of a package if it is</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.core.helpers.get_local_pkg_path" title="ros_gazebo_gym.core.helpers.get_local_pkg_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_local_pkg_path</span></code></a>(package_name, catkin_workspace)</p></td>
+<td><p>Retrieves the local package path. Meaning the path of a package in the catkin</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.core.helpers.clone_repo" title="ros_gazebo_gym.core.helpers.clone_repo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clone_repo</span></code></a>(path, git_src[, branch, recursive])</p></td>
+<td><p>Clones the repository of the dependency.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.core.helpers.is_repo_up_to_date" title="ros_gazebo_gym.core.helpers.is_repo_up_to_date"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_repo_up_to_date</span></code></a>(repo_path)</p></td>
+<td><p>Checks if the local repository is up to date with the remote repository.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.core.helpers.ros_exit_gracefully" title="ros_gazebo_gym.core.helpers.ros_exit_gracefully"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ros_exit_gracefully</span></code></a>([shutdown_msg, exit_code])</p></td>
+<td><p>Shuts down the ROS node wait until it is shutdown and exits the script.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.core.helpers.build_catkin_ws" title="ros_gazebo_gym.core.helpers.build_catkin_ws"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_catkin_ws</span></code></a>(workspace_path[, install_ros_deps])</p></td>
+<td><p>Builds the catkin workspace and installs system dependencies while doing so if</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.core.helpers.install_package" title="ros_gazebo_gym.core.helpers.install_package"><code class="xref py py-obj docutils literal notranslate"><span class="pre">install_package</span></code></a>(package_name[, workspace_path, ...])</p></td>
+<td><p>Install a given ROS package together with it's dependencies.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.core.helpers.load_ros_params_from_yaml" title="ros_gazebo_gym.core.helpers.load_ros_params_from_yaml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_ros_params_from_yaml</span></code></a>(yaml_file_path[, ...])</p></td>
+<td><p>Loads ros parameters from yaml file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.core.helpers.get_log_path" title="ros_gazebo_gym.core.helpers.get_log_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_log_path</span></code></a>()</p></td>
+<td><p>Returns the 'ros_gazebo_gym' package log folder path.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.core.helpers.ROSDEP_INDEX_PATH" title="ros_gazebo_gym.core.helpers.ROSDEP_INDEX_PATH"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ROSDEP_INDEX_PATH</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.ROSDEP_INDEX_PATH">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.core.helpers.</span></span><span class="sig-name descname"><span class="pre">ROSDEP_INDEX_PATH</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'../cfg/rosdep.yaml'</span></em><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#ROSDEP_INDEX_PATH"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.ROSDEP_INDEX_PATH" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.GitProgressCallback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.core.helpers.</span></span><span class="sig-name descname"><span class="pre">GitProgressCallback</span></span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#GitProgressCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.GitProgressCallback" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://www.pygit2.org/remotes.html#pygit2.RemoteCallbacks" title="(in pygit2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pygit2.RemoteCallbacks</span></code></a></p>
+<p>A <a class="reference external" href="https://www.pygit2.org/remotes.html#pygit2.RemoteCallbacks" title="(in pygit2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pygit2.RemoteCallbacks</span></code></a> callback that shows a git clone progress bar.</p>
+<p>Initializes the <a class="reference internal" href="#ros_gazebo_gym.core.helpers.GitProgressCallback" title="ros_gazebo_gym.core.helpers.GitProgressCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">GitProgressCallback</span></code></a> class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.GitProgressCallback.transfer_progress">
+<span class="sig-name descname"><span class="pre">transfer_progress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">statsTransferProgress</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#GitProgressCallback.transfer_progress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.GitProgressCallback.transfer_progress" title="Permalink to this definition"></a></dt>
+<dd><p>Displays the current git transfer progress.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>statsTransferProgress</strong> (<em>pygit2.statsTransferProgress</em>) – The progress up to
+now.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.PopenAutoCleanup">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.core.helpers.</span></span><span class="sig-name descname"><span class="pre">PopenAutoCleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">critical</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#PopenAutoCleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.PopenAutoCleanup" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/subprocess.html#subprocess.Popen" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subprocess.Popen</span></code></a></p>
+<p>A <a class="reference external" href="https://docs.python.org/3/library/subprocess.html#subprocess.Popen" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">subprocess.Popen</span></code></a> that cleans up after itself and terminates the
+process when the main Python script exits. It also allows users to specify whether
+the process is critical and show an error message when the process is no longer
+running.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.PopenAutoCleanup.critical">
+<span class="sig-name descname"><span class="pre">critical</span></span><a class="headerlink" href="#ros_gazebo_gym.core.helpers.PopenAutoCleanup.critical" title="Permalink to this definition"></a></dt>
+<dd><p>Whether the process is critical and an error message should be
+shown when the process is no longer running.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Initializes the <a class="reference internal" href="#ros_gazebo_gym.core.helpers.PopenAutoCleanup" title="ros_gazebo_gym.core.helpers.PopenAutoCleanup"><code class="xref py py-class docutils literal notranslate"><span class="pre">PopenAutoCleanup</span></code></a> class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> – The positional arguments that are passed to the
+<a class="reference external" href="https://docs.python.org/3/library/subprocess.html#subprocess.Popen" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">subprocess.Popen</span></code></a> class.</p></li>
+<li><p><strong>critical</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether the process is critical and an error
+message should be shown when the process is no longer running.</p></li>
+<li><p><strong>**kwargs</strong> – The keyword arguments that are passed to the
+<a class="reference external" href="https://docs.python.org/3/library/subprocess.html#subprocess.Popen" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">subprocess.Popen</span></code></a> class.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.PopenAutoCleanup.terminate">
+<span class="sig-name descname"><span class="pre">terminate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#PopenAutoCleanup.terminate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.PopenAutoCleanup.terminate" title="Permalink to this definition"></a></dt>
+<dd><p>Terminates the process and stops the critical check thread.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.PopenAutoCleanup.kill">
+<span class="sig-name descname"><span class="pre">kill</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#PopenAutoCleanup.kill"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.PopenAutoCleanup.kill" title="Permalink to this definition"></a></dt>
+<dd><p>Kills the process and stops the critical check thread.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.get_catkin_workspace_path">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.core.helpers.</span></span><span class="sig-name descname"><span class="pre">get_catkin_workspace_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#get_catkin_workspace_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.get_catkin_workspace_path" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve the path of the currently sourced catkin workspace.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>The path of the currently sourced catkin workspace. Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if no</dt><dd><p>catkin workspace was sourced.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.query_yes_no">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.core.helpers.</span></span><span class="sig-name descname"><span class="pre">query_yes_no</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">question</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'yes'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#query_yes_no"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.query_yes_no" title="Permalink to this definition"></a></dt>
+<dd><p>Ask the user a yes/no question via raw_input() and return the answer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>question</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – String presented to the user.</p></li>
+<li><p><strong>default</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – The presumed answer if the user just hits &lt;Enter&gt;. It
+must be “yes” (the default), “no” or None (meaning an answer is required of
+the user). Defaults to “yes”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – If the default answer is not correct.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Returns the given answer.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>This function was based on the function given by <a class="reference external" href="https://stackoverflow.com/users/103225/fmark">&#64;fmark</a> in
+<a class="reference external" href="https://stackoverflow.com/questions/3041986/apt-command-line-interface-like-yes-no-input">this stackoverflow question</a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.get_global_pkg_path">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.core.helpers.</span></span><span class="sig-name descname"><span class="pre">get_global_pkg_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">package_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#get_global_pkg_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.get_global_pkg_path" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves the global package path. Meaning the path of a package if it is
+contained in the global ROS workspace. Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if the package is not
+found.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>package_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The name of the package you want to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The global package path.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.get_local_pkg_path">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.core.helpers.</span></span><span class="sig-name descname"><span class="pre">get_local_pkg_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">package_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">catkin_workspace</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#get_local_pkg_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.get_local_pkg_path" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves the local package path. Meaning the path of a package in the catkin
+workspace. Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if package is not found in the catkin workspace.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>package_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The name of the package you want to check.</p></li>
+<li><p><strong>catkin_workspace</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The catkin_workspace you want to check.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The local package path.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.clone_repo">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.core.helpers.</span></span><span class="sig-name descname"><span class="pre">clone_repo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">git_src</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">branch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recursive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#clone_repo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.clone_repo" title="Permalink to this definition"></a></dt>
+<dd><p>Clones the repository of the dependency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The path to which you want to clone the repository.</p></li>
+<li><p><strong>git_src</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The git repository url.</p></li>
+<li><p><strong>branch</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – The branch to checkout. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>recursive</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – After the clone is created, initialize and clone
+submodules within based on the provided pathspec. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.is_repo_up_to_date">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.core.helpers.</span></span><span class="sig-name descname"><span class="pre">is_repo_up_to_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#is_repo_up_to_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.is_repo_up_to_date" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if the local repository is up to date with the remote repository.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>repo_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The path of the local repository.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Whether the local repository is up to date with the remote repository.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.ros_exit_gracefully">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.core.helpers.</span></span><span class="sig-name descname"><span class="pre">ros_exit_gracefully</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shutdown_msg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exit_code</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#ros_exit_gracefully"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.ros_exit_gracefully" title="Permalink to this definition"></a></dt>
+<dd><p>Shuts down the ROS node wait until it is shutdown and exits the script.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shutdown_msg</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – The shutdown message. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>exit_code</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – The exit code. Defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.build_catkin_ws">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.core.helpers.</span></span><span class="sig-name descname"><span class="pre">build_catkin_ws</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workspace_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">install_ros_deps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#build_catkin_ws"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.build_catkin_ws" title="Permalink to this definition"></a></dt>
+<dd><p>Builds the catkin workspace and installs system dependencies while doing so if
+requested.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>workspace_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The path of the catkin workspace.</p></li>
+<li><p><strong>install_ros_deps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether you also want to install the system
+dependencies using rosdep before building the workspace. Defaults to
+<code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.12)"><strong>Exception</strong></a> – When something goes wrong while re-building the workspace.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.install_package">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.core.helpers.</span></span><span class="sig-name descname"><span class="pre">install_package</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">package_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outdated_warning</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#install_package"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.install_package" title="Permalink to this definition"></a></dt>
+<dd><p>Install a given ROS package together with it’s dependencies.</p>
+<p>This function checks if a ROS package is installed and installs it if this is not
+the case. It uses the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/">ros_gazebo_gym</a> package dependency index to
+clone the package and dependencies in the local catkin workspace and subsequently
+rebuilds this workspace. It also throws a warning if a package is installed but not
+up to date.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>package_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The package you want to install.</p></li>
+<li><p><strong>workspace_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – The catkin workspace path. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>
+(i.e. path will be determined).</p></li>
+<li><p><strong>outdated_warning</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to show a update warning when the
+package is outdated. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Whether the package and its dependencies are installed.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.load_ros_params_from_yaml">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.core.helpers.</span></span><span class="sig-name descname"><span class="pre">load_ros_params_from_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yaml_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ros_package_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#load_ros_params_from_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.load_ros_params_from_yaml" title="Permalink to this definition"></a></dt>
+<dd><p>Loads ros parameters from yaml file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>yaml_file_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The configuration file path. Can be absolute or relative.
+If relative, the path is relative to the package directory.</p></li>
+<li><p><strong>package_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The package name that contains the configuration file.
+Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rosparam.RosParamException</strong> – If the yaml file could not be loaded or the
+ROS package could not be found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ros_gazebo_gym.core.helpers.get_log_path">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.core.helpers.</span></span><span class="sig-name descname"><span class="pre">get_log_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ros_gazebo_gym/core/helpers.html#get_log_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.core.helpers.get_log_path" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the ‘ros_gazebo_gym’ package log folder path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The package log folder path.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pathlib.Path</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../gazebo_connection/index.html" class="btn btn-neutral float-left" title="ros_gazebo_gym.core.gazebo_connection" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../lazy_importer/index.html" class="btn btn-neutral float-right" title="ros_gazebo_gym.core.lazy_importer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,62 @@
+:py:mod:`ros_gazebo_gym.common.euler_angles`
+============================================
+
+.. py:module:: ros_gazebo_gym.common.euler_angles
+
+.. autoapi-nested-parse::
+
+   Contains a class used for storing euler angles.
+
+   .. note::
+       Uses the ``ypr`` (x-y-z) euler angle convention.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.common.euler_angles.EulerAngles
+
+
+
+
+.. py:class:: EulerAngles(y=0.0, p=0.0, r=0.0)
+
+
+   Bases: :py:obj:`object`
+
+   Used for storing euler angles.
+
+   .. attribute:: y
+
+      Yaw angle (z). Defaults to ``0.0``.
+
+      :type: float
+
+   .. attribute:: p
+
+      Pitch angle (p). Defaults to ``0.0``.
+
+      :type: float
+
+   .. attribute:: r
+
+      Roll angle (r). Defaults to ``0.0``.
+
+      :type: float
+
+   Initializes the EulerAngles object.
+
+   :param y: Yaw angle (z). Defaults to ``0.0``.
+   :type y: float, optional
+   :param p: Pitch angle (p). Defaults to ``0.0``.
+   :type p: float, optional
+   :param r: Roll angle (r). Defaults to ``0.0``.
+   :type r: float, optional
+
+

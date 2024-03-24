@@ -1,0 +1,404 @@
+:py:mod:`ros_gazebo_gym.common.helpers`
+=======================================
+
+.. py:module:: ros_gazebo_gym.common.helpers
+
+.. autoapi-nested-parse::
+
+   Contains several helper functions that are used in the several environments.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.common.helpers.DummyFile
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.common.helpers.model_state_msg_2_link_state_dict
+   ros_gazebo_gym.common.helpers.pose_msg_2_pose_dict
+   ros_gazebo_gym.common.helpers.lower_first_char
+   ros_gazebo_gym.common.helpers.wrap_space_around
+   ros_gazebo_gym.common.helpers.to_pascal_case
+   ros_gazebo_gym.common.helpers.to_snake_case
+   ros_gazebo_gym.common.helpers.list_2_human_text
+   ros_gazebo_gym.common.helpers.split_dict
+   ros_gazebo_gym.common.helpers.split_bounds_dict
+   ros_gazebo_gym.common.helpers.gripper_width_2_finger_joints_positions
+   ros_gazebo_gym.common.helpers.split_pose_dict
+   ros_gazebo_gym.common.helpers.shallow_dict_merge
+   ros_gazebo_gym.common.helpers.flatten_list
+   ros_gazebo_gym.common.helpers.deep_update
+   ros_gazebo_gym.common.helpers.is_sublist
+   ros_gazebo_gym.common.helpers.remove_dict_none_values
+   ros_gazebo_gym.common.helpers.has_invalid_type
+   ros_gazebo_gym.common.helpers.action_server_exists
+   ros_gazebo_gym.common.helpers.find_gazebo_model_path
+   ros_gazebo_gym.common.helpers.get_orientation_euler
+   ros_gazebo_gym.common.helpers.quaternion_norm
+   ros_gazebo_gym.common.helpers.normalize_quaternion
+   ros_gazebo_gym.common.helpers.suppress_stderr
+
+
+
+.. py:function:: model_state_msg_2_link_state_dict(link_state_msgs)
+
+   Converts the a `gazebo_msgs/ModelState <https://docs.ros.org/en/jade/api/gazebo_msgs/html/msg/ModelState.html>`_
+   message into a state dictionary. Contrary to the original ModelState message,
+   in the model state dictionary the poses and twists are grouped per link/model.
+
+   :param link_state_msgs: A ModelState message.
+   :type link_state_msgs: :obj:`gazebo_msgs.msg.ModelState`
+
+   :returns: A model_state dictionary.
+   :rtype: dict
+
+
+.. py:function:: pose_msg_2_pose_dict(pose_msg)
+
+   Create a pose dictionary ``{x, y, z, rx, ry, rz, rw}`` out of a
+   `geometry_msgs.msg.Pose <https://docs.ros.org/en/noetic/api/geometry_msgs/html/msg/Pose.html>`_
+   message.
+
+   :param pose_msg: A pose message
+   :type pose_msg: :obj:`geometry_msgs.msg.Pose`
+
+   :returns: Dictionary that contains the pose.
+   :rtype: dict
+
+
+.. py:function:: lower_first_char(string)
+
+   De-capitalize the first letter of a string.
+
+   :param string: The input string.
+   :type string: str
+
+   :returns: The de-capitalized string.
+   :rtype: str
+
+   .. note::
+       This function is not the exact opposite of the capitalize function of the
+       standard library. For example, capitalize('abC') returns Abc rather than AbC.
+
+
+.. py:function:: wrap_space_around(text)
+
+   Wrap one additional space around text if it is not already present.
+
+   :param text: Text
+   :type text: str
+
+   :returns: Text with extra spaces around it.
+   :rtype: str
+
+
+.. py:function:: to_pascal_case(text)
+
+   Convert a string to pascal case.
+
+   :param text: Text
+   :type text: str
+
+   :returns: Text in pascal case.
+   :rtype: str
+
+
+.. py:function:: to_snake_case(text)
+
+   Convert a string to snake case.
+
+   :param text: Text
+   :type text: str
+
+   :returns: Text in snake case.
+   :rtype: str
+
+
+.. py:function:: list_2_human_text(input_list, separator=', ', end_separator=' & ')
+
+   Function converts a list of values into human readable sentence.
+
+   .. rubric:: Example
+
+   Using this function a list of 4 items ``[item1, item2, item3, item4]`` becomes
+   ``item2, item3 & item4``.
+
+   :param input_list: A input list.
+   :type input_list: list
+
+   :returns: A human readable string that can be printed.
+   :rtype: str
+
+
+.. py:function:: split_dict(input_dict, *args)
+
+   Split a dictionary into smaller dictionaries based on the keys.
+
+   .. rubric:: Example
+
+   .. code-block:: python
+
+       split_dict_list = split_dict(
+           input_dict, ["first_dict_key1", "first_dict_key2"],
+           ["second_dict_key1", "second_dict_key2"]
+       )
+
+   :param input_dict: Input dictionary.
+   :type input_dict: dict
+   :param \*args: Lists containing the keys you want to have in the successive
+                  dictionaries.
+   :type \*args: list
+
+   :returns: A list containing the splitted dictionaries.
+   :rtype: list
+
+
+.. py:function:: split_bounds_dict(bounds_dict)
+
+   Splits the bounding region dictionary into two separate bounding dictionaries,
+   one for the ``ee_pose`` and one fore the ``joint_pose``.
+
+   :param bounds_dict: Original bounds dictionary.
+   :type bounds_dict: dict
+
+   :returns:
+
+             tuple containing:
+
+                 - :obj:`dict`: ee_pose bounding region dictionary.
+                 - :obj:`dict`: joint_pose bounding region dictionary.
+   :rtype: (tuple)
+
+
+.. py:function:: gripper_width_2_finger_joints_positions(input_dict, joints)
+
+   Replaces a 'gripper_width' key in a dictionary with corresponding finger joint
+   position keys.
+
+   :param input_dict: The dictionary that contains the 'gripper_Width'.
+   :type input_dict: dict
+   :param joints: The available finger joints.
+   :type joints: list
+
+   :returns: The new dictionary that contains the finger joint positions.
+   :rtype: dict
+
+
+.. py:function:: split_pose_dict(pose_dict)
+
+   Splits a pose dictionary into two separate pose dictionaries, one for the
+   ``ee_pose`` and one fore the ``joint_pose``.
+
+   :param bounding_region: Original bounds dictionary.
+   :type bounding_region: dict
+
+   :returns:
+
+             tuple containing:
+
+                 - :obj:`dict`: ee_pose bounding region dictionary.
+                 - :obj:`dict`: joint_pose dictionary.
+   :rtype: (tuple)
+
+
+.. py:function:: shallow_dict_merge(*args, order=None)
+
+   Given several dicts, merge them into a new dict as a shallow copy.
+
+   :param args: The input dictionaries.
+   :type args: dict
+   :param order: The order in which you want to have the keys.
+   :type order: list
+
+   :returns: The new merged dictionary.
+   :rtype: dict
+
+
+.. py:function:: flatten_list(input_list)
+
+   Function used to flatten a list containing sublists. It does this by calling
+   itself recursively.
+
+   :param input_list: A list containing strings or other lists.
+   :type input_list: list
+
+   :returns: The flattened list.
+   :rtype: list
+
+
+.. py:function:: deep_update(d, u=None, fixed=False, **kwargs)
+
+   Updates a dictionary recursively (i.e. deep update). This function takes a update
+   dictionary and/or keyword arguments. When a keyword argument is supplied, the
+   key-value pair is changed if it exists somewhere in the dictionary.
+
+   :param d: Dictionary you want to update.
+   :type d: dict
+   :param u: The update dictionary.
+   :type u: dict, optional
+   :param fixed: Whether you want the input dictionary to be fixed
+                 (i.e. only change keys that are already present). Defaults to ``False``.
+   :type fixed: bool, optional
+   :param \*\*kwargs: Keyword arguments used for creating the dictionary keys.
+
+   :returns: The updated dictionary.
+   :rtype: dict
+
+   .. seealso::
+       Based on the answer given by `@alex-martelli <https://stackoverflow.com/users/95810/alex-martelli>`_
+       on `this stackoverflow question <https://stackoverflow.com/questions/3232943/update-value-of-a-nested-dictionary-of-varying-depth>`_.
+
+
+.. py:function:: is_sublist(lst1, lst2)
+
+   Checks whether lst1 is a sublist of lst2.
+
+   :param lst1: List 1.
+   :type lst1: list
+   :param lst2: List 2.
+   :type lst2: list
+
+   :returns: Boolean specifying whether lst1 is a sublist of lst2.
+   :rtype: bool
+
+
+.. py:function:: remove_dict_none_values(input_dict)
+
+   Removes all the None values from a dictionary.
+
+   :param input_dict: The input dictionary.
+   :type input_dict: dict
+
+   :returns: The dictionary without the None values.
+   :rtype: dict
+
+
+.. py:function:: has_invalid_type(variable, variable_types, items_types=None, depth=0)
+
+   Validates whether a variable or its attributes has an invalid type.
+
+   :param variable: The variable you want to check.
+   :type variable: object
+   :param variable_types: The type the variable can have.
+   :type variable_types: tuple
+   :param items_types: The types the dictionary or list values can have.
+   :type items_types: tuple
+
+   :returns:
+
+             tuple containing:
+
+                 - :obj:`bool`: A bool specifying whether a type was invalid.
+                 - :obj:`int`: The maximum depth at which the type was invalid.
+                 - :class:`type`: The types that were invalid.
+   :rtype: (tuple)
+
+
+.. py:function:: action_server_exists(topic_name)
+
+   Checks whether a topic contains an action server
+   is running.
+
+   :param topic_name: Action server topic name.
+   :type topic_name: str
+
+   :returns: Boolean specifying whether the action service exists.
+   :rtype: bool
+
+
+.. py:function:: find_gazebo_model_path(model_name, models_directory_path, extension='')
+
+   Finds the path of the ``sdf`` or ``urdf`` file that belongs to a given
+   ``model_name``. This is done by searching in the ``models_directory_path`` folder.
+   If no file was found the model file path is returned empty.
+
+   :param model_name: The name of the model for which you want to find the path.
+   :type model_name: str
+   :param models_directory_path: The path of the folder that contains the gazebo
+                                 models. extension (str, optional): The model path extension. Defaults to
+                                 ``""`` meaning that the function will first look for a ``sdf`` file and if
+                                 that is not found it will look for a ``urdf`` file.
+   :type models_directory_path: str
+
+   :returns:
+
+             tuple containing:
+
+                 - :obj:`str`: The path where the ``sdf`` or ``urdf`` model file can be
+                   found.
+                 - :obj:`str`: Extension of the model file.
+   :rtype: (tuple)
+
+
+.. py:function:: get_orientation_euler(quaternion)
+
+   Converts pose (position, orientation) to euler angles.
+
+   :param quaternion: Input quaternion.
+   :type quaternion: :obj:`geometry_msgs.Pose`
+
+   Returns=:
+       :obj:`~ros_gazebo_gym.common.euler_angles.EulerAngles`: Object containing the
+           yaw (z), pitch (y) and roll (x) euler angles.
+
+
+.. py:function:: quaternion_norm(quaternion)
+
+   Calculates the norm of a quaternion.
+
+   :param Quaternion: A quaternion.
+   :type Quaternion: :obj:`geometry_msgs.msg.Quaternion`
+
+   :returns: The norm of the quaternion.
+   :rtype: float
+
+
+.. py:function:: normalize_quaternion(quaternion)
+
+   Normalizes a given quaternion.
+
+   :param quaternion: A quaternion.
+   :type quaternion: :obj:`geometry_msgs.msg.Quaternion`
+
+   :returns: The normalized quaternion.
+   :rtype: :obj:`geometry_msgs.msg.Quaternion`
+
+
+.. py:class:: DummyFile
+
+
+   Bases: :py:obj:`object`
+
+   Dummy file class to redirect stderr to.
+
+   .. py:method:: write(x)
+
+      Writes the given string to the dummy file.
+
+
+
+.. py:function:: suppress_stderr()
+
+   Suppresses the stderr output of a code block.
+
+   .. rubric:: Example
+
+   .. code-block:: python
+
+       with suppress_stderr():
+           # Code block that will not print stderr.
+           sys.stderr.write("This will not be printed.")
+
+

@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ros_gazebo_gym.core.gazebo_connection &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/usage.html">How to use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/add_nev_env.html">Add new environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../ros_gazebo_gym.html">ros_gazebo_gym</a></li>
+      <li class="breadcrumb-item active">ros_gazebo_gym.core.gazebo_connection</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ros_gazebo_gym.core.gazebo_connection</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Contains a small python utility class that makes it easier to interact with the</span>
+<span class="sd">Gazebo simulator.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">gazebo_msgs.msg</span> <span class="kn">import</span> <span class="n">ModelStates</span>
+<span class="kn">from</span> <span class="nn">gazebo_msgs.srv</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GetLinkState</span><span class="p">,</span>
+    <span class="n">GetModelState</span><span class="p">,</span>
+    <span class="n">GetPhysicsProperties</span><span class="p">,</span>
+    <span class="n">GetPhysicsPropertiesRequest</span><span class="p">,</span>
+    <span class="n">SetModelConfiguration</span><span class="p">,</span>
+    <span class="n">SetModelConfigurationRequest</span><span class="p">,</span>
+    <span class="n">SetModelState</span><span class="p">,</span>
+    <span class="n">SetModelStateRequest</span><span class="p">,</span>
+    <span class="n">SetPhysicsProperties</span><span class="p">,</span>
+    <span class="n">SetPhysicsPropertiesRequest</span><span class="p">,</span>
+    <span class="n">SpawnModel</span><span class="p">,</span>
+    <span class="n">SpawnModelRequest</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">geometry_msgs.msg</span> <span class="kn">import</span> <span class="n">Pose</span><span class="p">,</span> <span class="n">Vector3</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.common.helpers</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">deep_update</span><span class="p">,</span>
+    <span class="n">find_gazebo_model_path</span><span class="p">,</span>
+    <span class="n">lower_first_char</span><span class="p">,</span>
+    <span class="n">model_state_msg_2_link_state_dict</span><span class="p">,</span>
+    <span class="n">normalize_quaternion</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.core.helpers</span> <span class="kn">import</span> <span class="n">ros_exit_gracefully</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.exceptions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GetLinkStateError</span><span class="p">,</span>
+    <span class="n">GetModelStateError</span><span class="p">,</span>
+    <span class="n">GetPhysicsPropertiesError</span><span class="p">,</span>
+    <span class="n">SetModelConfigurationError</span><span class="p">,</span>
+    <span class="n">SetModelStateError</span><span class="p">,</span>
+    <span class="n">SetPhysicsPropertiesError</span><span class="p">,</span>
+    <span class="n">SpawnModelError</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">rosgraph_msgs.msg</span> <span class="kn">import</span> <span class="n">Clock</span>
+<span class="kn">from</span> <span class="nn">rospy</span> <span class="kn">import</span> <span class="n">ServiceException</span>
+<span class="kn">from</span> <span class="nn">rospy.exceptions</span> <span class="kn">import</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span>
+<span class="kn">from</span> <span class="nn">rospy_message_converter</span> <span class="kn">import</span> <span class="n">message_converter</span>
+<span class="kn">from</span> <span class="nn">std_msgs.msg</span> <span class="kn">import</span> <span class="n">Float64</span>
+<span class="kn">from</span> <span class="nn">std_srvs.srv</span> <span class="kn">import</span> <span class="n">Empty</span>
+
+<span class="c1"># Specify gazebo service topics.</span>
+<div class="viewcode-block" id="GAZEBO_PAUSE_PHYSICS_TOPIC"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GAZEBO_PAUSE_PHYSICS_TOPIC">[docs]</a><span class="n">GAZEBO_PAUSE_PHYSICS_TOPIC</span> <span class="o">=</span> <span class="s2">&quot;/gazebo/pause_physics&quot;</span></div>
+<div class="viewcode-block" id="GAZEBO_UNPAUSE_PHYSICS_TOPIC"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GAZEBO_UNPAUSE_PHYSICS_TOPIC">[docs]</a><span class="n">GAZEBO_UNPAUSE_PHYSICS_TOPIC</span> <span class="o">=</span> <span class="s2">&quot;/gazebo/unpause_physics&quot;</span></div>
+<div class="viewcode-block" id="GAZEBO_RESET_SIM_TOPIC"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GAZEBO_RESET_SIM_TOPIC">[docs]</a><span class="n">GAZEBO_RESET_SIM_TOPIC</span> <span class="o">=</span> <span class="s2">&quot;/gazebo/reset_simulation&quot;</span></div>
+<div class="viewcode-block" id="GAZEBO_RESET_WORLD_TOPIC"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GAZEBO_RESET_WORLD_TOPIC">[docs]</a><span class="n">GAZEBO_RESET_WORLD_TOPIC</span> <span class="o">=</span> <span class="s2">&quot;/gazebo/reset_world&quot;</span></div>
+<div class="viewcode-block" id="GAZEBO_CLOCK_TOPIC"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GAZEBO_CLOCK_TOPIC">[docs]</a><span class="n">GAZEBO_CLOCK_TOPIC</span> <span class="o">=</span> <span class="s2">&quot;/clock&quot;</span></div>
+<div class="viewcode-block" id="GAZEBO_SPAWN_SDF_MODEL_TOPIC"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GAZEBO_SPAWN_SDF_MODEL_TOPIC">[docs]</a><span class="n">GAZEBO_SPAWN_SDF_MODEL_TOPIC</span> <span class="o">=</span> <span class="s2">&quot;/gazebo/spawn_sdf_model&quot;</span></div>
+<div class="viewcode-block" id="GAZEBO_SPAWN_URDF_MODEL_TOPIC"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GAZEBO_SPAWN_URDF_MODEL_TOPIC">[docs]</a><span class="n">GAZEBO_SPAWN_URDF_MODEL_TOPIC</span> <span class="o">=</span> <span class="s2">&quot;/gazebo/spawn_urdf_model&quot;</span></div>
+<div class="viewcode-block" id="GAZEBO_LINK_STATES_TOPIC"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GAZEBO_LINK_STATES_TOPIC">[docs]</a><span class="n">GAZEBO_LINK_STATES_TOPIC</span> <span class="o">=</span> <span class="s2">&quot;/gazebo/link_states&quot;</span></div>
+<div class="viewcode-block" id="GAZEBO_MODEL_STATES_TOPIC"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GAZEBO_MODEL_STATES_TOPIC">[docs]</a><span class="n">GAZEBO_MODEL_STATES_TOPIC</span> <span class="o">=</span> <span class="s2">&quot;/gazebo/model_states&quot;</span></div>
+<div class="viewcode-block" id="GAZEBO_GET_MODEL_STATE_TOPIC"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GAZEBO_GET_MODEL_STATE_TOPIC">[docs]</a><span class="n">GAZEBO_GET_MODEL_STATE_TOPIC</span> <span class="o">=</span> <span class="s2">&quot;/gazebo/get_model_state&quot;</span></div>
+<div class="viewcode-block" id="GAZEBO_SET_MODEL_STATE_TOPIC"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GAZEBO_SET_MODEL_STATE_TOPIC">[docs]</a><span class="n">GAZEBO_SET_MODEL_STATE_TOPIC</span> <span class="o">=</span> <span class="s2">&quot;/gazebo/set_model_state&quot;</span></div>
+<div class="viewcode-block" id="GAZEBO_GET_LINK_STATE_TOPIC"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GAZEBO_GET_LINK_STATE_TOPIC">[docs]</a><span class="n">GAZEBO_GET_LINK_STATE_TOPIC</span> <span class="o">=</span> <span class="s2">&quot;/gazebo/get_link_state&quot;</span></div>
+<div class="viewcode-block" id="GAZEBO_SET_MODEL_CONFIGURATION_TOPIC"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GAZEBO_SET_MODEL_CONFIGURATION_TOPIC">[docs]</a><span class="n">GAZEBO_SET_MODEL_CONFIGURATION_TOPIC</span> <span class="o">=</span> <span class="s2">&quot;/gazebo/set_model_configuration&quot;</span></div>
+<div class="viewcode-block" id="GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC">[docs]</a><span class="n">GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC</span> <span class="o">=</span> <span class="s2">&quot;/gazebo/get_physics_properties&quot;</span></div>
+<div class="viewcode-block" id="GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC">[docs]</a><span class="n">GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC</span> <span class="o">=</span> <span class="s2">&quot;/gazebo/set_physics_properties&quot;</span></div>
+
+<span class="c1"># Script variables.</span>
+<div class="viewcode-block" id="PHYSICS_UPDATE_RATE"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.PHYSICS_UPDATE_RATE">[docs]</a><span class="n">PHYSICS_UPDATE_RATE</span> <span class="o">=</span> <span class="mi">1000</span></div>
+<div class="viewcode-block" id="SERVICES_CONNECTION_TIMEOUTS"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.SERVICES_CONNECTION_TIMEOUTS">[docs]</a><span class="n">SERVICES_CONNECTION_TIMEOUTS</span> <span class="o">=</span> <span class="mi">5</span></div>
+
+
+<div class="viewcode-block" id="GazeboConnection"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.gazebo_connection.GazeboConnection">[docs]</a><span class="k">class</span> <span class="nc">GazeboConnection</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class that contains several methods that can be used to interact with the Gazebo</span>
+<span class="sd">    simulation.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        pause_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS service that</span>
+<span class="sd">            pauses the gazebo simulator.</span>
+<span class="sd">        unpause_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS service that</span>
+<span class="sd">            un-pauses the gazebo simulator.</span>
+<span class="sd">        reset_simulation_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS</span>
+<span class="sd">            service that resets the gazebo simulator.</span>
+<span class="sd">        reset_world_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS service</span>
+<span class="sd">            that resets the gazebo world.</span>
+<span class="sd">        spawn_sdf_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS service</span>
+<span class="sd">            that spawns a sdf model.</span>
+<span class="sd">        spawn_urdf_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS service</span>
+<span class="sd">            that spawns a urdf model.</span>
+<span class="sd">        get_model_state_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS</span>
+<span class="sd">            service used to set get model states.</span>
+<span class="sd">        set_model_state_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS</span>
+<span class="sd">            service used to set the model state of a object.</span>
+<span class="sd">        set_link_state_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS</span>
+<span class="sd">            service used to set the link states.</span>
+<span class="sd">        get_link_state_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS</span>
+<span class="sd">            service used to get the link states.</span>
+<span class="sd">        set_model_configuration_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`):</span>
+<span class="sd">            ROS service that sets the configuration of a model.</span>
+<span class="sd">        get_physics_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS</span>
+<span class="sd">            service used to retrieve the physics properties.</span>
+<span class="sd">        set_physics_proxy (:obj:`rospy.impl.tcpros_service.ServiceProxy`): ROS</span>
+<span class="sd">            service used to set the physics properties.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">reset_world_or_sim</span><span class="o">=</span><span class="s2">&quot;WORLD&quot;</span><span class="p">,</span> <span class="n">max_retry</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">retry_rate</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">log_reset</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initiate the GazeboConnection instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reset_world_or_sim (str, optional): Whether you want to reset the whole</span>
+<span class="sd">                simulation &quot;SIMULATION&quot; at startup or only the world &quot;WORLD&quot; (object</span>
+<span class="sd">                positions). Defaults to &quot;WORLD&quot;.</span>
+<span class="sd">            max_retry (int, optional): How many times a command to the simulator is</span>
+<span class="sd">                retried before giving up. Defaults to ``30``.</span>
+<span class="sd">            retry_rate (int, optional): The rate at which the retry is done. Defaults to</span>
+<span class="sd">                ``2`` (i.e. 0.5 seconds).</span>
+<span class="sd">            log_reset (bool, optional): Whether we want to print a log statement when</span>
+<span class="sd">                the world/simulation is reset. Defaults to ``True``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s2">&quot;Initialize GazeboConnection utility class...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_world_or_sim</span> <span class="o">=</span> <span class="n">reset_world_or_sim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_reset</span> <span class="o">=</span> <span class="n">log_reset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_retry</span> <span class="o">=</span> <span class="n">max_retry</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_retry_rate</span> <span class="o">=</span> <span class="n">retry_rate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_physics_update_rate</span> <span class="o">=</span> <span class="n">Float64</span><span class="p">(</span><span class="n">PHYSICS_UPDATE_RATE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__time</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="c1"># Connect to link_state and model_state topics.</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span>
+            <span class="n">GAZEBO_LINK_STATES_TOPIC</span><span class="p">,</span> <span class="n">ModelStates</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link_states_cb</span><span class="p">,</span> <span class="n">queue_size</span><span class="o">=</span><span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span>
+            <span class="n">GAZEBO_MODEL_STATES_TOPIC</span><span class="p">,</span> <span class="n">ModelStates</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_states_cb</span><span class="p">,</span> <span class="n">queue_size</span><span class="o">=</span><span class="mi">1</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Connect to gazebo services.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_PAUSE_PHYSICS_TOPIC</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="n">GAZEBO_PAUSE_PHYSICS_TOPIC</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">SERVICES_CONNECTION_TIMEOUTS</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pause_proxy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span><span class="n">GAZEBO_PAUSE_PHYSICS_TOPIC</span><span class="p">,</span> <span class="n">Empty</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_PAUSE_PHYSICS_TOPIC</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to connect to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_PAUSE_PHYSICS_TOPIC</span>
+            <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_UNPAUSE_PHYSICS_TOPIC</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="n">GAZEBO_UNPAUSE_PHYSICS_TOPIC</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">SERVICES_CONNECTION_TIMEOUTS</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unpause_proxy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span><span class="n">GAZEBO_UNPAUSE_PHYSICS_TOPIC</span><span class="p">,</span> <span class="n">Empty</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_UNPAUSE_PHYSICS_TOPIC</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to connect to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_UNPAUSE_PHYSICS_TOPIC</span>
+            <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_RESET_SIM_TOPIC</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="n">GAZEBO_RESET_SIM_TOPIC</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">SERVICES_CONNECTION_TIMEOUTS</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset_simulation_proxy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span>
+                <span class="n">GAZEBO_RESET_SIM_TOPIC</span><span class="p">,</span> <span class="n">Empty</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_RESET_SIM_TOPIC</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s2">&quot;Failed to connect to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_RESET_SIM_TOPIC</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_RESET_WORLD_TOPIC</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="n">GAZEBO_RESET_WORLD_TOPIC</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">SERVICES_CONNECTION_TIMEOUTS</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset_world_proxy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span><span class="n">GAZEBO_RESET_WORLD_TOPIC</span><span class="p">,</span> <span class="n">Empty</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_RESET_WORLD_TOPIC</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to connect to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_RESET_WORLD_TOPIC</span>
+            <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_SPAWN_SDF_MODEL_TOPIC</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="n">GAZEBO_SPAWN_SDF_MODEL_TOPIC</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">SERVICES_CONNECTION_TIMEOUTS</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">spawn_sdf_proxy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span>
+                <span class="n">GAZEBO_SPAWN_SDF_MODEL_TOPIC</span><span class="p">,</span> <span class="n">SpawnModel</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_SPAWN_SDF_MODEL_TOPIC</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to connect to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_SPAWN_SDF_MODEL_TOPIC</span>
+            <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                <span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_SPAWN_URDF_MODEL_TOPIC</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="n">GAZEBO_SPAWN_URDF_MODEL_TOPIC</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">SERVICES_CONNECTION_TIMEOUTS</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">spawn_urdf_proxy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span>
+                <span class="n">GAZEBO_SPAWN_URDF_MODEL_TOPIC</span><span class="p">,</span> <span class="n">SpawnModel</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_SPAWN_URDF_MODEL_TOPIC</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to connect to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_SPAWN_URDF_MODEL_TOPIC</span>
+            <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_GET_MODEL_STATE_TOPIC</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="n">GAZEBO_GET_MODEL_STATE_TOPIC</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">SERVICES_CONNECTION_TIMEOUTS</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_model_state_proxy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span>
+                <span class="n">GAZEBO_GET_MODEL_STATE_TOPIC</span><span class="p">,</span> <span class="n">GetModelState</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_GET_MODEL_STATE_TOPIC</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to connect to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_GET_MODEL_STATE_TOPIC</span>
+            <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_SET_MODEL_STATE_TOPIC</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="n">GAZEBO_SET_MODEL_STATE_TOPIC</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">SERVICES_CONNECTION_TIMEOUTS</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_model_state_proxy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span>
+                <span class="n">GAZEBO_SET_MODEL_STATE_TOPIC</span><span class="p">,</span> <span class="n">SetModelState</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_SET_MODEL_STATE_TOPIC</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to connect to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_SET_MODEL_STATE_TOPIC</span>
+            <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_GET_LINK_STATE_TOPIC</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="n">GAZEBO_GET_LINK_STATE_TOPIC</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">SERVICES_CONNECTION_TIMEOUTS</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_link_state_proxy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span>
+                <span class="n">GAZEBO_GET_LINK_STATE_TOPIC</span><span class="p">,</span> <span class="n">GetLinkState</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_GET_LINK_STATE_TOPIC</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to connect to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_GET_LINK_STATE_TOPIC</span>
+            <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                <span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_SET_MODEL_CONFIGURATION_TOPIC</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="n">GAZEBO_SET_MODEL_CONFIGURATION_TOPIC</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">SERVICES_CONNECTION_TIMEOUTS</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_model_configuration_proxy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span>
+                <span class="n">GAZEBO_SET_MODEL_CONFIGURATION_TOPIC</span><span class="p">,</span> <span class="n">SetModelConfiguration</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                <span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_SET_MODEL_CONFIGURATION_TOPIC</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to connect to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span>
+                <span class="o">%</span> <span class="n">GAZEBO_SET_MODEL_CONFIGURATION_TOPIC</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Setup physics properties control service.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                <span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="n">GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">SERVICES_CONNECTION_TIMEOUTS</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_physics_proxy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span>
+                <span class="n">GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC</span><span class="p">,</span> <span class="n">GetPhysicsProperties</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                <span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to connect to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span>
+                <span class="o">%</span> <span class="n">GAZEBO_GET_PHYSICS_PROPERTIES_TOPIC</span>
+            <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                <span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="n">GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">SERVICES_CONNECTION_TIMEOUTS</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_physics_proxy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span>
+                <span class="n">GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC</span><span class="p">,</span> <span class="n">SetPhysicsProperties</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                <span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to connect to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span>
+                <span class="o">%</span> <span class="n">GAZEBO_SET_PHYSICS_PROPERTIES_TOPIC</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Connect to clock.</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span><span class="n">GAZEBO_CLOCK_TOPIC</span><span class="p">,</span> <span class="n">Clock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clock_cb</span><span class="p">,</span> <span class="n">queue_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Reset the simulation.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_sim</span><span class="p">()</span>
+
+        <span class="c1"># We always pause the simulation, important for legged robots learning.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pause_sim</span><span class="p">()</span>
+
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s2">&quot;GazeboConnection utility class initialised.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GazeboConnection.pause_sim"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.gazebo_connection.GazeboConnection.pause_sim">[docs]</a>    <span class="k">def</span> <span class="nf">pause_sim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pause the simulation.&quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;PAUSING service found...&quot;</span><span class="p">)</span>
+        <span class="n">paused_done</span><span class="p">,</span> <span class="n">counter</span><span class="p">,</span> <span class="n">warned</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">paused_done</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_retry</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;PAUSING service calling...&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">pause_proxy</span><span class="p">()</span>
+                    <span class="n">paused_done</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;PAUSING service calling...DONE&quot;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">warned</span><span class="p">:</span>
+                        <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span>
+                            <span class="s2">&quot;/gazebo/pause_physics service call failed retrying &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_retry</span><span class="si">}</span><span class="s2"> times.&quot;</span>
+                        <span class="p">)</span>
+                        <span class="n">warned</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_retry_rate</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Maximum retries done (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_retry</span><span class="si">}</span><span class="s2">), please check Gazebo &quot;</span>
+                    <span class="s2">&quot;pause service and try again.&quot;</span>
+                <span class="p">)</span>
+                <span class="n">ros_exit_gracefully</span><span class="p">(</span>
+                    <span class="n">shutdown_msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Shutting down </span><span class="si">{</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exit_code</span><span class="o">=</span><span class="mi">1</span>
+                <span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;PAUSING finished&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GazeboConnection.unpause_sim"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.gazebo_connection.GazeboConnection.unpause_sim">[docs]</a>    <span class="k">def</span> <span class="nf">unpause_sim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Unpauses the simulation.&quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;UNPAUSING start&quot;</span><span class="p">)</span>
+        <span class="n">unpaused_done</span><span class="p">,</span> <span class="n">counter</span><span class="p">,</span> <span class="n">warned</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">unpaused_done</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_retry</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;UNPAUSING service calling...&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">unpause_proxy</span><span class="p">()</span>
+                    <span class="n">unpaused_done</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;UNPAUSING service calling...DONE&quot;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">warned</span><span class="p">:</span>
+                        <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span>
+                            <span class="s2">&quot;/gazebo/unpause_physics service call failed retrying &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_retry</span><span class="si">}</span><span class="s2"> times.&quot;</span>
+                        <span class="p">)</span>
+                        <span class="n">warned</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">((</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_retry_rate</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Maximum retries done (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_retry</span><span class="si">}</span><span class="s2">), please check Gazebo &quot;</span>
+                    <span class="s2">&quot;unpause service and try again.&quot;</span>
+                <span class="p">)</span>
+                <span class="n">ros_exit_gracefully</span><span class="p">(</span>
+                    <span class="n">shutdown_msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Shutting down </span><span class="si">{</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exit_code</span><span class="o">=</span><span class="mi">1</span>
+                <span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;UNPAUSING finished&quot;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_reset_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calls the ROS reset simulation service.&quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span><span class="n">GAZEBO_RESET_SIM_TOPIC</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset_simulation_proxy</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_simulation_proxy</span><span class="o">.</span><span class="n">resolved_name</span><span class="si">}</span><span class="s2"> service call failed&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_reset_world</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resets the world (NOT THE WHOLE SIMULATION).&quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span><span class="n">GAZEBO_RESET_WORLD_TOPIC</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset_world_proxy</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_world_proxy</span><span class="o">.</span><span class="n">resolved_name</span><span class="si">}</span><span class="s2"> service call failed&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GazeboConnection.reset_sim"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.gazebo_connection.GazeboConnection.reset_sim">[docs]</a>    <span class="k">def</span> <span class="nf">reset_sim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the simulation or the world.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            Implemented like this since in some simulations, when reset the simulation</span>
+<span class="sd">            the systems that work with TF break. In this case we ONLY resets the object</span>
+<span class="sd">            position, not the entire simulation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reset_world_or_sim</span> <span class="o">==</span> <span class="s2">&quot;SIMULATION&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_reset</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s2">&quot;SIMULATION RESET&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reset_simulation</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reset_world_or_sim</span> <span class="o">==</span> <span class="s2">&quot;WORLD&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_reset</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s2">&quot;WORLD RESET&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reset_world</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reset_world_or_sim</span> <span class="o">==</span> <span class="s2">&quot;NO_RESET_SIM&quot;</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s2">&quot;NO RESET SIMULATION SELECTED&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s2">&quot;WRONG Reset Option:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_reset_world_or_sim</span><span class="p">))</span></div>
+
+    <span class="c1">#############################################</span>
+    <span class="c1"># Properties/functions for retrieving/ ######</span>
+    <span class="c1"># setting gazebo environment properties #####</span>
+    <span class="c1">#############################################</span>
+<div class="viewcode-block" id="GazeboConnection.get_model_state"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.gazebo_connection.GazeboConnection.get_model_state">[docs]</a>    <span class="k">def</span> <span class="nf">get_model_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the current state of a model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model_name (str): The name of the model for which you want to retrieve the</span>
+<span class="sd">                state.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :obj:`numpy.ndarray`: The pose of the model.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            :obj:`ros_gazebo_gym.exceptions.GetModelStateError`: Thrown when the model</span>
+<span class="sd">                state retrieval failed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">model_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model_state_proxy</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="s2">&quot;world&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">model_state</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">model_state</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+                    <span class="n">model_state</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                    <span class="n">model_state</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span><span class="p">,</span>
+                    <span class="n">model_state</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+                    <span class="n">model_state</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                    <span class="n">model_state</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">z</span><span class="p">,</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logwarn_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Model state of &#39;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&#39; model could not be retrieved.&quot;</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">logwarn_msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">GetModelStateError</span><span class="p">(</span>
+                <span class="n">message</span><span class="o">=</span><span class="n">logwarn_msg</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="n">model_state</span><span class="o">.</span><span class="n">status_message</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="GazeboConnection.set_model_state"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.gazebo_connection.GazeboConnection.set_model_state">[docs]</a>    <span class="k">def</span> <span class="nf">set_model_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_state</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the state of a model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model_state (:obj:`gazebo_msgs.msg.SetModelState`): The model_state object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Boolean specifying whether the model state was set successfully.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            :obj:`ros_gazebo_gym.exceptions.SetModelStateError`: Thrown when the model</span>
+<span class="sd">                state could not be set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;setting &#39;</span><span class="si">%s</span><span class="s2">&#39; model state.&quot;</span> <span class="o">%</span> <span class="n">model_state</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
+        <span class="n">retval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_model_state_proxy</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">SetModelStateRequest</span><span class="p">(</span><span class="n">model_state</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">retval</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="n">logwarn_msg</span> <span class="o">=</span> <span class="s2">&quot;Model state model could not be set.&quot;</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">logwarn_msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SetModelStateError</span><span class="p">(</span><span class="n">logwarn_msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">retval</span><span class="o">.</span><span class="n">success</span></div>
+
+<div class="viewcode-block" id="GazeboConnection.get_link_state"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.gazebo_connection.GazeboConnection.get_link_state">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">link_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the current state of a model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            link_name (str): The name of the robot link.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :obj:`numpy.ndarray`: The pose of the robot link.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            GetLinkStateError: Thrown when the link state retrieval failed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">link_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_link_state_proxy</span><span class="p">(</span><span class="n">link_name</span><span class="p">,</span> <span class="s2">&quot;world&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">link_state</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">link_state</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+                    <span class="n">link_state</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                    <span class="n">link_state</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span><span class="p">,</span>
+                    <span class="n">link_state</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+                    <span class="n">link_state</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                    <span class="n">link_state</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">z</span><span class="p">,</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logwarn_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Model state of &#39;</span><span class="si">{</span><span class="n">link_name</span><span class="si">}</span><span class="s2">&#39; model could not be retrieved.&quot;</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">logwarn_msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">GetLinkStateError</span><span class="p">(</span>
+                <span class="n">message</span><span class="o">=</span><span class="n">logwarn_msg</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="n">link_state</span><span class="o">.</span><span class="n">status_message</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="GazeboConnection.set_model_configuration"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.gazebo_connection.GazeboConnection.set_model_configuration">[docs]</a>    <span class="k">def</span> <span class="nf">set_model_configuration</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">joint_names</span><span class="p">,</span> <span class="n">joint_positions</span><span class="p">,</span> <span class="n">pause</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the configuration of a model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model_name (string): Model to set the configuration for.</span>
+<span class="sd">            joint_names (list): The joint names for which you want to set the</span>
+<span class="sd">                configuration.</span>
+<span class="sd">            joint_positions (list): The joint positions you want to set.</span>
+<span class="sd">            pause (bool, optional): Pause the simulation while setting the model pose.</span>
+<span class="sd">                Defaults to ``True``.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Boolean specifying whether the model configuration was set</span>
+<span class="sd">                successfully.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            :obj:`ros_gazebo_gym.exceptions.SetModelConfigurationError`: Thrown when the</span>
+<span class="sd">                model configuration could not be set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;setting &#39;</span><span class="si">%s</span><span class="s2">&#39; model state.&quot;</span> <span class="o">%</span> <span class="n">model_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">joint_names</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">joint_positions</span><span class="p">):</span>
+            <span class="n">logwarn_msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Model configuration model could not be set since the &#39;joint_names&#39; &quot;</span>
+                <span class="s2">&quot;and &#39;joint_position&#39; are unequal in length.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">logwarn_msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SetModelConfigurationError</span><span class="p">(</span><span class="n">logwarn_msg</span><span class="p">)</span>
+
+        <span class="c1"># Set joint position.</span>
+        <span class="k">if</span> <span class="n">pause</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pause_sim</span><span class="p">()</span>
+        <span class="n">retval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_model_configuration_proxy</span><span class="o">.</span><span class="n">call</span><span class="p">(</span>
+            <span class="n">SetModelConfigurationRequest</span><span class="p">(</span>
+                <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
+                <span class="n">joint_names</span><span class="o">=</span><span class="n">joint_names</span><span class="p">,</span>
+                <span class="n">joint_positions</span><span class="o">=</span><span class="n">joint_positions</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">pause</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unpause_sim</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">retval</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="n">logwarn_msg</span> <span class="o">=</span> <span class="s2">&quot;Model configuration model could not be set.&quot;</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">logwarn_msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SetModelConfigurationError</span><span class="p">(</span><span class="n">logwarn_msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">retval</span><span class="o">.</span><span class="n">success</span></div>
+
+<div class="viewcode-block" id="GazeboConnection.get_physics_properties"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.gazebo_connection.GazeboConnection.get_physics_properties">[docs]</a>    <span class="k">def</span> <span class="nf">get_physics_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve physics properties from gazebo.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :obj:`gazebo_msgs.srv.GetPhysicsPropertiesResponse`: Physics properties</span>
+<span class="sd">                message.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            :obj:`ros_gazebo_gym.errors.GetPhysicsPropertiesError`: Thrown when</span>
+<span class="sd">                something goes wrong while trying to retrieve the physics properties.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">physics_properties_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">physics_properties</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">physics_properties_msg</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="n">logwarn_msg</span> <span class="o">=</span> <span class="s2">&quot;Physics properties could not be retrieved.&quot;</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">logwarn_msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">GetPhysicsPropertiesError</span><span class="p">(</span>
+                <span class="n">message</span><span class="o">=</span><span class="n">logwarn_msg</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="n">physics_properties_msg</span><span class="o">.</span><span class="n">status_message</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">physics_properties_msg</span></div>
+
+<div class="viewcode-block" id="GazeboConnection.set_physics_properties"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.gazebo_connection.GazeboConnection.set_physics_properties">[docs]</a>    <span class="k">def</span> <span class="nf">set_physics_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Change physics properties of the gazebo physics engine. These properties have</span>
+<span class="sd">        to be supplied as a keyword argument.</span>
+
+<span class="sd">        .. tip::</span>
+<span class="sd">            You can use the :obj:`GazeboConnection.set_physics_proxy` If you want to</span>
+<span class="sd">            send a :obj:`gazebo_msgs.srv.SetPhysicsProperties` message directly.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs: Keyword arguments specifying the physics properties you want to</span>
+<span class="sd">                set.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            SetPhysicsPropertiesError: Thrown when something goes wrong while setting</span>
+<span class="sd">                the physics properties.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">physics_properties_dict</span> <span class="o">=</span> <span class="n">message_converter</span><span class="o">.</span><span class="n">convert_ros_message_to_dictionary</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">physics_properties</span>
+        <span class="p">)</span>
+        <span class="k">del</span> <span class="p">(</span>
+            <span class="n">physics_properties_dict</span><span class="p">[</span><span class="s2">&quot;pause&quot;</span><span class="p">],</span>
+            <span class="n">physics_properties_dict</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">],</span>
+            <span class="n">physics_properties_dict</span><span class="p">[</span><span class="s2">&quot;status_message&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">physics_properties_msg</span> <span class="o">=</span> <span class="n">message_converter</span><span class="o">.</span><span class="n">convert_dictionary_to_ros_message</span><span class="p">(</span>
+            <span class="s2">&quot;gazebo_msgs/SetPhysicsProperties&quot;</span><span class="p">,</span>
+            <span class="n">deep_update</span><span class="p">(</span><span class="n">physics_properties_dict</span><span class="p">,</span> <span class="n">fixed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+            <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;request&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">retval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_physics_proxy</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">physics_properties_msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">retval</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="n">logwarn_msg</span> <span class="o">=</span> <span class="s2">&quot;Physics engine could not be updated.&quot;</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">logwarn_msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SetPhysicsPropertiesError</span><span class="p">(</span>
+                <span class="n">message</span><span class="o">=</span><span class="n">logwarn_msg</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="n">retval</span><span class="o">.</span><span class="n">status_message</span>
+            <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_update_gravity_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Updates the simulator gravity.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (float): Gravity vector x coordinate.</span>
+<span class="sd">            y (float): Gravity vector y coordinate.</span>
+<span class="sd">            z (float): Gravity vector z coordinate.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            :obj:`ros_gazebo_gym.exceptions.SetPhysicsPropertiesError`: Thrown when the</span>
+<span class="sd">                physics properties could not be set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pause_sim</span><span class="p">()</span>
+
+        <span class="c1"># Retrieve current physics properties.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">get_physics_properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">physics_properties</span>
+        <span class="k">except</span> <span class="n">ServiceException</span><span class="p">:</span>
+            <span class="n">logwarn_msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Failed to retrieve physics properties when trying to update gravity. &quot;</span>
+                <span class="s2">&quot;As a result, gravity was not updated.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">logwarn_msg</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Create set physics properties request message.</span>
+        <span class="n">set_physics_request</span> <span class="o">=</span> <span class="n">SetPhysicsPropertiesRequest</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="n">attr</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">get_physics_properties</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">attr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+        <span class="p">]:</span>  <span class="c1"># Set all properties to the current physics properties.</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">set_physics_request</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">get_physics_properties</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="n">set_physics_request</span><span class="o">.</span><span class="n">gravity</span> <span class="o">=</span> <span class="n">Vector3</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">set_physics_request</span><span class="o">.</span><span class="n">gravity</span><span class="p">))</span>
+
+        <span class="c1"># Send physic change request.</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_physics_proxy</span><span class="p">(</span><span class="n">set_physics_request</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+            <span class="s2">&quot;Gravity Update Result==&quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">)</span>
+            <span class="o">+</span> <span class="s2">&quot;,message==&quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">status_message</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unpause_sim</span><span class="p">()</span>
+
+<div class="viewcode-block" id="GazeboConnection.change_gravity"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.gazebo_connection.GazeboConnection.change_gravity">[docs]</a>    <span class="k">def</span> <span class="nf">change_gravity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Changes the gravity vector</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (float): Gravity vector x coordinate.</span>
+<span class="sd">            y (float): Gravity vector y coordinate.</span>
+<span class="sd">            z (float): Gravity vector z coordinate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_gravity_call</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GazeboConnection.spawn_object"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.gazebo_connection.GazeboConnection.spawn_object">[docs]</a>    <span class="k">def</span> <span class="nf">spawn_object</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">object_name</span><span class="p">,</span>
+        <span class="n">model_name</span><span class="p">,</span>
+        <span class="n">models_folder_path</span><span class="p">,</span>
+        <span class="n">pose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Spawns a object from the model directory into gazebo.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            object_name (str): The name you want the model to have.</span>
+<span class="sd">            model_name (str): The model type (The name of the xml file you want to use).</span>
+<span class="sd">            models_folder_path (str): The folder in which you want to search for the</span>
+<span class="sd">                models.</span>
+<span class="sd">            pose (:obj:`geometry_msgs.msg.Pose`, optional): The pose of the model, by</span>
+<span class="sd">                default :py:class:`geometry_msgs.msg.Pose`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: A boolean specifying whether the model was successfully spawned.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            :obj:`ros_gazebo_gym.exceptions.SpawnModelError`: When model was not spawned</span>
+<span class="sd">                successfully.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pose</span><span class="p">:</span>  <span class="c1"># Use default pose if none was given.</span>
+            <span class="n">pose</span> <span class="o">=</span> <span class="n">Pose</span><span class="p">()</span>
+            <span class="n">pose</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">normalize_quaternion</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="p">)</span>
+
+        <span class="c1"># Check if model is already present.</span>
+        <span class="k">if</span> <span class="n">object_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_states</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;A model with model name &#39;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&#39; already exists. Please check &quot;</span>
+                <span class="s2">&quot;if this is the right model.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># Find model xml.</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Looking for &#39;</span><span class="si">%s</span><span class="s2">&#39; model file.&quot;</span> <span class="o">%</span> <span class="n">model_name</span><span class="p">)</span>
+        <span class="n">model_xml</span><span class="p">,</span> <span class="n">extension</span> <span class="o">=</span> <span class="n">find_gazebo_model_path</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">models_folder_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">model_xml</span><span class="p">:</span>  <span class="c1"># If model file was not found.</span>
+            <span class="n">logwarn_msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Spawning model &#39;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&#39; as &#39;</span><span class="si">{</span><span class="n">object_name</span><span class="si">}</span><span class="s2">&#39; failed since the &quot;</span>
+                <span class="s2">&quot;sdf/urd model file was not found. Please make sure you added the &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;model sdf/urdf file to the &#39;</span><span class="si">{</span><span class="n">models_folder_path</span><span class="si">}</span><span class="s2">&#39; folder.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">logwarn_msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SpawnModelError</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">logwarn_msg</span><span class="p">)</span>
+
+        <span class="c1"># Load content from the model xml file.</span>
+        <span class="n">xml_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">model_xml</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+        <span class="n">model_xml_content</span> <span class="o">=</span> <span class="n">xml_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+        <span class="c1"># Create spawn model request message.</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Spawning &#39;</span><span class="si">%s</span><span class="s2">&#39; model as &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">object_name</span><span class="p">))</span>
+        <span class="n">spawn_model_req</span> <span class="o">=</span> <span class="n">SpawnModelRequest</span><span class="p">(</span>
+            <span class="n">model_name</span><span class="o">=</span><span class="n">object_name</span><span class="p">,</span>
+            <span class="n">model_xml</span><span class="o">=</span><span class="n">model_xml_content</span><span class="p">,</span>
+            <span class="n">initial_pose</span><span class="o">=</span><span class="n">pose</span><span class="p">,</span>
+            <span class="n">reference_frame</span><span class="o">=</span><span class="s2">&quot;world&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Request model spawn from sdf or urdf spawn service.</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Spawning model &#39;</span><span class="si">%s</span><span class="s2">&#39; as &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">object_name</span><span class="p">))</span>
+        <span class="n">spawn_done</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">extension</span> <span class="o">==</span> <span class="s2">&quot;sdf&quot;</span><span class="p">:</span>  <span class="c1"># Use sdf service.</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">spawn_done</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_retry</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;SPAWNING service calling...&quot;</span><span class="p">)</span>
+                        <span class="n">retval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spawn_sdf_proxy</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">spawn_model_req</span><span class="p">)</span>
+                        <span class="n">spawn_done</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;SPAWNING service calling...DONE&quot;</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="n">retval</span>
+                    <span class="k">except</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">logwarn_msg</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Spawning model &#39;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&#39; as &#39;</span><span class="si">{</span><span class="n">object_name</span><span class="si">}</span><span class="s2">&#39; failed &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;since </span><span class="si">{</span><span class="n">lower_first_char</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="si">}</span><span class="s2">.&quot;</span>
+                        <span class="p">)</span>
+                        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">logwarn_msg</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="n">SpawnModelError</span><span class="p">(</span>
+                            <span class="n">message</span><span class="o">=</span><span class="n">logwarn_msg</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;exception&quot;</span><span class="p">:</span> <span class="n">e</span><span class="p">}</span>
+                        <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">spawn_done</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_retry</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;SPAWNING service calling...&quot;</span><span class="p">)</span>
+                        <span class="n">retval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spawn_urdf_proxy</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">spawn_model_req</span><span class="p">)</span>
+                        <span class="n">spawn_done</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;SPAWNING service calling...DONE&quot;</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="n">retval</span>
+                    <span class="k">except</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">logwarn_msg</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Spawning model &#39;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&#39; as &#39;</span><span class="si">{</span><span class="n">object_name</span><span class="si">}</span><span class="s2">&#39; failed &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;since </span><span class="si">{</span><span class="n">lower_first_char</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="si">}</span><span class="s2">.&quot;</span>
+                        <span class="p">)</span>
+                        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">logwarn_msg</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="n">SpawnModelError</span><span class="p">(</span>
+                            <span class="n">message</span><span class="o">=</span><span class="n">logwarn_msg</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;exception&quot;</span><span class="p">:</span> <span class="n">e</span><span class="p">}</span>
+                        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_link_states_cb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Link states subscriber callback function.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (:obj:`gazebo_msgs.msg.ModelStates`): The data that is</span>
+<span class="sd">                returned by the subscriber.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link_states</span> <span class="o">=</span> <span class="n">model_state_msg_2_link_state_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_model_states_cb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Model states subscriber callback function.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (:obj:`gazebo_msgs.msg.ModelStates`): The data that is</span>
+<span class="sd">                returned by the subscriber.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_states</span> <span class="o">=</span> <span class="n">model_state_msg_2_link_state_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_clock_cb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gazebo clock subscriber callback function.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (:obj:`gazebo_msgs.msg.ModelStates`): The data that is</span>
+<span class="sd">                returned by the subscriber.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__time</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">clock</span><span class="o">.</span><span class="n">to_time</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GazeboConnection.physics_properties"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GazeboConnection.physics_properties">[docs]</a>    <span class="k">def</span> <span class="nf">physics_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieves the physics properties from gazebo.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_physics_proxy</span><span class="p">(</span><span class="n">GetPhysicsPropertiesRequest</span><span class="p">())</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GazeboConnection.time"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GazeboConnection.time">[docs]</a>    <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieves the Gazebo time.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__time</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

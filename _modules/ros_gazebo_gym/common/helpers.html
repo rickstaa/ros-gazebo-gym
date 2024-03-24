@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ros_gazebo_gym.common.helpers &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/usage.html">How to use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/add_nev_env.html">Add new environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../ros_gazebo_gym.html">ros_gazebo_gym</a></li>
+      <li class="breadcrumb-item active">ros_gazebo_gym.common.helpers</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ros_gazebo_gym.common.helpers</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Contains several helper functions that are used in the several environments.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">actionlib_msgs.msg</span> <span class="kn">import</span> <span class="n">GoalStatusArray</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">linalg</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.common.euler_angles</span> <span class="kn">import</span> <span class="n">EulerAngles</span>
+<span class="kn">from</span> <span class="nn">rospy.exceptions</span> <span class="kn">import</span> <span class="n">ROSException</span>
+<span class="kn">from</span> <span class="nn">tf.transformations</span> <span class="kn">import</span> <span class="n">euler_from_quaternion</span>
+
+
+<span class="c1">#################################################</span>
+<span class="c1"># Type conversion functions #####################</span>
+<span class="c1">#################################################</span>
+<div class="viewcode-block" id="model_state_msg_2_link_state_dict"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.model_state_msg_2_link_state_dict">[docs]</a><span class="k">def</span> <span class="nf">model_state_msg_2_link_state_dict</span><span class="p">(</span><span class="n">link_state_msgs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts the a `gazebo_msgs/ModelState &lt;https://docs.ros.org/en/jade/api/gazebo_msgs/html/msg/ModelState.html&gt;`_</span>
+<span class="sd">    message into a state dictionary. Contrary to the original ModelState message,</span>
+<span class="sd">    in the model state dictionary the poses and twists are grouped per link/model.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        link_state_msgs (:obj:`gazebo_msgs.msg.ModelState`): A ModelState message.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: A model_state dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+    <span class="n">model_state_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">joint_name</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">twist</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+        <span class="n">link_state_msgs</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">link_state_msgs</span><span class="o">.</span><span class="n">pose</span><span class="p">,</span> <span class="n">link_state_msgs</span><span class="o">.</span><span class="n">twist</span>
+    <span class="p">):</span>
+        <span class="n">model_state_dict</span><span class="p">[</span><span class="n">joint_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">model_state_dict</span><span class="p">[</span><span class="n">joint_name</span><span class="p">][</span><span class="s2">&quot;pose&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
+        <span class="n">model_state_dict</span><span class="p">[</span><span class="n">joint_name</span><span class="p">][</span><span class="s2">&quot;twist&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">twist</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model_state_dict</span></div>
+
+
+<div class="viewcode-block" id="pose_msg_2_pose_dict"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.pose_msg_2_pose_dict">[docs]</a><span class="k">def</span> <span class="nf">pose_msg_2_pose_dict</span><span class="p">(</span><span class="n">pose_msg</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a pose dictionary ``{x, y, z, rx, ry, rz, rw}`` out of a</span>
+<span class="sd">    `geometry_msgs.msg.Pose &lt;https://docs.ros.org/en/noetic/api/geometry_msgs/html/msg/Pose.html&gt;`_</span>
+<span class="sd">    message.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pose_msg (:obj:`geometry_msgs.msg.Pose`): A pose message</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Dictionary that contains the pose.</span>
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+    <span class="n">pose_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">pose_msg</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+        <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="n">pose_msg</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+        <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">pose_msg</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span><span class="p">,</span>
+        <span class="s2">&quot;rx&quot;</span><span class="p">:</span> <span class="n">pose_msg</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+        <span class="s2">&quot;ry&quot;</span><span class="p">:</span> <span class="n">pose_msg</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+        <span class="s2">&quot;rz&quot;</span><span class="p">:</span> <span class="n">pose_msg</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">z</span><span class="p">,</span>
+        <span class="s2">&quot;rw&quot;</span><span class="p">:</span> <span class="n">pose_msg</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">w</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">pose_dict</span></div>
+
+
+<span class="c1">#################################################</span>
+<span class="c1"># List, dict and text manipulation functions #####</span>
+<span class="c1">#################################################</span>
+
+
+<div class="viewcode-block" id="lower_first_char"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.lower_first_char">[docs]</a><span class="k">def</span> <span class="nf">lower_first_char</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;De-capitalize the first letter of a string.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        string (str): The input string.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The de-capitalized string.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        This function is not the exact opposite of the capitalize function of the</span>
+<span class="sd">        standard library. For example, capitalize(&#39;abC&#39;) returns Abc rather than AbC.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">string</span><span class="p">:</span>  <span class="c1"># If empty</span>
+        <span class="k">return</span>
+
+    <span class="k">return</span> <span class="n">string</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">+</span> <span class="n">string</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span></div>
+
+
+<div class="viewcode-block" id="wrap_space_around"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.wrap_space_around">[docs]</a><span class="k">def</span> <span class="nf">wrap_space_around</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap one additional space around text if it is not already present.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text (str): Text</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Text with extra spaces around it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">return</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">text</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span></div>
+
+
+<div class="viewcode-block" id="to_pascal_case"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.to_pascal_case">[docs]</a><span class="k">def</span> <span class="nf">to_pascal_case</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a string to pascal case.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text (str): Text</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Text in pascal case.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Split the string into words.</span>
+    <span class="n">words</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[a-zA-Z0-9]+&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+
+    <span class="c1"># Capitalize the first letter of each word and join them together.</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="to_snake_case"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.to_snake_case">[docs]</a><span class="k">def</span> <span class="nf">to_snake_case</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a string to snake case.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text (str): Text</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Text in snake case.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Replace any capital letters with an underscore followed by the lowercase letter.</span>
+    <span class="n">s1</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;(.)([A-Z][a-z]+)&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;\1_\2&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">s2</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;([a-z0-9])([A-Z])&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;\1_\2&quot;</span><span class="p">,</span> <span class="n">s1</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">s2</span></div>
+
+
+<div class="viewcode-block" id="list_2_human_text"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.list_2_human_text">[docs]</a><span class="k">def</span> <span class="nf">list_2_human_text</span><span class="p">(</span><span class="n">input_list</span><span class="p">,</span> <span class="n">separator</span><span class="o">=</span><span class="s2">&quot;, &quot;</span><span class="p">,</span> <span class="n">end_separator</span><span class="o">=</span><span class="s2">&quot; &amp; &quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Function converts a list of values into human readable sentence.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        Using this function a list of 4 items ``[item1, item2, item3, item4]`` becomes</span>
+<span class="sd">        ``item2, item3 &amp; item4``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_list (list): A input list.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: A human readable string that can be printed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_list</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">input_list</span>
+
+    <span class="c1"># Convert input to a list.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_list</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">input_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">input_list</span><span class="p">)</span>
+
+    <span class="c1"># Add spaces around separators if not present.</span>
+    <span class="n">separator</span> <span class="o">=</span> <span class="n">wrap_space_around</span><span class="p">(</span><span class="n">separator</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">end_separator</span> <span class="o">=</span> <span class="n">wrap_space_around</span><span class="p">(</span><span class="n">end_separator</span><span class="p">)</span>
+
+    <span class="c1"># Create human readable comma delimited text.</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">end_separator</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">separator</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">input_list</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])),</span> <span class="nb">str</span><span class="p">(</span><span class="n">input_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])]</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">input_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="split_dict"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.split_dict">[docs]</a><span class="k">def</span> <span class="nf">split_dict</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Split a dictionary into smaller dictionaries based on the keys.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            split_dict_list = split_dict(</span>
+<span class="sd">                input_dict, [&quot;first_dict_key1&quot;, &quot;first_dict_key2&quot;],</span>
+<span class="sd">                [&quot;second_dict_key1&quot;, &quot;second_dict_key2&quot;]</span>
+<span class="sd">            )</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_dict (dict): Input dictionary.</span>
+<span class="sd">        *args (list): Lists containing the keys you want to have in the successive</span>
+<span class="sd">            dictionaries.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: A list containing the splitted dictionaries.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">split_dict_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">split_list_item</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+        <span class="n">split_dict_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">val</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">input_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">split_list_item</span><span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">split_dict_list</span></div>
+
+
+<div class="viewcode-block" id="split_bounds_dict"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.split_bounds_dict">[docs]</a><span class="k">def</span> <span class="nf">split_bounds_dict</span><span class="p">(</span><span class="n">bounds_dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Splits the bounding region dictionary into two separate bounding dictionaries,</span>
+<span class="sd">    one for the ``ee_pose`` and one fore the ``joint_pose``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bounds_dict (dict): Original bounds dictionary.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tuple): tuple containing:</span>
+
+<span class="sd">            - :obj:`dict`: ee_pose bounding region dictionary.</span>
+<span class="sd">            - :obj:`dict`: joint_pose bounding region dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Split bounds dict into ee_pose bounds and joint_pose bounds dictionaries.</span>
+    <span class="n">split_dict_list</span> <span class="o">=</span> <span class="n">split_dict</span><span class="p">(</span>
+        <span class="n">bounds_dict</span><span class="p">,</span>
+        <span class="p">[</span><span class="s2">&quot;x_min&quot;</span><span class="p">,</span> <span class="s2">&quot;x_max&quot;</span><span class="p">,</span> <span class="s2">&quot;y_min&quot;</span><span class="p">,</span> <span class="s2">&quot;y_max&quot;</span><span class="p">,</span> <span class="s2">&quot;z_min&quot;</span><span class="p">,</span> <span class="s2">&quot;z_max&quot;</span><span class="p">],</span>
+        <span class="p">[</span>
+            <span class="s2">&quot;panda_joint1_min&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint1_max&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint2_min&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint2_max&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint3_min&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint3_max&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint4_min&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint4_max&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint5_min&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint5_max&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint6_min&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint6_max&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint7_min&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint7_max&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_finger_joint1_min&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_finger_joint1_max&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_finger_joint2_min&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_finger_joint2_max&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;gripper_width_min&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;gripper_width_max&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">split_dict_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">split_dict_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="gripper_width_2_finger_joints_positions"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.gripper_width_2_finger_joints_positions">[docs]</a><span class="k">def</span> <span class="nf">gripper_width_2_finger_joints_positions</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="n">joints</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Replaces a &#39;gripper_width&#39; key in a dictionary with corresponding finger joint</span>
+<span class="sd">    position keys.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_dict (dict): The dictionary that contains the &#39;gripper_Width&#39;.</span>
+<span class="sd">        joints (list): The available finger joints.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The new dictionary that contains the finger joint positions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">output_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">input_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;gripper_width&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">joint</span> <span class="ow">in</span> <span class="n">joints</span><span class="p">:</span>
+                <span class="n">output_dict</span><span class="p">[</span><span class="n">key</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;gripper_width&quot;</span><span class="p">,</span> <span class="n">joint</span><span class="p">)]</span> <span class="o">=</span> <span class="n">val</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="k">return</span> <span class="n">output_dict</span></div>
+
+
+<div class="viewcode-block" id="split_pose_dict"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.split_pose_dict">[docs]</a><span class="k">def</span> <span class="nf">split_pose_dict</span><span class="p">(</span><span class="n">pose_dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Splits a pose dictionary into two separate pose dictionaries, one for the</span>
+<span class="sd">    ``ee_pose`` and one fore the ``joint_pose``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bounding_region (dict): Original bounds dictionary.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tuple): tuple containing:</span>
+
+<span class="sd">            - :obj:`dict`: ee_pose bounding region dictionary.</span>
+<span class="sd">            - :obj:`dict`: joint_pose dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Split bounds dict into ee_pose and joint_pose dictionaries.</span>
+    <span class="n">split_dict_list</span> <span class="o">=</span> <span class="n">split_dict</span><span class="p">(</span>
+        <span class="n">pose_dict</span><span class="p">,</span>
+        <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;rx&quot;</span><span class="p">,</span> <span class="s2">&quot;ry&quot;</span><span class="p">,</span> <span class="s2">&quot;rz&quot;</span><span class="p">,</span> <span class="s2">&quot;rw&quot;</span><span class="p">],</span>
+        <span class="p">[</span>
+            <span class="s2">&quot;panda_joint1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint2&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint3&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint4&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint5&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint6&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_joint7&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_finger_joint1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;panda_finger_joint2&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;gripper_width&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">split_dict_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">split_dict_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="shallow_dict_merge"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.shallow_dict_merge">[docs]</a><span class="k">def</span> <span class="nf">shallow_dict_merge</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Given several dicts, merge them into a new dict as a shallow copy.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        args (dict): The input dictionaries.</span>
+<span class="sd">        order (list): The order in which you want to have the keys.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The new merged dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+        <span class="n">z</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+    <span class="c1"># Re-order if requested.</span>
+    <span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">order_tmp</span> <span class="o">=</span> <span class="n">order</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">z</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">order_tmp</span><span class="p">:</span>
+                <span class="n">order_tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">z</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">order_tmp</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">z</span></div>
+
+
+<div class="viewcode-block" id="flatten_list"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.flatten_list">[docs]</a><span class="k">def</span> <span class="nf">flatten_list</span><span class="p">(</span><span class="n">input_list</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Function used to flatten a list containing sublists. It does this by calling</span>
+<span class="sd">    itself recursively.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_list (list): A list containing strings or other lists.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: The flattened list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">flattened_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">list_item</span> <span class="ow">in</span> <span class="n">input_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">list_item</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">flattened_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="n">flatten_list</span><span class="p">(</span><span class="n">list_item</span><span class="p">)</span>
+            <span class="p">)</span>  <span class="c1"># NOTE: Calls itself recursively.</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">flattened_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">list_item</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">flattened_list</span></div>
+
+
+<div class="viewcode-block" id="deep_update"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.deep_update">[docs]</a><span class="k">def</span> <span class="nf">deep_update</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fixed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># noqa: C901</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Updates a dictionary recursively (i.e. deep update). This function takes a update</span>
+<span class="sd">    dictionary and/or keyword arguments. When a keyword argument is supplied, the</span>
+<span class="sd">    key-value pair is changed if it exists somewhere in the dictionary.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        d (dict): Dictionary you want to update.</span>
+<span class="sd">        u (dict, optional): The update dictionary.</span>
+<span class="sd">        fixed (bool, optional): Whether you want the input dictionary to be fixed</span>
+<span class="sd">            (i.e. only change keys that are already present). Defaults to ``False``.</span>
+<span class="sd">        **kwargs: Keyword arguments used for creating the dictionary keys.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The updated dictionary.</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">        Based on the answer given by `@alex-martelli &lt;https://stackoverflow.com/users/95810/alex-martelli&gt;`_</span>
+<span class="sd">        on `this stackoverflow question &lt;https://stackoverflow.com/questions/3232943/update-value-of-a-nested-dictionary-of-varying-depth&gt;`_.</span>
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+    <span class="c1"># Update dict based on input dictionary.</span>
+    <span class="k">if</span> <span class="n">u</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">fixed</span><span class="p">:</span>
+                    <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">deep_update</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="p">{}),</span> <span class="n">v</span><span class="p">,</span> <span class="n">fixed</span><span class="o">=</span><span class="n">fixed</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">fixed</span><span class="p">:</span>
+                    <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="c1"># Update dict based on keyword arguments.</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">deep_update</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">fixed</span><span class="o">=</span><span class="n">fixed</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">val</span><span class="p">})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">key</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="c1"># Print warning if no update dictionary or keyword argument was supplied.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">u</span><span class="p">:</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+            <span class="s2">&quot;Returning original dictionary since no update dictionary or keyword &quot;</span>
+            <span class="s2">&quot;argument was supplied.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">d</span></div>
+
+
+<div class="viewcode-block" id="is_sublist"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.is_sublist">[docs]</a><span class="k">def</span> <span class="nf">is_sublist</span><span class="p">(</span><span class="n">lst1</span><span class="p">,</span> <span class="n">lst2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks whether lst1 is a sublist of lst2.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        lst1 (list): List 1.</span>
+<span class="sd">        lst2 (list): List 2.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: Boolean specifying whether lst1 is a sublist of lst2.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">element</span> <span class="ow">in</span> <span class="n">lst2</span> <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">lst1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="remove_dict_none_values"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.remove_dict_none_values">[docs]</a><span class="k">def</span> <span class="nf">remove_dict_none_values</span><span class="p">(</span><span class="n">input_dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Removes all the None values from a dictionary.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_dict (dict): The input dictionary.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The dictionary without the None values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">input_dict</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">remove_dict_none_values</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">input_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">remove_dict_none_values</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="p">}</span></div>
+
+
+<span class="c1">#################################################</span>
+<span class="c1"># Argument validation functions #################</span>
+<span class="c1">#################################################</span>
+<div class="viewcode-block" id="has_invalid_type"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.has_invalid_type">[docs]</a><span class="k">def</span> <span class="nf">has_invalid_type</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">variable_types</span><span class="p">,</span> <span class="n">items_types</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>  <span class="c1"># noqa: C901</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validates whether a variable or its attributes has an invalid type.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        variable (object): The variable you want to check.</span>
+<span class="sd">        variable_types (tuple): The type the variable can have.</span>
+<span class="sd">        items_types (tuple): The types the dictionary or list values can have.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tuple): tuple containing:</span>
+
+<span class="sd">            - :obj:`bool`: A bool specifying whether a type was invalid.</span>
+<span class="sd">            - :obj:`int`: The maximum depth at which the type was invalid.</span>
+<span class="sd">            - :class:`type`: The types that were invalid.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># If one type was given make tuple.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable_types</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+        <span class="n">variable_types</span> <span class="o">=</span> <span class="p">(</span><span class="n">variable_types</span><span class="p">,)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">items_types</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+        <span class="n">items_types</span> <span class="o">=</span> <span class="p">(</span><span class="n">items_types</span><span class="p">,)</span>
+
+    <span class="c1"># Check if variable type is valid.</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span> <span class="ow">in</span> <span class="n">variable_types</span><span class="p">:</span>
+        <span class="c1"># Check list or dictionary value types are valid.</span>
+        <span class="k">if</span> <span class="n">items_types</span><span class="p">:</span>  <span class="c1"># If items_types == None we are at the deepest level.</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="c1"># Check if the dictionary values are of the right type.</span>
+                <span class="n">depth</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">invalid_types</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">variable</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
+                        <span class="n">retval</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">invalid_type</span> <span class="o">=</span> <span class="n">has_invalid_type</span><span class="p">(</span>
+                            <span class="n">val</span><span class="p">,</span>
+                            <span class="n">variable_types</span><span class="o">=</span><span class="n">items_types</span><span class="p">,</span>
+                            <span class="n">items_types</span><span class="o">=</span><span class="n">items_types</span><span class="p">,</span>
+                            <span class="n">depth</span><span class="o">=</span><span class="n">depth</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">retval</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">invalid_type</span> <span class="o">=</span> <span class="n">has_invalid_type</span><span class="p">(</span>
+                            <span class="n">val</span><span class="p">,</span> <span class="n">variable_types</span><span class="o">=</span><span class="n">items_types</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="n">depth</span>
+                        <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">retval</span><span class="p">:</span>  <span class="c1"># If invalid type was found.</span>
+                        <span class="k">if</span> <span class="n">invalid_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">invalid_types</span><span class="p">:</span>  <span class="c1"># If not already in list.</span>
+                            <span class="n">invalid_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">invalid_type</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">retval</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">flatten_list</span><span class="p">(</span><span class="n">invalid_types</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="c1"># Check if the list values are of the right type.</span>
+                <span class="n">depth</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">invalid_types</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">variable</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
+                        <span class="n">retval</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">invalid_type</span> <span class="o">=</span> <span class="n">has_invalid_type</span><span class="p">(</span>
+                            <span class="n">val</span><span class="p">,</span>
+                            <span class="n">variable_types</span><span class="o">=</span><span class="n">items_types</span><span class="p">,</span>
+                            <span class="n">items_types</span><span class="o">=</span><span class="n">items_types</span><span class="p">,</span>
+                            <span class="n">depth</span><span class="o">=</span><span class="n">depth</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">retval</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">invalid_type</span> <span class="o">=</span> <span class="n">has_invalid_type</span><span class="p">(</span>
+                            <span class="n">val</span><span class="p">,</span> <span class="n">variable_types</span><span class="o">=</span><span class="n">items_types</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="n">depth</span>
+                        <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">retval</span><span class="p">:</span>  <span class="c1"># If invalid type was found.</span>
+                        <span class="k">if</span> <span class="n">invalid_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">invalid_types</span><span class="p">:</span>  <span class="c1"># If not already in list.</span>
+                            <span class="n">invalid_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">invalid_type</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">retval</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">flatten_list</span><span class="p">(</span><span class="n">invalid_types</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Return type not invalid bool, depth and type.</span>
+            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="p">[]</span>
+
+    <span class="c1"># Return type invalid bool, depth and type.</span>
+    <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span></div>
+
+
+<span class="c1">#################################################</span>
+<span class="c1"># Other functions ###############################</span>
+<span class="c1">#################################################</span>
+<div class="viewcode-block" id="action_server_exists"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.action_server_exists">[docs]</a><span class="k">def</span> <span class="nf">action_server_exists</span><span class="p">(</span><span class="n">topic_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks whether a topic contains an action server</span>
+<span class="sd">    is running.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        topic_name (str): Action server topic name.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: Boolean specifying whether the action service exists.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Strip action server specific topics from topic name.</span>
+    <span class="k">if</span> <span class="n">topic_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;cancel&quot;</span><span class="p">,</span> <span class="s2">&quot;feedback&quot;</span><span class="p">,</span> <span class="s2">&quot;goal&quot;</span><span class="p">,</span> <span class="s2">&quot;result&quot;</span><span class="p">,</span> <span class="s2">&quot;status&quot;</span><span class="p">]:</span>
+        <span class="n">topic_name</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">topic_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">topic_name</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">:</span>
+        <span class="n">topic_name</span> <span class="o">=</span> <span class="n">topic_name</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Validate if action server topic exists.</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_message</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">/status&quot;</span> <span class="o">%</span> <span class="n">topic_name</span><span class="p">,</span> <span class="n">GoalStatusArray</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">ROSException</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># Check if topic contains action client.</span>
+    <span class="n">exists</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_published_topics</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">/status&quot;</span> <span class="o">%</span> <span class="n">topic_name</span> <span class="ow">in</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="s2">&quot;actionlib_msgs&quot;</span> <span class="ow">in</span> <span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">exists</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">exists</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="n">exists</span></div>
+
+
+<div class="viewcode-block" id="find_gazebo_model_path"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.find_gazebo_model_path">[docs]</a><span class="k">def</span> <span class="nf">find_gazebo_model_path</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">models_directory_path</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Finds the path of the ``sdf`` or ``urdf`` file that belongs to a given</span>
+<span class="sd">    ``model_name``. This is done by searching in the ``models_directory_path`` folder.</span>
+<span class="sd">    If no file was found the model file path is returned empty.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model_name (str): The name of the model for which you want to find the path.</span>
+<span class="sd">        models_directory_path (str): The path of the folder that contains the gazebo</span>
+<span class="sd">            models. extension (str, optional): The model path extension. Defaults to</span>
+<span class="sd">            ``&quot;&quot;`` meaning that the function will first look for a ``sdf`` file and if</span>
+<span class="sd">            that is not found it will look for a ``urdf`` file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tuple): tuple containing:</span>
+
+<span class="sd">            - :obj:`str`: The path where the ``sdf`` or ``urdf`` model file can be</span>
+<span class="sd">              found.</span>
+<span class="sd">            - :obj:`str`: Extension of the model file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">extension</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">extension</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+        <span class="n">extension</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">extension</span>
+
+    <span class="c1"># Try to find the model path for a given model_name.</span>
+    <span class="n">model_directory_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">models_directory_path</span><span class="p">,</span> <span class="n">model_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">model_directory_path</span><span class="p">):</span>  <span class="c1"># Check if model directory exists.</span>
+        <span class="k">if</span> <span class="n">extension</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">model_path</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">model_directory_path</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span> <span class="o">+</span> <span class="n">extension</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">model_path</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">model_path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># no extension given.</span>
+            <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.sdf&quot;</span><span class="p">,</span> <span class="s2">&quot;.urdf&quot;</span><span class="p">]:</span>
+                <span class="n">model_path</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">model_directory_path</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span> <span class="o">+</span> <span class="n">ext</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">model_path</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">model_path</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ext</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+    <span class="c1"># If model path could not be found.</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Model path for &#39;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&#39; could not be found. Please check if the &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">.sdf&#39; or &#39;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">.urdf&#39; file exist in the model directory &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">model_directory_path</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="get_orientation_euler"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.get_orientation_euler">[docs]</a><span class="k">def</span> <span class="nf">get_orientation_euler</span><span class="p">(</span><span class="n">quaternion</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts pose (position, orientation) to euler angles.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        quaternion (:obj:`geometry_msgs.Pose`): Input quaternion.</span>
+
+<span class="sd">    Returns=:</span>
+<span class="sd">        :obj:`~ros_gazebo_gym.common.euler_angles.EulerAngles`: Object containing the</span>
+<span class="sd">            yaw (z), pitch (y) and roll (x) euler angles.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Convert quaternion to euler.</span>
+    <span class="n">orientation_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">quaternion</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+        <span class="n">quaternion</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+        <span class="n">quaternion</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">z</span><span class="p">,</span>
+        <span class="n">quaternion</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">w</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">euler_resp</span> <span class="o">=</span> <span class="n">euler_from_quaternion</span><span class="p">(</span><span class="n">orientation_list</span><span class="p">,</span> <span class="s2">&quot;rzyx&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Convert list to euler object.</span>
+    <span class="n">euler</span> <span class="o">=</span> <span class="n">EulerAngles</span><span class="p">()</span>
+    <span class="n">euler</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">euler_resp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">euler</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">euler_resp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">euler</span><span class="o">.</span><span class="n">r</span> <span class="o">=</span> <span class="n">euler_resp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">euler</span></div>
+
+
+<div class="viewcode-block" id="quaternion_norm"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.quaternion_norm">[docs]</a><span class="k">def</span> <span class="nf">quaternion_norm</span><span class="p">(</span><span class="n">quaternion</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculates the norm of a quaternion.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        Quaternion (:obj:`geometry_msgs.msg.Quaternion`): A quaternion.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: The norm of the quaternion.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">([</span><span class="n">quaternion</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">quaternion</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">quaternion</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="n">quaternion</span><span class="o">.</span><span class="n">w</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="normalize_quaternion"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.normalize_quaternion">[docs]</a><span class="k">def</span> <span class="nf">normalize_quaternion</span><span class="p">(</span><span class="n">quaternion</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Normalizes a given quaternion.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        quaternion (:obj:`geometry_msgs.msg.Quaternion`): A quaternion.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        :obj:`geometry_msgs.msg.Quaternion`: The normalized quaternion.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">quaternion</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span>
+        <span class="n">quaternion</span>
+    <span class="p">)</span>  <span class="c1"># Make sure the original object is not changed.</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">quaternion_norm</span><span class="p">(</span><span class="n">quaternion</span><span class="p">)</span>
+
+    <span class="c1"># Normalize quaternion.</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">norm</span><span class="p">):</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+            <span class="s2">&quot;Quaternion could not be normalized since the norm could not be &quot;</span>
+            <span class="s2">&quot;calculated.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>  <span class="c1"># Transform to identity.</span>
+        <span class="n">quaternion</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">quaternion</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">quaternion</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">quaternion</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">quaternion</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">quaternion</span><span class="o">.</span><span class="n">x</span> <span class="o">/</span> <span class="n">norm</span>
+        <span class="n">quaternion</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">quaternion</span><span class="o">.</span><span class="n">y</span> <span class="o">/</span> <span class="n">norm</span>
+        <span class="n">quaternion</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">quaternion</span><span class="o">.</span><span class="n">z</span> <span class="o">/</span> <span class="n">norm</span>
+        <span class="n">quaternion</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="n">quaternion</span><span class="o">.</span><span class="n">w</span> <span class="o">/</span> <span class="n">norm</span>
+
+    <span class="k">return</span> <span class="n">quaternion</span></div>
+
+
+<div class="viewcode-block" id="DummyFile"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.DummyFile">[docs]</a><span class="k">class</span> <span class="nc">DummyFile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Dummy file class to redirect stderr to.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DummyFile.write"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.DummyFile.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Writes the given string to the dummy file.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+
+
+<span class="nd">@contextmanager</span>
+<div class="viewcode-block" id="suppress_stderr"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/common/helpers/index.html#ros_gazebo_gym.common.helpers.suppress_stderr">[docs]</a><span class="k">def</span> <span class="nf">suppress_stderr</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Suppresses the stderr output of a code block.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">            .. code-block:: python</span>
+
+<span class="sd">                with suppress_stderr():</span>
+<span class="sd">                    # Code block that will not print stderr.</span>
+<span class="sd">                    sys.stderr.write(&quot;This will not be printed.&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">orig_stderr</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">DummyFile</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">orig_stderr</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

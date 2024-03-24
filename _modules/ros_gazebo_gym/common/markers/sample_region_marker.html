@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ros_gazebo_gym.common.markers.sample_region_marker &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html">
+            
+              <img src="../../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../get_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../get_started/usage.html">How to use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../get_started/envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/add_nev_env.html">Add new environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../ros_gazebo_gym.html">ros_gazebo_gym</a></li>
+      <li class="breadcrumb-item active">ros_gazebo_gym.common.markers.sample_region_marker</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ros_gazebo_gym.common.markers.sample_region_marker</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Contains a class that can be used for displaying a sampling region marker in RViz.</span>
+
+<span class="sd">.. note::</span>
+<span class="sd">    This class overloads the :obj:`visualization_msgs.msgs.Marker` class in order to</span>
+<span class="sd">    pre-initialize some of its attributes. It further also adds the ability to specify</span>
+<span class="sd">    the marker scale using s``x``, ``y``, ``z`` max and min values.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">geometry_msgs.msg</span> <span class="kn">import</span> <span class="n">Pose</span><span class="p">,</span> <span class="n">Vector3</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.common.helpers</span> <span class="kn">import</span> <span class="n">normalize_quaternion</span>
+<span class="kn">from</span> <span class="nn">rospy.exceptions</span> <span class="kn">import</span> <span class="n">ROSInitException</span>
+<span class="kn">from</span> <span class="nn">std_msgs.msg</span> <span class="kn">import</span> <span class="n">ColorRGBA</span><span class="p">,</span> <span class="n">Header</span>
+<span class="kn">from</span> <span class="nn">visualization_msgs.msg</span> <span class="kn">import</span> <span class="n">Marker</span>
+
+
+<div class="viewcode-block" id="SampleRegionMarker"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/common/markers/sample_region_marker/index.html#ros_gazebo_gym.common.markers.SampleRegionMarker">[docs]</a><span class="k">class</span> <span class="nc">SampleRegionMarker</span><span class="p">(</span><span class="n">Marker</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;RViz goal sample region marker.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        id (int): The marker object id.</span>
+<span class="sd">        type (str): The marker type.</span>
+<span class="sd">        action (float): The marker message action (add or remove).</span>
+<span class="sd">        color (:obj:`std_msgs.ColorRGBA`): The marker color.</span>
+<span class="sd">        lifetime (:obj:`:rospy.Duration`): The lifetime duration.</span>
+<span class="sd">        frame_locked (bool): Boolean specifying whether the marker frame is locked to</span>
+<span class="sd">            the world.</span>
+<span class="sd">        point (:obj:`geometry_msgs.Point`): The marker points.</span>
+<span class="sd">        text (str): The text that is used for text markers.</span>
+<span class="sd">        mesh_resource (str): Marker mess location.</span>
+<span class="sd">        mesh_use_embedded_materials (bool): Boolean specifying whether we want to use a</span>
+<span class="sd">            mesh.</span>
+
+<span class="sd">    .. important::</span>
+<span class="sd">        The x, y, z min/max values take precedence over x y z position values, which</span>
+<span class="sd">        take precedence over position and scale values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">z</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">x_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">y_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">z_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">x_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">y_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">z_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">frame_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize SampleRegionMarker object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x_min (float, optional): The min x position of the marker. Defaults to</span>
+<span class="sd">                ``None``.</span>
+<span class="sd">            y_min (float, optional): The min y position of the marker. Defaults to</span>
+<span class="sd">                ``None``.</span>
+<span class="sd">            z_min (float, optional): The min z position of the marker. Defaults to</span>
+<span class="sd">                ``None``.</span>
+<span class="sd">            x_max (float, optional): The max x position of the marker. Defaults to</span>
+<span class="sd">                ``None``.</span>
+<span class="sd">            y_max (float, optional): The max y position of the marker. Defaults to</span>
+<span class="sd">                ``None``.</span>
+<span class="sd">            z_max (float, optional): The max z position of the marker. Defaults to</span>
+<span class="sd">                ``None``.</span>
+<span class="sd">            frame_id (str, optional): The frame the position/orientation are relative</span>
+<span class="sd">                to. Defaults to ``None``.</span>
+<span class="sd">            *args: Arguments passed to the</span>
+<span class="sd">                :obj:`~visualization_msgs.msg.Marker` super class.</span>
+<span class="sd">            **kwargs: Keyword arguments that are passed to the</span>
+<span class="sd">                :obj:`~visualization_msgs.msg.Marker` super class.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: Thrown when the ROS time is not initialised.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span> <span class="o">=</span> <span class="n">Pose</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span> <span class="o">=</span> <span class="n">Vector3</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__x_min</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__x_max</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__y_min</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__z_min</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__y_max</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__z_max</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Overwrite attributes with defaults if not supplied in the constructor.</span>
+        <span class="k">if</span> <span class="s2">&quot;header&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="c1"># Pre-initialize header.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">Header</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>  <span class="c1"># Check if rostime was initialized.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">stamp</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">ROSInitException</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="s2">&quot;Goal sample region marker could not be created as the ROS time is &quot;</span>
+                    <span class="s2">&quot;not initialized. Have you called init_node()?&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">frame_id</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span> <span class="o">=</span> <span class="s2">&quot;world&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span> <span class="o">=</span> <span class="n">frame_id</span>
+        <span class="k">if</span> <span class="s2">&quot;pose&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pose</span> <span class="o">=</span> <span class="n">Pose</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="n">Vector3</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span>
+        <span class="k">if</span> <span class="s2">&quot;color&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">ColorRGBA</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="s2">&quot;id&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">Marker</span><span class="o">.</span><span class="n">CUBE</span> <span class="k">if</span> <span class="s2">&quot;type&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="n">Marker</span><span class="o">.</span><span class="n">ADD</span> <span class="k">if</span> <span class="s2">&quot;action&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lifetime</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">Duration</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;lifetime&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">lifetime</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Set class properties if not none.</span>
+        <span class="k">if</span> <span class="n">x</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="k">if</span> <span class="n">y</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="k">if</span> <span class="n">z</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">z</span>
+        <span class="k">if</span> <span class="n">x_min</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x_min</span> <span class="o">=</span> <span class="n">x_min</span>
+        <span class="k">if</span> <span class="n">x_max</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x_max</span> <span class="o">=</span> <span class="n">x_max</span>
+        <span class="k">if</span> <span class="n">y_min</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_min</span> <span class="o">=</span> <span class="n">y_min</span>
+        <span class="k">if</span> <span class="n">y_max</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_max</span> <span class="o">=</span> <span class="n">y_max</span>
+        <span class="k">if</span> <span class="n">z_min</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">z_min</span> <span class="o">=</span> <span class="n">z_min</span>
+        <span class="k">if</span> <span class="n">z_max</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">z_max</span> <span class="o">=</span> <span class="n">z_max</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SampleRegionMarker.x"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/common/markers/sample_region_marker/index.html#ros_gazebo_gym.common.markers.SampleRegionMarker.x">[docs]</a>    <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the marker x position.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__x</span></div>
+
+    <span class="nd">@x</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the marker x position.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__x</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__x_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">x</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__x_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">x</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SampleRegionMarker.y"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/common/markers/sample_region_marker/index.html#ros_gazebo_gym.common.markers.SampleRegionMarker.y">[docs]</a>    <span class="k">def</span> <span class="nf">y</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the marker y position.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__y</span></div>
+
+    <span class="nd">@y</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">y</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the marker y position.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__y</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__y_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">y</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__y_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">y</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SampleRegionMarker.z"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/common/markers/sample_region_marker/index.html#ros_gazebo_gym.common.markers.SampleRegionMarker.z">[docs]</a>    <span class="k">def</span> <span class="nf">z</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the marker z position.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__z</span></div>
+
+    <span class="nd">@z</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the marker z position.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__z</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__z_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">z</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__z_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">z</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SampleRegionMarker.x_min"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/common/markers/sample_region_marker/index.html#ros_gazebo_gym.common.markers.SampleRegionMarker.x_min">[docs]</a>    <span class="k">def</span> <span class="nf">x_min</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the value of x_min.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__x_min</span></div>
+
+    <span class="nd">@x_min</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">x_min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of x_min and update the x scale and position.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__x_min</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__x_max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__x_min</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">x</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__x_min</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SampleRegionMarker.y_min"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/common/markers/sample_region_marker/index.html#ros_gazebo_gym.common.markers.SampleRegionMarker.y_min">[docs]</a>    <span class="k">def</span> <span class="nf">y_min</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the value of y_min.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__y_min</span></div>
+
+    <span class="nd">@y_min</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">y_min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of y_min and update the y scale and position.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__y_min</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__y_max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__y_min</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">y</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__y_min</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SampleRegionMarker.z_min"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/common/markers/sample_region_marker/index.html#ros_gazebo_gym.common.markers.SampleRegionMarker.z_min">[docs]</a>    <span class="k">def</span> <span class="nf">z_min</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the value of z_min.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__z_min</span></div>
+
+    <span class="nd">@z_min</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">z_min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of z_min and update the z scale and position.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__z_min</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__z_max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__z_min</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">z</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__z_min</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SampleRegionMarker.x_max"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/common/markers/sample_region_marker/index.html#ros_gazebo_gym.common.markers.SampleRegionMarker.x_max">[docs]</a>    <span class="k">def</span> <span class="nf">x_max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the value of x_max.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__x_max</span></div>
+
+    <span class="nd">@x_max</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">x_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of x_max and update the x scale and position.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__x_max</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__x_max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__x_min</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">x</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__x_min</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SampleRegionMarker.y_max"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/common/markers/sample_region_marker/index.html#ros_gazebo_gym.common.markers.SampleRegionMarker.y_max">[docs]</a>    <span class="k">def</span> <span class="nf">y_max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the value of y_max.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__y_max</span></div>
+
+    <span class="nd">@y_max</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">y_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of y_max and update the y scale and position.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__y_max</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__y_max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__y_min</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">y</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__y_min</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SampleRegionMarker.z_max"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/common/markers/sample_region_marker/index.html#ros_gazebo_gym.common.markers.SampleRegionMarker.z_max">[docs]</a>    <span class="k">def</span> <span class="nf">z_max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the value of z_max.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__z_max</span></div>
+
+    <span class="nd">@z_max</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">z_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of z_max and update the z scale and position.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__z_max</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__z_max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__z_min</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">z</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__z_min</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SampleRegionMarker.scale"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/common/markers/sample_region_marker/index.html#ros_gazebo_gym.common.markers.SampleRegionMarker.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get marker scale.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span></div>
+
+    <span class="nd">@scale</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set marker scale.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span> <span class="o">=</span> <span class="n">val</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__x_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">x</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__x_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">x</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__y_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">y</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__y_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">y</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__z_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">z</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__z_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">z</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SampleRegionMarker.pose"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/common/markers/sample_region_marker/index.html#ros_gazebo_gym.common.markers.SampleRegionMarker.pose">[docs]</a>    <span class="k">def</span> <span class="nf">pose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve marker pose.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span></div>
+
+    <span class="nd">@pose</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">pose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set marker pose.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span> <span class="o">=</span> <span class="n">Pose</span><span class="p">(</span>
+                <span class="n">position</span><span class="o">=</span><span class="n">val</span><span class="o">.</span><span class="n">position</span><span class="p">,</span>
+                <span class="n">orientation</span><span class="o">=</span><span class="n">normalize_quaternion</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">orientation</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__x_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">x</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__x_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">x</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__y_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">y</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__y_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">y</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__z_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">z</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__z_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scale</span><span class="o">.</span><span class="n">z</span> <span class="o">/</span> <span class="mi">2</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

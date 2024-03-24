@@ -1,0 +1,302 @@
+:py:mod:`ros_gazebo_gym.exceptions`
+===================================
+
+.. py:module:: ros_gazebo_gym.exceptions
+
+.. autoapi-nested-parse::
+
+   Module containing several custom exceptions.
+
+
+
+Module Contents
+---------------
+
+.. py:exception:: EePoseLookupError(message='', log_message='', **details)
+
+
+   Bases: :py:obj:`Exception`
+
+   Custom exception that is raised when an error occurred while trying to retrieve
+   the EE pose.
+
+   .. attribute:: log_message
+
+      The full log message.
+
+      :type: str
+
+   .. attribute:: details
+
+      Dictionary containing extra Exception information.
+
+      :type: dict
+
+   Initializes the EePoseLookupError exception object.
+
+   :param message: Exception message specifying whether the exception
+                   occurred. Defaults to ``""``.
+   :type message: str, optional
+   :param log_message: Full log message. Defaults to ``""``.
+   :type log_message: str, optional
+   :param details: Additional dictionary that can be used to supply the user
+                   with more details about why the exception occurred.
+   :type details: dict
+
+
+.. py:exception:: EeRpyLookupError(message='', log_message='', **details)
+
+
+   Bases: :py:obj:`Exception`
+
+   Custom exception that is raised when an error occurred while trying to retrieve
+   the EE orientation (given in euler angles).
+
+   .. attribute:: log_message
+
+      The full log message.
+
+      :type: str
+
+   .. attribute:: details
+
+      Dictionary containing extra Exception information.
+
+      :type: dict
+
+   Initializes the EeRpyLookupError exception object.
+
+   :param message: Exception message specifying whether the exception
+                   occurred. Defaults to ``""``.
+   :type message: str, optional
+   :param log_message: Full log message. Defaults to ``""``.
+   :type log_message: str, optional
+   :param details: Additional dictionary that can be used to supply the user
+                   with more details about why the exception occurred.
+   :type details: dict
+
+
+.. py:exception:: SpawnModelError(message='', log_message='', **details)
+
+
+   Bases: :py:obj:`Exception`
+
+   Custom exception that is raised when an error occurred while trying to spawn a
+   Gazebo model.
+
+   .. attribute:: log_message
+
+      The full log message.
+
+      :type: str
+
+   .. attribute:: details
+
+      Dictionary containing extra Exception information.
+
+      :type: dict
+
+   Initializes the SpawnModelError exception object.
+
+   :param message: Exception message specifying whether the exception
+                   occurred. Defaults to ``""``.
+   :type message: str, optional
+   :param log_message: Full log message. Defaults to ``""``.
+   :type log_message: str, optional
+   :param details: Additional dictionary that can be used to supply the user
+                   with more details about why the exception occurred.
+   :type details: dict
+
+
+.. py:exception:: GetModelStateError(message='', log_message='', **details)
+
+
+   Bases: :py:obj:`Exception`
+
+   Custom exception that is raised when an error occurred while trying get the model
+   state from gazebo.
+
+   .. attribute:: log_message
+
+      The full log message.
+
+      :type: str
+
+   .. attribute:: details
+
+      Dictionary containing extra Exception information.
+
+      :type: dict
+
+   Initializes the GetModelStateError exception object.
+
+   :param message: Exception message specifying whether the exception
+                   occurred. Defaults to ``""``.
+   :type message: str, optional
+   :param log_message: Full log message. Defaults to ``""``.
+   :type log_message: str, optional
+   :param details: Additional dictionary that can be used to supply the user
+                   with more details about why the exception occurred.
+   :type details: dict
+
+
+.. py:exception:: GetLinkStateError(message='', log_message='', **details)
+
+
+   Bases: :py:obj:`Exception`
+
+   Custom exception that is raised when an error occurred while trying get the link
+   state from gazebo.
+
+   .. attribute:: log_message
+
+      The full log message.
+
+      :type: str
+
+   .. attribute:: details
+
+      Dictionary containing extra Exception information.
+
+      :type: dict
+
+   Initializes the GetLinkStateError exception object.
+
+   :param message: Exception message specifying whether the exception
+                   occurred. Defaults to ``""``.
+   :type message: str, optional
+   :param log_message: Full log message. Defaults to ``""``.
+   :type log_message: str, optional
+   :param details: Additional dictionary that can be used to supply the user
+                   with more details about why the exception occurred.
+   :type details: dict
+
+
+.. py:exception:: SetModelStateError(message='', log_message='', **details)
+
+
+   Bases: :py:obj:`Exception`
+
+   Custom exception that is raised when an error occurred while trying set the model
+   state on gazebo.
+
+   .. attribute:: log_message
+
+      The full log message.
+
+      :type: str
+
+   .. attribute:: details
+
+      Dictionary containing extra Exception information.
+
+      :type: dict
+
+   Initializes the SetModelStateError exception object.
+
+   :param message: Exception message specifying whether the exception
+                   occurred. Defaults to ``""``.
+   :type message: str, optional
+   :param log_message: Full log message. Defaults to ``""``.
+   :type log_message: str, optional
+   :param details: Additional dictionary that can be used to supply the user
+                   with more details about why the exception occurred.
+   :type details: dict
+
+
+.. py:exception:: SetModelConfigurationError(message='', log_message='', **details)
+
+
+   Bases: :py:obj:`Exception`
+
+   Custom exception that is raised when an error occurred while trying set the model
+   configuration on gazebo.
+
+   .. attribute:: log_message
+
+      The full log message.
+
+      :type: str
+
+   .. attribute:: details
+
+      Dictionary containing extra Exception information.
+
+      :type: dict
+
+   Initializes the SetModelConfigurationError exception object.
+
+   :param message: Exception message specifying whether the exception
+                   occurred. Defaults to ``""``.
+   :type message: str, optional
+   :param log_message: Full log message. Defaults to ``""``.
+   :type log_message: str, optional
+   :param details: Additional dictionary that can be used to supply the user
+                   with more details about why the exception occurred.
+   :type details: dict
+
+
+.. py:exception:: GetPhysicsPropertiesError(message='', log_message='', **details)
+
+
+   Bases: :py:obj:`Exception`
+
+   Custom exception that is raised when an error occurred while trying to retrieve
+   the physics properties from gazebo.
+
+   .. attribute:: log_message
+
+      The full log message.
+
+      :type: str
+
+   .. attribute:: details
+
+      Dictionary containing extra Exception information.
+
+      :type: dict
+
+   Initializes the GetPhysicsPropertiesError exception object.
+
+   :param message: Exception message specifying whether the exception
+                   occurred. Defaults to ``""``.
+   :type message: str, optional
+   :param log_message: Full log message. Defaults to ``""``.
+   :type log_message: str, optional
+   :param details: Additional dictionary that can be used to supply the user
+                   with more details about why the exception occurred.
+   :type details: dict
+
+
+.. py:exception:: SetPhysicsPropertiesError(message='', log_message='', **details)
+
+
+   Bases: :py:obj:`Exception`
+
+   Custom exception that is raised when an error occurred while trying to set
+   physics properties on the gazebo physics engine.
+
+   .. attribute:: log_message
+
+      The full log message.
+
+      :type: str
+
+   .. attribute:: details
+
+      Dictionary containing extra Exception information.
+
+      :type: dict
+
+   Initializes the SetPhysicsPropertiesError exception object.
+
+   :param message: Exception message specifying whether the exception
+                   occurred. Defaults to ``""``.
+   :type message: str, optional
+   :param log_message: Full log message. Defaults to ``""``.
+   :type log_message: str, optional
+   :param details: Additional dictionary that can be used to supply the user
+                   with more details about why the exception occurred.
+   :type details: dict
+
+

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ros_gazebo_gym.core.controllers_connection &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/usage.html">How to use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/add_nev_env.html">Add new environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../ros_gazebo_gym.html">ros_gazebo_gym</a></li>
+      <li class="breadcrumb-item active">ros_gazebo_gym.core.controllers_connection</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ros_gazebo_gym.core.controllers_connection</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Contains a python utility class that makes it easier to interact with</span>
+<span class="sd">`ros_control &lt;https://wiki.ros.org/ros_control&gt;`_ controllers.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">controller_manager_msgs.srv</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ListControllers</span><span class="p">,</span>
+    <span class="n">ListControllersRequest</span><span class="p">,</span>
+    <span class="n">SwitchController</span><span class="p">,</span>
+    <span class="n">SwitchControllerRequest</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.common.helpers</span> <span class="kn">import</span> <span class="n">flatten_list</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.core.helpers</span> <span class="kn">import</span> <span class="n">ros_exit_gracefully</span>
+<span class="kn">from</span> <span class="nn">rosgraph_msgs.msg</span> <span class="kn">import</span> <span class="n">Clock</span>
+<span class="kn">from</span> <span class="nn">rospy.exceptions</span> <span class="kn">import</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span>
+<span class="kn">from</span> <span class="nn">std_srvs.srv</span> <span class="kn">import</span> <span class="n">Empty</span>
+
+<span class="c1"># Script settings.</span>
+<div class="viewcode-block" id="CONNECTION_TIMEOUT"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/controllers_connection/index.html#ros_gazebo_gym.core.controllers_connection.CONNECTION_TIMEOUT">[docs]</a><span class="n">CONNECTION_TIMEOUT</span> <span class="o">=</span> <span class="mi">10</span></div>
+
+
+<div class="viewcode-block" id="ControllersConnection"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.controllers_connection.ControllersConnection">[docs]</a><span class="k">class</span> <span class="nc">ControllersConnection</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class that contains several methods that can be used to interact with the</span>
+<span class="sd">    `ros_control &lt;https://wiki.ros.org/ros_control&gt;`_ controllers.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        list_service_name (str): The name of the controller list service.</span>
+<span class="sd">        list_service (:obj:`rospy.impl.tcpros_service.ServiceProxy`): The controller</span>
+<span class="sd">            list service.</span>
+<span class="sd">        switch_service_name (str): The name of the controller switch service.</span>
+<span class="sd">        switch_service (:obj:`rospy.impl.tcpros_service.ServiceProxy`): The controller</span>
+<span class="sd">            switch service.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">namespace</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">controllers_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>  <span class="c1"># noqa: C901</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the ControllersConnection instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            namespace (str, optional): The namespace on which the robot controllers can</span>
+<span class="sd">                be found. Defaults to ``&quot;&quot;``.</span>
+<span class="sd">            controllers_list (list, optional): A list with currently available</span>
+<span class="sd">                controllers to look for. Defaults to ``None``, which means that the</span>
+<span class="sd">                class will try to retrieve all the running controllers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s2">&quot;Initialize ControllersConnection utility class...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_controller_list</span> <span class="o">=</span> <span class="n">controllers_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_paused_controllers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gazebo_paused_check_timeout</span> <span class="o">=</span> <span class="mf">0.2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_list_controllers_service_name</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">namespace</span><span class="si">}</span><span class="s2">/controller_manager/list_controllers&quot;</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                <span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_controllers_service_name</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_list_controllers_service_name</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">CONNECTION_TIMEOUT</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_list_controllers_proxy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_list_controllers_service_name</span><span class="p">,</span> <span class="n">ListControllers</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                <span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_controllers_service_name</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Shutting down &#39;</span><span class="si">{</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39; since no connection could be &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;established with the </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_controllers_service_name</span><span class="si">}</span><span class="s2"> service!&quot;</span>
+            <span class="p">)</span>
+            <span class="n">ros_exit_gracefully</span><span class="p">(</span><span class="n">shutdown_msg</span><span class="o">=</span><span class="n">error_msg</span><span class="p">,</span> <span class="n">exit_code</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_switch_controller_service_name</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">namespace</span><span class="si">}</span><span class="s2">/controller_manager/switch_controller&quot;</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                <span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_switch_controller_service_name</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_switch_controller_service_name</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">CONNECTION_TIMEOUT</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_switch_controller_proxy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_switch_controller_service_name</span><span class="p">,</span> <span class="n">SwitchController</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                <span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_switch_controller_service_name</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Shutting down &#39;</span><span class="si">{</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39; since no connection could be &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;established with the </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_controllers_service_name</span><span class="si">}</span><span class="s2"> service!&quot;</span>
+            <span class="p">)</span>
+            <span class="n">ros_exit_gracefully</span><span class="p">(</span><span class="n">shutdown_msg</span><span class="o">=</span><span class="n">error_msg</span><span class="p">,</span> <span class="n">exit_code</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gazebo_pause_service_name</span> <span class="o">=</span> <span class="s2">&quot;/gazebo/pause_physics&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                <span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gazebo_pause_service_name</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_gazebo_pause_service_name</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">CONNECTION_TIMEOUT</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pause_proxy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_gazebo_pause_service_name</span><span class="p">,</span> <span class="n">Empty</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                <span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gazebo_pause_service_name</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to connect to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gazebo_pause_service_name</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gazebo_unpause_service_name</span> <span class="o">=</span> <span class="s2">&quot;/gazebo/unpause_physics&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                <span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gazebo_unpause_service_name</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_gazebo_unpause_service_name</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">CONNECTION_TIMEOUT</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unpause_proxy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_gazebo_unpause_service_name</span><span class="p">,</span> <span class="n">Empty</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                <span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gazebo_unpause_service_name</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to connect to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gazebo_unpause_service_name</span>
+            <span class="p">)</span>
+
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s2">&quot;ControllersConnection utility class initialised.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ControllersConnection.switch_controllers"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.controllers_connection.ControllersConnection.switch_controllers">[docs]</a>    <span class="k">def</span> <span class="nf">switch_controllers</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">controllers_on</span><span class="p">,</span> <span class="n">controllers_off</span><span class="p">,</span> <span class="n">strictness</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">0.0</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function used to switch controllers on and off.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            controllers_on (list): The controllers you want to turn on.</span>
+<span class="sd">            controllers_off (list): The controllers you want to turn off.</span>
+<span class="sd">            strictness (int, optional): Whether the switching will fail if anything goes</span>
+<span class="sd">                wrong. Defaults to ``1``.</span>
+<span class="sd">            timeout (float): The timeout before the request is cancelled. Defaults to</span>
+<span class="sd">                ``0.0`` meaning no timeout.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Boolean specifying whether the switch was successful.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_switch_controller_service_name</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">switch_request_object</span> <span class="o">=</span> <span class="n">SwitchControllerRequest</span><span class="p">()</span>
+            <span class="n">switch_request_object</span><span class="o">.</span><span class="n">start_controllers</span> <span class="o">=</span> <span class="n">controllers_on</span>
+            <span class="n">switch_request_object</span><span class="o">.</span><span class="n">stop_controllers</span> <span class="o">=</span> <span class="n">controllers_off</span>
+            <span class="n">switch_request_object</span><span class="o">.</span><span class="n">strictness</span> <span class="o">=</span> <span class="n">strictness</span>
+            <span class="n">switch_request_object</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+            <span class="n">switch_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_switch_controller_proxy</span><span class="p">(</span><span class="n">switch_request_object</span><span class="p">)</span>
+            <span class="c1"># NOTE: When a ROS Gazebo simulation is present and it is paused we briefly</span>
+            <span class="c1"># unpause it. This is needed for the `controller_manager/switch_controller`</span>
+            <span class="c1"># service to work.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">switch_result</span><span class="o">.</span><span class="n">ok</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">gazebo</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">gazebo_paused</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_unpause_proxy</span><span class="p">()</span>
+                <span class="n">switch_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_switch_controller_proxy</span><span class="p">(</span><span class="n">switch_request_object</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pause_proxy</span><span class="p">()</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Switch Result==&gt;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">switch_result</span><span class="o">.</span><span class="n">ok</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">switch_result</span><span class="o">.</span><span class="n">ok</span>
+        <span class="k">except</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_switch_controller_service_name</span> <span class="o">+</span> <span class="s2">&quot; service call failed&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="ControllersConnection.reset_controllers"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.controllers_connection.ControllersConnection.reset_controllers">[docs]</a>    <span class="k">def</span> <span class="nf">reset_controllers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resets the currently running controllers by turning them off and on.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            timeout (float): The timeout before the request is cancelled. Defaults to</span>
+<span class="sd">                ``0.0`` meaning no timeout.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Try to find all running controllers controller_list was not supplied.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">list_controllers_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_controllers_proxy</span><span class="o">.</span><span class="n">call</span><span class="p">(</span>
+                <span class="n">ListControllersRequest</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">controllers_list</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">controller</span><span class="o">.</span><span class="n">name</span>
+                <span class="k">for</span> <span class="n">controller</span> <span class="ow">in</span> <span class="n">list_controllers_msg</span><span class="o">.</span><span class="n">controller</span>
+                <span class="k">if</span> <span class="n">controller</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;running&quot;</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">controllers_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller_list</span>
+
+        <span class="c1"># Reset the running controllers.</span>
+        <span class="n">reset_result</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Deactivating controllers&quot;</span><span class="p">)</span>
+        <span class="n">result_off_ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">switch_controllers</span><span class="p">(</span>
+            <span class="n">controllers_on</span><span class="o">=</span><span class="p">[],</span> <span class="n">controllers_off</span><span class="o">=</span><span class="n">controllers_list</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">result_off_ok</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Re-activating controllers&quot;</span><span class="p">)</span>
+            <span class="n">result_on_ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">switch_controllers</span><span class="p">(</span>
+                <span class="n">controllers_on</span><span class="o">=</span><span class="n">controllers_list</span><span class="p">,</span> <span class="n">controllers_off</span><span class="o">=</span><span class="p">[]</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">result_on_ok</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Controllers reset==&gt;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">controllers_list</span><span class="p">))</span>
+                <span class="n">reset_result</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;result_on_ok==&gt;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result_on_ok</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;result_off_ok==&gt;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result_off_ok</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">reset_result</span></div>
+
+<div class="viewcode-block" id="ControllersConnection.pause_controllers"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.controllers_connection.ControllersConnection.pause_controllers">[docs]</a>    <span class="k">def</span> <span class="nf">pause_controllers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filter_list</span><span class="o">=</span><span class="p">[]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pauses controllers.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            controller_list (list, optional): The controllers you want to pause.</span>
+<span class="sd">                Defaults to ``None``, which means that the class will pause all the</span>
+<span class="sd">                running controllers.</span>
+<span class="sd">            filter_list (list, optional): The controllers you want to ignore when</span>
+<span class="sd">                pausing. Defaults to ``[]``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Retrieve all running controllers if controller_list was not supplied.</span>
+        <span class="k">if</span> <span class="n">controller_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">list_controllers_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_controllers_proxy</span><span class="o">.</span><span class="n">call</span><span class="p">(</span>
+                    <span class="n">ListControllersRequest</span><span class="p">()</span>
+                <span class="p">)</span>
+                <span class="n">controllers_list</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">controller</span><span class="o">.</span><span class="n">name</span>
+                    <span class="k">for</span> <span class="n">controller</span> <span class="ow">in</span> <span class="n">list_controllers_msg</span><span class="o">.</span><span class="n">controller</span>
+                    <span class="k">if</span> <span class="n">controller</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;running&quot;</span>
+                <span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">controllers_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller_list</span>
+
+        <span class="c1"># Filter out the controllers that should be ignored.</span>
+        <span class="n">controllers_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">controller</span>
+            <span class="k">for</span> <span class="n">controller</span> <span class="ow">in</span> <span class="n">controllers_list</span>
+            <span class="k">if</span> <span class="n">controller</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filter_list</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Pause the running controllers.</span>
+        <span class="n">pause_result</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Pausing controllers&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_paused_controllers</span> <span class="o">=</span> <span class="n">controllers_list</span>
+        <span class="n">result_off_ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">switch_controllers</span><span class="p">(</span>
+            <span class="n">controllers_on</span><span class="o">=</span><span class="p">[],</span> <span class="n">controllers_off</span><span class="o">=</span><span class="n">controllers_list</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">result_off_ok</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Controllers paused==&gt;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">controllers_list</span><span class="p">))</span>
+            <span class="n">pause_result</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;result_off_ok==&gt;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result_off_ok</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">pause_result</span></div>
+
+<div class="viewcode-block" id="ControllersConnection.unpause_controllers"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/index.html#ros_gazebo_gym.core.controllers_connection.ControllersConnection.unpause_controllers">[docs]</a>    <span class="k">def</span> <span class="nf">unpause_controllers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Unpauses all the paused controllers.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Boolean specifying whether the unpause was successful.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_paused_controllers</span><span class="p">:</span>
+            <span class="n">unpause_result</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Unpausing controllers&quot;</span><span class="p">)</span>
+            <span class="n">result_on_ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">switch_controllers</span><span class="p">(</span>
+                <span class="n">controllers_on</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_paused_controllers</span><span class="p">,</span> <span class="n">controllers_off</span><span class="o">=</span><span class="p">[]</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">result_on_ok</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span>
+                    <span class="s2">&quot;Controllers unpaused==&gt;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_paused_controllers</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">unpause_result</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_paused_controllers</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;result_on_ok==&gt;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result_on_ok</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="n">unpause_result</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s2">&quot;No controllers to unpause!&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ControllersConnection.controllers_list"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/controllers_connection/index.html#ros_gazebo_gym.core.controllers_connection.ControllersConnection.controllers_list">[docs]</a>    <span class="k">def</span> <span class="nf">controllers_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the list of available controllers.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controllers_list</span></div>
+
+    <span class="nd">@controllers_list</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">controllers_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_controllers_list</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Updates the list of available controllers.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_controllers_list</span> <span class="o">=</span> <span class="n">new_controllers_list</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ControllersConnection.gazebo"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/controllers_connection/index.html#ros_gazebo_gym.core.controllers_connection.ControllersConnection.gazebo">[docs]</a>    <span class="k">def</span> <span class="nf">gazebo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns whether a ROS Gazebo simulation is running.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;/gazebo&quot;</span> <span class="ow">in</span> <span class="n">topic</span> <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">flatten_list</span><span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_published_topics</span><span class="p">())]</span>
+        <span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ControllersConnection.gazebo_paused"><a class="viewcode-back" href="../../../autoapi/ros_gazebo_gym/core/controllers_connection/index.html#ros_gazebo_gym.core.controllers_connection.ControllersConnection.gazebo_paused">[docs]</a>    <span class="k">def</span> <span class="nf">gazebo_paused</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns whether the Gazebo simulation is paused.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gazebo</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;/clock&quot;</span> <span class="ow">in</span> <span class="n">topic</span> <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">flatten_list</span><span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_published_topics</span><span class="p">())]</span>
+        <span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_message</span><span class="p">(</span>
+                    <span class="s2">&quot;/clock&quot;</span><span class="p">,</span> <span class="n">Clock</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_gazebo_paused_check_timeout</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">except</span> <span class="n">ROSException</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="kc">False</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

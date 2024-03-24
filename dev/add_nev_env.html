@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add new environments &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Release documentation" href="doc_dev.html" />
+    <link rel="prev" title="Contribute to ros-gazebo-gym" href="contributing.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/usage.html">How to use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Add new environments</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#creating-task-and-robot-environments">Creating task and robot Environments</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#general-instructions">General instructions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#recommendations">Recommendations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#package-structure">Package structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#environment-configuration">Environment configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#registering-the-environment">Registering the environment</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Add new environments</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/docs/source/dev/add_nev_env.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="add-new-environments">
+<span id="add-new-env"></span><h1>Add new environments<a class="headerlink" href="#add-new-environments" title="Permalink to this heading"></a></h1>
+<p>Welcome to the guide on adding new environments to the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/">ros_gazebo_gym</a> project, an inclusive open-source initiative that invites contributions from the community. Prior to making your
+own contribution, we strongly encourage a thorough review of the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/CONTRIBUTING.md">contributing guidelines</a>. Below, we provide a concise and structured guide to assist
+you in introducing a new ROS gazebo gymnasium environment. For any queries that arise, please feel free to open an <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/issues">issue</a> to seek further clarification.</p>
+<section id="creating-task-and-robot-environments">
+<h2>Creating task and robot Environments<a class="headerlink" href="#creating-task-and-robot-environments" title="Permalink to this heading"></a></h2>
+<section id="general-instructions">
+<h3>General instructions<a class="headerlink" href="#general-instructions" title="Permalink to this heading"></a></h3>
+<p>To develop a new environment, the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/">ros_gazebo_gym</a> package provides two templates to create ROS gymnasium environment wrappers:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">template_my_robot_env.py</span></code>: This template constructs the robot environment, responsible for sensor data reading and actuator control.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">template_my_task_env.py</span></code>: This template builds the task environment, responsible for initial environment setup, task reward computation, and episode completion checks.</p></li>
+</ul>
+</div></blockquote>
+<p>To embark on creating a new environment, establish a new folder for your robot within the <code class="docutils literal notranslate"><span class="pre">ros_gazebo_gym/task_envs</span></code> directory. Copy the <code class="docutils literal notranslate"><span class="pre">template_my_task_env.py</span></code> into this folder and rename it
+accordingly. Then, duplicate the <code class="docutils literal notranslate"><span class="pre">template_my_robot_env.py</span></code> file into the <code class="docutils literal notranslate"><span class="pre">ros_gazebo_gym/robot_envs</span></code> directory and provide it a new name. As you proceed, address the <code class="docutils literal notranslate"><span class="pre">TODOS</span></code> indicated in these templates.
+It’s crucial that the robot environment inherits from either the <a class="reference internal" href="../autoapi/ros_gazebo_gym/robot_gazebo_env/index.html#ros_gazebo_gym.robot_gazebo_env.RobotGazeboEnv" title="ros_gazebo_gym.robot_gazebo_env.RobotGazeboEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">RobotGazeboEnv</span></code></a> or <a class="reference internal" href="../autoapi/ros_gazebo_gym/robot_gazebo_goal_env/index.html#ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv" title="ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">RobotGazeboGoalEnv</span></code></a> classes.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For a <code class="docutils literal notranslate"><span class="pre">dictionary</span></code> format for observations (as seen in <a class="reference external" href="https://robotics.farama.org/envs/fetch/">gymnasium Fetch environments</a>), use the <a class="reference internal" href="../autoapi/ros_gazebo_gym/robot_gazebo_goal_env/index.html#ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv" title="ros_gazebo_gym.robot_gazebo_goal_env.RobotGazeboGoalEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">RobotGazeboGoalEnv</span></code></a>
+environment.For a simple array observation format, you can inherit from the <a class="reference internal" href="../autoapi/ros_gazebo_gym/robot_gazebo_env/index.html#ros_gazebo_gym.robot_gazebo_env.RobotGazeboEnv" title="ros_gazebo_gym.robot_gazebo_env.RobotGazeboEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">RobotGazeboEnv</span></code></a> class.</p>
+</div>
+<p>A variety of helper classes and methods are accessible to assist in creating your ROS gymnasium environment:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="../autoapi/ros_gazebo_gym/core/controllers_connection/index.html#ros_gazebo_gym.core.controllers_connection.ControllersConnection" title="ros_gazebo_gym.core.controllers_connection.ControllersConnection"><code class="xref py py-class docutils literal notranslate"><span class="pre">ControllersConnection</span></code></a>: Manages resetting, switching, and loading ROS controllers.</p></li>
+<li><p><a class="reference internal" href="../autoapi/ros_gazebo_gym/core/gazebo_connection/index.html#ros_gazebo_gym.core.gazebo_connection.GazeboConnection" title="ros_gazebo_gym.core.gazebo_connection.GazeboConnection"><code class="xref py py-class docutils literal notranslate"><span class="pre">GazeboConnection</span></code></a>: Facilitates interaction with the Gazebo simulation, offering access to model and link information, pause/unpause functionality,
+model spawning, and simulation resetting.</p></li>
+<li><p><a class="reference internal" href="../autoapi/ros_gazebo_gym/core/lazy_importer/index.html#ros_gazebo_gym.core.lazy_importer.LazyImporter" title="ros_gazebo_gym.core.lazy_importer.LazyImporter"><code class="xref py py-class docutils literal notranslate"><span class="pre">LazyImporter</span></code></a>: Lazily imports ROS python packages to avoid import errors.</p></li>
+<li><p><a class="reference internal" href="../autoapi/ros_gazebo_gym/core/ros_launcher/index.html#ros_gazebo_gym.core.ros_launcher.ROSLauncher" title="ros_gazebo_gym.core.ros_launcher.ROSLauncher"><code class="xref py py-class docutils literal notranslate"><span class="pre">ROSLauncher</span></code></a>: Launches ROS launch files in a safe subprocess manner.</p></li>
+<li><p><a class="reference internal" href="../autoapi/ros_gazebo_gym/core/ros_launcher/index.html#ros_gazebo_gym.core.ros_launcher.ROSLauncher.initialize" title="ros_gazebo_gym.core.ros_launcher.ROSLauncher.initialize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">initialize()</span></code></a>: Ensures the presence of a running ROS master and Python script-initialized ROS environment.</p></li>
+<li><p><a class="reference internal" href="../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.load_ros_params_from_yaml" title="ros_gazebo_gym.core.helpers.load_ros_params_from_yaml"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load_ros_params_from_yaml()</span></code></a>: Imports ROS parameters from a <code class="docutils literal notranslate"><span class="pre">yaml</span></code> file.</p></li>
+<li><p><a class="reference internal" href="../autoapi/ros_gazebo_gym/core/helpers/index.html#module-ros_gazebo_gym.core.helpers" title="ros_gazebo_gym.core.helpers"><code class="xref py py-mod docutils literal notranslate"><span class="pre">helpers</span></code></a>: Contains a variety of helper methods for ROS gazebo gymnasium environments.</p></li>
+</ul>
+</div></blockquote>
+<p>Refer to the <a class="reference internal" href="../autoapi/index.html#python-api"><span class="std std-ref">Python API documentation</span></a> for a comprehensive overview of all functions and classes within the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/">ros_gazebo_gym</a> package.</p>
+</section>
+<section id="recommendations">
+<h3>Recommendations<a class="headerlink" href="#recommendations" title="Permalink to this heading"></a></h3>
+<section id="package-structure">
+<h4>Package structure<a class="headerlink" href="#package-structure" title="Permalink to this heading"></a></h4>
+<p>When constructing your environment, it’s advisable to house ROS launch files within a distinct ROS package. This separation ensures the cleanliness of the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/">ros_gazebo_gym</a> package. Incorporate
+this dependency into the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/src/ros_gazebo_gym/cfg/rosdep.yaml">ros_gazebo_gym/cfg/rosdep.yaml</a> file:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="c1"># Archive with download information about the ROS dependencies used in the &#39;ros_gazebo_gym&#39; environments.</span>
+<span class="linenos"> 2</span><span class="c1"># NOTE: Here you should add information about ROS dependencies for new &#39;ros_gazebo_gym&#39; environments.</span>
+<span class="linenos"> 3</span><span class="c1"># NOTE: Used in the ROSLauncher class.</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="c1"># == Panda env ==</span>
+<span class="linenos"> 6</span><span class="n">panda_gazebo</span><span class="p">:</span>                                             <span class="c1"># Main environment package dependency.</span>
+<span class="linenos"> 7</span>  <span class="n">binary</span><span class="p">:</span> <span class="kc">False</span>                                           <span class="c1"># If also available as system binary.</span>
+<span class="linenos"> 8</span>  <span class="n">git_url</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">rickstaa</span><span class="o">/</span><span class="n">panda_gazebo</span><span class="o">.</span><span class="n">git</span>   <span class="c1"># Git repository URL.</span>
+<span class="linenos"> 9</span>  <span class="n">git_branch</span><span class="p">:</span> <span class="n">noetic</span>                                      <span class="c1"># Git repository branch.    </span>
+<span class="linenos">10</span>
+<span class="linenos">11</span>  <span class="c1"># Additional dependencies.</span>
+<span class="linenos">12</span>  <span class="c1"># NOTE: If possible specify in main environment package &#39;package.xml&#39; file.                       </span>
+<span class="linenos">13</span>  <span class="n">deps</span><span class="p">:</span>
+<span class="linenos">14</span>    <span class="c1"># franka_ros:  # NOTE: Included as an example, redundant with &#39;panda_gazebo&#39; submodule.</span>
+<span class="linenos">15</span>    <span class="c1">#   binary: True</span>
+<span class="linenos">16</span>    <span class="c1">#   git_url: https://github.com/frankaemika/franka_ros</span>
+<span class="linenos">17</span>    <span class="c1">#   git_branch: develop</span>
+</pre></div>
+</div>
+<p>After incorporating dependencies, utilize the <a class="reference internal" href="../autoapi/ros_gazebo_gym/core/ros_launcher/index.html#ros_gazebo_gym.core.ros_launcher.ROSLauncher" title="ros_gazebo_gym.core.ros_launcher.ROSLauncher"><code class="xref py py-class docutils literal notranslate"><span class="pre">ROSLauncher</span></code></a> to execute your launch files. This class guarantees that all prerequisites for your environment are installed
+and constructed. For an example, refer to the <a class="reference internal" href="../autoapi/ros_gazebo_gym/robot_envs/panda_env/index.html#ros_gazebo_gym.robot_envs.panda_env.PandaEnv" title="ros_gazebo_gym.robot_envs.panda_env.PandaEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">PandaEnv</span></code></a> and the <a class="reference external" href="https://github.com/rickstaa/panda-gazebo/">panda_gazebo</a> package.</p>
+</section>
+<section id="environment-configuration">
+<h4>Environment configuration<a class="headerlink" href="#environment-configuration" title="Permalink to this heading"></a></h4>
+<p>It’s recommended to store task environment configuration parameters in a dedicated configuration file located within a <code class="docutils literal notranslate"><span class="pre">config</span></code> folder in your task environment directory. These parameters can be loaded onto the
+ROS parameter server using the <a class="reference internal" href="../autoapi/ros_gazebo_gym/core/helpers/index.html#ros_gazebo_gym.core.helpers.load_ros_params_from_yaml" title="ros_gazebo_gym.core.helpers.load_ros_params_from_yaml"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ros_gazebo_gym.core.helpers.load_ros_params_from_yaml()</span></code></a> method. This enables their use in both the Task and Robot classes. An example can be found in the
+<a class="reference internal" href="../autoapi/ros_gazebo_gym/task_envs/panda/panda_reach/index.html#ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv" title="ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">PandaReachEnv</span></code></a> environment. The configuration parameters are stored in the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_reach.yaml">panda_reach.yaml</a>
+file:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="c1"># This config file contains the configuration values that are used by the Panda reach task</span>
+<span class="linenos"> 2</span><span class="n">panda_reach</span><span class="p">:</span>
+<span class="linenos"> 3</span>  <span class="c1">########################################</span>
+<span class="linenos"> 4</span>  <span class="c1"># Control settings #####################</span>
+<span class="linenos"> 5</span>  <span class="c1">########################################</span>
+<span class="linenos"> 6</span>  <span class="n">control</span><span class="p">:</span>
+<span class="linenos"> 7</span>    <span class="n">direct_control</span><span class="p">:</span> <span class="kc">True</span> <span class="c1"># Directly control the panda robot by publishing on the controller command topics (FAST). When ``False`` the &#39;panda_gazebo&#39; control services will be used (SLOWER).</span>
+<span class="linenos"> 8</span>    <span class="c1"># ee_link: &quot;panda_link8&quot; # Uncomment to change end effector. Defaults: &#39;panda_hand&#39; if gripper loaded, &#39;panda_link8&#39; otherwise.</span>
+<span class="linenos"> 9</span>    <span class="c1"># NOTE: Gripper not loaded due to gravity compensation issues with effort control (see https://github.com/frankaemika/franka_ros/issues/160#issuecomment-992776684).</span>
+<span class="linenos">10</span>    <span class="n">load_gripper</span><span class="p">:</span> <span class="kc">False</span> <span class="c1"># Whether you want to load the gripper.</span>
+<span class="linenos">11</span>    <span class="c1"># lock_gripper: True # Whether the gripper should be locked (i.e. not move).</span>
+<span class="linenos">12</span>    <span class="n">grasping</span><span class="p">:</span> <span class="kc">False</span> <span class="c1"># Whether the gripper should grasp objects. If true a max effort of 10N will be used when not specified otherwise.</span>
+<span class="linenos">13</span>    <span class="n">arm_wait</span><span class="p">:</span> <span class="kc">False</span> <span class="c1"># Wait for the arm control to complete before continuing to the next step.</span>
+<span class="linenos">14</span>    <span class="n">hand_wait</span><span class="p">:</span> <span class="kc">False</span> <span class="c1"># Wait for the hand control to complete before continuing to the next step.</span>
+<span class="linenos">15</span>    <span class="n">ee_control_coordinates</span><span class="p">:</span> <span class="c1"># Control variables used during ee-control.</span>
+<span class="linenos">16</span>      <span class="o">-</span> <span class="s2">&quot;x&quot;</span>
+<span class="linenos">17</span>      <span class="o">-</span> <span class="s2">&quot;y&quot;</span>
+<span class="linenos">18</span>      <span class="o">-</span> <span class="s2">&quot;z&quot;</span>
+<span class="linenos">19</span>      <span class="o">-</span> <span class="s2">&quot;rx&quot;</span>
+<span class="linenos">20</span>      <span class="o">-</span> <span class="s2">&quot;ry&quot;</span>
+<span class="linenos">21</span>      <span class="o">-</span> <span class="s2">&quot;rz&quot;</span>
+<span class="linenos">22</span>      <span class="o">-</span> <span class="s2">&quot;rw&quot;</span>
+<span class="linenos">23</span>    <span class="n">controlled_joints</span><span class="p">:</span> <span class="c1"># Joints that are controlled during joint position/effort control.</span>
+<span class="linenos">24</span>      <span class="o">-</span> <span class="s2">&quot;panda_joint1&quot;</span>
+<span class="linenos">25</span>      <span class="o">-</span> <span class="s2">&quot;panda_joint2&quot;</span>
+<span class="linenos">26</span>      <span class="o">-</span> <span class="s2">&quot;panda_joint3&quot;</span>
+<span class="linenos">27</span>      <span class="o">-</span> <span class="s2">&quot;panda_joint4&quot;</span>
+<span class="linenos">28</span>      <span class="o">-</span> <span class="s2">&quot;panda_joint5&quot;</span>
+<span class="linenos">29</span>      <span class="o">-</span> <span class="s2">&quot;panda_joint6&quot;</span>
+<span class="linenos">30</span>      <span class="o">-</span> <span class="s2">&quot;panda_joint7&quot;</span>
+<span class="linenos">31</span>      <span class="c1"># NOTE: The current implementation only accepts gripper_width not individual finger joints.</span>
+<span class="linenos">32</span>      <span class="c1"># - &quot;gripper_width&quot;</span>
+<span class="linenos">33</span>      <span class="c1"># NOTE: When uncommented the robot also tries to control the max gripper effort. Only used when &#39;gripper_width&#39; is controlled.</span>
+<span class="linenos">34</span>      <span class="c1"># - &quot;gripper_max_effort&quot;</span>
+<span class="linenos">35</span>    <span class="n">locked_arm_joints</span><span class="p">:</span> <span class="c1"># Arm joints that are locked during control.</span>
+<span class="linenos">36</span>    <span class="c1">#   - &quot;panda_joint1&quot;</span>
+<span class="linenos">37</span>    <span class="c1">#   - &quot;panda_joint2&quot;</span>
+<span class="linenos">38</span>    <span class="c1">#   - &quot;panda_joint3&quot;</span>
+<span class="linenos">39</span>    <span class="c1">#   - &quot;panda_joint4&quot;</span>
+<span class="linenos">40</span>    <span class="c1">#   - &quot;panda_joint5&quot;</span>
+<span class="linenos">41</span>    <span class="c1">#   - &quot;panda_joint6&quot;</span>
+<span class="linenos">42</span>    <span class="c1">#   - &quot;panda_joint7&quot;</span>
+</pre></div>
+</div>
+<p>These parameters are loaded onto the ROS parameter server within the <code class="xref py py-meth docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv.__init__()</span></code>
+method using the <code class="xref py py-meth docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv._get_params()</span></code> method.</p>
+</section>
+</section>
+</section>
+<section id="registering-the-environment">
+<h2>Registering the environment<a class="headerlink" href="#registering-the-environment" title="Permalink to this heading"></a></h2>
+<p>Upon creating your environment, it must be registered within the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/">ros_gazebo_gym</a> package to be discoverable by <a class="reference external" href="https://gymnasium.farama.org/">gymnasium</a>. Achieve this by incorporating information about your environment within
+the <a class="reference internal" href="../autoapi/ros_gazebo_gym/task_envs/task_envs_list/index.html#module-ros_gazebo_gym.task_envs.task_envs_list" title="ros_gazebo_gym.task_envs.task_envs_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.task_envs_list</span></code></a> configuration file:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="c1"># TODO: Update reward thresholds.</span>
+<span class="linenos">2</span><span class="n">ENVS</span> <span class="o">=</span> <span class="p">{</span>
+<span class="linenos">3</span>    <span class="c1"># Panda task envs.</span>
+<span class="linenos">4</span>    <span class="s2">&quot;PandaReach-v1&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">5</span>        <span class="s2">&quot;entry_point&quot;</span><span class="p">:</span> <span class="s2">&quot;ros_gazebo_gym.task_envs.panda.panda_reach:PandaReachEnv&quot;</span><span class="p">,</span>
+<span class="linenos">6</span>        <span class="s2">&quot;reward_threshold&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span>
+<span class="linenos">7</span>        <span class="s2">&quot;max_steps&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
+<span class="linenos">8</span>    <span class="p">},</span>
+<span class="linenos">9</span>    <span class="s2">&quot;PandaPickAndPlace-v1&quot;</span><span class="p">:</span> <span class="p">{</span>
+</pre></div>
+</div>
+<p>Each environment entry should include <code class="docutils literal notranslate"><span class="pre">module</span></code>, <code class="docutils literal notranslate"><span class="pre">max_steps</span></code>, and <code class="docutils literal notranslate"><span class="pre">reward_threshold</span></code> attributes. Following this addition, the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/">ros_gazebo_gym</a> package will facilitate the environment’s registration
+under the gymnasium namespace. This will enable environment creation using the <code class="xref py py-func docutils literal notranslate"><span class="pre">gym.make()</span></code> method.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="contributing.html" class="btn btn-neutral float-left" title="Contribute to ros-gazebo-gym" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="doc_dev.html" class="btn btn-neutral float-right" title="Release documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

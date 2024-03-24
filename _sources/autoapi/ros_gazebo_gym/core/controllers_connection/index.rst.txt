@@ -1,0 +1,142 @@
+:py:mod:`ros_gazebo_gym.core.controllers_connection`
+====================================================
+
+.. py:module:: ros_gazebo_gym.core.controllers_connection
+
+.. autoapi-nested-parse::
+
+   Contains a python utility class that makes it easier to interact with
+   `ros_control <https://wiki.ros.org/ros_control>`_ controllers.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.core.controllers_connection.ControllersConnection
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   ros_gazebo_gym.core.controllers_connection.CONNECTION_TIMEOUT
+
+
+.. py:data:: CONNECTION_TIMEOUT
+   :value: 10
+
+   
+
+.. py:class:: ControllersConnection(namespace='', controllers_list=None)
+
+
+   Class that contains several methods that can be used to interact with the
+   `ros_control <https://wiki.ros.org/ros_control>`_ controllers.
+
+   .. attribute:: list_service_name
+
+      The name of the controller list service.
+
+      :type: str
+
+   .. attribute:: list_service
+
+      The controller
+      list service.
+
+      :type: :obj:`rospy.impl.tcpros_service.ServiceProxy`
+
+   .. attribute:: switch_service_name
+
+      The name of the controller switch service.
+
+      :type: str
+
+   .. attribute:: switch_service
+
+      The controller
+      switch service.
+
+      :type: :obj:`rospy.impl.tcpros_service.ServiceProxy`
+
+   Initialize the ControllersConnection instance.
+
+   :param namespace: The namespace on which the robot controllers can
+                     be found. Defaults to ``""``.
+   :type namespace: str, optional
+   :param controllers_list: A list with currently available
+                            controllers to look for. Defaults to ``None``, which means that the
+                            class will try to retrieve all the running controllers.
+   :type controllers_list: list, optional
+
+   .. py:property:: controllers_list
+
+      Returns the list of available controllers.
+
+   .. py:property:: gazebo
+
+      Returns whether a ROS Gazebo simulation is running.
+
+   .. py:property:: gazebo_paused
+
+      Returns whether the Gazebo simulation is paused.
+
+   .. py:method:: switch_controllers(controllers_on, controllers_off, strictness=1, timeout=0.0)
+
+      Function used to switch controllers on and off.
+
+      :param controllers_on: The controllers you want to turn on.
+      :type controllers_on: list
+      :param controllers_off: The controllers you want to turn off.
+      :type controllers_off: list
+      :param strictness: Whether the switching will fail if anything goes
+                         wrong. Defaults to ``1``.
+      :type strictness: int, optional
+      :param timeout: The timeout before the request is cancelled. Defaults to
+                      ``0.0`` meaning no timeout.
+      :type timeout: float
+
+      :returns: Boolean specifying whether the switch was successful.
+      :rtype: bool
+
+
+   .. py:method:: reset_controllers(timeout=1.0)
+
+      Resets the currently running controllers by turning them off and on.
+
+      :param timeout: The timeout before the request is cancelled. Defaults to
+                      ``0.0`` meaning no timeout.
+      :type timeout: float
+
+
+   .. py:method:: pause_controllers(controller_list=None, filter_list=[])
+
+      Pauses controllers.
+
+      :param controller_list: The controllers you want to pause.
+                              Defaults to ``None``, which means that the class will pause all the
+                              running controllers.
+      :type controller_list: list, optional
+      :param filter_list: The controllers you want to ignore when
+                          pausing. Defaults to ``[]``.
+      :type filter_list: list, optional
+
+
+   .. py:method:: unpause_controllers()
+
+      Unpauses all the paused controllers.
+
+      :returns: Boolean specifying whether the unpause was successful.
+      :rtype: bool
+
+
+

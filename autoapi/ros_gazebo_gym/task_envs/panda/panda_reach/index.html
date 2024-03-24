@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ros_gazebo_gym.task_envs.panda.panda_reach &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../../../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="next" title="ros_gazebo_gym.task_envs.panda.panda_slide" href="../panda_slide/index.html" />
+    <link rel="prev" title="ros_gazebo_gym.task_envs.panda.panda_push" href="../panda_push/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html">
+            
+              <img src="../../../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../get_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../get_started/usage.html">How to use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../get_started/envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../dev/contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../dev/add_nev_env.html">Add new environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../dev/doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../dev/license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../dev/openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../../../index.html#ros-api">ROS API</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../../../index.html#python-api">Python API</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code></a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../../../index.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../index.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs</span></code></a></li>
+          <li class="breadcrumb-item"><a href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda</span></code></a></li>
+      <li class="breadcrumb-item active"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/docs/source/autoapi/ros_gazebo_gym/task_envs/panda/panda_reach/index.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-ros_gazebo_gym.task_envs.panda.panda_reach">
+<span id="ros-gazebo-gym-task-envs-panda-panda-reach"></span><h1><a class="reference internal" href="#module-ros_gazebo_gym.task_envs.panda.panda_reach" title="ros_gazebo_gym.task_envs.panda.panda_reach"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach</span></code></a><a class="headerlink" href="#module-ros_gazebo_gym.task_envs.panda.panda_reach" title="Permalink to this heading"></a></h1>
+<p>An ROS Panda reach gymnasium environment.</p>
+<img alt="Panda reach environment" src="../../../../../_images/panda_reach_env.png" />
+<dl>
+<dt>Observation space:</dt><dd><p>As the panda environment inherits from the <a class="reference external" href="https://robotics.farama.org/content/multi-goal_api/#goalenv">gym.GoalEnv</a> class, the observation
+space is a dictionary.</p>
+<dl class="simple">
+<dt>Type: Dict</dt><dd><ul class="simple">
+<li><p><strong>observation</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>): The current end-effector pose, joint
+positions and joint velocities.</p></li>
+<li><p><strong>desired_goal</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>): The desired end-effector pose.</p></li>
+<li><p><strong>achieved_goal</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>): The achieved end-effector pose.</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl>
+<dt>Action space:</dt><dd><p>The action space of the panda environment is dependent on the control type and
+whether the gripper is loaded. The following action spaces are available:</p>
+<dl class="simple">
+<dt><strong>Joint trajectory control</strong>:</dt><dd><dl class="simple">
+<dt>Type: Box(7)</dt><dd><ul class="simple">
+<li><p><strong>panda_joint1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The position of the first joint.</p></li>
+<li><p><strong>panda_joint2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The position of the second joint.</p></li>
+<li><p><strong>panda_joint3</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The position of the third joint.</p></li>
+<li><p><strong>panda_joint4</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The position of the fourth joint.</p></li>
+<li><p><strong>panda_joint5</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The position of the fifth joint.</p></li>
+<li><p><strong>panda_joint6</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The position of the sixth joint.</p></li>
+<li><p><strong>panda_joint7</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The position of the seventh joint.</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><strong>Joint position control</strong>:</dt><dd><dl class="simple">
+<dt>Type: Box(7)</dt><dd><ul class="simple">
+<li><p><strong>panda_joint1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The position of the first joint.</p></li>
+<li><p><strong>panda_joint2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The position of the second joint.</p></li>
+<li><p><strong>panda_joint3</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The position of the third joint.</p></li>
+<li><p><strong>panda_joint4</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The position of the fourth joint.</p></li>
+<li><p><strong>panda_joint5</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The position of the fifth joint.</p></li>
+<li><p><strong>panda_joint6</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The position of the sixth joint.</p></li>
+<li><p><strong>panda_joint7</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The position of the seventh joint.</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><strong>Joint effort control</strong>:</dt><dd><dl class="simple">
+<dt>Type: Box(7)</dt><dd><ul class="simple">
+<li><p><strong>panda_joint1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The effort of the first joint.</p></li>
+<li><p><strong>panda_joint2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The effort of the second joint.</p></li>
+<li><p><strong>panda_joint3</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The effort of the third joint.</p></li>
+<li><p><strong>panda_joint4</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The effort of the fourth joint.</p></li>
+<li><p><strong>panda_joint5</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The effort of the fifth joint.</p></li>
+<li><p><strong>panda_joint6</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The effort of the sixth joint.</p></li>
+<li><p><strong>panda_joint7</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The effort of the seventh joint.</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><strong>End-effector position control</strong>:</dt><dd><dl class="simple">
+<dt>Type: Box(7)</dt><dd><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The x position of the end-effector.</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The y position of the end-effector.</p></li>
+<li><p><strong>z</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The z position of the end-effector.</p></li>
+<li><p><strong>rx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The x component of the quaternion orientation of the
+end-effector.</p></li>
+<li><p><strong>ry</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The y component of the quaternion orientation of the
+end-effector.</p></li>
+<li><p><strong>rz</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The z component of the quaternion orientation of the
+end-effector.</p></li>
+<li><p><strong>rw</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The w component of the quaternion orientation of the
+end-effector.</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>If the gripper is loaded, the action space is extended with the following
+dimensions:</p>
+<dl>
+<dt>Type: Box(2)</dt><dd><ul class="simple">
+<li><p><strong>gripper_width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The width of the gripper - only if the
+gripper is loaded.</p></li>
+<li><p><strong>gripper_max_effort</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>): The maximum effort of the gripper -
+only if the gripper is loaded.</p></li>
+</ul>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>The gripper width is ignored when the <code class="docutils literal notranslate"><span class="pre">grasping</span></code> parameter is set to <code class="docutils literal notranslate"><span class="pre">true</span></code> in the
+<a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_reach.yaml">task environment config file</a>.
+or when the <code class="docutils literal notranslate"><span class="pre">gripper_max_effort</span></code> is set to a value greater than zero.</p>
+</div>
+</dd>
+</dl>
+</dd>
+<dt>Episode termination:</dt><dd><p>The episode terminates when the end-effector is within a certain distance of the
+goal position. The distance is defined by the <code class="docutils literal notranslate"><span class="pre">distance_threshold</span></code> parameter in
+the task environment configuration file. If the <code class="docutils literal notranslate"><span class="pre">hold_samples</span></code> parameter is
+greater than zero, the episode will terminate after <code class="docutils literal notranslate"><span class="pre">hold_samples</span></code> consecutive
+samples are within the <code class="docutils literal notranslate"><span class="pre">distance_threshold</span></code>. The episode will also terminate if
+the maximum number of samples is reached.</p>
+</dd>
+<dt>Environment Goal:</dt><dd><p>In this environment the agent has to learn to move the panda robot to a given goal
+position. It was based on the <a class="reference external" href="https://robotics.farama.org/envs/fetch/reach/">FetchReach-v2</a>
+gymnasium environment.</p>
+</dd>
+<dt>Reward function:</dt><dd><p>The reward function is defined as the negative of the Euclidean distance between the
+end-effector and the goal position. If the <code class="docutils literal notranslate"><span class="pre">positive_reward</span></code> parameter is set to
+<code class="docutils literal notranslate"><span class="pre">true</span></code>, the absolute value of the reward is returned:</p>
+<div class="math notranslate nohighlight">
+\[reward = -\sqrt{(x_{ee} - x_{goal})^2 + (y_{ee} - y_{goal})^2 + (z_{ee} - z_{goal})^2}\]</div>
+</dd>
+<dt>Initialization:</dt><dd><p>The environment is initialized by loading the Panda robot model and setting its
+initial position and orientation. The environment parameters can be set in the
+configuration file located at <cite>ros_gazebo_gym/task_envs/panda/config/panda_reach.yaml</cite>.</p>
+</dd>
+</dl>
+<p>Environment step return:</p>
+<blockquote>
+<div><p>In addition to the observations, the reward, and a termination and truncation boolean,
+the environment also returns an info dictionary:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">observation</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">termination</span><span class="p">,</span> <span class="n">truncation</span><span class="p">,</span> <span class="n">info_dict</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The info dictionary contains the following information:</p>
+<ul class="simple">
+<li><p><strong>reference</strong>: The reference position (x,y,z) that the Panda Reach is tracking (i.e. the goal position).</p></li>
+<li><p><strong>state_of_interest</strong>: The state that should track the reference (SOI) (i.e. the end-effector position).</p></li>
+<li><p><strong>reference_error</strong>: The error between SOI and the reference (i.e. the error between the end-effector position and the goal position).</p></li>
+</ul>
+</div></blockquote>
+<div class="important admonition">
+<p class="admonition-title">Configuration</p>
+<p>The configuration files for this environment are found in the
+<a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_reach.yaml">panda task environment config folder</a>.</p>
+</div>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv" title="ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PandaReachEnv</span></code></a></p></td>
+<td><p>Class that provides all the methods used for the algorithm training.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_reach.CONNECTION_TIMEOUT" title="ros_gazebo_gym.task_envs.panda.panda_reach.CONNECTION_TIMEOUT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CONNECTION_TIMEOUT</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_reach.MOVEIT_GET_RANDOM_JOINT_POSITIONS_TOPIC" title="ros_gazebo_gym.task_envs.panda.panda_reach.MOVEIT_GET_RANDOM_JOINT_POSITIONS_TOPIC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MOVEIT_GET_RANDOM_JOINT_POSITIONS_TOPIC</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_reach.MOVEIT_SET_JOINT_POSITIONS_TOPIC" title="ros_gazebo_gym.task_envs.panda.panda_reach.MOVEIT_SET_JOINT_POSITIONS_TOPIC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MOVEIT_SET_JOINT_POSITIONS_TOPIC</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_reach.MOVEIT_GET_RANDOM_EE_POSE_TOPIC" title="ros_gazebo_gym.task_envs.panda.panda_reach.MOVEIT_GET_RANDOM_EE_POSE_TOPIC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MOVEIT_GET_RANDOM_EE_POSE_TOPIC</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_reach.MOVEIT_ADD_PLANE_TOPIC" title="ros_gazebo_gym.task_envs.panda.panda_reach.MOVEIT_ADD_PLANE_TOPIC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MOVEIT_ADD_PLANE_TOPIC</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_reach.SET_FRANKA_MODEL_CONFIGURATION_TOPIC" title="ros_gazebo_gym.task_envs.panda.panda_reach.SET_FRANKA_MODEL_CONFIGURATION_TOPIC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SET_FRANKA_MODEL_CONFIGURATION_TOPIC</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_reach.VALID_EE_CONTROL_JOINTS" title="ros_gazebo_gym.task_envs.panda.panda_reach.VALID_EE_CONTROL_JOINTS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VALID_EE_CONTROL_JOINTS</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_reach.CONFIG_FILE_PATH" title="ros_gazebo_gym.task_envs.panda.panda_reach.CONFIG_FILE_PATH"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CONFIG_FILE_PATH</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_reach.PANDA_REST_CONFIGURATION" title="ros_gazebo_gym.task_envs.panda.panda_reach.PANDA_REST_CONFIGURATION"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PANDA_REST_CONFIGURATION</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_reach.LOG_STEP_DEBUG_INFO" title="ros_gazebo_gym.task_envs.panda.panda_reach.LOG_STEP_DEBUG_INFO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LOG_STEP_DEBUG_INFO</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ros_gazebo_gym.task_envs.panda.panda_reach.AVAILABLE_HAND_COMMANDS" title="ros_gazebo_gym.task_envs.panda.panda_reach.AVAILABLE_HAND_COMMANDS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AVAILABLE_HAND_COMMANDS</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_reach.CONNECTION_TIMEOUT">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach.</span></span><span class="sig-name descname"><span class="pre">CONNECTION_TIMEOUT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_reach.html#CONNECTION_TIMEOUT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_reach.CONNECTION_TIMEOUT" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_reach.MOVEIT_GET_RANDOM_JOINT_POSITIONS_TOPIC">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach.</span></span><span class="sig-name descname"><span class="pre">MOVEIT_GET_RANDOM_JOINT_POSITIONS_TOPIC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'panda_moveit_planner_server/get_random_joint_positions'</span></em><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_reach.html#MOVEIT_GET_RANDOM_JOINT_POSITIONS_TOPIC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_reach.MOVEIT_GET_RANDOM_JOINT_POSITIONS_TOPIC" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_reach.MOVEIT_SET_JOINT_POSITIONS_TOPIC">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach.</span></span><span class="sig-name descname"><span class="pre">MOVEIT_SET_JOINT_POSITIONS_TOPIC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'panda_moveit_planner_server/set_joint_positions'</span></em><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_reach.html#MOVEIT_SET_JOINT_POSITIONS_TOPIC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_reach.MOVEIT_SET_JOINT_POSITIONS_TOPIC" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_reach.MOVEIT_GET_RANDOM_EE_POSE_TOPIC">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach.</span></span><span class="sig-name descname"><span class="pre">MOVEIT_GET_RANDOM_EE_POSE_TOPIC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'panda_moveit_planner_server/get_random_ee_pose'</span></em><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_reach.html#MOVEIT_GET_RANDOM_EE_POSE_TOPIC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_reach.MOVEIT_GET_RANDOM_EE_POSE_TOPIC" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_reach.MOVEIT_ADD_PLANE_TOPIC">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach.</span></span><span class="sig-name descname"><span class="pre">MOVEIT_ADD_PLANE_TOPIC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'panda_moveit_planner_server/planning_scene/add_plane'</span></em><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_reach.html#MOVEIT_ADD_PLANE_TOPIC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_reach.MOVEIT_ADD_PLANE_TOPIC" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_reach.SET_FRANKA_MODEL_CONFIGURATION_TOPIC">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach.</span></span><span class="sig-name descname"><span class="pre">SET_FRANKA_MODEL_CONFIGURATION_TOPIC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'set_franka_model_configuration'</span></em><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_reach.html#SET_FRANKA_MODEL_CONFIGURATION_TOPIC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_reach.SET_FRANKA_MODEL_CONFIGURATION_TOPIC" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_reach.VALID_EE_CONTROL_JOINTS">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach.</span></span><span class="sig-name descname"><span class="pre">VALID_EE_CONTROL_JOINTS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['x',</span> <span class="pre">'y',</span> <span class="pre">'z',</span> <span class="pre">'rx',</span> <span class="pre">'ry',</span> <span class="pre">'rz',</span> <span class="pre">'rw']</span></em><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_reach.html#VALID_EE_CONTROL_JOINTS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_reach.VALID_EE_CONTROL_JOINTS" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_reach.CONFIG_FILE_PATH">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach.</span></span><span class="sig-name descname"><span class="pre">CONFIG_FILE_PATH</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'config/panda_reach.yaml'</span></em><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_reach.html#CONFIG_FILE_PATH"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_reach.CONFIG_FILE_PATH" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_reach.PANDA_REST_CONFIGURATION">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach.</span></span><span class="sig-name descname"><span class="pre">PANDA_REST_CONFIGURATION</span></span><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_reach.html#PANDA_REST_CONFIGURATION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_reach.PANDA_REST_CONFIGURATION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_reach.LOG_STEP_DEBUG_INFO">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach.</span></span><span class="sig-name descname"><span class="pre">LOG_STEP_DEBUG_INFO</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_reach.html#LOG_STEP_DEBUG_INFO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_reach.LOG_STEP_DEBUG_INFO" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_reach.AVAILABLE_HAND_COMMANDS">
+<span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach.</span></span><span class="sig-name descname"><span class="pre">AVAILABLE_HAND_COMMANDS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['gripper_width',</span> <span class="pre">'gripper_max_effort']</span></em><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_reach.html#AVAILABLE_HAND_COMMANDS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_reach.AVAILABLE_HAND_COMMANDS" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ros_gazebo_gym.task_envs.panda.panda_reach.</span></span><span class="sig-name descname"><span class="pre">PandaReachEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">control_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'effort'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positive_reward</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">CONFIG_FILE_PATH</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gazebo_world_launch_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'start_reach_world.launch'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_space_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.float64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observation_space_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.float64</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ros_gazebo_gym/task_envs/panda/panda_reach.html#PandaReachEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../../robot_envs/panda_env/index.html#ros_gazebo_gym.robot_envs.panda_env.PandaEnv" title="ros_gazebo_gym.robot_envs.panda_env.PandaEnv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ros_gazebo_gym.robot_envs.panda_env.PandaEnv</span></code></a>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">gymnasium.utils.EzPickle</span></code></p>
+<p>Class that provides all the methods used for the algorithm training.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv.action_space">
+<span class="sig-name descname"><span class="pre">action_space</span></span><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv.action_space" title="Permalink to this definition"></a></dt>
+<dd><p>Gym action space object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://www.gymlibrary.dev/api/spaces/#gym.spaces.Box" title="(in Gym)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gym.spaces.box.Box</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv.observation_space">
+<span class="sig-name descname"><span class="pre">observation_space</span></span><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv.observation_space" title="Permalink to this definition"></a></dt>
+<dd><p>Gym observation space object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://www.gymlibrary.dev/api/spaces/#gym.spaces.Dict" title="(in Gym)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gym.spaces.dict.Dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv.goal">
+<span class="sig-name descname"><span class="pre">goal</span></span><a class="headerlink" href="#ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv.goal" title="Permalink to this definition"></a></dt>
+<dd><p>The current goal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">geometry_msgs.PoseStamped</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Initializes a Panda Task Environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>control_Type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – The type of control you want to use for the
+panda robot (i.e. hand and arm). Options are: <code class="docutils literal notranslate"><span class="pre">trajectory</span></code>,
+<code class="docutils literal notranslate"><span class="pre">position</span></code>, <code class="docutils literal notranslate"><span class="pre">effort</span></code> or <code class="docutils literal notranslate"><span class="pre">end_effector</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">effort</span></code>.</p></li>
+<li><p><strong>positive_reward</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether you want to use a positive
+reward instead of a negative reward. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>config_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – Path where the environment configuration
+value are found. The path is resolved relative to the
+<a class="reference internal" href="#module-ros_gazebo_gym.task_envs.panda.panda_reach" title="ros_gazebo_gym.task_envs.panda.panda_reach"><code class="xref py py-class docutils literal notranslate"><span class="pre">panda_reach</span></code></a> class file.</p></li>
+<li><p><strong>gazebo_world_launch_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – Name of the launch file that loads
+the gazebo world. Currently only the launch files inside the
+<a class="reference external" href="https://github.com/rickstaa/panda-gazebo">panda_gazebo</a> package are
+supported. Defaults to <code class="docutils literal notranslate"><span class="pre">start_reach_world.launch</span></code>.</p></li>
+<li><p><strong>visualize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether you want to show the RViz visualization.
+Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code> meaning the task configuration file values will
+be used.</p></li>
+<li><p><strong>action_space_dtype</strong> (<em>union</em><em>[</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v1.26)"><em>numpy.dtype</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – The data type of the
+action space. Defaults to <code class="docutils literal notranslate"><span class="pre">np.float64</span></code>.</p></li>
+<li><p><strong>observation_space_dtype</strong> (<em>union</em><em>[</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v1.26)"><em>numpy.dtype</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – The data type
+of the observation space. Defaults to <code class="docutils literal notranslate"><span class="pre">np.float64</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>In this environment, the joint trajectory control is not implemented yet for
+multiple waypoints. This is because the action space only contains one
+waypoint. The <code class="xref py py-obj docutils literal notranslate"><span class="pre">set_arm_joint_trajectory</span></code> method, however,
+already accepts multiple waypoints. As a result, task environment can be
+easily extended to work with multiple waypoints by modifying the
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">PandaReachEnv~._create_action_space</span></code> method.</p>
+</div>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../panda_push/index.html" class="btn btn-neutral float-left" title="ros_gazebo_gym.task_envs.panda.panda_push" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../panda_slide/index.html" class="btn btn-neutral float-right" title="ros_gazebo_gym.task_envs.panda.panda_slide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to use &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Environments" href="envs.html" />
+    <link rel="prev" title="Installation" href="install.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">How to use</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#general-usage-instructions">General usage instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage-examples">Usage Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#task-environment-configuration">Task environment configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#virtual-environments-and-ros">Virtual environments and ROS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ubuntu-20-04-compatibility-issues">Ubuntu 20.04 compatibility issues</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/add_nev_env.html">Add new environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">How to use</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/docs/source/get_started/usage.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="how-to-use">
+<h1>How to use<a class="headerlink" href="#how-to-use" title="Permalink to this heading"></a></h1>
+<p>This section provides instructions on how to use the ROS Gazebo Gym framework to train reinforcement learning algorithms.</p>
+<section id="general-usage-instructions">
+<h2>General usage instructions<a class="headerlink" href="#general-usage-instructions" title="Permalink to this heading"></a></h2>
+<p>The <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/">ROS Gazebo Gym</a> framework contains several gymnasium robotics task environments that can be used to train RL algorithms. Please see
+the <a class="reference internal" href="envs.html#envs"><span class="std std-ref">environments</span></a> section for more information about all available task environments. All the environments in the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/">ROS Gazebo Gym</a>
+framework can be imported like any other <a class="reference external" href="https://gymnasium.farama.org/">gymnasium</a> environment. The environments will be registered under the <code class="docutils literal notranslate"><span class="pre">gymnasium</span></code> namespace when imported
+from the <code class="docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code> package or any of its submodules. You can also prefix the environment name with the <code class="docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code> module name prefix, separated by
+a colon, to use it directly inside the <cite>gym.make</cite> function (e.g. <code class="docutils literal notranslate"><span class="pre">ros_gazeb_gym:PandaReach-v1</span></code>).</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Since the task environments found in the ROS Gazebo Gym are created in Gazebo and ROS, you have to make sure that you first build and source the <code class="docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code> catkin workspace
+before importing any task environments.</p>
+</div>
+</section>
+<section id="usage-examples">
+<h2>Usage Examples<a class="headerlink" href="#usage-examples" title="Permalink to this heading"></a></h2>
+<p>A collection of usage examples showcasing how to utilize the ROS Gazebo Gym framework can be discovered in the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym-examples/">ros_gazebo_gym_examples</a> package. These illustrative examples are
+tailored for integration with the <a class="reference external" href="https://stable-baselines3.readthedocs.io">stable-baselines3</a> package. The current selection of examples includes:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym-examples/">launch/start_panda_training.launch</a>: This launch file initiates a training session for the <code class="docutils literal notranslate"><span class="pre">PandaReach-v1</span></code> task environment using the <a class="reference external" href="https://stable-baselines3.readthedocs.io/en/master/modules/sac.html">Stable Baselines SAC algorithm</a>.</p></li>
+</ul>
+<p>To embark on a training session for a reaching task involving a (simulated) <a class="reference external" href="https://www.franka.de/">Panda Emika Franka</a> robot using the <a class="reference external" href="https://stable-baselines3.readthedocs.io/en/master/modules/sac.html">Stable Baselines SAC algorithm</a>, follow these steps:</p>
+<ol class="arabic simple">
+<li><p>Clone the  <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym-examples/">ros_gazebo_gym_examples</a> package within the Catkin workspace established for the <code class="docutils literal notranslate"><span class="pre">ros_gazebo_gym</span></code> package.</p></li>
+<li><p>Complete the installation of all requisite ROS dependencies and perform the catkin workspace reconstruction (refer to <a class="reference internal" href="install.html#install-dependencies"><span class="std std-ref">Install system dependencies</span></a> and <a class="reference internal" href="install.html#build-package"><span class="std std-ref">Build the package</span></a>).</p></li>
+<li><p>Source the Catkin workspace (e.g., execute <code class="docutils literal notranslate"><span class="pre">.</span> <span class="pre">../develop/setup.bash</span></code>).</p></li>
+<li><p>Launch any of the examples from the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym-examples/">ros_gazebo_gym_examples</a> package using the <code class="docutils literal notranslate"><span class="pre">roslaunch</span></code> command.</p></li>
+</ol>
+<p>Here’s a demonstration of how to launch the training example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>roslaunch<span class="w"> </span>ros_gazebo_gym_examples<span class="w"> </span>start_panda_training.launch
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To streamline the installation process, the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym-ws/">ros-gazebo-gym-ws</a> repository is provided. This repository encompasses both the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/">ros_gazebo_gym</a> and <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym-examples/">ros_gazebo_gym_examples</a> package repositories. You can effortlessly incorporate these repositories into your Catkin workspace using the subsequent command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>--recurse-submodules<span class="w"> </span>https://github.com/rickstaa/ros-gazebo-gym-ws.git<span class="w"> </span>src
+</pre></div>
+</div>
+<p>The usage of the <code class="docutils literal notranslate"><span class="pre">--recurse-submodules</span></code> argument ensures the cloning of all submodules. If you have already cloned the repository and neglected the <cite>–recurse-submodule</cite> argument, you can rectify this by employing the following git command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>submodule<span class="w"> </span>update<span class="w"> </span>--init<span class="w"> </span>--recursive
+</pre></div>
+</div>
+</div>
+</section>
+<section id="task-environment-configuration">
+<h2>Task environment configuration<a class="headerlink" href="#task-environment-configuration" title="Permalink to this heading"></a></h2>
+<p>Configuring the main parameters of a <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/">ROS Gazebo Gym</a> task environment is a straightforward process using the <code class="xref py py-func docutils literal notranslate"><span class="pre">gym.make()</span></code> function. For instance, to modify settings like the maximum number of steps per episode,
+the reward mechanism, and the control type employed in the <code class="docutils literal notranslate"><span class="pre">PandaReach-v1</span></code> task environment, follow this example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gym</span>
+
+<span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s2">&quot;ros_gazebo_gym:PandaReach-v1&quot;</span><span class="p">,</span> <span class="n">max_episode_steps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">positive_reward</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">control_type</span><span class="o">=</span><span class="s2">&quot;effort&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Additionally, each task environment provides a corresponding <code class="docutils literal notranslate"><span class="pre">yaml</span></code> configuration file. These files are invaluable for precise fine-tuning and reside in the <code class="docutils literal notranslate"><span class="pre">config</span></code> folder alongside the respective task environment  (e.g.
+<a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_reach.yaml">task_envs/panda/config/panda_reach.yaml</a>). When you create a task environment, these configuration files are automatically loaded. The
+parameters in these configuration files are also directly accessible through the ROS parameter server.</p>
+</section>
+<section id="troubleshooting">
+<span id="id1"></span><h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this heading"></a></h2>
+<p>This section provides solutions to common issues when using the ROS Gazebo Gym package.</p>
+<section id="virtual-environments-and-ros">
+<span id="virtual-environment"></span><h3>Virtual environments and ROS<a class="headerlink" href="#virtual-environments-and-ros" title="Permalink to this heading"></a></h3>
+<p>When incorporating the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/">ROS Gazebo Gym</a> framework within a virtual environment to maintain the integrity of your system’s Python installation, you can utilize the <a class="reference external" href="https://docs.python.org/3/library/venv.html">venv</a> package. Execute the
+following command to establish a virtual environment within the <code class="docutils literal notranslate"><span class="pre">ros-gazebo-gym</span></code> folder:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>./ros-gazebo-gym<span class="w"> </span>--system-site-packages
+</pre></div>
+</div>
+<p>It’s crucial to include the <code class="docutils literal notranslate"><span class="pre">--system-site-packages</span></code> flag. This inclusion ensures that the virtual environment gains access to the ROS system packages. Subsequently, you can activate this environment using
+the command: <code class="docutils literal notranslate"><span class="pre">.</span> <span class="pre">./ros-gazebo-gym/bin/activate</span></code>.</p>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>You might encounter complications when working with ROS within an <a class="reference external" href="https://www.anaconda.com/">anaconda</a> environment (refer to <a class="reference external" href="https://github.com/ros/rosdistro/issues/38332">this issue</a>). If you intend to utilize the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/">ROS Gazebo Gym</a> framework within a
+virtual environment, it’s recommended to opt for the default Python <a class="reference external" href="https://docs.python.org/3/library/venv.html">virtual environment package</a>. Alternatively, consider leveraging the <a class="reference external" href="https://github.com/RoboStack/ros-noetic">RoboStack ros-noetic</a> packages available on
+<a class="reference external" href="https://conda-forge.org/">conda-forge</a>. For additional insights, consult this enlightening <a class="reference external" href="https://medium.com/robostack/cross-platform-conda-packages-for-ros-fa1974fd1de3">blog post</a>.</p>
+</div>
+</section>
+<section id="ubuntu-20-04-compatibility-issues">
+<h3>Ubuntu 20.04 compatibility issues<a class="headerlink" href="#ubuntu-20-04-compatibility-issues" title="Permalink to this heading"></a></h3>
+<p>When deploying the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/">ros_gazebo_gym</a> package on <a class="reference external" href="https://ubuntu.com/download/desktop">Ubuntu 20.04</a>, it’s possible to run into complications arising from conflicting versions of the <a class="reference external" href="https://gymnasium.farama.org/">gymnasium</a> and <a class="reference external" href="https://numpy.org/">Numpy</a>
+packages. This conflict is detailed in <a class="reference external" href="https://github.com/ros/rosdistro/issues/38332">this issue</a>. Should you encounter this situation, a recommended strategy involves utilizing a <a class="reference internal" href="#virtual-environment"><span class="std std-ref">virtual environment</span></a> and manually
+installing the required Python dependencies from the <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> file using <a class="reference external" href="https://pip.pypa.io/en/stable/">pip</a>.</p>
+<p>Execute the following command to install the dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>While it’s not the preferred approach, we also offer custom rosdep rules to ensure proper installation of the required versions of the <a class="reference external" href="https://gymnasium.farama.org/">gymnasium</a> and <a class="reference external" href="https://numpy.org/">Numpy</a> packages, even without utilizing a <a class="reference internal" href="#virtual-environment"><span class="std std-ref">virtual environment</span></a>. For
+For a deeper dive into this option, please consult the <a class="reference external" href="https://github.com/rickstaa/ros-gazebo-gym/tree/noetic/rosdep">README.md</a> file in the <code class="docutils literal notranslate"><span class="pre">rosdep</span></code> folder.</p>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="install.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="envs.html" class="btn btn-neutral float-right" title="Environments" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

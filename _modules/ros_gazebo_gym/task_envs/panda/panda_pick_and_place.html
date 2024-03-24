@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ros_gazebo_gym.task_envs.panda.panda_pick_and_place &mdash; ROS Gazebo Gym 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/modify.css?v=519ed47b" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=d7b522e2"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html">
+            
+              <img src="../../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                2.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../get_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../get_started/usage.html">How to use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../get_started/envs.html">Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/contributing.html">Contribute to ros-gazebo-gym</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/add_nev_env.html">Add new environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/doc_dev.html">Release documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../dev/openai_ros_diff.html">Difference with openai_ros</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../etc/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">ROS Gazebo Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../ros_gazebo_gym.html">ros_gazebo_gym</a></li>
+      <li class="breadcrumb-item active">ros_gazebo_gym.task_envs.panda.panda_pick_and_place</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ros_gazebo_gym.task_envs.panda.panda_pick_and_place</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;An ROS Panda pick and place gymnasium environment.</span>
+
+<span class="sd">.. image:: /images/panda/panda_pick_and_place_env.png</span>
+<span class="sd">   :alt: Panda pick and place environment</span>
+
+<span class="sd">This environment is an extension of the :class:`~ros_gazebo_gym.task_envs.panda.panda_reach.PandaReachEnv` task environment,</span>
+<span class="sd">sharing most features such as the action spaces. Notable distinctions are detailed below.</span>
+
+<span class="sd">Observation space:</span>
+<span class="sd">    The observation space was extended with the 11 observations:</span>
+
+<span class="sd">    - Object x position.</span>
+<span class="sd">    - Object y position.</span>
+<span class="sd">    - Object z position.</span>
+<span class="sd">    - x distance between object and end-effector.</span>
+<span class="sd">    - y distance between object and end-effector.</span>
+<span class="sd">    - z distance between object and end-effector.</span>
+<span class="sd">    - Object yaw rotation.</span>
+<span class="sd">    - Object pitch rotation.</span>
+<span class="sd">    - Object roll rotation.</span>
+<span class="sd">    - Object translational velocity.</span>
+<span class="sd">    - Object rotational velocity.</span>
+
+<span class="sd">Goal:</span>
+<span class="sd">    In this environment the agent has to learn to lift a block up to reach the desired</span>
+<span class="sd">    goal position. It was based on the :gymnasium-robotics:`FetchPickAndPlace-v2 &lt;envs/fetch/pick_and_place/&gt;`</span>
+<span class="sd">    gymnasium environment.</span>
+
+<span class="sd">.. admonition:: Configuration</span>
+<span class="sd">    :class: important</span>
+
+<span class="sd">    The configuration files for this environment are found in the</span>
+<span class="sd">    :ros-gazebo-gym:`panda task environment config folder &lt;blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_pick_and_place.yaml&gt;`.</span>
+<span class="sd">&quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">tf2_ros</span>
+<span class="kn">from</span> <span class="nn">gazebo_msgs.msg</span> <span class="kn">import</span> <span class="n">ModelState</span>
+<span class="kn">from</span> <span class="nn">geometry_msgs.msg</span> <span class="kn">import</span> <span class="n">Pose</span><span class="p">,</span> <span class="n">Quaternion</span><span class="p">,</span> <span class="n">TransformStamped</span><span class="p">,</span> <span class="n">Vector3</span>
+<span class="kn">from</span> <span class="nn">gymnasium</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.common.helpers</span> <span class="kn">import</span> <span class="n">get_orientation_euler</span><span class="p">,</span> <span class="n">normalize_quaternion</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.core.helpers</span> <span class="kn">import</span> <span class="n">ros_exit_gracefully</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.core.ros_launcher</span> <span class="kn">import</span> <span class="n">ROSLauncher</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.exceptions</span> <span class="kn">import</span> <span class="n">SetModelStateError</span><span class="p">,</span> <span class="n">SpawnModelError</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.task_envs.panda.markers.cube_marker</span> <span class="kn">import</span> <span class="n">CubeMarker</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.task_envs.panda.markers.frame_origin_marker</span> <span class="kn">import</span> <span class="n">FrameOriginMarker</span>
+<span class="kn">from</span> <span class="nn">ros_gazebo_gym.task_envs.panda.panda_reach</span> <span class="kn">import</span> <span class="n">PandaReachEnv</span>
+<span class="kn">from</span> <span class="nn">rospy</span> <span class="kn">import</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">panda_gazebo.srv</span> <span class="kn">import</span> <span class="n">AddBox</span><span class="p">,</span> <span class="n">AddBoxRequest</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+<span class="c1"># Specify topics and other script variables.</span>
+<div class="viewcode-block" id="CONNECTION_TIMEOUT"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/task_envs/panda/panda_pick_and_place/index.html#ros_gazebo_gym.task_envs.panda.CONNECTION_TIMEOUT">[docs]</a><span class="n">CONNECTION_TIMEOUT</span> <span class="o">=</span> <span class="mi">5</span></div>
+<div class="viewcode-block" id="TARGET_OBJECT_SPAWN_TIMEOUT"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/task_envs/panda/panda_pick_and_place/index.html#ros_gazebo_gym.task_envs.panda.TARGET_OBJECT_SPAWN_TIMEOUT">[docs]</a><span class="n">TARGET_OBJECT_SPAWN_TIMEOUT</span> <span class="o">=</span> <span class="mi">60</span></div>
+<div class="viewcode-block" id="TARGET_OBJECT_POSE_PUBLISH_RATE"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/task_envs/panda/panda_pick_and_place/index.html#ros_gazebo_gym.task_envs.panda.TARGET_OBJECT_POSE_PUBLISH_RATE">[docs]</a><span class="n">TARGET_OBJECT_POSE_PUBLISH_RATE</span> <span class="o">=</span> <span class="mi">60</span></div>
+<div class="viewcode-block" id="MOVEIT_ADD_BOX_TOPIC"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/task_envs/panda/panda_pick_and_place/index.html#ros_gazebo_gym.task_envs.panda.MOVEIT_ADD_BOX_TOPIC">[docs]</a><span class="n">MOVEIT_ADD_BOX_TOPIC</span> <span class="o">=</span> <span class="s2">&quot;panda_moveit_planner_server/planning_scene/add_box&quot;</span></div>
+<div class="viewcode-block" id="CONFIG_FILE_PATH"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/task_envs/panda/panda_pick_and_place/index.html#ros_gazebo_gym.task_envs.panda.CONFIG_FILE_PATH">[docs]</a><span class="n">CONFIG_FILE_PATH</span> <span class="o">=</span> <span class="s2">&quot;config/panda_pick_and_place.yaml&quot;</span></div>
+
+
+<span class="c1">#################################################</span>
+<span class="c1"># Panda pick and place environment Class ########</span>
+<span class="c1">#################################################</span>
+<div class="viewcode-block" id="PandaPickAndPlaceEnv"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/task_envs/panda/panda_pick_and_place/index.html#ros_gazebo_gym.task_envs.panda.PandaPickAndPlaceEnv">[docs]</a><span class="k">class</span> <span class="nc">PandaPickAndPlaceEnv</span><span class="p">(</span><span class="n">PandaReachEnv</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">EzPickle</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Classed used to create a Panda pick and place environment.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        object_marker_class (:obj:`visualization_msgs.msg.Marker`): The RViz marker</span>
+<span class="sd">            class used for displaying the object. Can be overwritten by child</span>
+<span class="sd">            environments to change the visualization of the object.</span>
+<span class="sd">        object_frame_name (str): The name used for the object tf frame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">config_path</span><span class="o">=</span><span class="n">CONFIG_FILE_PATH</span><span class="p">,</span>
+        <span class="n">gazebo_world_launch_file</span><span class="o">=</span><span class="s2">&quot;start_pick_and_place_world.launch&quot;</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes a Panda pick and place task environment.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config_path (str, optional): Path where the environment configuration</span>
+<span class="sd">                value are found. The path is resolved relative to the</span>
+<span class="sd">                :class:`~ros_gazebo_gym.task_envs.panda.panda_reach` class file.</span>
+<span class="sd">            gazebo_world_launch_file (str, optional): Name of the launch file that loads</span>
+<span class="sd">                the gazebo world. Currently only the launch files inside the</span>
+<span class="sd">                `panda_gazebo &lt;https://github.com/rickstaa/panda-gazebo&gt;`_ package are</span>
+<span class="sd">                supported. Defaults to ``start_pick_and_place_world.launch``.</span>
+<span class="sd">            *args: Arguments passed to the</span>
+<span class="sd">                :class:`~ros_gazebo_gym.task_envs.panda.PandaReachEnv` super class.</span>
+<span class="sd">            **kwargs: Keyword arguments that are passed to the</span>
+<span class="sd">                :class:`~ros_gazebo_gym.task_envs.panda.PandaReachEnv` super class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Initialize Panda pick and place environment.&quot;</span><span class="p">)</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">EzPickle</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="o">**</span><span class="nb">locals</span><span class="p">()</span>
+        <span class="p">)</span>  <span class="c1"># Makes sure the env is pickable when it wraps C++ code.</span>
+        <span class="n">ROSLauncher</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>  <span class="c1"># Makes sure roscore is running and ROS is initialized.</span>
+
+        <span class="c1"># Create storage variables.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_time</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_grip_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_object_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_object_rot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">config_path</span><span class="o">=</span><span class="n">config_path</span><span class="p">,</span>
+            <span class="n">gazebo_world_launch_file</span><span class="o">=</span><span class="n">gazebo_world_launch_file</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Setup MoveIt platform add service.</span>
+        <span class="n">moveit_add_box_srv_topic</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">robot_name_space</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">MOVEIT_ADD_BOX_TOPIC</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connecting to &#39;</span><span class="si">%s</span><span class="s2">&#39; service.&quot;</span> <span class="o">%</span> <span class="n">moveit_add_box_srv_topic</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span>
+                <span class="n">moveit_add_box_srv_topic</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">CONNECTION_TIMEOUT</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_moveit_add_box_client</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span>
+                <span class="n">moveit_add_box_srv_topic</span><span class="p">,</span> <span class="n">AddBox</span>
+            <span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Connected to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">moveit_add_box_srv_topic</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span> <span class="n">ROSException</span><span class="p">,</span> <span class="n">ROSInterruptException</span><span class="p">):</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to connect to &#39;</span><span class="si">%s</span><span class="s2">&#39; service!&quot;</span> <span class="o">%</span> <span class="n">moveit_add_box_srv_topic</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_object</span><span class="p">()</span>
+        <span class="c1"># IMPROVE: Currently the platform properties are hardcoded these can be made</span>
+        <span class="c1"># dynamic by requesting them via a custom made Gazebo plugin.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_platform_to_moveit_scene</span><span class="p">()</span>
+
+        <span class="c1"># Create object publishers.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">object_marker_class</span> <span class="o">=</span> <span class="n">CubeMarker</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">object_frame_name</span> <span class="o">=</span> <span class="s2">&quot;cube&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Creating RViz object marker publisher.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_object_marker_pub</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Publisher</span><span class="p">(</span>
+            <span class="s2">&quot;/ros_gazebo_gym/object&quot;</span><span class="p">,</span> <span class="n">CubeMarker</span><span class="p">,</span> <span class="n">queue_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">latch</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;RViz object marker publisher created.&quot;</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Creating RViz object frame marker publisher.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_object_frame_marker_pub</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Publisher</span><span class="p">(</span>
+            <span class="s2">&quot;/ros_gazebo_gym/object_frame&quot;</span><span class="p">,</span> <span class="n">FrameOriginMarker</span><span class="p">,</span> <span class="n">queue_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">latch</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;RViz object frame marker publisher created.&quot;</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">Duration</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">TARGET_OBJECT_POSE_PUBLISH_RATE</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_object_marker_pub_cb</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Panda pick and place environment initialized.&quot;</span><span class="p">)</span>
+
+    <span class="c1">################################################</span>
+    <span class="c1"># Task environment internal methods ############</span>
+    <span class="c1">################################################</span>
+    <span class="c1"># NOTE: Here you can add additional helper methods that are used in the task env.</span>
+
+    <span class="k">def</span> <span class="nf">_object_marker_pub_cb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback function that publishes a RViz marker representing the current</span>
+<span class="sd">        object position.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            event (:obj:`rospy.TimerEvent`): The timer event object.</span>
+
+<span class="sd">        .. important::</span>
+<span class="sd">            The object size is currently hardcoded. Please change it when you change</span>
+<span class="sd">            the object in the :obj:`panda_gazebo` package.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># IMPROVE: Currently the object properties are hardcoded these can be made</span>
+        <span class="c1"># dynamic by requesting them via a custom made Gazebo plugin.</span>
+
+        <span class="c1"># Publish object frame tf.</span>
+        <span class="n">object_pose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_pose</span>
+        <span class="n">tf_msg</span> <span class="o">=</span> <span class="n">TransformStamped</span><span class="p">()</span>
+        <span class="n">tf_msg</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">stamp</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">tf_msg</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span> <span class="o">=</span> <span class="s2">&quot;world&quot;</span>
+        <span class="n">tf_msg</span><span class="o">.</span><span class="n">child_frame_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_frame_name</span>
+        <span class="n">tf_msg</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">translation</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">object_pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">tf_msg</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">translation</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">object_pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">tf_msg</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">translation</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">object_pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span>
+        <span class="n">tf_msg</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">rotation</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">object_pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">tf_msg</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">rotation</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">object_pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">tf_msg</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">rotation</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">object_pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">z</span>
+        <span class="n">tf_msg</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">rotation</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="n">object_pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">w</span>
+        <span class="n">tf2_ros</span><span class="o">.</span><span class="n">TransformBroadcaster</span><span class="p">()</span><span class="o">.</span><span class="n">sendTransform</span><span class="p">(</span><span class="n">tf_msg</span><span class="p">)</span>
+
+        <span class="c1"># Publish object RViz marker.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_object_marker_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_marker_class</span><span class="p">(</span>
+            <span class="n">frame_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">object_frame_name</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_object_marker_pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_marker_msg</span><span class="p">)</span>
+
+        <span class="c1"># Also display marker for object frame position.</span>
+        <span class="n">object_frame_origin_marker_msg</span> <span class="o">=</span> <span class="n">FrameOriginMarker</span><span class="p">(</span>
+            <span class="n">frame_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">object_frame_name</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_object_frame_marker_pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">object_frame_origin_marker_msg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_add_platform_to_moveit_scene</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add the platform to the MoveIt planning scene.&quot;&quot;&quot;</span>
+        <span class="c1"># IMPROVE: Currently the platform properties are hardcoded these can be made</span>
+        <span class="c1"># dynamic by requesting them via a custom made Gazebo plugin.</span>
+        <span class="n">add_platform_req</span> <span class="o">=</span> <span class="n">AddBoxRequest</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_platform_name</span><span class="p">,</span> <span class="n">pose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_platform_pose</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_platform_size</span>
+        <span class="p">)</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_moveit_add_box_client</span><span class="p">(</span><span class="n">add_platform_req</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">resp</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span>
+                <span class="s2">&quot;The platform was not added successfully to the MoveIt planning scene. &quot;</span>
+                <span class="s2">&quot; As a result, MoveIt is unaware of the platform&#39;s existence and may &quot;</span>
+                <span class="s2">&quot;plan states that are in collision.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_setup_object</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># noqa: C901</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Makes sure the object is present in the gazebo simulation.&quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Setting initial object pose.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Try to spawn object if not yet present.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">contains_object</span><span class="p">:</span>
+            <span class="n">init_obj_pose</span> <span class="o">=</span> <span class="n">Pose</span><span class="p">(</span>
+                <span class="n">position</span><span class="o">=</span><span class="n">Vector3</span><span class="p">(</span>
+                    <span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_object_pose</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span>
+                    <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_object_pose</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">],</span>
+                    <span class="n">z</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_object_pose</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">],</span>
+                <span class="p">),</span>
+                <span class="n">orientation</span><span class="o">=</span><span class="n">normalize_quaternion</span><span class="p">(</span>
+                    <span class="n">Quaternion</span><span class="p">(</span>
+                        <span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_object_pose</span><span class="p">[</span><span class="s2">&quot;rx&quot;</span><span class="p">],</span>
+                        <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_object_pose</span><span class="p">[</span><span class="s2">&quot;ry&quot;</span><span class="p">],</span>
+                        <span class="n">z</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_object_pose</span><span class="p">[</span><span class="s2">&quot;rz&quot;</span><span class="p">],</span>
+                        <span class="n">w</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_object_pose</span><span class="p">[</span><span class="s2">&quot;rw&quot;</span><span class="p">],</span>
+                    <span class="p">)</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gazebo</span><span class="o">.</span><span class="n">spawn_object</span><span class="p">(</span>
+                    <span class="n">object_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_name</span><span class="p">,</span>
+                    <span class="n">model_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_name</span><span class="p">,</span>
+                    <span class="n">models_folder_path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">joinpath</span><span class="p">(</span>
+                        <span class="s2">&quot;../../../../../../&quot;</span>
+                        <span class="s2">&quot;rosdeps/panda_gazebo/panda_gazebo/resources/models&quot;</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">resolve</span><span class="p">(),</span>
+                    <span class="n">pose</span><span class="o">=</span><span class="n">init_obj_pose</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="c1"># Wait till the object is found in the model state.</span>
+                <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                <span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span> <span class="o">&lt;</span> <span class="n">TARGET_OBJECT_SPAWN_TIMEOUT</span><span class="p">:</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn_once</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Waiting for &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_name</span><span class="si">}</span><span class="s2">&#39; to be spawned.&quot;</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">contains_object</span><span class="p">:</span>
+                        <span class="k">break</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">contains_object</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">SpawnModelError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Object &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_name</span><span class="si">}</span><span class="s2">&#39; was not spawned within the &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">TARGET_OBJECT_SPAWN_TIMEOUT</span><span class="si">}</span><span class="s2">&#39; second time limit.&quot;</span>
+                    <span class="p">)</span>
+            <span class="k">except</span> <span class="n">SpawnModelError</span><span class="p">:</span>
+                <span class="n">err_msg</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Shutting down </span><span class="si">{</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="si">}</span><span class="s2"> since the task environment &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;target object `</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_name</span><span class="si">}</span><span class="s2">` was not spawned successfully.&quot;</span>
+                <span class="p">)</span>
+                <span class="n">ros_exit_gracefully</span><span class="p">(</span><span class="n">shutdown_msg</span><span class="o">=</span><span class="n">err_msg</span><span class="p">,</span> <span class="n">exit_code</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_init_obj_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the object to its (random) initial pose.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Success boolean.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Set a random object pose.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_sampling_strategy</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;global&quot;</span><span class="p">:</span>
+            <span class="c1"># Retrieve x,y positions of the current and initial object pose.</span>
+            <span class="n">obj_pose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gazebo</span><span class="o">.</span><span class="n">model_states</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_name</span><span class="p">][</span><span class="s2">&quot;pose&quot;</span><span class="p">]</span>
+            <span class="n">obj_xy_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">gazebo</span><span class="o">.</span><span class="n">model_states</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_name</span><span class="p">][</span><span class="s2">&quot;pose&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">gazebo</span><span class="o">.</span><span class="n">model_states</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_name</span><span class="p">][</span><span class="s2">&quot;pose&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Sample an object initial object (x, y) position.</span>
+            <span class="k">while</span> <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">obj_pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">obj_pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">])</span>
+                    <span class="o">-</span> <span class="n">obj_xy_positions</span>
+                <span class="p">)</span>
+                <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_sampling_distance_threshold</span>
+            <span class="p">):</span>  <span class="c1"># Sample till is different enough from the current object pose.</span>
+                <span class="n">obj_xy_positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">np_random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_object_sampling_bounds</span><span class="p">[</span><span class="s2">&quot;x_min&quot;</span><span class="p">],</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_object_sampling_bounds</span><span class="p">[</span><span class="s2">&quot;y_min&quot;</span><span class="p">],</span>
+                    <span class="p">],</span>
+                    <span class="p">[</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_object_sampling_bounds</span><span class="p">[</span><span class="s2">&quot;x_max&quot;</span><span class="p">],</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_object_sampling_bounds</span><span class="p">[</span><span class="s2">&quot;y_max&quot;</span><span class="p">],</span>
+                    <span class="p">],</span>
+                    <span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Set init object pose.</span>
+            <span class="n">obj_model_state</span> <span class="o">=</span> <span class="n">ModelState</span><span class="p">()</span>
+            <span class="n">obj_model_state</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_name</span>
+            <span class="n">obj_model_state</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">obj_xy_positions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">obj_model_state</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">obj_xy_positions</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">obj_model_state</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">obj_pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s2">&quot;Init object pose:&quot;</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="n">obj_pose</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">retval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gazebo</span><span class="o">.</span><span class="n">set_model_state</span><span class="p">(</span><span class="n">obj_model_state</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">SetModelStateError</span><span class="p">:</span>
+                <span class="n">err_msg</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Shutting down &#39;</span><span class="si">{</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39; since the state of the grasp &quot;</span>
+                    <span class="s2">&quot;object could not be set.&quot;</span>
+                <span class="p">)</span>
+                <span class="n">ros_exit_gracefully</span><span class="p">(</span><span class="n">shutdown_msg</span><span class="o">=</span><span class="n">err_msg</span><span class="p">,</span> <span class="n">exit_code</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="c1"># Return result.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">retval</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s2">&quot;setting initial object position failed.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">retval</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">_get_elapsed_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the elapsed time since the last time this function was called.&quot;&quot;&quot;</span>
+        <span class="n">current_time</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">current_time</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_time</span> <span class="o">=</span> <span class="n">current_time</span>
+        <span class="k">return</span> <span class="n">dt</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="PandaPickAndPlaceEnv.contains_object"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/task_envs/panda/panda_pick_and_place/index.html#ros_gazebo_gym.task_envs.panda.PandaPickAndPlaceEnv.contains_object">[docs]</a>    <span class="k">def</span> <span class="nf">contains_object</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks whether the simulation contains the object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Whether the object was found in the simulation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gazebo</span><span class="o">.</span><span class="n">model_states</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="PandaPickAndPlaceEnv.object_position"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/task_envs/panda/panda_pick_and_place/index.html#ros_gazebo_gym.task_envs.panda.PandaPickAndPlaceEnv.object_position">[docs]</a>    <span class="k">def</span> <span class="nf">object_position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieves the current object position.&quot;&quot;&quot;</span>
+        <span class="n">object_pose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_pose</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">object_pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+                <span class="n">object_pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                <span class="n">object_pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="PandaPickAndPlaceEnv.object_rot"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/task_envs/panda/panda_pick_and_place/index.html#ros_gazebo_gym.task_envs.panda.PandaPickAndPlaceEnv.object_rot">[docs]</a>    <span class="k">def</span> <span class="nf">object_rot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieves the current object rotation.&quot;&quot;&quot;</span>
+        <span class="n">object_rot_resp</span> <span class="o">=</span> <span class="n">get_orientation_euler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">object_pose</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">object_rot_resp</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">object_rot_resp</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">object_rot_resp</span><span class="o">.</span><span class="n">r</span><span class="p">])</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="PandaPickAndPlaceEnv.object_pose"><a class="viewcode-back" href="../../../../autoapi/ros_gazebo_gym/task_envs/panda/panda_pick_and_place/index.html#ros_gazebo_gym.task_envs.panda.PandaPickAndPlaceEnv.object_pose">[docs]</a>    <span class="k">def</span> <span class="nf">object_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieves the current object pose.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gazebo</span><span class="o">.</span><span class="n">model_states</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_name</span><span class="p">][</span><span class="s2">&quot;pose&quot;</span><span class="p">]</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_platform_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieves the current platform pose.</span>
+
+<span class="sd">        .. warning::</span>
+<span class="sd">            Please be aware that the name of the platform has been hardcoded. As a</span>
+<span class="sd">            result this function breaks when the platform is renamed in the gazebo</span>
+<span class="sd">            world.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gazebo</span><span class="o">.</span><span class="n">model_states</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_platform_name</span><span class="p">][</span><span class="s2">&quot;pose&quot;</span><span class="p">]</span>
+
+    <span class="c1">################################################</span>
+    <span class="c1"># Overload Reach environment methods ###########</span>
+    <span class="c1">################################################</span>
+    <span class="k">def</span> <span class="nf">_get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ns</span><span class="o">=</span><span class="s2">&quot;panda_pick_and_place&quot;</span><span class="p">):</span>  <span class="c1"># noqa: C901</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve task environment configuration parameters from parameter server.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ns (str, optional): The namespace on which the parameters are found.</span>
+<span class="sd">                Defaults to &quot;panda_pick_and_place&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_get_params</span><span class="p">(</span><span class="n">ns</span><span class="o">=</span><span class="n">ns</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Retrieve control variables.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_platform_name</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">ns</span><span class="si">}</span><span class="s2">/training/platform_name&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_platform_size</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">ns</span><span class="si">}</span><span class="s2">/training/platform_size&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_object_name</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">ns</span><span class="si">}</span><span class="s2">/training/object_name&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_object_sampling_strategy</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">ns</span><span class="si">}</span><span class="s2">/object_sampling/strategy&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_object_sampling_distance_threshold</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">ns</span><span class="si">}</span><span class="s2">/object_sampling/distance_threshold&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_visualize_object_bounds</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">ns</span><span class="si">}</span><span class="s2">/object_sampling/visualize_object_bounds&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_object_pose</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">ns</span><span class="si">}</span><span class="s2">/object_sampling/fixed_pose&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_object_sampling_bounds</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">ns</span><span class="si">}</span><span class="s2">/object_sampling/bounds&quot;</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Parameter &#39;</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39; could not be retrieved from the parameter &quot;</span>
+                <span class="s2">&quot;server. Please make sure this parameter is present in the Panda task &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;environment configuration file &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_config_file_path</span><span class="si">}</span><span class="s2">&#39; and try &quot;</span>
+                <span class="s2">&quot;again.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">ros_exit_gracefully</span><span class="p">(</span>
+                <span class="n">shutdown_msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Shutting down </span><span class="si">{</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">exit_code</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get robot state observation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple containing:</span>
+
+<span class="sd">                - observation array (:obj:`list`):</span>
+<span class="sd">                    List of observations:</span>
+<span class="sd">                        - End effector x position</span>
+<span class="sd">                        - End effector y position</span>
+<span class="sd">                        - End effector z position</span>
+<span class="sd">                        - Object x position.</span>
+<span class="sd">                        - Object y position.</span>
+<span class="sd">                        - Object z position.</span>
+<span class="sd">                        - x distance between object and ee.</span>
+<span class="sd">                        - y distance between object and ee.</span>
+<span class="sd">                        - z distance between object and ee.</span>
+<span class="sd">                        - End effector joints positions</span>
+<span class="sd">                        - End effector joints velocities</span>
+<span class="sd">                        - Object yaw rotation.</span>
+<span class="sd">                        - Object pitch rotation.</span>
+<span class="sd">                        - Object roll rotation.</span>
+<span class="sd">                        - Object translational velocity.</span>
+<span class="sd">                        - Object rotational velocity.</span>
+<span class="sd">                - achieved_goal (:obj:`object`): The goal that was achieved during</span>
+<span class="sd">                    execution.</span>
+<span class="sd">                - desired_goal (:obj:`object`): The desired goal that we asked the agent</span>
+<span class="sd">                    to attempt to achieve.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obs_dict</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_get_obs</span><span class="p">()</span>
+        <span class="n">obs</span> <span class="o">=</span> <span class="n">obs_dict</span><span class="p">[</span><span class="s2">&quot;observation&quot;</span><span class="p">]</span>
+        <span class="n">desired_goal</span> <span class="o">=</span> <span class="n">obs_dict</span><span class="p">[</span><span class="s2">&quot;desired_goal&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Unpack required observations.</span>
+        <span class="n">ee_position</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">ee_state</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">5</span><span class="p">]</span>
+        <span class="n">ee_vel</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[</span><span class="mi">5</span><span class="p">:]</span>
+
+        <span class="c1"># Retrieve information about the object.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">contains_object</span><span class="p">:</span>
+            <span class="c1"># Retrieve gripper velocity.</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_elapsed_time</span><span class="p">()</span>
+            <span class="n">grip_velp</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">ee_position</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_grip_position</span>
+            <span class="p">)</span> <span class="o">/</span> <span class="n">dt</span>  <span class="c1"># Velocity(position) = Distance/Time.</span>
+
+            <span class="c1"># Get object position.</span>
+            <span class="n">object_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_position</span>
+
+            <span class="c1"># Get object orientation.</span>
+            <span class="n">object_rot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_rot</span>
+
+            <span class="c1"># Get object velocity.</span>
+            <span class="n">object_velp</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">object_position</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_object_position</span>
+            <span class="p">)</span> <span class="o">/</span> <span class="n">dt</span>  <span class="c1"># Velocity(position) = Distance/Time.</span>
+            <span class="n">object_velr</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">object_rot</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_object_rot</span>
+            <span class="p">)</span> <span class="o">/</span> <span class="n">dt</span>  <span class="c1"># Velocity(rotation) = Rotation/Time.</span>
+
+            <span class="c1"># Get relative position and velocity.</span>
+            <span class="n">object_rel_position</span> <span class="o">=</span> <span class="n">object_position</span> <span class="o">-</span> <span class="n">ee_position</span>
+            <span class="n">object_velp</span> <span class="o">-=</span> <span class="n">grip_velp</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">object_position</span> <span class="o">=</span> <span class="n">object_rot</span> <span class="o">=</span> <span class="n">object_velp</span> <span class="o">=</span> <span class="n">object_velr</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">object_rel_position</span>
+            <span class="p">)</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+        <span class="c1"># Save current gripper and object positions.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_grip_position</span> <span class="o">=</span> <span class="n">ee_position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_object_position</span> <span class="o">=</span> <span class="n">object_position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_object_rot</span> <span class="o">=</span> <span class="n">object_rot</span>
+
+        <span class="c1"># Get achieved goal.</span>
+        <span class="n">achieved_goal</span> <span class="o">=</span> <span class="n">object_position</span>
+
+        <span class="c1"># Concatenate observations.</span>
+        <span class="n">obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">ee_position</span><span class="p">,</span>
+                <span class="n">object_position</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                <span class="n">object_rel_position</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                <span class="n">ee_state</span><span class="p">,</span>
+                <span class="n">object_rot</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                <span class="n">object_velp</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                <span class="n">object_velr</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                <span class="n">ee_vel</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_observation_space_dtype</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">achieved_goal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ee_position</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_observation_space_dtype</span><span class="p">)</span>
+        <span class="n">desired_goal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">goal</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_observation_space_dtype</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;observation&quot;</span><span class="p">:</span> <span class="n">obs</span><span class="p">,</span>
+            <span class="s2">&quot;achieved_goal&quot;</span><span class="p">:</span> <span class="n">achieved_goal</span><span class="p">,</span>
+            <span class="s2">&quot;desired_goal&quot;</span><span class="p">:</span> <span class="n">desired_goal</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_init_env_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Inits variables needed to be initialized each time we reset at the start</span>
+<span class="sd">        of an episode.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_init_obj_pose</span><span class="p">()</span>
+
+        <span class="c1"># Reset storage variables.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_time</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_grip_position</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_get_obs</span><span class="p">()[</span><span class="s2">&quot;observation&quot;</span><span class="p">][:</span><span class="mi">3</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_object_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_object_rot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_rot</span>
+
+        <span class="c1"># Sample and visualize goal.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_goal</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_visualize_target</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_visualize_goal</span><span class="p">()</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rick Staa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
