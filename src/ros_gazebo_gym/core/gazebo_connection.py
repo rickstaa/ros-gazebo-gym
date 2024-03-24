@@ -1,6 +1,7 @@
 """Contains a small python utility class that makes it easier to interact with the
 Gazebo simulator.
 """
+
 import time
 
 import numpy as np

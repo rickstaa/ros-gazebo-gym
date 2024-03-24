@@ -4,6 +4,7 @@
     This class overloads the :obj:`visualization_msgs.msgs.Marker` class in order to
     pre-initialize some of its attributes.
 """
+
 import rospy
 import tf2_ros
 from geometry_msgs.msg import Pose, Transform, TransformStamped, Vector3

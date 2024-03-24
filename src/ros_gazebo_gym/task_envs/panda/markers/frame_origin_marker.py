@@ -5,6 +5,7 @@ in RViz.
     This class overloads the :obj:`ros_gazebo_gym.common.markers.target_marker.TargetMarker`
     class in order to pre-initialize some of its attributes.
 """  # noqa: E501
+
 from ros_gazebo_gym.common.markers import TargetMarker
 from std_msgs.msg import ColorRGBA
 

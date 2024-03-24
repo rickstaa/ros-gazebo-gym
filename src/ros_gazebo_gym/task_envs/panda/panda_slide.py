@@ -17,6 +17,7 @@ Goal:
     The configuration files for this environment are found in the
     :ros-gazebo-gym:`panda task environment config folder <blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_slide.yaml>`.
 """  # noqa: E501
+
 import rospy
 from gymnasium import utils
 from ros_gazebo_gym.task_envs.panda.markers.puck_marker import PuckMarker

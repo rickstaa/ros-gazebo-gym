@@ -124,6 +124,7 @@ Environment step return:
     The configuration files for this environment are found in the
     :ros-gazebo-gym:`panda task environment config folder <blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_reach.yaml>`.
 """  # noqa: E501
+
 import os
 from datetime import datetime
 from pathlib import Path
@@ -152,7 +153,6 @@ from ros_gazebo_gym.core.helpers import (
 from ros_gazebo_gym.exceptions import EePoseLookupError
 from ros_gazebo_gym.robot_envs.panda_env import PandaEnv
 from rospy.exceptions import ROSException, ROSInterruptException
-from sensor_msgs.msg import JointState
 from std_msgs.msg import ColorRGBA
 
 # Specify topics and other script variables.
@@ -323,6 +323,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         # Initialize the Robot environment.
         super(PandaReachEnv, self).__init__(
             robot_EE_link=self._ee_link,
+            ee_frame_offset=self._ee_frame_offset,
             load_gripper=self._load_gripper,
             lock_gripper=self._lock_gripper,
             grasping=self._grasping,
@@ -441,7 +442,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     % moveit_set_joint_positions_srv_topic
                 )
         else:
-            # Connect to franka_gazebo's 'reset_joint_positions' service.
+            # Connect to franka_gazebo's 'set_franka_model_configuration' service.
             try:
                 set_franka_model_configuration_srv_topic = (
                     f"{self.robot_name_space}/{SET_FRANKA_MODEL_CONFIGURATION_TOPIC}"
@@ -638,99 +639,63 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
         self._task_env = ns
         try:
             # == Retrieve control variables ==
-            try:
-                self._direct_control = rospy.get_param(f"/{ns}/control/direct_control")
-            except KeyError:
-                self._direct_control = True
-            try:
-                self._load_gripper = rospy.get_param(f"/{ns}/control/load_gripper")
-            except KeyError:
-                self._load_gripper = True
-            try:
-                self._ee_link = rospy.get_param(f"/{ns}/control/ee_link")
-            except KeyError:
-                self._ee_link = "panda_hand" if self._load_gripper else "panda_link8"
-            try:
-                self._grasping = rospy.get_param(f"/{ns}/control/grasping")
-            except KeyError:
-                self._grasping = None
-            try:
-                self._arm_wait = rospy.get_param(f"/{ns}/control/arm_wait")
-            except KeyError:
-                self._arm_wait = False
-            try:
-                self._hand_wait = rospy.get_param(f"/{ns}/control/hand_wait")
-            except KeyError:
-                self._hand_wait = True
-            try:
-                self._ee_control_coordinates = rospy.get_param(
-                    f"/{ns}/control/ee_control_coordinates"
-                )
-            except KeyError:
-                self._ee_control_coordinates = None
-            try:
-                self._controlled_joints = rospy.get_param(
-                    f"/{ns}/control/controlled_joints"
-                )
-            except KeyError:
-                self._controlled_joints = None
-            try:
-                self._locked_arm_joints = rospy.get_param(
-                    f"/{ns}/control/locked_arm_joints"
-                )
-            except KeyError:
-                self._locked_arm_joints = []
-            try:
-                self._lock_gripper = rospy.get_param(f"/{ns}/control/lock_gripper")
-            except KeyError:
-                self._lock_gripper = False
+            self._direct_control = rospy.get_param(
+                f"/{ns}/control/direct_control", True
+            )
+            self._load_gripper = rospy.get_param(f"/{ns}/control/load_gripper", True)
+            self._lock_gripper = rospy.get_param(f"/{ns}/control/lock_gripper", False)
+            self._ee_link = rospy.get_param(
+                f"/{ns}/control/ee_link",
+                "panda_hand" if self._load_gripper else "panda_link8",
+            )
+            self._grasping = rospy.get_param(f"/{ns}/control/grasping", None)
+            self._arm_wait = rospy.get_param(f"/{ns}/control/arm_wait", False)
+            self._hand_wait = rospy.get_param(f"/{ns}/control/hand_wait", True)
+            self._ee_control_coordinates = rospy.get_param(
+                f"/{ns}/control/ee_control_coordinates", None
+            )
+            self._controlled_joints = rospy.get_param(
+                f"/{ns}/control/controlled_joints", None
+            )
+            self._locked_arm_joints = rospy.get_param(
+                f"/{ns}/control/locked_arm_joints", []
+            )
+            self._ee_frame_offset = rospy.get_param(
+                f"/{ns}/control/ee_frame_offset", None
+            )
+            if self._ee_frame_offset is not None:
+                self._ee_frame_offset["x"] = self._ee_frame_offset.get("x", 0.0)
+                self._ee_frame_offset["y"] = self._ee_frame_offset.get("y", 0.0)
+                self._ee_frame_offset["z"] = self._ee_frame_offset.get("z", 0.0)
+                self._ee_frame_offset["rx"] = self._ee_frame_offset.get("rx", 0.0)
+                self._ee_frame_offset["ry"] = self._ee_frame_offset.get("ry", 0.0)
+                self._ee_frame_offset["rz"] = self._ee_frame_offset.get("rz", 0.0)
+                self._ee_frame_offset["rw"] = self._ee_frame_offset.get("rw", 1.0)
             # == Retrieve sampling variables ==
-            try:
-                self._visualize_init_pose_bounds = rospy.get_param(
-                    f"/{ns}/pose_sampling/visualize_init_pose_bounds"
-                )
-            except KeyError:
-                self._visualize_init_pose_bounds = True
-            try:
-                self._reset_init_pose = rospy.get_param(
-                    f"/{ns}/pose_sampling/reset_init_pose"
-                )
-            except KeyError:
-                self._reset_init_pose = True
-            try:
-                self._random_init_pose = rospy.get_param(
-                    f"/{ns}/pose_sampling/random_init_pose"
-                )
-            except KeyError:
-                self._random_init_pose = True
-            try:
-                self._randomize_first_episode = rospy.get_param(
-                    f"/{ns}/pose_sampling/randomize_first_episode"
-                )
-            except KeyError:
-                self._randomize_first_episode = True
-            try:
-                self._pose_sampling_attempts = rospy.get_param(
-                    f"/{ns}/pose_sampling/attempts"
-                )
-            except KeyError:
-                self._pose_sampling_attempts = 10
-            try:
-                self._pose_sampling_type = rospy.get_param(
-                    f"/{ns}/pose_sampling/pose_sampling_type"
-                ).lower()
-            except KeyError:
-                self._pose_sampling_type = "end_effector_pose"
-            try:
-                self._moveit_init_pose_control = rospy.get_param(
-                    f"/{ns}/pose_sampling/moveit_control"
-                )
-            except KeyError:
-                self._moveit_init_pose_control = False
-            try:
-                self._init_pose = rospy.get_param(f"/{ns}/pose_sampling/init_pose")
-            except KeyError:
-                self._init_pose = {
+            self._visualize_init_pose_bounds = rospy.get_param(
+                f"/{ns}/pose_sampling/visualize_init_pose_bounds", True
+            )
+            self._reset_init_pose = rospy.get_param(
+                f"/{ns}/pose_sampling/reset_init_pose", True
+            )
+            self._random_init_pose = rospy.get_param(
+                f"/{ns}/pose_sampling/random_init_pose", True
+            )
+            self._randomize_first_episode = rospy.get_param(
+                f"/{ns}/pose_sampling/randomize_first_episode", True
+            )
+            self._pose_sampling_attempts = rospy.get_param(
+                f"/{ns}/pose_sampling/attempts", 10
+            )
+            self._pose_sampling_type = rospy.get_param(
+                f"/{ns}/pose_sampling/pose_sampling_type", "end_effector_pose"
+            ).lower()
+            self._moveit_init_pose_control = rospy.get_param(
+                f"/{ns}/pose_sampling/moveit_control", False
+            )
+            self._init_pose = rospy.get_param(
+                f"/{ns}/pose_sampling/init_pose",
+                {
                     "x": 0.23,
                     "y": 0.29,
                     "z": 0.35,
@@ -746,106 +711,69 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                     "panda_joint6": 1.57079632679,
                     "panda_joint7": 0.785398163397,
                     "gripper_width": 0.001,
-                }
-            try:
-                self._init_pose_offset = rospy.get_param(f"/{ns}/pose_sampling/offset")
-            except KeyError:
-                self._init_pose_offset = {"x": 0.0, "y": 0.0, "z": 0.0}
-            try:
-                self._init_pose_sampling_bounds = rospy.get_param(
-                    f"/{ns}/pose_sampling/bounds"
-                )
-            except KeyError:
-                self._init_pose_sampling_bounds = None
-            try:
-                self._target_sampling_strategy = rospy.get_param(
-                    f"/{ns}/target_sampling/strategy"
-                )
-            except KeyError:
-                self._target_sampling_strategy = "global"
-            try:
-                self._visualize_target = rospy.get_param(
-                    f"/{ns}/target_sampling/visualize_target"
-                )
-            except KeyError:
-                self._visualize_target = True
-            try:
-                self._visualize_target_sampling_bounds = rospy.get_param(
-                    f"/{ns}/target_sampling/visualize_target_bounds"
-                )
-            except KeyError:
-                self._visualize_target_sampling_bounds = True
-            try:
-                self._target_offset = rospy.get_param(f"/{ns}/target_sampling/offset")
-            except KeyError:
-                self._target_ofset = {
+                },
+            )
+            self._init_pose_offset = rospy.get_param(
+                f"/{ns}/pose_sampling/offset", {"x": 0.0, "y": 0.0, "z": 0.0}
+            )
+            self._init_pose_sampling_bounds = rospy.get_param(
+                f"/{ns}/pose_sampling/bounds", None
+            )
+            self._target_sampling_strategy = rospy.get_param(
+                f"/{ns}/target_sampling/strategy", "global"
+            )
+            self._visualize_target = rospy.get_param(
+                f"/{ns}/target_sampling/visualize_target", True
+            )
+            self._visualize_target_sampling_bounds = rospy.get_param(
+                f"/{ns}/target_sampling/visualize_target_bounds", True
+            )
+            self._target_offset = rospy.get_param(
+                f"/{ns}/target_sampling/offset",
+                {
                     "x": 0.0,
                     "y": 0.0,
                     "z": 0.0,
-                }
-            try:
-                self._fixed_target_pose = rospy.get_param(
-                    f"/{ns}/target_sampling/fixed_target"
-                )
-            except KeyError:
-                self._fixed_target_pose = {
+                },
+            )
+            self._fixed_target_pose = rospy.get_param(
+                f"/{ns}/target_sampling/fixed_target",
+                {
                     "x": 0.4,
                     "y": 0.0,
                     "z": 0.8,
-                }
+                },
+            )
             if self._target_sampling_strategy != "fixed":
-                try:
-                    self._target_sampling_bounds = rospy.get_param(
-                        f"/{ns}/target_sampling/bounds/"
-                        f"{self._target_sampling_strategy}"
-                    )
-                except KeyError:
-                    self._target_sampling_bounds = {
+                self._target_sampling_bounds = rospy.get_param(
+                    f"/{ns}/target_sampling/bounds/"
+                    f"{self._target_sampling_strategy}",
+                    {
                         "x_min": -0.7,
                         "x_max": 0.7,
                         "y_min": -0.7,
                         "y_max": 0.7,
                         "z_min": 0.0,
                         "z_max": 1.3,
-                    }
+                    },
+                )
             # == Retrieve reward variables ==
-            try:
-                self._reward_type = rospy.get_param(f"/{ns}/training/reward_type")
-            except KeyError:
-                self._reward_type = "sparse"
-            try:
-                self._target_hold = rospy.get_param(f"/{ns}/training/target_hold")
-            except KeyError:
-                self._target_hold = True
-            try:
-                self._hold_samples = rospy.get_param(f"/{ns}/training/hold_samples")
-            except KeyError:
-                self._hold_samples = 2
-            try:
-                self._distance_threshold = rospy.get_param(
-                    f"/{ns}/training/distance_threshold"
-                )
-            except KeyError:
-                self._distance_threshold = 0.05
-            try:
-                self._collision_penalty = rospy.get_param(
-                    f"/{ns}/training/collision_penalty"
-                )
-            except KeyError:
-                self._collision_penalty = 0.0
+            self._reward_type = rospy.get_param(f"/{ns}/training/reward_type", "sparse")
+            self._target_hold = rospy.get_param(f"/{ns}/training/target_hold", True)
+            self._hold_samples = rospy.get_param(f"/{ns}/training/hold_samples", 2)
+            self._distance_threshold = rospy.get_param(
+                f"/{ns}/training/distance_threshold", 0.05
+            )
+            self._collision_penalty = rospy.get_param(
+                f"/{ns}/training/collision_penalty", 0.0
+            )
             # == Retrieve environment variables ==
-            try:
-                self._pause_after_step = rospy.get_param(
-                    f"/{ns}/environment/pause_after_step"
-                )
-            except KeyError:
-                self._pause_after_step = True
-            try:
-                self._action_bounds = rospy.get_param(
-                    f"/{ns}/environment/action_space/bounds"
-                )
-            except KeyError:
-                self._action_bounds = {
+            self._pause_after_step = rospy.get_param(
+                f"/{ns}/environment/pause_after_step", True
+            )
+            self._action_bounds = rospy.get_param(
+                f"/{ns}/environment/action_space/bounds",
+                {
                     "ee_pose": {
                         "low": {
                             "x": -1.3,
@@ -910,55 +838,32 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
                             "gripper_max_effort": 140,
                         },
                     },
-                }
+                },
+            )
             # == Retrieve global variables ==
-            try:
-                self._physics = rospy.get_param(f"/{ns}/physics").lower()
-            except KeyError:
-                self._physics = "ode"
-            try:
-                self._load_rviz = rospy.get_param(f"/{ns}/load_rviz")
-            except KeyError:
-                self._load_rviz = True
-            try:
-                self._rviz_file = Path(__file__).parent.joinpath(
-                    rospy.get_param(f"/{ns}/rviz_file")
+            self._physics = rospy.get_param(f"/{ns}/physics", "ode").lower()
+            self._load_rviz = rospy.get_param(f"/{ns}/load_rviz", True)
+            self._rviz_file = Path(__file__).parent.joinpath(
+                rospy.get_param(
+                    f"/{ns}/rviz_file",
+                    "config/moveit.rviz",
                 )
-            except KeyError:
-                self._rviz_file = Path(__file__).parent.joinpath("config/moveit.rviz")
-            try:
-                self._gazebo_gui = rospy.get_param(f"/{ns}/load_gazebo_gui")
-            except KeyError:
-                self._gazebo_gui = True
-            try:
-                self._log_reset = rospy.get_param(f"/{ns}/log_reset")
-            except KeyError:
-                self._log_reset = False
-            try:
-                self._log_step_debug_info = rospy.get_param(
-                    f"/{ns}/log_step_debug_info"
-                )
-            except KeyError:
-                self._log_step_debug_info = False
-            try:
-                self._roslaunch_log_to_console = rospy.get_param(
-                    f"/{ns}/roslaunch_log_to_console"
-                )
-            except KeyError:
-                self._roslaunch_log_to_console = False
+            )
+            self._gazebo_gui = rospy.get_param(f"/{ns}/load_gazebo_gui", True)
+            self._log_reset = rospy.get_param(f"/{ns}/log_reset", False)
+            self._log_step_debug_info = rospy.get_param(
+                f"/{ns}/log_step_debug_info", False
+            )
+            self._roslaunch_log_to_console = rospy.get_param(
+                f"/{ns}/roslaunch_log_to_console", False
+            )
             # == Retrieve other variables ==
-            try:
-                self._max_velocity_scaling_factor = rospy.get_param(
-                    "/panda_moveit_planner_server/max_velocity_scaling_factor"
-                )
-            except KeyError:
-                self._max_velocity_scaling_factor = 1.0
-            try:
-                self._max_acceleration_scaling_factor = rospy.get_param(
-                    "/panda_moveit_planner_server/max_acceleration_scaling_factor"
-                )
-            except KeyError:
-                self._max_acceleration_scaling_factor = 1.0
+            self._max_velocity_scaling_factor = rospy.get_param(
+                "/panda_moveit_planner_server/max_velocity_scaling_factor", 1.0
+            )
+            self._max_acceleration_scaling_factor = rospy.get_param(
+                "/panda_moveit_planner_server/max_acceleration_scaling_factor", 1.0
+            )
         except KeyError as e:
             rospy.logerr(
                 f"Parameter '{e.args[0]}' could not be retrieved from the parameter "
@@ -1352,7 +1257,7 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             # Set joint configuration.
             resp = self._set_franka_model_configuration_srv.call(
                 self.franka_msgs.srv.SetJointConfigurationRequest(
-                    configuration=JointState(name=joint_names, position=joint_positions)
+                    joint_names=joint_names, joint_positions=joint_positions
                 )
             )
             retval = resp.success
@@ -1361,6 +1266,10 @@ class PandaReachEnv(PandaEnv, utils.EzPickle):
             if self._locked_arm_joints:
                 self.lock_joints(self._locked_arm_joints)
         else:
+            rospy.logwarn_once(
+                "Panda configuration not set as 'set_franka_model_configuration' "
+                "service is not available."
+            )
             retval = False
 
         return retval
