@@ -5,6 +5,7 @@
     pre-initialize some of its attributes. It further also adds the ability to specify
     the marker scale using s``x``, ``y``, ``z`` max and min values.
 """
+
 import rospy
 from geometry_msgs.msg import Pose, Vector3
 from ros_gazebo_gym.common.helpers import normalize_quaternion

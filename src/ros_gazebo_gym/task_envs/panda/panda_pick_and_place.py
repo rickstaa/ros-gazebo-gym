@@ -32,6 +32,7 @@ Goal:
     The configuration files for this environment are found in the
     :ros-gazebo-gym:`panda task environment config folder <blob/noetic/src/ros_gazebo_gym/task_envs/panda/config/panda_pick_and_place.yaml>`.
 """  # noqa: E501
+
 import time
 from pathlib import Path
 
@@ -491,9 +492,9 @@ class PandaPickAndPlaceEnv(PandaReachEnv, utils.EzPickle):
             object_rel_position = object_position - ee_position
             object_velp -= grip_velp
         else:
-            object_position = (
-                object_rot
-            ) = object_velp = object_velr = object_rel_position = np.zeros(3)
+            object_position = object_rot = object_velp = object_velr = (
+                object_rel_position
+            ) = np.zeros(3)
 
         # Save current gripper and object positions.
         self._prev_grip_position = ee_position

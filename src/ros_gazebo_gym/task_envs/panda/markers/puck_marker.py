@@ -7,6 +7,7 @@ RViz.
     to pre-initialize some of its attributes. Most importantly, a pose offset was
     applied to align the marker frame with the object frame.
 """
+
 from geometry_msgs.msg import Vector3
 from ros_gazebo_gym.common.markers import TargetMarker
 from std_msgs.msg import ColorRGBA

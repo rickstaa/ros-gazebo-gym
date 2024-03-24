@@ -1,4 +1,5 @@
 """Contains several helper functions that are used in the several environments."""
+
 import collections
 import copy
 import glob

@@ -340,7 +340,7 @@ def ros_exit_gracefully(shutdown_msg=None, exit_code=0):
 
 
 def build_catkin_ws(workspace_path, install_ros_deps=False):
-    """Builds the catking workspace and installs system dependencies while doing so if
+    """Builds the catkin workspace and installs system dependencies while doing so if
     requested.
 
     Args:

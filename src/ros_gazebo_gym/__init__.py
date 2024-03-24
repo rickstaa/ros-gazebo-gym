@@ -5,6 +5,7 @@
     Here all the all :ros-gazebo-gym:`ros_gazebo_gym <>` task environments are
     registered so that they are available in the gymnasium namespace.
 """
+
 from gymnasium.envs.registration import register
 from ros_gazebo_gym.task_envs.task_envs_list import ENVS
 

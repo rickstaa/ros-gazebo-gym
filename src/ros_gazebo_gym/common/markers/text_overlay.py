@@ -6,6 +6,7 @@
     its attributes. It further automatically makes sure the text width and height are
     not to small.
 """
+
 import math
 
 from jsk_rviz_plugins.msg import OverlayText
