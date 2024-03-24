@@ -12,6 +12,7 @@
     for the ``position`` and ``effort`` control. Other control methods like
     ``trajectory`` and ``end_effector`` control will use the PROXY based method.
 """  # noqa: E501
+
 import copy
 from datetime import datetime
 from itertools import compress
@@ -21,7 +22,15 @@ import numpy as np
 import rospy
 import tf2_ros
 from control_msgs.msg import GripperCommandAction, GripperCommandGoal
-from geometry_msgs.msg import Pose, PoseStamped
+from geometry_msgs.msg import (
+    Pose,
+    Quaternion,
+    Vector3,
+    TransformStamped,
+    Transform,
+    Point,
+)
+from tf.transformations import quaternion_inverse, quaternion_multiply
 from ros_gazebo_gym.common.helpers import (
     action_server_exists,
     flatten_list,
@@ -42,8 +51,12 @@ from ros_gazebo_gym.robot_envs.helpers import (
 from ros_gazebo_gym.robot_gazebo_goal_env import RobotGazeboGoalEnv
 from rospy.exceptions import ROSException, ROSInterruptException
 from sensor_msgs.msg import JointState
-from std_msgs.msg import Float32, Float64MultiArray
+from std_msgs.msg import Float32, Float64MultiArray, Header
 from urdf_parser_py.urdf import URDF
+from tf2_geometry_msgs import PoseStamped
+from tf2_ros import (
+    StaticTransformBroadcaster,
+)
 
 # Specify topics and connection timeouts.
 CONNECTION_TIMEOUT = 5  # Timeout for connecting to services or topics.
@@ -60,6 +73,9 @@ SET_JOINT_TRAJECTORY_TOPIC = "panda_control_server/panda_arm/follow_joint_trajec
 FRANKA_GRIPPER_COMMAND_TOPIC = "franka_gripper/gripper_action"
 JOINT_STATES_TOPIC = "joint_states"
 FRANKA_STATES_TOPIC = "franka_state_controller/franka_states"
+GET_PANDA_EE_FRAME_TRANSFORM_TIMEOUT = (
+    1  # Timeout for retrieving the panda EE frame transform.  # noqa: E501
+)
 
 # Other script variables.
 AVAILABLE_CONTROL_TYPES = [
@@ -108,6 +124,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         reset_controls (bool): Whether the controllers are reset when the simulation is
             reset.
         robot_EE_link (str): The link used for the end effector control.
+        ee_frame_offset (dict): Dictionary containing the used end effector offset.
         load_gripper (bool): Whether the gripper was loaded.
         lock_gripper (bool): Whether the gripper should be locked (i.e. not move).
         joint_states (:obj:`sensor_msgs.msg.JointState`): The current joint states.
@@ -125,6 +142,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         self,
         robot_name_space="",
         robot_EE_link="panda_link8",
+        ee_frame_offset=None,
         load_gripper=True,
         lock_gripper=False,
         grasping=False,
@@ -141,6 +159,9 @@ class PandaEnv(RobotGazeboGoalEnv):
                 ``""``.
             robot_EE_link (str, optional): Robot end effector link name. Defaults to
                 ``panda_link8``.
+            ee_frame_offset (dict, optional): Dictionary containing the end effector
+                offset. Used when retrieving and setting the end effector pose. Defaults
+                to ``None``.
             load_gripper (bool, optional): Whether we want to load the parallel-jaw
                 gripper. Defaults to ``True``.
             lock_gripper (bool, optional): Whether we want to lock the parallel-jaw
@@ -175,6 +196,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         self.robot_EE_link = robot_EE_link
         self.load_gripper = load_gripper
         self.lock_gripper = lock_gripper
+        self._ee_frame_offset_dict = ee_frame_offset
         self._ros_shutdown_requested = False
         self._connection_timeout = CONNECTION_TIMEOUT
         self._joint_traj_action_server_default_step_size = 1
@@ -290,12 +312,16 @@ class PandaEnv(RobotGazeboGoalEnv):
             disable_franka_gazebo_logs=True,
             rviz_file=self._rviz_file if hasattr(self, "_rviz_file") else "",
             end_effector=self.robot_EE_link,
-            max_velocity_scaling_factor=self._max_velocity_scaling_factor
-            if hasattr(self, "_max_velocity_scaling_factor")
-            else "",
-            max_acceleration_scaling_factor=self._max_acceleration_scaling_factor
-            if hasattr(self, "_max_acceleration_scaling_factor")
-            else "",
+            max_velocity_scaling_factor=(
+                self._max_velocity_scaling_factor
+                if hasattr(self, "_max_velocity_scaling_factor")
+                else ""
+            ),
+            max_acceleration_scaling_factor=(
+                self._max_acceleration_scaling_factor
+                if hasattr(self, "_max_acceleration_scaling_factor")
+                else ""
+            ),
             control_type=control_type_group,
         )
 
@@ -313,12 +339,12 @@ class PandaEnv(RobotGazeboGoalEnv):
             reset_robot_pose=reset_robot_pose,
             reset_world_or_sim="WORLD",
             log_reset=log_reset,
-            pause_simulation=self._pause_after_step
-            if hasattr(self, "_pause_after_step")
-            else False,
-            publish_rviz_training_info_overlay=self._load_rviz
-            if hasattr(self, "_load_rviz")
-            else True,
+            pause_simulation=(
+                self._pause_after_step if hasattr(self, "_pause_after_step") else False
+            ),
+            publish_rviz_training_info_overlay=(
+                self._load_rviz if hasattr(self, "_load_rviz") else True
+            ),
         )
 
         ########################################
@@ -379,6 +405,43 @@ class PandaEnv(RobotGazeboGoalEnv):
                 "exist. Please make sure the end-effector link exists and try again."
             )
             ros_exit_gracefully(shutdown_msg=err_msg, exit_code=1)
+
+        # Retrieve ee frame offset.
+        rospy.logdebug("Validating end-effector frame offset.")
+        if self._ee_frame_offset_dict is None:
+            rospy.logdebug(
+                f"Offset not specified. Using transform between '{self.robot_EE_link}' "
+                "and 'panda_EE' as offset."
+            )
+            try:
+                panda_ee_frame_offset = self._get_frame_pose(
+                    parent_frame=self.robot_EE_link,
+                    child_frame="panda_EE",
+                    timeout=GET_PANDA_EE_FRAME_TRANSFORM_TIMEOUT,
+                )
+                self._ee_frame_offset_dict = {
+                    "x": panda_ee_frame_offset.pose.position.x,
+                    "y": panda_ee_frame_offset.pose.position.y,
+                    "z": panda_ee_frame_offset.pose.position.z,
+                    "rx": panda_ee_frame_offset.pose.orientation.x,
+                    "ry": panda_ee_frame_offset.pose.orientation.y,
+                    "rz": panda_ee_frame_offset.pose.orientation.z,
+                    "rw": panda_ee_frame_offset.pose.orientation.w,
+                }
+            except TimeoutError as e:
+                ros_exit_gracefully(shutdown_msg=e.args[0], exit_code=1)
+
+        ########################################
+        # Create publishers ####################
+        ########################################
+
+        # Create static transform broadcaster.
+        rospy.logdebug("Creating static transform broadcaster.")
+        self._static_tf_broadcaster = StaticTransformBroadcaster()
+
+        # Publish static transform between the world and the end-effector.
+        # NOTE: Used for RVIZ visualization.
+        self._add_ee_frame()
 
         ########################################
         # Connect to control services ##########
@@ -668,39 +731,34 @@ class PandaEnv(RobotGazeboGoalEnv):
     # Panda Robot env main methods #################
     ################################################
     def get_ee_pose(self):
-        """Returns the end effector EE pose.
+        """Returns the current end-effector pose while taking the ``ee_frame_offset``
+        into account. If the offset is zero then it is equal to the
+        :attr:`~PandaEnv.robot_EE_link` pose.
 
         Returns:
-            :obj:`geometry_msgs.msg.PoseStamped`: The current end effector pose.
+            :obj:`geometry_msgs.msg.PoseStamped`: The end-effector pose.
 
         Raises:
             :obj:`ros_gazebo_gym.errors.EePoseLookupError`: Error thrown when error
-                occurred while trying to retrieve the EE pose using the ``get_ee_pose``
-                service.
+                occurred while trying to retrieve the EE pose.
         """
+        # Retrieve EE pose, take offset into account if set.
         try:
-            # Retrieve EE pose using tf2.
-            ee_site_trans = self.tf_buffer.lookup_transform(
-                "world", self.robot_EE_link, rospy.Time()
+            ee_pose = self._get_frame_pose(
+                parent_frame="world",
+                child_frame=self.robot_EE_link,
+                offset=self.ee_frame_offset,
             )
-
-            # Transform trans to pose.
-            ee_pose = PoseStamped()
-            ee_pose.header = ee_site_trans.header
-            ee_pose.pose.orientation = ee_site_trans.transform.rotation
-            ee_pose.pose.position = ee_site_trans.transform.translation
         except (
             tf2_ros.LookupException,
             tf2_ros.ConnectivityException,
             tf2_ros.ExtrapolationException,
         ) as e:
-            logwarn_msg = "End effector pose could not be retrieved as {}.".format(
+            logwarn_msg = "End effector pose could not be retrieved as {}".format(
                 lower_first_char(e.args[0])
             )
-            raise EePoseLookupError(
-                message="End effector pose could not be retrieved.",
-                log_message=logwarn_msg,
-            )
+            error_message = "End effector pose could not be retrieved."
+            raise EePoseLookupError(message=error_message, log_message=logwarn_msg)
 
         return ee_pose
 
@@ -717,19 +775,14 @@ class PandaEnv(RobotGazeboGoalEnv):
                 ``get_ee_pose`` service.
         """
         try:
-            # Retrieve EE pose using tf2.
-            ee_site_trans = self.tf_buffer.lookup_transform(
-                "world", self.robot_EE_link, rospy.Time()
+            # Retrieve the pose of the 'EE_frame' in the 'world' frame.
+            ee_frame_pose = self._get_frame_pose(
+                parent_frame="world",
+                child_frame="EE_frame",
             )
 
-            # Transform trans to pose.
-            ee_pose = PoseStamped()
-            ee_pose.header = ee_site_trans.header
-            ee_pose.pose.orientation = ee_site_trans.transform.rotation
-            ee_pose.pose.position = ee_site_trans.transform.translation
-
-            # Convert EE pose to rpy.
-            gripper_rpy = get_orientation_euler(ee_pose.pose)  # Yaw, Pitch Roll.
+            # Calculate 'EE_frame' euler angles.
+            gripper_rpy = get_orientation_euler(ee_frame_pose.pose)  # Yaw, Pitch Roll.
         except (
             tf2_ros.LookupException,
             tf2_ros.ConnectivityException,
@@ -758,26 +811,33 @@ class PandaEnv(RobotGazeboGoalEnv):
         Returns:
             obj:`dict`: Dictionary with joint positions that result in a given EE pose.
                 Empty dictionary is returned if no joint positions could be found.
-        """
+        """  # TODO ADD EE_OFFSET!
         if self._moveit_get_ee_pose_joint_config_client_connected:
-            ee_target_pose = Pose()
-            ee_target_pose.position.x = ee_pose["x"]
-            ee_target_pose.position.y = ee_pose["y"]
-            ee_target_pose.position.z = ee_pose["z"]
-            ee_target_pose.orientation.x = ee_pose["rx"]
-            ee_target_pose.orientation.y = ee_pose["ry"]
-            ee_target_pose.orientation.z = ee_pose["rz"]
-            ee_target_pose.orientation.w = ee_pose["rw"]
-            ee_target_pose.orientation = normalize_quaternion(
-                ee_target_pose.orientation
+            ee_pose_target = PoseStamped(
+                header=Header(frame_id="world", stamp=rospy.Time(0))
+            )
+            ee_pose_target.pose.position.x = ee_pose["x"]
+            ee_pose_target.pose.position.y = ee_pose["y"]
+            ee_pose_target.pose.position.z = ee_pose["z"]
+            ee_pose_target.pose.orientation.x = ee_pose["rx"]
+            ee_pose_target.pose.orientation.y = ee_pose["ry"]
+            ee_pose_target.pose.orientation.z = ee_pose["rz"]
+            ee_pose_target.pose.orientation.w = ee_pose["rw"]
+            ee_pose_target.pose.orientation = normalize_quaternion(
+                ee_pose_target.pose.orientation
             )  # Make sure the orientation is normalized.
+
+            # Remove the end-effector offset if set.
+            if not self.ee_offset_is_zero:
+                # FIXME: Is not yet correctly implemented.
+                ee_pose_target = self._remove_ee_offset(ee_pose_target)
 
             # Request and return pose.
             req = self.panda_gazebo.srv.GetEePoseJointConfigRequest()
-            req.pose = ee_target_pose
+            req.pose = ee_pose_target.pose
             req.attempts = (
                 self._pose_sampling_attempts
-                if hasattr(self, "_pose_sampling_attemps")
+                if hasattr(self, "_pose_sampling_attempts")
                 else 10
             )
             resp = self._moveit_get_ee_pose_joint_config_client.call(req)
@@ -809,96 +869,100 @@ class PandaEnv(RobotGazeboGoalEnv):
         Returns:
             bool: Boolean specifying if the ee pose was set successfully.
         """
-        if self._moveit_set_ee_pose_client_connected:
-            arm_action_space_joints = [
-                item
-                for item in self._action_space_joints
-                if item not in ["gripper_width", "gripper_max_effort"]
-            ]
-            # Convert float and array joint_commands to dictionary.
-            if isinstance(ee_pose, (list, np.ndarray, tuple)) or np.isscalar(ee_pose):
-                if np.isscalar(ee_pose):
-                    ee_pose = [ee_pose]
-
-                # Create joint_commands dictionary.
-                if len(ee_pose) > len(arm_action_space_joints):
-                    rospy.logwarn_once(
-                        f"End effector pose setpoint contains {len(ee_pose)} values "
-                        f"while it can only contain {len(arm_action_space_joints)}. "
-                        f"As a result only the first {len(ee_pose)} "
-                        "values are used in the arm and gripper control command."
-                    )
-                ee_pose = dict(zip(arm_action_space_joints, ee_pose))
-
-            # Create set EE pose request message.
-            if isinstance(ee_pose, dict):
-                # Fill missing EE pose attributes with current pose values.
-                if arm_action_space_joints != list(ee_pose.keys()):
-                    cur_ee_pose = self.get_ee_pose()
-                    cur_ee_pose_dict = {
-                        "x": cur_ee_pose.pose.position.x,
-                        "y": cur_ee_pose.pose.position.y,
-                        "z": cur_ee_pose.pose.position.z,
-                        "rx": cur_ee_pose.pose.orientation.x,
-                        "ry": cur_ee_pose.pose.orientation.y,
-                        "rz": cur_ee_pose.pose.orientation.z,
-                        "rw": cur_ee_pose.pose.orientation.w,
-                    }
-                    cur_ee_pose_dict.update(ee_pose)
-                    ee_pose = cur_ee_pose_dict
-
-                ee_target_pose = Pose()
-                ee_target_pose.position.x = ee_pose["x"]
-                ee_target_pose.position.y = ee_pose["y"]
-                ee_target_pose.position.z = ee_pose["z"]
-                ee_target_pose.orientation.x = ee_pose["rx"]
-                ee_target_pose.orientation.y = ee_pose["ry"]
-                ee_target_pose.orientation.z = ee_pose["rz"]
-                ee_target_pose.orientation.w = ee_pose["rw"]
-            elif isinstance(ee_pose, PoseStamped):
-                ee_target_pose = Pose()
-                ee_target_pose.position = ee_pose.pose.position
-                ee_target_pose.orientation = ee_pose.pose.orientation
-            elif isinstance(ee_pose, Pose):
-                ee_target_pose = ee_pose
-            elif isinstance(ee_pose, self.panda_gazebo.srv.SetEePoseRequest):
-                ee_target = ee_pose
-            else:  # If the ee_pose format is not valid.
-                rospy.logwarn(
-                    "Setting end effector pose failed since the ee_pose you specified "
-                    f"was given as a '{type(ee_pose)}' while the 'set_ee_pose' "
-                    "function only accepts a list, Pose and a PoseStamped."
-                )
-                return False
-            ee_target_pose.orientation = normalize_quaternion(
-                ee_target_pose.orientation
+        if not self._moveit_set_ee_pose_client_connected:
+            rospy.logwarn(
+                "Setting end effector pose failed since the required service "
+                f"'{MOVEIT_SET_EE_POSE_TOPIC}' was not available."
             )
-            if isinstance(ee_target_pose, Pose):
-                ee_target = self.panda_gazebo.srv.SetEePoseRequest()
-                ee_target.pose = ee_target_pose
+            return False
 
-            ########################################
-            # Set EE pose ##########################
-            ########################################
-            self._step_debug_logger(
-                "Setting end effector pose using the "
-                f"'{self._moveit_set_ee_pose_client.resolved_name}' service."
-            )
-            retval = self._moveit_set_ee_pose_client.call(ee_target)
-            if not retval.success:
-                logdebug_msg = "End effector pose not set as " + lower_first_char(
-                    retval.message
+        # Retrieve action space joints.
+        arm_action_space_joints = [
+            item
+            for item in self._action_space_joints
+            if item not in ["gripper_width", "gripper_max_effort"]
+        ]
+
+        # Convert scalar, list, array or tuple to joint dict.
+        if isinstance(ee_pose, (list, np.ndarray, tuple)) or np.isscalar(ee_pose):
+            if np.isscalar(ee_pose):
+                ee_pose = [ee_pose]
+            if len(ee_pose) > len(arm_action_space_joints):
+                rospy.logwarn_once(
+                    f"End effector pose setpoint contains {len(ee_pose)} values "
+                    f"while it can only contain {len(arm_action_space_joints)}. "
+                    f"As a result only the first {len(ee_pose)} "
+                    "values are used in the arm and gripper control command."
                 )
-                rospy.logwarn(logdebug_msg)
-                return False
+            ee_pose = dict(zip(arm_action_space_joints, ee_pose))
 
-            return True
-
-        rospy.logwarn(
-            "Setting end effector pose failed since the required service "
-            f"'{MOVEIT_SET_EE_POSE_TOPIC}' was not available."
+        # Create set EE pose request message.
+        ee_pose_target = PoseStamped(
+            header=Header(frame_id="world", stamp=rospy.Time(0))
         )
-        return False
+        if isinstance(ee_pose, dict):
+            # Fill missing EE pose attributes with current pose values.
+            if arm_action_space_joints != list(ee_pose.keys()):
+                cur_ee_pose = self.get_ee_pose()
+                cur_ee_pose_dict = {
+                    "x": cur_ee_pose.pose.position.x,
+                    "y": cur_ee_pose.pose.position.y,
+                    "z": cur_ee_pose.pose.position.z,
+                    "rx": cur_ee_pose.pose.orientation.x,
+                    "ry": cur_ee_pose.pose.orientation.y,
+                    "rz": cur_ee_pose.pose.orientation.z,
+                    "rw": cur_ee_pose.pose.orientation.w,
+                }
+                cur_ee_pose_dict.update(ee_pose)
+                ee_pose = cur_ee_pose_dict
+
+            # Populate the ee_pose_target message.
+            ee_pose_target.pose.position.x = ee_pose["x"]
+            ee_pose_target.pose.position.y = ee_pose["y"]
+            ee_pose_target.pose.position.z = ee_pose["z"]
+            ee_pose_target.pose.orientation.x = ee_pose["rx"]
+            ee_pose_target.pose.orientation.y = ee_pose["ry"]
+            ee_pose_target.pose.orientation.z = ee_pose["rz"]
+            ee_pose_target.pose.orientation.w = ee_pose["rw"]
+        elif isinstance(ee_pose, PoseStamped):
+            ee_pose_target = ee_pose
+        elif isinstance(ee_pose, Pose):
+            ee_pose_target.pose = ee_pose
+        elif isinstance(ee_pose, self.panda_gazebo.srv.SetEePoseRequest):
+            ee_pose_target.pose = ee_pose.pose
+        else:  # If the ee_pose format is not valid.
+            rospy.logwarn(
+                "Setting end effector pose failed since the ee_pose you specified "
+                f"was given as a '{type(ee_pose)}' while the 'set_ee_pose' "
+                "function only accepts a list, Pose and a PoseStamped."
+            )
+            return False
+        ee_pose_target.pose.orientation = normalize_quaternion(
+            ee_pose_target.pose.orientation
+        )
+
+        # Remove the end-effector offset if set.
+        if not self.ee_offset_is_zero:
+            # FIXME: Is not yet correctly implemented.
+            ee_target = self._remove_ee_offset(ee_pose_target)
+
+        ########################################
+        # Set EE pose ##########################
+        ########################################
+        self._step_debug_logger(
+            "Setting end effector pose using the "
+            f"'{self._moveit_set_ee_pose_client.resolved_name}' service."
+        )
+        set_ee_pose_req = self.panda_gazebo.srv.SetEePoseRequest(
+            pose=ee_target.pose,
+        )
+        retval = self._moveit_set_ee_pose_client.call(set_ee_pose_req)
+        if not retval.success:
+            logdebug_msg = lower_first_char(retval.message)
+            rospy.logwarn(logdebug_msg)
+            return False
+
+        return True
 
     def set_joint_commands(self, joint_commands, arm_wait=False, hand_wait=False):
         """Sets the Panda arm and hand joint commands based on the set
@@ -1473,9 +1537,11 @@ class PandaEnv(RobotGazeboGoalEnv):
                 "control are initialized."
                 % (
                     control_type,
-                    ARM_POSITION_CONTROLLER
-                    if control_type == "position"
-                    else ARM_EFFORT_CONTROLLER,
+                    (
+                        ARM_POSITION_CONTROLLER
+                        if control_type == "position"
+                        else ARM_EFFORT_CONTROLLER
+                    ),
                     control_type,
                 )
             )
@@ -1487,9 +1553,11 @@ class PandaEnv(RobotGazeboGoalEnv):
                 "controller that is needed for '%s' control are initialized."
                 % (
                     control_type,
-                    ARM_POSITION_CONTROLLER
-                    if control_type == "position"
-                    else ARM_EFFORT_CONTROLLER,
+                    (
+                        ARM_POSITION_CONTROLLER
+                        if control_type == "position"
+                        else ARM_EFFORT_CONTROLLER
+                    ),
                     control_type,
                 )
             )
@@ -1721,6 +1789,148 @@ class PandaEnv(RobotGazeboGoalEnv):
             )
         return joint_commands_msg
 
+    def _add_ee_frame(self):
+        """Adds the end-effector frame to the TF tree.
+
+        .. note::
+            Created based on the end effector link and the offset specified in the
+            configuration file.
+        """
+        ee_frame_offset = self.ee_frame_offset
+        self._static_tf_broadcaster.sendTransform(
+            TransformStamped(
+                header=Header(frame_id=self.robot_EE_link, stamp=rospy.Time.now()),
+                child_frame_id="EE_frame",
+                transform=Transform(
+                    translation=ee_frame_offset.position,
+                    rotation=normalize_quaternion(ee_frame_offset.orientation),
+                ),
+            )
+        )
+
+    def _get_frame_pose(self, parent_frame, child_frame, offset=None, timeout=1.0):
+        """Retrieves the pose of the child frame relative to the parent frame.
+
+        Args:
+            parent_frame (str): The parent frame.
+            child_frame (str): The child frame.
+            offset (:obj:`geometry_msgs.msg.Pose`, optional): The offset of the child
+                frame relative to the parent frame. Defaults to ``None`` meaning no
+                offset is applied.
+            timeout (float, optional): The timeout in seconds. Defaults to 1.0.
+
+        Returns:
+            :obj:`geometry_msgs.msg.StampedPose`: The stamped pose of the child frame
+                relative to the parent frame.
+
+        Raises:
+            TimeoutError: Raised when the timeout is exceeded.
+        """
+        offset_pose = (
+            offset
+            if offset is not None
+            else Pose(position=Point(0, 0, 0), orientation=Quaternion(0, 0, 0, 1))
+        )
+
+        # Retrieve transform between child and the parent frame.
+        try:
+            # NOTE: Used instead of 'lookup_transform' to prevent flipped Quaternion.
+            return self.tf_buffer.transform(
+                PoseStamped(
+                    header=Header(frame_id=child_frame, stamp=rospy.Time(0)),
+                    pose=offset_pose,
+                ),
+                parent_frame,
+                rospy.Duration(timeout),
+            )
+        except (
+            tf2_ros.LookupException,
+            tf2_ros.ConnectivityException,
+            tf2_ros.ExtrapolationException,
+        ):
+            err_msg = (
+                f"Could not retrieve (stamped) pose of the '{child_frame}' relative "
+                f"to the '{parent_frame}' frame. Please check that these frames are "
+                "available in the tf tree."
+            )
+            raise TimeoutError(err_msg)
+
+    def _remove_ee_offset(self, ee_pose):
+        """Remove end-effector offset from end-effector pose.
+
+        Args:
+            ee_pose (:obj:`geometry_msgs.msg.PoseStamped`): The end-effector pose.
+
+        Returns:
+            :obj:`geometry_msgs.msg.PoseStamped`: The end-effector pose adjusted for
+                the end-effector offset.
+        """
+        offset_pose = self.ee_frame_offset_stamped
+
+        # Transform ee_pose to end-effector frame.
+        try:
+            transformed_ee_pose = self.tf_buffer.transform(
+                ee_pose, self.robot_EE_link, rospy.Duration(1.0)
+            )
+        except (
+            tf2_ros.LookupException,
+            tf2_ros.ConnectivityException,
+            tf2_ros.ExtrapolationException,
+        ):
+            err_msg = (
+                "Failed to transform the end-effector pose to the end-effector frame."
+            )
+            raise TimeoutError(err_msg)
+
+        # Remove position offset from ee_pose.
+        # FIXME: This approach is naive and does not take into account whether the
+        # orientation is flipped.
+        transformed_ee_pose.pose.position.x -= offset_pose.pose.position.x
+        transformed_ee_pose.pose.position.y -= offset_pose.pose.position.y
+        transformed_ee_pose.pose.position.z -= offset_pose.pose.position.z
+
+        # Remove orientation offset from ee_pose.
+        inv_offset_orientation = quaternion_inverse(
+            [
+                offset_pose.pose.orientation.x,
+                offset_pose.pose.orientation.y,
+                offset_pose.pose.orientation.z,
+                offset_pose.pose.orientation.w,
+            ]
+        )
+        ee_pose_orientation = [
+            transformed_ee_pose.pose.orientation.x,
+            transformed_ee_pose.pose.orientation.y,
+            transformed_ee_pose.pose.orientation.z,
+            transformed_ee_pose.pose.orientation.w,
+        ]
+        ee_pose_orientation = quaternion_multiply(
+            ee_pose_orientation, inv_offset_orientation
+        )
+        transformed_ee_pose.pose.orientation.x = ee_pose_orientation[0]
+        transformed_ee_pose.pose.orientation.y = ee_pose_orientation[1]
+        transformed_ee_pose.pose.orientation.z = ee_pose_orientation[2]
+        transformed_ee_pose.pose.orientation.w = ee_pose_orientation[3]
+
+        # Transform the pose back to the world frame
+        try:
+            final_ee_pose = self.tf_buffer.transform(
+                transformed_ee_pose, "world", rospy.Duration(1.0)
+            )
+        except (
+            tf2_ros.LookupException,
+            tf2_ros.ConnectivityException,
+            tf2_ros.ExtrapolationException,
+        ) as e:
+            err_msg = (
+                "Failed to transform the offset adjusted end-effector pose back to "
+                "the world frame."
+            )
+            rospy.logerr("Transform failed: %s", e)
+            raise
+
+        return final_ee_pose
+
     #############################################
     # Retrieve robot states #####################
     #############################################
@@ -1853,6 +2063,11 @@ class PandaEnv(RobotGazeboGoalEnv):
         return self.__in_collision
 
     @property
+    def locked_joints(self):
+        """Returns the currently locked joints."""
+        return self.__locked_joints
+
+    @property
     def ee_link_exists(self):
         """Returns whether the end effector link exists in the robot model.
 
@@ -1862,9 +2077,61 @@ class PandaEnv(RobotGazeboGoalEnv):
         return any(link.name == self.robot_EE_link for link in self._robot.links)
 
     @property
-    def locked_joints(self):
-        """Returns the currently locked joints."""
-        return self.__locked_joints
+    def ee_pose(self):
+        """Returns the current end-effector pose while taking the ``ee_frame_offset``
+        into account. If the offset is zero then it is equal to the
+        :attr:`~PandaEnv.robot_EE_link` pose.
+
+        Returns:
+            :obj:`geometry_msgs.msg.PoseStamped`: The end-effector pose.
+        """
+        return self.get_ee_pose()
+
+    @property
+    def ee_offset_is_zero(self):
+        """Returns whether the end-effector frame offset is zero.
+
+        Returns:
+            bool: Whether the end-effector frame offset is zero.
+        """
+        return sum(self._ee_frame_offset_dict.values()) == 1.0
+
+    @property
+    def ee_frame_offset(self):
+        """Returns the end-effector frame offset relative to the actual ee_link (i.e.
+        :attr:`~PandaEnv.robot_EE_link`).
+
+        Returns:
+            :obj:`geometry_msgs.msg.Pose`: The ee frame offset pose.
+        """
+        return Pose(
+            position=Vector3(
+                x=self._ee_frame_offset_dict.get("x", 0.0),
+                y=self._ee_frame_offset_dict.get("y", 0.0),
+                z=self._ee_frame_offset_dict.get("z", 0.0),
+            ),
+            orientation=normalize_quaternion(
+                Quaternion(
+                    x=self._ee_frame_offset_dict.get("rx", 0.0),
+                    y=self._ee_frame_offset_dict.get("ry", 0.0),
+                    z=self._ee_frame_offset_dict.get("rz", 0.0),
+                    w=self._ee_frame_offset_dict.get("rw", 0.0),
+                )
+            ),
+        )
+
+    @property
+    def ee_frame_offset_stamped(self):
+        """Returns the end-effector frame offset relative to the actual ee_link (i.e.
+        :attr:`~PandaEnv.robot_EE_link`) as a stamped pose.
+
+        Returns:
+            :obj:`geometry_msgs.msg.PoseStamped`: The ee frame offset pose.
+        """
+        return PoseStamped(
+            header=Header(frame_id=self.robot_EE_link, stamp=rospy.Time(0)),
+            pose=self.ee_frame_offset,
+        )
 
     ################################################
     # Overload Gazebo env virtual methods ##########

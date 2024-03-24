@@ -4,11 +4,12 @@ panda_reach:
   # Control settings #####################
   ########################################
   control:
-    direct_control: True # Directly control the panda robot by publishing on the controller command topics (FAST). When `False` the 'panda_gazebo' control services will be used (SLOWER).
-    ee_link: "panda_link8" # End effector link. Defaults to 'panda_link8' or 'panda_hand' based on 'load_gripper'.
-    # NOTE: We don't load the gripper since the gravity compensation currently does not work with the hand attached (see https://github.com/frankaemika/franka_ros/issues/160#issuecomment-992776684).
+    direct_control: True # Directly control the panda robot by publishing on the controller command topics (FAST). When ``False`` the 'panda_gazebo' control services will be used (SLOWER).
+    # ee_link: "panda_link8" # Uncomment to change end effector. Defaults: 'panda_hand' if gripper loaded, 'panda_link8' otherwise.
+    # NOTE: Gripper not loaded due to gravity compensation issues with effort control (see https://github.com/frankaemika/franka_ros/issues/160#issuecomment-992776684).
     load_gripper: False # Whether you want to load the gripper.
-    grasping: False # Enables gripper for easy grasping. Applies 10N if 'gripper_max_effort' is unset.
+    # lock_gripper: True # Whether the gripper should be locked (i.e. not move).
+    grasping: False # Whether the gripper should grasp objects. If true a max effort of 10N will be used when not specified otherwise.
     arm_wait: False # Wait for the arm control to complete before continuing to the next step.
     hand_wait: False # Wait for the hand control to complete before continuing to the next step.
     ee_control_coordinates: # Control variables used during ee-control.
@@ -20,26 +21,38 @@ panda_reach:
       - "rz"
       - "rw"
     controlled_joints: # Joints that are controlled during joint position/effort control.
-      # - "panda_joint1"
-      # - "panda_joint2"
+      - "panda_joint1"
+      - "panda_joint2"
       - "panda_joint3"
       - "panda_joint4"
       - "panda_joint5"
       - "panda_joint6"
       - "panda_joint7"
       # NOTE: The current implementation only accepts gripper_width not individual finger joints.
-      - "gripper_width"
-      # NOTE: When uncommented the robot also tries to control the max gripper effort
-      - "gripper_max_effort"
+      # - "gripper_width"
+      # NOTE: When uncommented the robot also tries to control the max gripper effort. Only used when 'gripper_width' is controlled.
+      # - "gripper_max_effort"
     locked_arm_joints: # Arm joints that are locked during control.
-      - "panda_joint1"
-      - "panda_joint2"
-      # - "panda_joint3"
-      # - "panda_joint4"
-      # - "panda_joint5"
-      # - "panda_joint6"
-      # - "panda_joint7"
-    lock_gripper: True # Whether the gripper should be locked (i.e. not move).
+    #   - "panda_joint1"
+    #   - "panda_joint2"
+    #   - "panda_joint3"
+    #   - "panda_joint4"
+    #   - "panda_joint5"
+    #   - "panda_joint6"
+    #   - "panda_joint7"
+
+    # End-effector frame offset.
+    # NOTE: Can be used to offset the end-effector pose returned by the robot. By default the transform between the end-effector link and
+    # the 'panda_EE' frame is used.
+    # WARNING: The 'ee_frame_offset' is not yet applied correctly when the control type is set to 'end_effector' (see #97).
+    # ee_frame_offset:
+    #   x: 0.0
+    #   y: 0.0
+    #   z: 0.0
+    #   rx: 0.0
+    #   ry: 0.0
+    #   rz: 0.0
+    #   rw: 1.0
 
   ########################################
   # Sampling settings ####################
@@ -72,7 +85,7 @@ panda_reach:
       panda_joint7: 0.785398163397
       gripper_width: 0.001
 
-    # Initial ee pose offset
+    # Initial ee pose position offset
     # NOTE: Ignored when 'random_init_pose' is `False` and 'pose_sampling_type' is `joint_positions`.
     offset:
       x: 0.0
