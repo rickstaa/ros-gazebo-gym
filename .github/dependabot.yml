@@ -23,11 +23,11 @@ version: 2
 #       - dependency-name: "*"
 #         update-types: ["version-update:semver-patch"]
 
-#   # Maintain dependencies for pip.
-#   - package-ecosystem: "pip"
-#     directory: "/"
-#     schedule:
-#       interval: "weekly"
-#     ignore:
-#       - dependency-name: "*"
-#         update-types: ["version-update:semver-patch"]
+  # Maintain dependencies for pip.
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
