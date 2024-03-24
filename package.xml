@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>ros_gazebo_gym</name>
-  <version>1.9.5</version>
+  <version>2.0.0</version>
   <description>Framework for training reinforcement learning algorithms on a variety of ROS Gazebo environments.</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
