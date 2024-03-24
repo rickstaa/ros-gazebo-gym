@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.1](https://github.com/rickstaa/ros-gazebo-gym/compare/v2.0.0...v2.0.1) (2024-03-24)
+
+
+### Bug Fixes
+
+* **panda:** fix 'ee_pose_target' not defined bug ([54693d7](https://github.com/rickstaa/ros-gazebo-gym/commit/54693d777261d747d0133a933cd8563012f2cd6d))
+
 ## [2.0.0](https://github.com/rickstaa/ros-gazebo-gym/compare/v1.9.5...v2.0.0) (2024-03-24)
 
 
