@@ -944,7 +944,7 @@ class PandaEnv(RobotGazeboGoalEnv):
         # Remove the end-effector offset if set.
         if not self.ee_offset_is_zero:
             # FIXME: Is not yet correctly implemented.
-            ee_target = self._remove_ee_offset(ee_pose_target)
+            ee_pose_target = self._remove_ee_offset(ee_pose_target)
 
         ########################################
         # Set EE pose ##########################
@@ -954,7 +954,7 @@ class PandaEnv(RobotGazeboGoalEnv):
             f"'{self._moveit_set_ee_pose_client.resolved_name}' service."
         )
         set_ee_pose_req = self.panda_gazebo.srv.SetEePoseRequest(
-            pose=ee_target.pose,
+            pose=ee_pose_target.pose,
         )
         retval = self._moveit_set_ee_pose_client.call(set_ee_pose_req)
         if not retval.success:
