@@ -24,7 +24,7 @@ jobs:
           submodules: true
 
       - name: Build Docker Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           tags: ros_gazebo_gym:noetic
           file: .ci/Dockerfile.noetic
